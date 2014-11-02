@@ -1,0 +1,64 @@
+     398    1041    9255 ../bignum/basic_arith.cc
+     138     352    3120 ../bignum/bignum.cc
+      29     148    1044 ../bignum/globals.cc
+     775    2067   21272 ../bignum/intel64_arith.cc
+     965    2646   24078 ../bignum/number_theory.cc
+      79     638    4053 ../bignum/smallprimes.cc
+     364     854    6913 ../common/conversions.cc
+     476    1040   10681 ../common/util.cc
+     905    2097   23550 ../ecc/ecc.cc
+      36     148    1082 ../hash/hash.cc
+     117     326    3163 ../hash/hmac_sha256.cc
+      85     328    2672 ../hash/pbkdf2.cc
+     216     820    6257 ../hash/pkcs.cc
+     181     537    6189 ../hash/sha1.cc
+     202     573    6135 ../hash/sha256.cc
+     355     937    9321 ../hash/sha3.cc
+     671    1561   18670 ../keys/keys.cc
+     467    1036   12870 ../rsa/rsa.cc
+    1106    6575   57161 ../symmetric/aes.cc
+     437    1091   12831 ../symmetric/aescbchmac256sympad.cc
+     417    1052   11999 ../symmetric/aesctrhmac256sympad.cc
+     263     753    8226 ../symmetric/aesni.cc
+     191     500    6974 ../symmetric/encryption_algorithm.cc
+     118     333    3502 ../symmetric/symmetric_cipher.cc
+     373    1509   12683 ../symmetric/twofish.cc
+--------------------------------------------------------------
+   9364 - 1125  8250
+
+
+
+    1627    4022   49691 ../cryptutil/cryptutil.cc
+--------------------------------------------------------------
+
+      82     272    2106 ../include/aes.h
+      91     314    2989 ../include/aescbchmac256sympad.h
+      90     313    2923 ../include/aesctrhmac256sympad.h
+     132     609    5182 ../include/bignum.h
+      39     178    1365 ../include/conversions.h
+      58     187    1306 ../include/cryptotypes.h
+      73     260    2206 ../include/ecc.h
+      73     250    2324 ../include/encryption_algorithm.h
+      36     147    1057 ../include/hash.h
+      48     175    1300 ../include/hmac_sha256.h
+      79     428    4036 ../include/intel64_arith.h
+     184     530    5412 ../include/keys.h
+      30     149    1021 ../include/pbkdf.h
+      32     173    1195 ../include/pkcs.h
+      53     183    1426 ../include/sha1.h
+      49     179    1398 ../include/sha256.h
+      52     185    1428 ../include/sha3.h
+      58     206    1693 ../include/symmetric_cipher.h
+      67     290    2230 ../include/twofish.h
+     119     380    3493 ../include/util.h
+--------------------------------------------------------------
+    1445 - 800= 645
+
+
+     123     307    2996 ../keys/keytest.cc
+     885    2555   30457 ../symmetric/symmetrictest.cc
+     618    2064   20012 ../hash/hashtest.cc
+     351     955    8917 ../common/commontest.cc
+    2052    5266   59861 ../bignum/bignumtest.cc
+______________________________________________________________
+    4029 - 300= 3700

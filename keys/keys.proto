@@ -1,0 +1,79 @@
+// To compile: protoc -I=. --cpp_out=. keys.proto
+
+message crypto_symmetric_key_message {
+    required string key_type                    = 1;
+    optional int32  key_bit_size                = 2;
+    optional string value                       = 3;
+  }
+
+message crypto_rsa_key_message {
+    required string key_type                    = 1;
+    optional int32 key_bit_size                 = 2;
+    optional string modulus                     = 3;
+    optional string public_exponent             = 4;
+    optional string private_exponent            = 5;
+    optional string p                           = 6;
+    optional string q                           = 7;
+    optional string dp                          = 8;
+    optional string dq                          = 9;
+    optional string m_prime                     =10;
+  }
+
+message crypto_ecc_curve_message {
+    required int32  bit_modulus_size            = 1;
+    optional string p                           = 2;
+    optional string a                           = 3;
+    optional string b                           = 4;
+  }
+
+message crypto_point_message {
+    required int32 valid                        = 1;
+    optional string x                           = 2;
+    optional string y                           = 3;
+  }
+
+message crypto_ecc_key_message {
+    required string key_type                    = 1;
+    optional crypto_ecc_curve_message curve     = 2;
+    optional crypto_point_message base_point    = 3;
+    optional crypto_point_message generator     = 4;
+    optional string private_nonce               = 5;
+    optional string order                       = 6;
+  }
+
+message crypto_key_message {
+  required string key_type                      = 1;
+  optional string key_name                      = 2;
+  optional string key_usage                     = 3;
+  optional string key_owner                     = 4;
+  optional string not_before                    = 5;
+  optional string not_after                     = 6;
+  optional crypto_symmetric_key_message symkey  = 7;
+  optional crypto_rsa_key_message rsakey        = 8;
+  optional crypto_ecc_key_message ecckey        = 9;
+  optional string crypto_context                =10;
+}
+
+message crypto_encryption_algorithm_message {
+  required string encryption_algorithm_name       = 1;
+  optional string message_id                      = 2;
+  optional crypto_symmetric_key_message key_msg   = 3;
+  optional string encryption_algorithm_hmac_key   = 4;
+  optional string encryption_algorithm_iv         = 5;
+  optional string encryption_algorithm_mode       = 6;
+  optional string encryption_algorithm_pad        = 7;
+  // later add asymmetric algs
+}
+
+message crypto_key_store_message {
+  repeated crypto_key_message  key_entry          = 1;
+}
+
+message crypto_signature {
+  required string encryption_algorithm_name       = 1;
+  required string serialized_statement            = 2;
+  optional string signature                       = 3;
+  optional string signer_name                     = 4;
+}
+
+

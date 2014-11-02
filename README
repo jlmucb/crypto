@@ -1,0 +1,114 @@
+New Cloudproxy Crypto Project
+=============================
+
+
+This code was written for educational purposes and to experiment with some of
+Google's public source code, mainly protobuf, gtest and gflags.  It may also
+be incorporated into Cloudproxy at some point after I do more testing.
+
+This is a work in progress, I plan some improvements and additions (see the "todo"
+file in ROOT/new).
+
+
+Pre-existing code license incorporated in this project
+
+Tinyxml (in the xml subdirectory)
+Downloaded from https://github.com/leethomason/tinyxml2
+http://www.grinninglizard.com/tinyxml2/ on September 4, 2014 
+Original author:
+License granted by original authors:
+
+Sha1, sha256
+Downloaded from 
+http://sourceforge.net/projects/cryptopp/files/cryptopp/5.6.2/cryptopp562.zip
+on September 4, 2014 
+Original author: Wei Dai
+License granted by original authors:
+  Steve Reid implemented SHA-1. Wei Dai implemented SHA-2.
+  Both are in the public domain.
+
+Aes
+Downloaded from 
+ftp://ftp.aci.com.pl/pub/security/cryptography/algorithms/aes/aes-c-rijmen
+on September 4, 2014 
+Original authors:
+    Vincent Rijmen <vincent.rijmen@esat.kuleuven.ac.be>
+    Antoon Bosselaers <antoon.bosselaers@esat.kuleuven.ac.be>
+    Paulo Barreto <paulo.barreto@terra.com.br>
+License from original authors
+    All code contained in this distributed is placed in the public domain.
+
+    Disclaimer:
+
+    THIS SOFTWARE IS PROVIDED BY THE AUTHORS ''AS IS'' AND ANY EXPRESS 
+    OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+    ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE 
+    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR 
+    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+    OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
+    EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+
+Protobuf sample code from the protobuf-2.5.0 public distribution.
+Gtest sample code from the gtest-1.7.0 public distribution.
+Original licenses:
+   Copyright 2008, Google Inc.
+   All rights reserved.
+  
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions are
+   met:
+       * Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+       * Redistributions in binary form must reproduce the above
+   copyright notice, this list of conditions and the following disclaimer
+   in the documentation and/or other materials provided with the
+   distribution.
+       * Neither the name of Google Inc. nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+  
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+Timing attacks
+
+  This code is not meant to be resistant to timing attacks.  To make it
+  so, all the calculations should be in fixed length units and ModExp should
+  not branch on the bits of the exponent.
+
+How to build
+
+  The command buildall in the root directory builds all the code once you set up
+  directories for the object files and binaries.  I put binaries in ~/cryptobin and
+  object files in ~/cryptoobj (in several subdirectories).  Most of the executables
+  buildall builds are tests.  It also builds a command line utility called cryptutil.
+
+  You need a c-11 compiler with the standard libraries, protobud, gtest and gflags all
+  of which are available in open source.
+
+Feedback
+
+  I welcome corrections and suggestions.  Please do not send material that you are not
+  authorized to send.  All feedback will be treated as licensed under the same terms
+  as this code; so don't send any information or feedback that you cannot or do
+  not wish to license under those terms.
+
+
+John
+johnmanferdelli@hotmail.com
+
+

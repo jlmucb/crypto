@@ -1,0 +1,24 @@
+#
+cd keys
+make -f keytest.mak clean
+make -f keytest.mak
+cd ../common
+make -f commontest.mak clean
+make -f commontest.mak
+cd ../hash
+make -f hashtest.mak clean
+make -f hashtest.mak
+cd ../bignum
+make -f bignumtest.mak clean
+make -f bignumtest.mak
+cd ../symmetric
+make -f symmetrictest.mak clean
+make -f symmetrictest.mak
+cd ..
+make -f cryptolib.mak clean
+make -f cryptolib.mak
+cd cryptutil
+make -f cryptutil.mak clean
+make -f cryptutil.mak
+
+
