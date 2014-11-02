@@ -4,19 +4,29 @@ New Cloudproxy Crypto Project
 
 This code was written for educational purposes and to experiment with some of
 Google's public source code, mainly protobuf, gtest and gflags.  It may also
-be incorporated into Cloudproxy at some point after I do more testing.
+be incorporated into Cloudproxy at some point after I do more testing but
+maybe not.
 
 This is a work in progress, I plan some improvements and additions (see the "todo"
 file in ROOT/new).
 
+License
+-------
+
+Except as expressly set forth in particular files, all files in this project are
+licensed under the Apache 2.0 license, a copy of which is in this main directory
+in the file LICENSE-2.0.txt.
+
 
 Pre-existing code license incorporated in this project
+------------------------------------------------------
 
 Tinyxml (in the xml subdirectory)
 Downloaded from https://github.com/leethomason/tinyxml2
 http://www.grinninglizard.com/tinyxml2/ on September 4, 2014 
 Original author:
-License granted by original authors:
+License granted by original authors retained in files (tinyxml2 is not
+currently compiled or linked into the code).
 
 Sha1, sha256
 Downloaded from 
@@ -83,24 +93,44 @@ Original licenses:
    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+Simple Twofish by Niels Ferguson
+License
+   Fast, portable, and easy-to-use Twofish implementation,
+   Version 0.3.
+   Copyright (c) 2002 by Niels Ferguson.
+   The author hereby grants a perpetual license to everybody to
+   use this code for any purpose as long as the copyright message is included
+   in the source code of this or any derived work.
+   Yes, this means that you, your company, your club, and anyone else
+   can use this code anywhere you want. You can change it and distribute it
+   under the GPL, include it in your commercial product without releasing
+   the source code, put it on the web, etc.
+
 
 Timing attacks
+--------------
 
-  This code is not meant to be resistant to timing attacks.  To make it
-  so, all the calculations should be in fixed length units and ModExp should
-  not branch on the bits of the exponent.
+  This code is not meant to be resistant to timing attacks.  In fact,
+  it is extremely not timing attack resistant.  To make resistant requires 
+  changing all the calculations be fixed length and "if-free" in (at a minumum) 
+  intel64_arith.cc and in the function ModExp and in number_theory.cc.  So my advice
+  in not to use it for on-line encryption/decryption without extensive changes.
 
 How to build
+------------
 
   The command buildall in the root directory builds all the code once you set up
   directories for the object files and binaries.  I put binaries in ~/cryptobin and
   object files in ~/cryptoobj (in several subdirectories).  Most of the executables
-  buildall builds are tests.  It also builds a command line utility called cryptutil.
+  buildall builds are tests; however, there is a command line utility called cryptutil.
 
-  You need a c-11 compiler with the standard libraries, protobud, gtest and gflags all
-  of which are available in open source.
+  You need a c-11 compiler with the standard libraries, protobuf, gtest and gflags all
+  of which are available in open source.  Currently, the code is Intel64 only (the
+  assembly assist assumes Intel64 and RNG and aes use Ivy Bridge and later instructions
+  fore aesni and RNG.
 
 Feedback
+--------
 
   I welcome corrections and suggestions.  Please do not send material that you are not
   authorized to send.  All feedback will be treated as licensed under the same terms
