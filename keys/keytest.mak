@@ -15,7 +15,7 @@
 
 
 #ifndef SRC_DIR
-SRC_DIR=$(HOME)/jlm/MySrc/newcrypto
+SRC_DIR=$(HOME)/crypto
 #endif
 #ifndef OBJ_DIR
 OBJ_DIR=$(HOME)/cryptoobj
