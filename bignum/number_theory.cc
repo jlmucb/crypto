@@ -28,10 +28,10 @@ bool BigExtendedGCD(BigNum& a, BigNum& b, BigNum& x, BigNum& y, BigNum& g) {
   BigNum* c[3]= {NULL, NULL, NULL};
 
   int     n= a.capacity_>b.capacity_?a.capacity_:b.capacity_;
-  BigNum* q= new BigNum(2*n+1);
-  BigNum* r= new BigNum(2*n+1);
-  BigNum* t1= new BigNum(2*n+1);
-  BigNum* t2= new BigNum(2*n+1);
+  BigNum  q(2*n+1);
+  BigNum  r(2*n+1);
+  BigNum  t1(2*n+1);
+  BigNum  t2(2*n+1);
   int     old= 0;
   int     current= 1;
   int     next= 2;
@@ -52,22 +52,22 @@ bool BigExtendedGCD(BigNum& a, BigNum& b, BigNum& x, BigNum& y, BigNum& g) {
   b.CopyTo(*c[1]);
 
   for(;;) {
-    r->ZeroNum();
-    q->ZeroNum();
-    t1->ZeroNum();
-    t2->ZeroNum();
+    r.ZeroNum();
+    q.ZeroNum();
+    t1.ZeroNum();
+    t2.ZeroNum();
 
     // c[new]= q*c[old] +r;
-    ret= BigUnsignedEuclid(*c[old], *c[current], *q, *r);
+    ret= BigUnsignedEuclid(*c[old], *c[current], q, r);
     if(!ret)
       goto done;
-    if(r->IsZero())
+    if(r.IsZero())
       break;
-    r->CopyTo(*c[next]);
-    BigMult(*q, *a_coeff[current], *t1);
-    BigMult(*q, *b_coeff[current], *t2);
-    BigSub(*a_coeff[old], *t1, *a_coeff[next]);
-    BigSub(*b_coeff[old], *t2, *b_coeff[next]);
+    r.CopyTo(*c[next]);
+    BigMult(q, *a_coeff[current], t1);
+    BigMult(q, *b_coeff[current], t2);
+    BigSub(*a_coeff[old], t1, *a_coeff[next]);
+    BigSub(*b_coeff[old], t2, *b_coeff[next]);
     old= (old+1)%3;
     current= (current+1)%3;
     next= (next+1)%3;
@@ -89,18 +89,6 @@ done:
       delete c[i];
     c[i]= NULL;
   }
-  if(q!=NULL)
-    delete q;
-  q= NULL;
-  if(r!=NULL)
-    delete r;
-  r= NULL;
-  if(t1!=NULL)
-    delete t1;
-  t1= NULL;
-  if(t2!=NULL)
-    delete t2;
-  t2= NULL;
   return ret;
 }
 
@@ -448,9 +436,7 @@ bool BigMillerRabin(BigNum& n, BigNum** random_a, int trys) {
   int     shift;
 
 #if 0
-  printf("BigMillerRabin: "); 
-  PrintNumToConsole(n, 10ULL);
-  printf("\n");
+  printf("BigMillerRabin: "); PrintNumToConsole(n, 10ULL); printf("\n");
 #endif
   if(!BigSub(n, Big_One, n_minus_1))
     return false;

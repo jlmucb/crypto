@@ -1826,7 +1826,7 @@ bool exp_time_test(const char* filename, int size, int num_tests) {
       PrintNumToConsole(b, 16); printf("\n");
       PrintNumToConsole(e, 16); printf("\n");
       PrintNumToConsole(m, 16); printf("\n");
-      break; // return false;
+      return false;
     }
   }
   uint64_t  cycles_end_test= ReadRdtsc();
@@ -1841,7 +1841,6 @@ bool exp_time_test(const char* filename, int size, int num_tests) {
 
 bool mont_exp_time_test(const char* filename, int size, int num_tests) {
   printf("\nMONT_EXP_TESTS\n");
-  /*
   struct stat file_info;
   int   k= stat(filename, &file_info);
   int   size_buf= num_tests*sizeof(uint64_t)*size;
@@ -1869,6 +1868,7 @@ bool mont_exp_time_test(const char* filename, int size, int num_tests) {
   BigNum    e(size+1);
   BigNum    m(size+1);
   BigNum    r(2*size+2);
+  BigNum    m_prime(2*size+2);
   int       byte_size_copy= size*sizeof(uint64_t);
   byte*     pbuf= buf;
   byte*     pb= (byte*)b.value_;
@@ -1886,11 +1886,17 @@ bool mont_exp_time_test(const char* filename, int size, int num_tests) {
   e.Normalize();
   m.Normalize();
 
+  uint64_t    l= BigHighBit(m);
+  if(!BigMontParams(m, l, m_prime)) {
+    printf("BigMontParams fails\n");
+    return false;
+  }
+
   uint64_t  cycles_start_test= ReadRdtsc();
   for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
-    if(!BigMontExp(b, e, m, r)) {
+    if(!BigMontExp(b, e, l, m, m_prime, r)) {
       printf("BigMontExp failed\n");
-      PrintNumToConsole(a, 16); printf("\n");
+      PrintNumToConsole(e, 16); printf("\n");
       PrintNumToConsole(b, 16); printf("\n");
       return false;
     }
@@ -1901,7 +1907,6 @@ bool mont_exp_time_test(const char* filename, int size, int num_tests) {
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
   printf("time per %d bit multiply %le\n", size*NBITSINUINT64, 
                           ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
-  */
   printf("END_MONT_EXP_TESTS\n");
   return true;
 }
@@ -1955,8 +1960,8 @@ bool simple_mult_time_test(const char* filename, int size, int num_tests) {
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
   printf("time per 64 bit multiply %le\n",
                           ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
-  return true;
   printf("END_SIMPLE_MULT_TESTS\n");
+  return true;
 }
 
 bool simple_div_time_test(const char* filename, int size, int num_tests) {
@@ -2504,36 +2509,6 @@ bool ecc_tests() {
   return true;
 }
 
-bool benchmark_arith_tests() {
-  /*
-   */
-  return true;
-}
-
-bool benchmark_mod_tests() {
-  /*
-   */
-  return true;
-}
-
-bool benchmark_mont_tests() {
-  /*
-   */
-  return true;
-}
-
-bool benchmark_raw_arith_tests() {
-  /*
-   */
-  return true;
-}
-
-bool benchmark_number_theory_tests() {
-  /*
-   */
-  return true;
-}
-
 // --------------------------------------------------------------------------------------
 
 bool RunTestSuite() {
@@ -2560,8 +2535,8 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(mult_time_test("test_data", 32, 5000));
   EXPECT_TRUE(mult_time_test("test_data", 64, 5000));
   EXPECT_TRUE(div_time_test("test_data", 32, 5000));
-  // EXPECT_TRUE(exp_time_test("test_data", 32, 2000));
-  // EXPECT_TRUE(mont_exp_time_test("test_data", 64, 2000));
+  EXPECT_TRUE(exp_time_test("test_data", 32, 100));
+  EXPECT_TRUE(mont_exp_time_test("test_data", 32, 100));
   EXPECT_TRUE(simple_mult_time_test("test_data", 8, 1000000));
   EXPECT_TRUE(simple_div_time_test("test_data", 8,  1000000));
 }
