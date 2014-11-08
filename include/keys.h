@@ -109,8 +109,8 @@ public:
   bool    DeserializeKeyFromMessage(crypto_rsa_key_message&);
   void    PrintKey();
 
-  bool    Encrypt(int size_in, byte* in, int* size_out, byte* out, bool fast= false);
-  bool    Decrypt(int size_in, byte* in, int* size_out, byte* out, bool fast= false);
+  bool    Encrypt(int size_in, byte* in, int* size_out, byte* out, int speed= 0);
+  bool    Decrypt(int size_in, byte* in, int* size_out, byte* out, int speed= 0);
 };
 
 class EccKey : public CryptoKey {

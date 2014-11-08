@@ -407,7 +407,7 @@ void RsaKey::PrintKey() {
 }
 
 bool RsaKey::Encrypt(int size_in, byte* in, int* size_out, byte* out,
-                      bool fast) {
+                      int speed) {
   int bytes_in_block= bit_size_modulus_/NBITSINBYTE;
 
   if(size_in>bytes_in_block)
@@ -419,16 +419,25 @@ bool RsaKey::Encrypt(int size_in, byte* in, int* size_out, byte* out,
   BigNum  int_out(1+4*new_byte_size/sizeof(uint64_t));
   ReverseCpy(new_byte_size, in, (byte*)int_in.value_);
   int_in.Normalize();
-  if(!fast) {
+  if(speed==0) {
     if(!BigModExp(int_in, *e_, *m_, int_out)) {
       LOG(ERROR)<< "BigModExp failed in RSAKey::Encrypt\n";
       return false;
     }
-  } else {
+  } else if(speed==1) {
     if(!BigMontExp(int_in, *e_, r_, *m_, *m_prime_, int_out)) {
       LOG(ERROR)<< "BigMontExp failed in RSAKey::Encrypt\n";
       return false;
     }
+  } else if (speed==2) {
+      // implement CRT
+      LOG(ERROR)<< "RsaKey::Decrypt, bad speed parameter " << speed << "\n";
+  } else if (speed==3) {
+      // implement CRT and MonMult
+      LOG(ERROR)<< "RsaKey::Decrypt, bad speed parameter " << speed << "\n";
+  } else {
+      LOG(ERROR)<< "RsaKey::Encrypt, bad speed parameter " << speed << "\n";
+      return false;
   }
   ReverseCpy(new_byte_size, (byte*)int_out.value_, out);
   *size_out= new_byte_size;
@@ -436,7 +445,7 @@ bool RsaKey::Encrypt(int size_in, byte* in, int* size_out, byte* out,
 }
 
 bool RsaKey::Decrypt(int size_in, byte* in, int* size_out, byte* out,
-                      bool fast) {
+                      int speed) {
   int bytes_in_block= bit_size_modulus_/NBITSINBYTE;
 
   if(size_in>bytes_in_block)
@@ -448,16 +457,25 @@ bool RsaKey::Decrypt(int size_in, byte* in, int* size_out, byte* out,
   BigNum  int_out(2*new_byte_size/sizeof(uint64_t));
   ReverseCpy(new_byte_size, in, (byte*)int_in.value_);
   int_in.Normalize();
-  if(!fast) {
+  if(speed==0) {
     if(!BigModExp(int_in, *d_, *m_, int_out)) {
       LOG(ERROR)<< "BigModExp failed in RSAKey::Decrypt\n";
       return false;
     }
-  } else {
+  } else if(speed==1) {
     if(!BigMontExp(int_in, *d_, r_, *m_, *m_prime_, int_out)) {
       LOG(ERROR)<< "BigMontExp failed in RSAKey::Encrypt\n";
       return false;
     }
+  } else if (speed==2) {
+      // implement CRT
+      LOG(ERROR)<< "RsaKey::Decrypt, bad speed parameter " << speed << "\n";
+  } else if (speed==3) {
+      // implement CRT and MonMult
+      LOG(ERROR)<< "RsaKey::Decrypt, bad speed parameter " << speed << "\n";
+  } else {
+      LOG(ERROR)<< "RsaKey::Decrypt, bad speed parameter " << speed << "\n";
+      return false;
   }
   ReverseCpy(new_byte_size, (byte*)int_out.value_, (byte*)out);
   *size_out= new_byte_size;

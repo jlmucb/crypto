@@ -1937,15 +1937,15 @@ bool rsa_tests() {
     return false;
   }
 
-printf("Fast encrypt\n");
+  printf("Fast encrypt\n");
 
   size_out= 256;
-  if(!rsa_key2->Encrypt(128, in, &size_out, out, true)) {
+  if(!rsa_key2->Encrypt(128, in, &size_out, out, 1)) {
     printf("rsa Encrypt failed\n");
     return false;
   }
   size_out= 256;
-  if(!rsa_key2->Decrypt(128, out, &size_out, new_out, true)) {
+  if(!rsa_key2->Decrypt(128, out, &size_out, new_out, 1)) {
     printf("rsa Decrypt failed\n");
     return false;
   }
