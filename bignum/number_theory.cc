@@ -813,7 +813,7 @@ bool BigModSquareRoot(BigNum& n, BigNum& p, BigNum& r) {
 
 // BigMakeMont(a,m,r)= a R (mod m)
 bool BigMakeMont(BigNum& a, int r, BigNum& m, BigNum& mont_a) {
-  BigNum  t1(4*m.capacity_);
+  BigNum  t1(2*m.capacity_);
 
   if(!BigShift(Big_One, r, t1)) {
     LOG(ERROR) << "BigShift fails in BigMakeMont\n";
@@ -825,10 +825,10 @@ bool BigMakeMont(BigNum& a, int r, BigNum& m, BigNum& mont_a) {
 // BigMontParams
 //  Calculate m': RR'-mm'=1
 bool BigMontParams(BigNum& m, int r, BigNum& m_prime) {
-  BigNum  g(4*m.capacity_);
-  BigNum  R(4*m.capacity_);
-  BigNum  R_prime(4*m.capacity_);
-  BigNum  neg_m_prime(4*m.capacity_);
+  BigNum  g(2*m.capacity_+1);
+  BigNum  R(2*m.capacity_+1);
+  BigNum  R_prime(2*m.capacity_+1);
+  BigNum  neg_m_prime(2*m.capacity_+1);
 
   if(!BigShift(Big_One, r, R)) {
     LOG(ERROR) << "BigShift fails in BigMontParams\n";
@@ -886,7 +886,7 @@ bool BigMontReduce(BigNum& a, int r, BigNum& m, BigNum& m_prime, BigNum& mont_a)
 
 bool BigMontMult(BigNum& aR, BigNum& bR, BigNum& m, uint64_t r,
                  BigNum& m_prime, BigNum& abR) {
-  BigNum  t(4*m.capacity_+1);
+  BigNum  t(2*m.capacity_+1);
   bool    ret= true;
 
   if(!BigUnsignedMult(aR, bR, t)) {
@@ -915,9 +915,9 @@ bool BigMontMult(BigNum& aR, BigNum& bR, BigNum& m, uint64_t r,
  */
 bool BigMontExp(BigNum& b, BigNum& e, int r, BigNum& m, 
                 BigNum& m_prime, BigNum& out) {
-  BigNum  square(4*m.capacity_+1);
-  BigNum  accum(4*m.capacity_+1);
-  BigNum  t(4*m.capacity_+1);
+  BigNum  square(2*m.capacity_+1);
+  BigNum  accum(2*m.capacity_+1);
+  BigNum  t(2*m.capacity_+1);
   int     k= BigHighBit(e); 
   int     i;
 
