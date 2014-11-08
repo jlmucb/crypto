@@ -889,7 +889,7 @@ bool BigMontMult(BigNum& aR, BigNum& bR, BigNum& m, uint64_t r,
   BigNum  t(4*m.capacity_+1);
   bool    ret= true;
 
-  if(!BigMult(aR, bR, t)) {
+  if(!BigUnsignedMult(aR, bR, t)) {
     LOG(ERROR)<< "BigMult fails in BigMontMult\n";
     ret= false;
   }

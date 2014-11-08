@@ -1833,7 +1833,7 @@ bool exp_time_test(const char* filename, int size, int num_tests) {
   uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
   printf("exp_time_test number of successful tests: %d\n", num_tests_executed);
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
-  printf("time per %d bit multiply %le\n", size*NBITSINUINT64, 
+  printf("time per %d bit exp %le\n", size*NBITSINUINT64, 
                           ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
   printf("END_EXP_TIME_TESTS\n");
   return true;
@@ -1905,7 +1905,7 @@ bool mont_exp_time_test(const char* filename, int size, int num_tests) {
   uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
   printf("exp_time_test number of successful tests: %d\n", num_tests_executed);
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
-  printf("time per %d bit multiply %le\n", size*NBITSINUINT64, 
+  printf("time per %d bit exp %le\n", size*NBITSINUINT64, 
                           ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
   printf("END_MONT_EXP_TESTS\n");
   return true;
@@ -2541,8 +2541,8 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(mult_time_test("test_data", 32, 5000));
   EXPECT_TRUE(mult_time_test("test_data", 64, 5000));
   EXPECT_TRUE(div_time_test("test_data", 32, 5000));
-  EXPECT_TRUE(exp_time_test("test_data", 32, 50));
-  EXPECT_TRUE(mont_exp_time_test("test_data", 32, 50));
+  EXPECT_TRUE(exp_time_test("test_data", 16, 50));
+  EXPECT_TRUE(mont_exp_time_test("test_data", 16, 50));
   EXPECT_TRUE(simple_mult_time_test("test_data", 8, 1000000));
   EXPECT_TRUE(simple_div_time_test("test_data", 8,  1000000));
 }
