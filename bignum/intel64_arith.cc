@@ -410,12 +410,113 @@ printf("DigitArrayMult (%d, %d, %d)\n", size_a, size_b, size_result);
 // result = a*a.  returns size of result.  Error if <0
 int DigitArraySquare(int size_a, uint64_t* a,
                     int size_result, uint64_t* result) {
+
   if((size_a+size_a)>size_result) {
     LOG(ERROR) << "DigitArraySquare: result is too small\n";
     return -1;
   }
+
+#if FASTSQUARE
+  uint64_t  curr_in= 0ULL;
+  uint64_t  curr_out= 0ULL;
+
+  asm volatile (
+    "\tmovq   %[x], %%r8\n"       // %%r8 <-- address of low input digit
+    "\tmovq   %[out], %%r15\n"    // %%r15 <-- address of output place
+    "\tmovq   %[cap], %%r12\n"    // number of output words
+    "\tmul    $8, %%r12\n"
+    "\taddq   %[x], %%r12\n"      // %%r12>address of last input digit
+
+    // a[i]*a[i]
+    "1:\n"
+    "\tmovq   (%%r8), %%rax\n"
+    "\tmul    (%%r8)\n"           // a[i]**2 result in rdx:rax
+    "\tmovq   %%rax, (%%r15)\n"
+    "\tmovq   %%rdx, (8, %%r15)\n"
+    "\taddq   $16, %%r15\n"
+    "\taddq   $8, %%r8\n"
+    "\tcmpq   %%r8, %%r12\n"
+    "\tjl     1b\n"
+
+    "\tmovq   %[x], %[cur_in]\n"  // input
+    "\tsubq   $8, %[curr_in]\n"
+    "\tmovq   %[out], %[cur_out]\n"
+    "\tsubq   $16, %[curr_out]\n"
+
+    "2:\n"
+    "\tmovq   %[cur_in], %%r8\n"
+    "\taddq   $8, %%r8\n"
+    "\tmovq   %%r8, %[cur_in]\n"
+    "\tmovq   %[cur_out], %%r15\n"
+    "\taddq   $16, %%r15\n"
+    "\tmovq   %%r15, %[cur_out]\n"
+    "\tmovq   %%r8, %%r9\n"
+    "\taddq   $8, %%r9\n"
+    "\tcmpq   %%r9, %%r12\n"
+    "\tjge    11f\n"
+
+    // loop on %%r9
+    "3:\n"
+    "\tmovq   (%%r8), %%rax\n"
+    "\tmul    (%%r9)\n"
+
+    "\tmovq   %%r15, %%r11\n"
+
+    // shift by 2, bit in %%r11d
+    "\txorq   %%r11d, %%r11d\n"
+    "\tshlq   $1, %%rax\n"
+    "\tjnc    4f\n"
+    "\tmovq   $1, %%r11d\n"
+
+    "4:\n"
+    "\tshlq   $1,%%rdx\n"
+    "\tjc     5f\n"
+    "\torq    %%r11d, %%rdx\n"
+    "\txorq   %%r11d,%%r11d\n"
+    "\tjmp    6f\n"
+
+    "5:\n"
+    "\tshlq   $1, %%rdx\n"
+    "\torq    %%r11d, %%rdx\n"
+    "\tjnc    6f\n"
+    "\tmovq   $1, %%r11d\n"
+
+    "6:\n"
+    \ttestq  %%r11d\n"
+    "\tjz     8f\n"
+
+    "\taddq   $24, %%r11\n"
+    "\taddq   %%rax, (%%r15)\n"
+    "\taddc   %%rdx, (8, %%r15)\n"
+    "\taddc   $1, (16, %%r15)\n"
+    "\tjmp    10f\n"
+
+    "8:\n"
+    "\taddq   $16, %%r11\n"
+    "\taddq   %%rax, (%%r15)\n"
+    "\taddc   %%rdx, (8, %%r15)\n"
+
+    "9:\n"
+    "\tjnc    10f\n"
+    "\tadd    $1, (%%r11)\n"
+    "\taddq   $8, %%r11\n"
+    "\tjmp    9b\n"
+
+    "10:\n"
+    "\taddq   $8, %%r9\n"
+    "\taddq   $8, %%r15\n"
+    "\tcmpq   %%r9, %%r12\n"
+    "\tjl     3b\n"
+    "jmp      $2b\n"
+    "11:\n"
+
+  : [cur_in] "g" (cur_in), [cur_out] "g" (cur_out)
+  : [x]"m"(x), [out]"m"(out), [cap] "m" (cap)
+  : "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r12", "%r11", "%r11d", "%r15");
+#else
   return DigitArrayMult(size_a, a, size_a, a,
                     size_result, result);
+#endif
 }
 
 // a*= x.  a must have size_a+1 positions available

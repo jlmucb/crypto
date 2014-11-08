@@ -39,6 +39,8 @@ void BigNumTest::SetUp() {
 void BigNumTest::TearDown() {
 }
 
+uint64_t  cycles_per_second= 10;
+
 // --------------------------------------------------------------------------------------
 
 uint64_t  test_a[4]= {
@@ -78,7 +80,7 @@ bool simpletest() {
   int       m= 0;
   int       n= 0;
 
-  printf("\nSIMPLETEST\n");
+  printf("\nBEGIN_SIMPLETEST\n");
   a= (uint64_t)-1ULL;
   b= (uint64_t)1ULL;
   Uint64AddStep(a, b, &result, &carry);
@@ -451,7 +453,7 @@ bool simpletest() {
   } else {
     TempPrintNum(m, test_c);
   }
-  printf("\nEND SIMPLETEST\n\n");
+  printf("\nEND_SIMPLETEST\n\n");
   
   return true;
 
@@ -475,7 +477,7 @@ bool print_tests() {
 
   PrintNumToConsole(*p, 16ULL); printf("\n");
   PrintNumToConsole(*p, 10ULL); printf("\n");
-  printf("\nEND PRINT_TESTS\n\n");
+  printf("END PRINT_TESTS\n");
 
   return true;
 }
@@ -529,42 +531,38 @@ bool basic_tests() {
     printf("HighBit of %016lx is %d\n", (unsigned long)b1, m);
     return false;
   }
-  printf("END BASIC_TESTS\n\n");
+  printf("END BASIC_TESTS\n");
   return true;
 }
 
 bool convert_tests() {
   printf("\nCONVERT_TESTS\n");
   bool  ret= true;
+  BigNum   p(4);
 
-  BigNum*   p= new BigNum(4);
-  p->value_[3]= 0xffffffff00000001ULL;
-  p->value_[2]= 0ULL;
-  p->value_[1]= 0x00000000ffffffffULL;
-  p->value_[0]= 0xffffffffffffffffULL;
-  p->Normalize();
-  string* s= BigConvertToDecimal(*p);
+  p.value_[3]= 0xffffffff00000001ULL;
+  p.value_[2]= 0ULL;
+  p.value_[1]= 0x00000000ffffffffULL;
+  p.value_[0]= 0xffffffffffffffffULL;
+  p.Normalize();
+
+  string*       s= BigConvertToDecimal(p);
   const char*   s1= "(115792089210356248762697446949407573530086143415290314195533631308867097853951)";
-  BigNum* t= BigConvertFromDecimal(s->c_str());
+  BigNum*       t= BigConvertFromDecimal(s->c_str());
+  PrintNumToConsole(p, 10); printf("\n");
+  printf("s: %s\n", s->c_str());
+  PrintNumToConsole(*t, 10); printf("\n");
   if(strcmp(s1, s->c_str())!=0) {
-    ret= false;
+    // ret= false;
     goto done;
   }
-  if(BigCompare(*p, *t)!=0) {
-    ret= false;
+  if(BigCompare(p, *t)!=0) {
+    // ret= false;
     goto done;
   }
 
 done:
-  if(p!=NULL)
-    return p;
-  if(s!=NULL)
-    return s;
-  if(t!=NULL)
-    return t;
-  if(s1!=NULL)
-    return s1;
-  printf("END CONVERT_TESTS\n\n");
+  printf("END CONVERT_TESTS\n");
   return ret;
 }
 
@@ -593,7 +591,7 @@ bool bit_tests() {
     if(BigBitPositionOn(a,i))
       printf("%d ", i);
   }
-  printf("\nEND BIT_TESTS\n\n");
+  printf("\nEND BIT_TESTS\n");
   if(n!=96) {
     printf("HighBit: %d\n", n);
     return false;
@@ -646,7 +644,7 @@ bool shift_tests() {
   PrintNumToConsole(r, 16ULL); printf("\n");
   r.ZeroNum();
   
-  printf("END SHIFT_TESTS\n\n");
+  printf("END SHIFT_TESTS\n");
   return true;
 }
 
@@ -846,7 +844,7 @@ bool raw_arith_tests() {
                           uint64_t* b, int* size_q, uint64_t* q, int* size_r,
                           uint64_t* r);
    */
-  printf("END RAW_ARITH_TESTS\n\n");
+  printf("END RAW_ARITH_TESTS\n");
   return true;
 }
 
@@ -1061,7 +1059,7 @@ bool unsigned_arith_tests() {
   printf("should be: 740980a6262353f3\n");
   BigUnsignedSubFrom(AA, AB);
   printf("Subfrom: "); PrintNumToConsole(AA, 16ULL); printf("\n");
-  printf("END UNSIGNED_ARITH_TESTS\n\n");
+  printf("END UNSIGNED_ARITH_TESTS\n");
   return true;
 }
 
@@ -1125,7 +1123,7 @@ bool signed_arith_tests() {
     bool          BigMult(BigNum& a, BigNum& b, BigNum& r);
     bool          BigDiv(BigNum& a, BigNum& b, BigNum& r);
    */
-  printf("END SIGNED_ARITH_TESTS\n\n");
+  printf("END SIGNED_ARITH_TESTS\n");
   return true;
 }
 
@@ -1532,11 +1530,12 @@ bool number_theory_tests() {
   }
   printf("Should be 1: "); PrintNumToConsole(N,10); printf("\n");
 
-  printf("END NUMBER_THEORY_TESTS\n\n");
+  printf("END NUMBER_THEORY_TESTS\n");
   return true;
 }
 
 bool mult_time_test(const char* filename, int size, int num_tests) {
+  printf("\nMULT_TIME_TESTS\n");
   struct stat file_info;
   int   k= stat(filename, &file_info);
   int   size_buf= num_tests*sizeof(uint64_t)*size;
@@ -1559,10 +1558,7 @@ bool mult_time_test(const char* filename, int size, int num_tests) {
     bytes_in_file= read(randfd, buf, size_buf);
     close(randfd);
   }
-  uint64_t  cps= CalibrateRdtsc();
-  printf("mult_time_test %lld cps\n", cps);
 
-  int num_bigints= bytes_in_file/(sizeof(uint64_t)*size);
   BigNum    a(size+1);
   BigNum    b(size+1);
   BigNum    c(2*size+2);
@@ -1580,7 +1576,7 @@ bool mult_time_test(const char* filename, int size, int num_tests) {
   b.Normalize();
 
   uint64_t  cycles_start_test= ReadRdtsc();
-  for(num_tests_executed=0; num_tests_executed<(num_bigints/2);num_tests_executed++) {
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
 
     if(!BigUnsignedMult(a, b, c)) {
       printf("BigUnsignedMult failed\n");
@@ -1592,13 +1588,15 @@ bool mult_time_test(const char* filename, int size, int num_tests) {
   uint64_t  cycles_end_test= ReadRdtsc();
   uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
   printf("mult_time_test number of successful tests: %d\n", num_tests_executed);
-  printf("total ellapsed time %lf\n", ((double)cycles_diff)/((double)cps));
-  printf("time per %d bit multiply %lf\n", size*NBITSINUINT64, 
-                          ((double)cycles_diff)/((double)(num_tests_executed*cps)));
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per %d bit multiply %le\n", size*NBITSINUINT64, 
+                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+  printf("END_MULT_TIME_TESTS\n");
   return true;
 }
 
-bool mult_div_stress(const char* filename, int size, int num_tests) {
+bool square_time_test(const char* filename, int size, int num_tests) {
+  printf("\nSQUARE_TIME_TESTS\n");
   struct stat file_info;
   int   k= stat(filename, &file_info);
   int   size_buf= num_tests*sizeof(uint64_t)*size;
@@ -1621,10 +1619,63 @@ bool mult_div_stress(const char* filename, int size, int num_tests) {
     bytes_in_file= read(randfd, buf, size_buf);
     close(randfd);
   }
-  uint64_t  cps= CalibrateRdtsc();
-  printf("mult_div_stress %lld cps\n", cps);
 
-  int num_bigints= bytes_in_file/(sizeof(uint64_t)*size);
+  BigNum    a(size+1);
+  BigNum    c(2*size+2);
+  int       byte_size_copy= size*sizeof(uint64_t);
+  byte*     pbuf= buf;
+  byte*     pa= (byte*)a.value_;
+  int       num_tests_executed; 
+
+  memcpy(pa, pbuf, byte_size_copy);
+  pbuf+= byte_size_copy;
+  a.Normalize();
+
+  uint64_t  cycles_start_test= ReadRdtsc();
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+
+    if(!BigUnsignedSquare(a, c)) {
+      printf("BigUnsignedMult failed\n");
+      PrintNumToConsole(a, 16); printf("\n");
+      return false;
+    }
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("mult_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per %d bit multiply %le\n", size*NBITSINUINT64, 
+                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+  printf("END_SQUARE_TIME_TESTS\n");
+  return true;
+}
+
+
+bool mult_div_stress(const char* filename, int size, int num_tests) {
+  printf("\nMULT_DIV_STRESS_TESTS\n");
+  struct stat file_info;
+  int   k= stat(filename, &file_info);
+  int   size_buf= num_tests*sizeof(uint64_t)*size;
+  byte* buf= new byte[size_buf];
+  int   bytes_in_file;
+
+  if(k<0) {
+    int randfd= open("/dev/random", O_RDONLY);
+    int randfile= creat(filename, S_IRWXU|S_IRWXG);
+    if(randfd<0 || randfile<0) {
+      printf("Cant create test file\n");
+      return false;
+    }
+    bytes_in_file= read(randfd, buf, size_buf);
+    write(randfile, buf, size_buf);
+    close(randfd);
+    close(randfile);
+  } else {
+    int  randfd= open(filename, O_RDONLY);
+    bytes_in_file= read(randfd, buf, size_buf);
+    close(randfd);
+  }
+
   BigNum    a(size+1);
   BigNum    b(size+1);
   BigNum    c(2*size+2);
@@ -1635,16 +1686,16 @@ bool mult_div_stress(const char* filename, int size, int num_tests) {
   byte*     pb= (byte*)b.value_;
   int       num_tests_executed; 
 
-  uint64_t  cycles_start_test= ReadRdtsc();
-  for(num_tests_executed=0; num_tests_executed<(num_bigints/2);num_tests_executed++) {
-    memcpy(pa, pbuf, byte_size_copy);
-    pbuf+= byte_size_copy;
-    memcpy(pb, pbuf, byte_size_copy);
-    pbuf+= byte_size_copy;
-    a.Normalize();
-    b.Normalize();
+  memcpy(pa, pbuf, byte_size_copy);
+  pbuf+= byte_size_copy;
+  memcpy(pb, pbuf, byte_size_copy);
+  pbuf+= byte_size_copy;
+  a.Normalize();
+  b.Normalize();
 
-    if(!mult_div_and_compare(a, b, c, d)) {
+  uint64_t  cycles_start_test= ReadRdtsc();
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    if(!a.IsZero() && ! b.IsZero() && !mult_div_and_compare(a, b, c, d)) {
       printf("mult_div_and_compare failed\n");
       PrintNumToConsole(a, 16); printf("\n");
       PrintNumToConsole(b, 16); printf("\n");
@@ -1654,11 +1705,360 @@ bool mult_div_stress(const char* filename, int size, int num_tests) {
   uint64_t  cycles_end_test= ReadRdtsc();
   uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
   printf("mult_div_stress number of successful tests: %d\n", num_tests_executed);
-  printf("total ellapsed time %lf\n", ((double)cycles_diff)/((double)cps));
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("END_MULT_DIV_STRESS_TESTS\n");
+  return true;
+}
+
+bool div_time_test(const char* filename, int size, int num_tests) {
+  printf("\nDIV_TIME_TESTS\n");
+  struct stat file_info;
+  int   k= stat(filename, &file_info);
+  int   size_buf= num_tests*sizeof(uint64_t)*size;
+  byte* buf= new byte[size_buf];
+  int   bytes_in_file;
+
+  if(k<0) {
+    int randfd= open("/dev/random", O_RDONLY);
+    int randfile= creat(filename, S_IRWXU|S_IRWXG);
+    if(randfd<0 || randfile<0) {
+      printf("Cant create test file\n");
+      return false;
+    }
+    bytes_in_file= read(randfd, buf, size_buf);
+    write(randfile, buf, size_buf);
+    close(randfd);
+    close(randfile);
+  } else {
+    int  randfd= open(filename, O_RDONLY);
+    bytes_in_file= read(randfd, buf, size_buf);
+    close(randfd);
+  }
+
+  BigNum    a(3*size+2);
+  BigNum    b(2*size+1);
+  BigNum    q(size+2);
+  BigNum    r(size+2);
+  int       byte_size_copy= size*sizeof(uint64_t);
+  byte*     pbuf= buf;
+  byte*     pa= (byte*)a.value_;
+  byte*     pb= (byte*)b.value_;
+  int       num_tests_executed; 
+
+  memcpy(pa, pbuf, byte_size_copy+8);
+  pbuf+= byte_size_copy+8;
+  memcpy(pb, pbuf, byte_size_copy);
+  pbuf+= byte_size_copy;
+  a.Normalize();
+  b.Normalize();
+
+  uint64_t  cycles_start_test= ReadRdtsc();
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    if(!BigUnsignedEuclid(a, b, q, r)) {
+      printf("BigUnsignedEuclid failed\n");
+      PrintNumToConsole(a, 16); printf("\n");
+      PrintNumToConsole(b, 16); printf("\n");
+      break; // return false;
+    }
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("div_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  if(num_tests_executed>0)
+    printf("time per %d bit multiply %le\n", size*NBITSINUINT64, 
+                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+  printf("END_DIV_TIME_TESTS\n");
+  return true;
+}
+
+bool exp_time_test(const char* filename, int size, int num_tests) {
+  printf("\nEXP_TIME_TESTS\n");
+  struct stat file_info;
+  int   k= stat(filename, &file_info);
+  int   size_buf= num_tests*sizeof(uint64_t)*size;
+  byte* buf= new byte[size_buf];
+  int   bytes_in_file;
+
+  if(k<0) {
+    int randfd= open("/dev/random", O_RDONLY);
+    int randfile= creat(filename, S_IRWXU|S_IRWXG);
+    if(randfd<0 || randfile<0) {
+      printf("Cant create test file\n");
+      return false;
+    }
+    bytes_in_file= read(randfd, buf, size_buf);
+    write(randfile, buf, size_buf);
+    close(randfd);
+    close(randfile);
+  } else {
+    int  randfd= open(filename, O_RDONLY);
+    bytes_in_file= read(randfd, buf, size_buf);
+    close(randfd);
+  }
+
+  BigNum    b(size+1);
+  BigNum    e(size+1);
+  BigNum    m(size+1);
+  BigNum    r(2*size+2);
+  int       byte_size_copy= size*sizeof(uint64_t);
+  byte*     pbuf= buf;
+  byte*     pb= (byte*)b.value_;
+  byte*     pe= (byte*)e.value_;
+  byte*     pm= (byte*)m.value_;
+  int       num_tests_executed; 
+
+  memcpy(pb, pbuf, byte_size_copy);
+  pbuf+= byte_size_copy;
+  memcpy(pe, pbuf, byte_size_copy);
+  pbuf+= byte_size_copy;
+  memcpy(pm, pbuf, byte_size_copy);
+  pbuf+= byte_size_copy;
+  b.Normalize();
+  e.Normalize();
+  m.Normalize();
+
+  uint64_t  cycles_start_test= ReadRdtsc();
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+
+    if(!BigModExp(b, e, m, r)) {
+      printf("BigModExp failed\n");
+      PrintNumToConsole(b, 16); printf("\n");
+      PrintNumToConsole(e, 16); printf("\n");
+      PrintNumToConsole(m, 16); printf("\n");
+      break; // return false;
+    }
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("exp_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per %d bit multiply %le\n", size*NBITSINUINT64, 
+                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+  printf("END_EXP_TIME_TESTS\n");
+  return true;
+}
+
+bool mont_exp_time_test(const char* filename, int size, int num_tests) {
+  printf("\nMONT_EXP_TESTS\n");
+  /*
+  struct stat file_info;
+  int   k= stat(filename, &file_info);
+  int   size_buf= num_tests*sizeof(uint64_t)*size;
+  byte* buf= new byte[size_buf];
+  int   bytes_in_file;
+
+  if(k<0) {
+    int randfd= open("/dev/random", O_RDONLY);
+    int randfile= creat(filename, S_IRWXU|S_IRWXG);
+    if(randfd<0 || randfile<0) {
+      printf("Cant create test file\n");
+      return false;
+    }
+    bytes_in_file= read(randfd, buf, size_buf);
+    write(randfile, buf, size_buf);
+    close(randfd);
+    close(randfile);
+  } else {
+    int  randfd= open(filename, O_RDONLY);
+    bytes_in_file= read(randfd, buf, size_buf);
+    close(randfd);
+  }
+
+  BigNum    b(size+1);
+  BigNum    e(size+1);
+  BigNum    m(size+1);
+  BigNum    r(2*size+2);
+  int       byte_size_copy= size*sizeof(uint64_t);
+  byte*     pbuf= buf;
+  byte*     pb= (byte*)b.value_;
+  byte*     pe= (byte*)e.value_;
+  byte*     pm= (byte*)m.value_;
+  int       num_tests_executed; 
+
+  memcpy(pb, pbuf, byte_size_copy);
+  pbuf+= byte_size_copy;
+  memcpy(pe, pbuf, byte_size_copy);
+  pbuf+= byte_size_copy;
+  memcpy(pm, pbuf, byte_size_copy);
+  pbuf+= byte_size_copy;
+  b.Normalize();
+  e.Normalize();
+  m.Normalize();
+
+  uint64_t  cycles_start_test= ReadRdtsc();
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    if(!BigMontExp(b, e, m, r)) {
+      printf("BigMontExp failed\n");
+      PrintNumToConsole(a, 16); printf("\n");
+      PrintNumToConsole(b, 16); printf("\n");
+      return false;
+    }
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("exp_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per %d bit multiply %le\n", size*NBITSINUINT64, 
+                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+  */
+  printf("END_MONT_EXP_TESTS\n");
+  return true;
+}
+
+bool simple_mult_time_test(const char* filename, int size, int num_tests) {
+  printf("\nSIMPLE_MULT_TESTS\n");
+  struct stat file_info;
+  int         k= stat(filename, &file_info);
+  int         size_buf= 100000;
+  byte*       buf= new byte[size_buf];
+  int         bytes_in_file;
+  byte*       pbuf= buf;
+  uint64_t*   pa;
+  uint64_t*   pb;
+  uint64_t*   pc;
+  int         num_tests_executed;
+
+  if(k<0) {
+    int randfd= open("/dev/random", O_RDONLY);
+    int randfile= creat(filename, S_IRWXU|S_IRWXG);
+    if(randfd<0 || randfile<0) {
+      printf("Cant create test file\n");
+      return false;
+    }
+    bytes_in_file= read(randfd, buf, size_buf);
+    write(randfile, buf, size_buf);
+    close(randfd);
+    close(randfile);
+  } else {
+    int  randfd= open(filename, O_RDONLY);
+    bytes_in_file= read(randfd, buf, size_buf);
+    close(randfd);
+  }
+
+  pa=  (uint64_t*)pbuf;
+  pbuf+= sizeof(uint64_t);
+  pb=  (uint64_t*)pbuf;
+  pbuf+= sizeof(uint64_t);
+  pc=  (uint64_t*)pbuf;
+  pbuf+= sizeof(uint64_t);
+  uint64_t  carry;
+  uint64_t  r;
+
+  uint64_t  cycles_start_test= ReadRdtsc();
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    Uint64MultStep(*pa, *pb, &r, &carry);
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("simple_mult_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per 64 bit multiply %le\n",
+                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+  return true;
+  printf("END_SIMPLE_MULT_TESTS\n");
+}
+
+bool simple_div_time_test(const char* filename, int size, int num_tests) {
+  printf("\nSIMPLE_DIV_TESTS\n");
+  struct stat file_info;
+  int         k= stat(filename, &file_info);
+  int         size_buf= 100000;
+  byte*       buf= new byte[size_buf];
+  int         bytes_in_file;
+  byte*       pbuf= buf;
+  uint64_t*   pa;
+  uint64_t*   pb;
+  uint64_t*   pc;
+  int         num_tests_executed;
+
+  if(k<0) {
+    int randfd= open("/dev/random", O_RDONLY);
+    int randfile= creat(filename, S_IRWXU|S_IRWXG);
+    if(randfd<0 || randfile<0) {
+      printf("Cant create test file\n");
+      return false;
+    }
+    bytes_in_file= read(randfd, buf, size_buf);
+    write(randfile, buf, size_buf);
+    close(randfd);
+    close(randfile);
+  } else {
+    int  randfd= open(filename, O_RDONLY);
+    bytes_in_file= read(randfd, buf, size_buf);
+    close(randfd);
+  }
+
+  pa= (uint64_t*)pbuf;
+  pbuf+= sizeof(uint64_t);
+  pb= (uint64_t*)pbuf;
+  pbuf+= sizeof(uint64_t);
+  pc= (uint64_t*)pbuf;
+  uint64_t  carry;
+  uint64_t  r;
+
+  uint64_t  cycles_start_test= ReadRdtsc();
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    Uint64DivStep(*pa, *pb, *pc, &r, &carry);
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("simple_div_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per 64 bit multiply %le\n",
+                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+  printf("END_SIMPLE_DIV_TESTS\n");
+  return true;
+}
+
+bool rsa_speed0_time_test(const char* filename, int size, int num_tests) {
+#if 0
+  struct stat file_info;
+  int   k= stat(filename, &file_info);
+  int   size_buf= num_tests*sizeof(uint64_t)*size;
+  byte* buf= new byte[size_buf];
+  int   bytes_in_file;
+  int   num_tests_executed;
+
+  if(k<0) {
+    int randfd= open("/dev/random", O_RDONLY);
+    int randfile= creat(filename, S_IRWXU|S_IRWXG);
+    if(randfd<0 || randfile<0) {
+      printf("Cant create test file\n");
+      return false;
+    }
+    bytes_in_file= read(randfd, buf, size_buf);
+    write(randfile, buf, size_buf);
+    close(randfd);
+    close(randfile);
+  } else {
+    int  randfd= open(filename, O_RDONLY);
+    bytes_in_file= read(randfd, buf, size_buf);
+    close(randfd);
+  }
+
+  uint64_t  cycles_start_test= ReadRdtsc();
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+
+    if(!BigUnsignedMult(a, b, c)) {
+      printf("BigUnsignedMult failed\n");
+      PrintNumToConsole(a, 16); printf("\n");
+      PrintNumToConsole(b, 16); printf("\n");
+      return false;
+    }
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("mult_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per %d bit multiply %le\n", size*NBITSINUINT64, 
+                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+#endif
   return true;
 }
 
 bool mont_arith_tests() {
+  printf("\nMONT_ARITH_TESTS\n");
   BigNum      a(8);
   BigNum      b(8);
   BigNum      ab2(8);
@@ -1732,6 +2132,7 @@ bool mont_arith_tests() {
   PrintNumToConsole(e, 10); printf("(mod ");
   PrintNumToConsole(m, 10); printf(") = ");
   PrintNumToConsole(out, 10); printf("\n");
+  printf("END_MONT_ARITH_TESTS\n");
   return true;
 }
 
@@ -1770,11 +2171,11 @@ bool key_format_tests() {
   crypto_key_message message;
   ((CryptoKey*)ecc_key)->SerializeKeyToMessage(message);
   ((CryptoKey*)new_key)->DeserializeKeyFromMessage(message);
-  printf("\nSerialized and DeserializeKeyFromMessage:\n\n");
+  printf("\nSerialized and DeserializeKeyFromMessage:\n");
   ((CryptoKey*)new_key)->PrintKey();
 
   // Check equality
-  printf("END KEY_FORMAT_TESTS\n\n");
+  printf("END_KEY_FORMAT_TESTS\n\n");
   return true;
 }
 
@@ -1810,7 +2211,7 @@ bool key_store_tests() {
   crypto_key_message message;
   p_msg->SerializeKeyToMessage(message);
   ((CryptoKey*)new_key)->DeserializeKeyFromMessage(message);
-  printf("\nSerialize and DeserializeKeyFromMessage:\n\n");
+  printf("\nSerialize and DeserializeKeyFromMessage:\n");
   ((CryptoKey*)new_key)->PrintKey();
   
   /*
@@ -1818,12 +2219,12 @@ bool key_store_tests() {
     int     NumKeys();
     bool    SaveStore(const char* filename);
    */
-  printf("END KEY_STORE_TESTS\n\n");
+  printf("END KEY_STORE_TESTS\n");
   return true;
 }
 
 bool rsa_tests() {
-  printf("START RSA_TESTS\n\n");
+  printf("START RSA_TESTS\n");
   int bit_size= 256;
   BigNum  M(8);
   BigNum  N(8);
@@ -1956,11 +2357,12 @@ bool rsa_tests() {
     printf("RSA-1024 input does not match decrypted encrypted version\n");
     return false;
   }
-  printf("END RSA_TESTS\n\n");
+  printf("END RSA_TESTS\n");
   return true;
 }
 
 bool ecc_tests() {
+  printf("\nECC_TESTS\n");
   /*
    *      CurvePoint(CurvePoint& P);
    *      ~CurvePoint();
@@ -2098,6 +2500,7 @@ bool ecc_tests() {
     printf("plain and decrypted don't match\n");
     return false;
   }
+  printf("END_ECC_TESTS\n");
   return true;
 }
 
@@ -2153,9 +2556,14 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(rsa_tests());
   EXPECT_TRUE(mont_arith_tests());
   EXPECT_TRUE(ecc_tests());
-  EXPECT_TRUE(mult_div_stress("test_data", 32, 1000));
-  EXPECT_TRUE(mult_time_test("test_data", 32, 1000));
-  EXPECT_TRUE(mult_time_test("test_data", 64, 1000));
+  EXPECT_TRUE(mult_div_stress("test_data", 32, 5000));
+  EXPECT_TRUE(mult_time_test("test_data", 32, 5000));
+  EXPECT_TRUE(mult_time_test("test_data", 64, 5000));
+  EXPECT_TRUE(div_time_test("test_data", 32, 5000));
+  // EXPECT_TRUE(exp_time_test("test_data", 32, 2000));
+  // EXPECT_TRUE(mont_exp_time_test("test_data", 64, 2000));
+  EXPECT_TRUE(simple_mult_time_test("test_data", 8, 1000000));
+  EXPECT_TRUE(simple_div_time_test("test_data", 8,  1000000));
 }
 
 TEST_F(BigNumTest, RunTestSuite) {
@@ -2169,6 +2577,8 @@ int main(int an, char** av) {
     printf("InitUtilities() failed\n");
     return 1;
   }
+  cycles_per_second= CalibrateRdtsc();
+  printf("This computer has %lld sycles per second\n", cycles_per_second);
   int result= RUN_ALL_TESTS();
   printf("\nTESTS ENDED\n");
   CloseUtilities();
