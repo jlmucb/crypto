@@ -1745,8 +1745,8 @@ bool div_time_test(const char* filename, int size, int num_tests) {
   byte*     pb= (byte*)b.value_;
   int       num_tests_executed; 
 
-  memcpy(pa, pbuf, byte_size_copy+8);
-  pbuf+= byte_size_copy+8;
+  memcpy(pa, pbuf, 2*byte_size_copy);
+  pbuf+= 2*byte_size_copy;
   memcpy(pb, pbuf, byte_size_copy);
   pbuf+= byte_size_copy;
   a.Normalize();
@@ -1950,9 +1950,12 @@ bool simple_mult_time_test(const char* filename, int size, int num_tests) {
   uint64_t  carry;
   uint64_t  r;
 
+  uint64_t a= *pa;
+  uint64_t b= *pb;
   uint64_t  cycles_start_test= ReadRdtsc();
+
   for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
-    Uint64MultStep(*pa, *pb, &r, &carry);
+    Uint64MultStep(a, b, &r, &carry);
   }
   uint64_t  cycles_end_test= ReadRdtsc();
   uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
@@ -1999,18 +2002,21 @@ bool simple_div_time_test(const char* filename, int size, int num_tests) {
   pb= (uint64_t*)pbuf;
   pbuf+= sizeof(uint64_t);
   pc= (uint64_t*)pbuf;
+  uint64_t a= 0ULL;
+  uint64_t b= *pb;
+  uint64_t c= *pc;
   uint64_t  carry;
   uint64_t  r;
 
   uint64_t  cycles_start_test= ReadRdtsc();
   for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
-    Uint64DivStep(*pa, *pb, *pc, &r, &carry);
+    Uint64DivStep(a, b, c, &r, &carry);
   }
   uint64_t  cycles_end_test= ReadRdtsc();
   uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
   printf("simple_div_time_test number of successful tests: %d\n", num_tests_executed);
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
-  printf("time per 64 bit multiply %le\n",
+  printf("time per 64 bit divide %le\n",
                           ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
   printf("END_SIMPLE_DIV_TESTS\n");
   return true;
@@ -2535,8 +2541,8 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(mult_time_test("test_data", 32, 5000));
   EXPECT_TRUE(mult_time_test("test_data", 64, 5000));
   EXPECT_TRUE(div_time_test("test_data", 32, 5000));
-  EXPECT_TRUE(exp_time_test("test_data", 32, 100));
-  EXPECT_TRUE(mont_exp_time_test("test_data", 32, 100));
+  EXPECT_TRUE(exp_time_test("test_data", 32, 50));
+  EXPECT_TRUE(mont_exp_time_test("test_data", 32, 50));
   EXPECT_TRUE(simple_mult_time_test("test_data", 8, 1000000));
   EXPECT_TRUE(simple_div_time_test("test_data", 8,  1000000));
 }

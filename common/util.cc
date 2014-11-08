@@ -499,7 +499,7 @@ uint64_t  CalibrateRdtsc() {
   for(;;) {
     start_cycles= ReadRdtsc();
     time(&start);
-    sleep(5);
+    sleep(2);
     end_cycles= ReadRdtsc();
     time(&end);
     double  delta= difftime(end, start);

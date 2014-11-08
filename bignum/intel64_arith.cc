@@ -235,8 +235,6 @@ void Uint64MultStep(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry) {
 //         rax: result
 void Uint64DivStep(uint64_t a, uint64_t b, uint64_t c, 
               uint64_t* result, uint64_t* carry) {
-// not used now
-#if 0
   asm volatile (
     "\tmovq   %[result], %%rcx\n"
     "\tmovq   %[carry], %%rbx\n"
@@ -246,9 +244,8 @@ void Uint64DivStep(uint64_t a, uint64_t b, uint64_t c,
     "\tmovq   %%rax, (%%rcx)\n"
     "\tmovq   %%rdx,(%%rbx)\n"
     "1:\n"
-  :: [result]"g"(result), [carry]"g"(carry), [a]"g"(a),[b]"g"(b),[c]"c"(c)
-  :"cc", "%rax", "%rbx", "%rcx", "%rdx");
-#endif
+  :: [result]"m"(result), [carry]"m"(carry), [a]"m"(a), [b]"m"(b), [c]"m"(c)
+  :"cc", "memory", "%rax", "%rbx", "%rcx", "%rdx");
 }
 
 //  carry_out:result= a+b+carry_in
