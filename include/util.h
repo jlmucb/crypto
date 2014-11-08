@@ -95,25 +95,27 @@ public:
   void    Close();
   bool    Write(int size, byte* buf);
 };
-bool    ReadaFile(const char* filename, int* size, byte** out);
-bool    WriteaFile(const char* filename, int size, byte* in);
+bool      ReadaFile(const char* filename, int* size, byte** out);
+bool      WriteaFile(const char* filename, int size, byte* in);
 
-void    LittleEndian32(int size, const uint32_t* in, uint32_t* out);
-void    ReverseCpy(int size, byte* in, byte* out);
-void    PrintBytes(int n, byte* in);
-bool    HaveRdRand();
-bool    HaveAesNi();
-bool    InitCrypto();
-void    CloseCrypto();
-bool    GetCryptoRand(int num_bits, byte* buf);
-bool    InitLog(const char* log_file);
-void    CloseLog();
-bool    InitUtilities(const char* log_file);
-void    CloseUtilities();
-bool    TimeNow(struct tm* time_now);
-bool    TimeMonthsAfterRef(struct tm& time_reference, int num_months, 
+void      LittleEndian32(int size, const uint32_t* in, uint32_t* out);
+void      ReverseCpy(int size, byte* in, byte* out);
+void      PrintBytes(int n, byte* in);
+bool      HaveRdRand();
+bool      HaveAesNi();
+bool      InitCrypto();
+void      CloseCrypto();
+bool      GetCryptoRand(int num_bits, byte* buf);
+bool      InitLog(const char* log_file);
+void      CloseLog();
+bool      InitUtilities(const char* log_file);
+void      CloseUtilities();
+bool      TimeNow(struct tm* time_now);
+bool      TimeMonthsAfterRef(struct tm& time_reference, int num_months, 
                           struct tm& new_time);
-string* EncodeTime(TimePoint the_time);
-bool    DecodeTime(string encoded_time, TimePoint* the_time);
+string*   EncodeTime(TimePoint the_time);
+bool      DecodeTime(string encoded_time, TimePoint* the_time);
+uint64_t  ReadRdtsc();
+uint64_t  CalibrateRdtsc();
 #endif
 

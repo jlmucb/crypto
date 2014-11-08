@@ -368,7 +368,7 @@ bool SymmetricKey::GenerateAesKey(const char* name, const char* usage,
   byte  my_key[32];
 
   if(num_bits!=128 && num_bits!=256) {
-    LOG(ERROR) << "SymmetricKey::GenerateAesKey: unsupported key size\n";
+    LOG(ERROR) << "SymmetricKey::GenerateAesKey: unsupported key size "<< num_bits<<"\n";
     return false;
   }
   if(!GetCryptoRand(num_bits, my_key)) {

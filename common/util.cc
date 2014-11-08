@@ -474,3 +474,40 @@ bool WriteaFile(const char* filename, int size, byte* in) {
   return true;
 }
 
+uint64_t ReadRdtsc() {
+  uint64_t  out;
+  uint64_t* ptr_out= &out;
+
+  asm volatile (
+    "\tmovq   %[ptr_out], %%rcx\n"
+    "\trdtsc\n"
+    "\tmovl   %%eax, (%%rcx)\n"
+    "\tmovl   %%edx, 4(%%rcx)\n"
+  :
+  : [ptr_out] "m" (ptr_out)
+  : "memory", "cc", "%eax", "%edx", "%rcx");
+  return out;
+}
+
+uint64_t  CalibrateRdtsc() {
+  time_t    start;
+  time_t    end;
+  uint64_t  start_cycles;
+  uint64_t  end_cycles;
+  uint64_t  cps;
+
+  for(;;) {
+    start_cycles= ReadRdtsc();
+    time(&start);
+    sleep(5);
+    end_cycles= ReadRdtsc();
+    time(&end);
+    double  delta= difftime(end, start);
+    if(start_cycles<end_cycles) {
+      cps= (uint64_t)(((double)(end_cycles-start_cycles))/delta);
+      break;
+    }
+  }
+  return cps;
+}
+
