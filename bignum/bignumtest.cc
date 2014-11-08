@@ -848,6 +848,51 @@ bool raw_arith_tests() {
   return true;
 }
 
+uint64_t    square_tests[]= {
+  0x1ULL, 0x2ULL, 0x4ULL, 0x5ULL, 0x6ULL, 0x7ULL, 0x8ULL, 0x9ULL,
+  0xaULL, 0xbULL, 0xcULL, 0xdULL, 0xeULL, 0xf1ULL, 0xe1ULL, 0xe1ULL
+};
+
+bool  square_test() {
+  int       size_a= 2;
+  uint64_t  a[10];
+  int       size_r= 10;
+  uint64_t  r[10];
+  int       size_s= 10;
+  uint64_t  s[10];
+  int       i, j, n;
+
+  memset(r, 0, sizeof(uint64_t)*size_r);
+  a[0]= 0xffffffffffffffff;
+  a[1]= 0xffffffffffffffff;
+
+  int k= DigitArraySquare(size_a, a, size_r, r);
+  printf("a: ");TempPrintNum(size_a, a); printf("\n");
+  printf("r: ");TempPrintNum(k, r); printf("\n");
+
+  for(i=0; i<6; i++) {
+    memset(a, 0, sizeof(uint64_t)*size_a);
+    memset(r, 0, sizeof(uint64_t)*size_r);
+    memset(s, 0, sizeof(uint64_t)*size_s);
+
+    for(j=0; j<4;j++)
+      a[j]= square_tests[j];
+
+    k= DigitArrayMult(size_a, a, size_a, a, size_s, s);
+    n= DigitArraySquare(size_a, a, size_r, r);
+    if(k!=n || 0!=DigitArrayCompare(k, r, n, s)) {
+      printf("square test doesnt match\n");
+      return false;
+    } else {
+      printf("square test matches\n");
+    }
+    printf("a: ");TempPrintNum(size_a, a); printf("\n");
+    printf("r: ");TempPrintNum(k, r); printf("\n");
+    printf("s: ");TempPrintNum(k, s); printf("\n");
+  }
+  return true;
+}
+
 bool  addto_subfrom_and_compare(BigNum& a, BigNum& b) {
   BigNum  c(a.capacity_+1);
 
@@ -2522,6 +2567,7 @@ bool RunTestSuite() {
 }
 
 TEST(FirstBigNumCase, FirstBigNumTest) {
+  EXPECT_TRUE(square_test());
   EXPECT_TRUE(simpletest());
   EXPECT_TRUE(print_tests());
   EXPECT_TRUE(basic_tests());

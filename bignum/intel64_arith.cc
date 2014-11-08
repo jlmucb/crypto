@@ -404,6 +404,7 @@ printf("DigitArrayMult (%d, %d, %d)\n", size_a, size_b, size_result);
   return DigitArrayComputedSize(size_result, result);
 }
 
+// #define FASTSQUARE
 // result = a*a.  returns size of result.  Error if <0
 int DigitArraySquare(int size_a, uint64_t* a,
                     int size_result, uint64_t* result) {
@@ -413,32 +414,34 @@ int DigitArraySquare(int size_a, uint64_t* a,
     return -1;
   }
 
-#if FASTSQUARE
-  uint64_t  curr_in= 0ULL;
-  uint64_t  curr_out= 0ULL;
+#ifdef FASTSQUARE
+  uint64_t  cur_in= 0ULL;
+  uint64_t  cur_out= 0ULL;
 
   asm volatile (
-    "\tmovq   %[x], %%r8\n"       // %%r8 <-- address of low input digit
-    "\tmovq   %[out], %%r15\n"    // %%r15 <-- address of output place
-    "\tmovq   %[cap], %%r12\n"    // number of output words
-    "\tmul    $8, %%r12\n"
-    "\taddq   %[x], %%r12\n"      // %%r12>address of last input digit
+    "\tmovq   %[a], %%r8\n"               // %%r8 <-- address of low input digit
+    "\tmovq   %[result], %%r15\n"         // %%r15 <-- address of output place
+    "\tmovq   %[size_result], %%r12\n"    // number of output words
+    "\tshlq   $3, %%r12\n"
+    "\taddq   %[a], %%r12\n"              // %%r12>address of last input digit
 
     // a[i]*a[i]
     "1:\n"
     "\tmovq   (%%r8), %%rax\n"
-    "\tmul    (%%r8)\n"           // a[i]**2 result in rdx:rax
+    "\tmulq   (%%r8)\n"                   // a[i]**2 result in rdx:rax
     "\tmovq   %%rax, (%%r15)\n"
-    "\tmovq   %%rdx, (8, %%r15)\n"
+    "\tmovq   %%rdx, 8(%%r15)\n"
     "\taddq   $16, %%r15\n"
     "\taddq   $8, %%r8\n"
     "\tcmpq   %%r8, %%r12\n"
     "\tjl     1b\n"
 
-    "\tmovq   %[x], %[cur_in]\n"  // input
-    "\tsubq   $8, %[curr_in]\n"
-    "\tmovq   %[out], %[cur_out]\n"
-    "\tsubq   $16, %[curr_out]\n"
+    "\tmovq   %[a], %%r9\n"               // input
+    "\tmovq   %%r9, %[cur_in]\n"          // input
+    "\tsubq   $8, %[cur_in]\n"
+    "\tmovq   %[result], %%r9\n"
+    "\tmovq   %%r9, %[cur_out]\n"
+    "\tsubq   $16, %[cur_out]\n"
 
     "2:\n"
     "\tmovq   %[cur_in], %%r8\n"
@@ -455,47 +458,47 @@ int DigitArraySquare(int size_a, uint64_t* a,
     // loop on %%r9
     "3:\n"
     "\tmovq   (%%r8), %%rax\n"
-    "\tmul    (%%r9)\n"
+    "\tmulq   (%%r9)\n"
 
     "\tmovq   %%r15, %%r11\n"
 
-    // shift by 2, bit in %%r11d
-    "\txorq   %%r11d, %%r11d\n"
+    // shift by 2, bit in %%r14
+    "\txorq   %%r14, %%r14\n"
     "\tshlq   $1, %%rax\n"
     "\tjnc    4f\n"
-    "\tmovq   $1, %%r11d\n"
+    "\tmovq   $1, %%r14\n"
 
     "4:\n"
     "\tshlq   $1,%%rdx\n"
     "\tjc     5f\n"
-    "\torq    %%r11d, %%rdx\n"
-    "\txorq   %%r11d,%%r11d\n"
+    "\torq    %%r14, %%rdx\n"
+    "\txorq   %%r14,%%r14\n"
     "\tjmp    6f\n"
 
     "5:\n"
     "\tshlq   $1, %%rdx\n"
-    "\torq    %%r11d, %%rdx\n"
+    "\torq    %%r14, %%rdx\n"
     "\tjnc    6f\n"
-    "\tmovq   $1, %%r11d\n"
+    "\tmovq   $1, %%r14\n"
 
     "6:\n"
-    \ttestq  %%r11d\n"
+    "\tcmpq   $0,%%r14\n"
     "\tjz     8f\n"
 
     "\taddq   $24, %%r11\n"
     "\taddq   %%rax, (%%r15)\n"
-    "\taddc   %%rdx, (8, %%r15)\n"
-    "\taddc   $1, (16, %%r15)\n"
+    "\tadcq   %%rdx, 8(%%r15)\n"
+    "\tadcq   $1, 16(%%r15)\n"
     "\tjmp    10f\n"
 
     "8:\n"
     "\taddq   $16, %%r11\n"
     "\taddq   %%rax, (%%r15)\n"
-    "\taddc   %%rdx, (8, %%r15)\n"
+    "\tadcq   %%rdx, 8(%%r15)\n"
 
     "9:\n"
     "\tjnc    10f\n"
-    "\tadd    $1, (%%r11)\n"
+    "\taddq   $1, (%%r11)\n"
     "\taddq   $8, %%r11\n"
     "\tjmp    9b\n"
 
@@ -504,12 +507,13 @@ int DigitArraySquare(int size_a, uint64_t* a,
     "\taddq   $8, %%r15\n"
     "\tcmpq   %%r9, %%r12\n"
     "\tjl     3b\n"
-    "jmp      $2b\n"
+    "\tjmp    2b\n"
     "11:\n"
 
-  : [cur_in] "g" (cur_in), [cur_out] "g" (cur_out)
-  : [x]"m"(x), [out]"m"(out), [cap] "m" (cap)
-  : "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r12", "%r11", "%r11d", "%r15");
+  : [cur_in] "=m" (cur_in), [cur_out] "=m" (cur_out)
+  : [a]"m"(a), [result]"m"(result), [size_result] "m" (size_result)
+  : "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r12", "%r11", "%r14", "%r15");
+  return DigitArrayComputedSize(size_a, a);
 #else
   return DigitArrayMult(size_a, a, size_a, a,
                     size_result, result);
