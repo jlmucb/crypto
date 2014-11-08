@@ -682,9 +682,9 @@ bool  EccKey::DeserializeKeyFromMessage(crypto_ecc_key_message& msg) {
   int k;
 
   bit_size_modulus_= 256;
+  int len, bignum_size;
   if(!msg.has_key_type())
     return false;
-  int len, bignum_size;
 
   if(msg.has_private_nonce()) {
     len= strlen(msg.private_nonce().c_str());
@@ -711,16 +711,19 @@ bool  EccKey::DeserializeKeyFromMessage(crypto_ecc_key_message& msg) {
             (byte*)order_of_g_->value_);
     order_of_g_->Normalize();
   }
-  crypto_ecc_curve_message* c_msg= new crypto_ecc_curve_message();
-  crypto_point_message* g_msg= new crypto_point_message();
-  crypto_point_message* b_msg= new crypto_point_message();
-  msg.set_allocated_curve(c_msg);
-  msg.set_allocated_generator(g_msg);
-  msg.set_allocated_base_point(b_msg);
-
-  c_.DeserializeCurveFromMessage(*c_msg);
-  g_.DeserializePointFromMessage(*g_msg);
-  base_.DeserializePointFromMessage(*b_msg);
+ 
+  if(msg.has_curve()) {
+    crypto_ecc_curve_message cm= msg.curve(); 
+    c_.DeserializeCurveFromMessage(cm);
+  }
+  if(msg.has_generator()) {
+    crypto_point_message pm= msg.generator(); 
+    g_.DeserializePointFromMessage(pm);
+  }
+  if(msg.has_base_point()) {
+    crypto_point_message pm= msg.base_point(); 
+    base_.DeserializePointFromMessage(pm);
+  }
   return true;
 }
 

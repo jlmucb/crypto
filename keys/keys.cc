@@ -185,7 +185,7 @@ bool CryptoKey::SerializeKeyToMessage(crypto_key_message& message) {
     message.set_allocated_symkey(symmetric_key_message);
     ((SymmetricKey*)this)->SerializeKeyToMessage(*symmetric_key_message);
   }
-  if(strcmp(key_type_->c_str(),"rsa")==0 || strcmp(key_type_->c_str(),"rsa-128")==0 ||
+  else if(strcmp(key_type_->c_str(),"rsa")==0 || strcmp(key_type_->c_str(),"rsa-128")==0 ||
      strcmp(key_type_->c_str(),"rsa-256")==0 || strcmp(key_type_->c_str(),"rsa-512")==0 ||
      strcmp(key_type_->c_str(),"rsa-1024")==0 || strcmp(key_type_->c_str(),"rsa-2048")==0 ||
      strcmp(key_type_->c_str(),"rsa3072")==0) {
@@ -194,7 +194,7 @@ bool CryptoKey::SerializeKeyToMessage(crypto_key_message& message) {
     message.set_allocated_rsakey(rsa_key_message);
     ((RsaKey*)this)->SerializeKeyToMessage(*rsa_key_message);
   }
-  if(strcmp(key_type_->c_str(),"ecc")==0) {
+  else if(strcmp(key_type_->c_str(),"ecc")==0 || strcmp(key_type_->c_str(),"ecc-256")==0) {
     crypto_ecc_key_message* ecc_key_message= 
                            new crypto_ecc_key_message();
     message.set_allocated_ecckey(ecc_key_message);

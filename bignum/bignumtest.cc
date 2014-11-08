@@ -2176,7 +2176,7 @@ bool key_format_tests() {
   crypto_key_message message;
   ((CryptoKey*)ecc_key)->SerializeKeyToMessage(message);
   ((CryptoKey*)new_key)->DeserializeKeyFromMessage(message);
-  printf("\nSerialized and DeserializeKeyFromMessage:\n");
+  printf("Serialized and DeserializeKeyFromMessage:\n");
   ((CryptoKey*)new_key)->PrintKey();
 
   // Check equality
@@ -2224,7 +2224,7 @@ bool key_store_tests() {
     int     NumKeys();
     bool    SaveStore(const char* filename);
    */
-  printf("END KEY_STORE_TESTS\n");
+  printf("END KEY_STORE_TESTS\n\n");
   return true;
 }
 
