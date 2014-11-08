@@ -1737,8 +1737,8 @@ bool div_time_test(const char* filename, int size, int num_tests) {
 
   BigNum    a(3*size+2);
   BigNum    b(2*size+1);
-  BigNum    q(size+2);
-  BigNum    r(size+2);
+  BigNum    q(2*size+1);
+  BigNum    r(2*size+1);
   int       byte_size_copy= size*sizeof(uint64_t);
   byte*     pbuf= buf;
   byte*     pa= (byte*)a.value_;

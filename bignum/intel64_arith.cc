@@ -701,8 +701,10 @@ bool DigitArrayDivisionAlgorithm(int size_a, uint64_t* a, int size_b, uint64_t* 
 
   DigitArrayZeroNum(*size_q, q);
   DigitArrayZeroNum(*size_r, r);
-  if(!DigitArrayCopy(size_a, a, *size_r, r))
+  if(!DigitArrayCopy(size_a, a, *size_r, r)) {
+    LOG(ERROR) << "DigitArrayCopy 1 error\n";
     return false;
+  }
 
   uint64_t*   y= new uint64_t [real_size_a+1];
   int         size_y= real_size_a+1;
