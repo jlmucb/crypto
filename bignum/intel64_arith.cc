@@ -404,7 +404,7 @@ printf("DigitArrayMult (%d, %d, %d)\n", size_a, size_b, size_result);
   return DigitArrayComputedSize(size_result, result);
 }
 
-// #define FASTSQUARE
+#define FASTSQUARE
 // result = a*a.  returns size of result.  Error if <0
 int DigitArraySquare(int size_a, uint64_t* a,
                     int size_result, uint64_t* result) {
@@ -418,10 +418,12 @@ int DigitArraySquare(int size_a, uint64_t* a,
   uint64_t  cur_in= 0ULL;
   uint64_t  cur_out= 0ULL;
 
-printf("size_a: %d\n", size_a);
-printf("a: %llx\n", a);
-printf("size_result: %d\n", size_result);
-printf("result: %llx\n", result);
+#if 0
+  printf("size_a: %d\n", size_a);
+  printf("a: %llx\n", a);
+  printf("size_result: %d\n", size_result);
+  printf("result: %llx\n", result);
+#endif
 
   asm volatile (
     "\tmovq   %[result], %%r15\n"         // %%r15 <-- address of output place

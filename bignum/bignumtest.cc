@@ -879,7 +879,6 @@ bool  square_test() {
     printf("square test matches\n");
   }
 
-#if 0
   for(i=0; i<6; i++) {
     memset(a, 0, sizeof(uint64_t)*size_a);
     memset(r, 0, sizeof(uint64_t)*size_r);
@@ -900,7 +899,6 @@ bool  square_test() {
     printf("r: ");TempPrintNum(k, r); printf("\n");
     printf("s: ");TempPrintNum(k, s); printf("\n");
   }
-#endif
   return true;
 }
 
@@ -2579,7 +2577,6 @@ bool RunTestSuite() {
 
 TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(square_test());
-/*
   EXPECT_TRUE(simpletest());
   EXPECT_TRUE(print_tests());
   EXPECT_TRUE(basic_tests());
@@ -2603,7 +2600,6 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(mont_exp_time_test("test_data", 16, 50));
   EXPECT_TRUE(simple_mult_time_test("test_data", 8, 1000000));
   EXPECT_TRUE(simple_div_time_test("test_data", 8,  1000000));
-*/
 }
 
 TEST_F(BigNumTest, RunTestSuite) {
