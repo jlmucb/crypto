@@ -1883,7 +1883,7 @@ bool exp_time_test(const char* filename, int size, int num_tests) {
       return false;
     }
   }
-  if(readTestData(filename, 128, buf)) {
+  if(readTestData(filename, 512, buf)) {
     delete buf;
     return false;
   }
@@ -1908,6 +1908,17 @@ bool exp_time_test(const char* filename, int size, int num_tests) {
   b.Normalize();
   e.Normalize();
   m.Normalize();
+
+  for(int u=0; u<5;u++) {
+    if(m.IsZero() || m.IsOne()) {
+      memcpy(pm, pbuf, byte_size_copy);
+      pbuf+= byte_size_copy;
+    }
+  }
+  if(m.IsZero() || m.IsOne()) {
+    printf("MontExp cant get non zero modulus\n");
+    return true;
+  }
 
   cycles_start_test= ReadRdtsc();
   for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {

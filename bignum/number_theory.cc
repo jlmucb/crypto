@@ -947,7 +947,7 @@ bool BigMontExp(BigNum& b, BigNum& e, int r, BigNum& m,
         LOG(ERROR) << "BigMontMult 2 fails in BigMontExp\n";
         return false;
       }
-    square.CopyFrom(t);
+      square.CopyFrom(t);
     }
   }
   return BigMontReduce(accum, r, m, m_prime, out);
