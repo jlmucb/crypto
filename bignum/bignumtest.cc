@@ -2614,7 +2614,7 @@ int main(int an, char** av) {
     return 1;
   }
   cycles_per_second= CalibrateRdtsc();
-  printf("This computer has %lld sycles per second\n", cycles_per_second);
+  printf("This computer has %lld cycles per second\n", cycles_per_second);
   int result= RUN_ALL_TESTS();
   printf("\nTESTS ENDED\n");
   CloseUtilities();
