@@ -418,12 +418,19 @@ int DigitArraySquare(int size_a, uint64_t* a,
   uint64_t  cur_in= 0ULL;
   uint64_t  cur_out= 0ULL;
 
+printf("size_a: %d\n", size_a);
+printf("a: %llx\n", a);
+printf("size_result: %d\n", size_result);
+printf("result: %llx\n", result);
+
   asm volatile (
-    "\tmovq   %[a], %%r8\n"               // %%r8 <-- address of low input digit
     "\tmovq   %[result], %%r15\n"         // %%r15 <-- address of output place
-    "\tmovq   %[size_result], %%r12\n"    // number of output words
+    "\tmovq   %[a], %%r8\n"               // %%r8 <-- address of low input digit
+    "\txorq   %%rax,%%rax\n"
+    "\tmovl   %[size_a], %%eax\n"         // number of output words
+    "\tmovq   %%rax, %%r12\n"             // number of output words
     "\tshlq   $3, %%r12\n"
-    "\taddq   %[a], %%r12\n"              // %%r12>address of last input digit
+    "\taddq   %%r8, %%r12\n"              // %%r12>address of last input digit
 
     // a[i]*a[i]
     "1:\n"
@@ -434,14 +441,14 @@ int DigitArraySquare(int size_a, uint64_t* a,
     "\taddq   $16, %%r15\n"
     "\taddq   $8, %%r8\n"
     "\tcmpq   %%r8, %%r12\n"
-    "\tjl     1b\n"
+    "\tjg     1b\n"
 
     "\tmovq   %[a], %%r9\n"               // input
     "\tmovq   %%r9, %[cur_in]\n"          // input
     "\tsubq   $8, %[cur_in]\n"
     "\tmovq   %[result], %%r9\n"
     "\tmovq   %%r9, %[cur_out]\n"
-    "\tsubq   $16, %[cur_out]\n"
+    "\tsubq   $8, %[cur_out]\n"
 
     "2:\n"
     "\tmovq   %[cur_in], %%r8\n"
@@ -453,16 +460,15 @@ int DigitArraySquare(int size_a, uint64_t* a,
     "\tmovq   %%r8, %%r9\n"
     "\taddq   $8, %%r9\n"
     "\tcmpq   %%r9, %%r12\n"
-    "\tjge    11f\n"
+    "\tjle    11f\n"
 
     // loop on %%r9
     "3:\n"
     "\tmovq   (%%r8), %%rax\n"
     "\tmulq   (%%r9)\n"
-
     "\tmovq   %%r15, %%r11\n"
 
-    // shift by 2, bit in %%r14
+    // shift by 1, top bit in %%r14
     "\txorq   %%r14, %%r14\n"
     "\tshlq   $1, %%rax\n"
     "\tjnc    4f\n"
@@ -470,35 +476,27 @@ int DigitArraySquare(int size_a, uint64_t* a,
 
     "4:\n"
     "\tshlq   $1,%%rdx\n"
-    "\tjc     5f\n"
+    "\tjnc    8f\n"
     "\torq    %%r14, %%rdx\n"
     "\txorq   %%r14,%%r14\n"
-    "\tjmp    6f\n"
-
-    "5:\n"
-    "\tshlq   $1, %%rdx\n"
-    "\torq    %%r14, %%rdx\n"
-    "\tjnc    6f\n"
-    "\tmovq   $1, %%r14\n"
-
-    "6:\n"
-    "\tcmpq   $0,%%r14\n"
-    "\tjz     8f\n"
-
     "\taddq   $24, %%r11\n"
     "\taddq   %%rax, (%%r15)\n"
     "\tadcq   %%rdx, 8(%%r15)\n"
     "\tadcq   $1, 16(%%r15)\n"
-    "\tjmp    10f\n"
+    "\tjnc    10f\n"
+    "\tjmp    9f\n"
 
     "8:\n"
+    "\torq    %%r14, %%rdx\n"
+    "\txorq   %%r14,%%r14\n"
     "\taddq   $16, %%r11\n"
     "\taddq   %%rax, (%%r15)\n"
     "\tadcq   %%rdx, 8(%%r15)\n"
+    "\tjnc    10f\n"
 
     "9:\n"
-    "\tjnc    10f\n"
     "\taddq   $1, (%%r11)\n"
+    "\tjnc    10f\n"
     "\taddq   $8, %%r11\n"
     "\tjmp    9b\n"
 
@@ -506,14 +504,14 @@ int DigitArraySquare(int size_a, uint64_t* a,
     "\taddq   $8, %%r9\n"
     "\taddq   $8, %%r15\n"
     "\tcmpq   %%r9, %%r12\n"
-    "\tjl     3b\n"
+    "\tjg     3b\n"
     "\tjmp    2b\n"
     "11:\n"
 
   : [cur_in] "=m" (cur_in), [cur_out] "=m" (cur_out)
-  : [a]"m"(a), [result]"m"(result), [size_result] "m" (size_result)
+  : [a]"m"(a), [result]"m"(result), [size_a] "m" (size_a), [size_result] "m" (size_result)
   : "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r12", "%r11", "%r14", "%r15");
-  return DigitArrayComputedSize(size_a, a);
+  return DigitArrayComputedSize(size_result, result);
 #else
   return DigitArrayMult(size_a, a, size_a, a,
                     size_result, result);
