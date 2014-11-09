@@ -815,6 +815,10 @@ bool BigModSquareRoot(BigNum& n, BigNum& p, BigNum& r) {
 bool BigMakeMont(BigNum& a, int r, BigNum& m, BigNum& mont_a) {
   BigNum  t1(2*m.capacity_);
 
+  if(m.IsZero()) {
+    LOG(ERROR) << "Modulus is 0 BigMakeMont\n";
+    return false;
+  }
   if(!BigShift(Big_One, r, t1)) {
     LOG(ERROR) << "BigShift fails in BigMakeMont\n";
     return false;
