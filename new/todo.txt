@@ -1,4 +1,4 @@
-New assembly for BigMult and BigSquare
+New assembly for BigMult 
 Do benchmark tests
 
 Add
@@ -21,4 +21,11 @@ ECC point counting
     Schoof-Elkies-Atkins
 
 Add access to the ECC stuff from the utility.
+
+Perf
+    Sliding window
+    Code alignment
+    Data alignment
+    Why is Mont slower?
+    
 
