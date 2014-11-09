@@ -1883,7 +1883,7 @@ bool exp_time_test(const char* filename, int size, int num_tests) {
       return false;
     }
   }
-  if(readTestData(filename, 512, buf)) {
+  if(readTestData(filename, 2048, buf)) {
     delete buf;
     return false;
   }
@@ -1960,7 +1960,7 @@ bool mont_exp_time_test(const char* filename, int size, int num_tests) {
       return false;
     }
   }
-  if(readTestData(filename, 128, buf)) {
+  if(readTestData(filename, 2048, buf)) {
     delete buf;
     return false;
   }
