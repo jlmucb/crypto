@@ -2267,8 +2267,12 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   ((CryptoKey*)key2)->PrintKey();
   printf("\n");
 
-  byte   M[256];
-  byte   C[256];
+  byte   M[512];
+  byte   C[512];
+
+  memset(M, 0, 512);
+  memset(C, 0, 512);
+
   memcpy(M, pbuf, 128);
   int   n= 128;
 
@@ -2377,8 +2381,6 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
                 ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
   printf("\n");
 
-#if 0
-  // need to calculate p_prime_ and q_prime_
   // 1024, speed 3, Encrypt
   cycles_start_test= ReadRdtsc();
   for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
@@ -2408,11 +2410,10 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   }
   cycles_end_test= ReadRdtsc();
   cycles_diff= cycles_end_test-cycles_start_test;
-  printf("rsa1024 encrypt, speed 3, number of tests: %d\n", num_tests_executed);
+  printf("rsa1024 decrypt, speed 3, number of tests: %d\n", num_tests_executed);
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
   printf("time per Encrypt %le\n",
                 ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
-#endif
 
   // 2048, speed 0, Encrypt
   cycles_start_test= ReadRdtsc();
@@ -2519,7 +2520,6 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
                 ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
   printf("\n");
 
-#if 0
   // need to calculate p_prime_ and q_prime_
   // 2048, speed 3, Encrypt
   cycles_start_test= ReadRdtsc();
@@ -2555,7 +2555,6 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   printf("time per Encrypt %le\n",
                 ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
   printf("\n");
-#endif
 
 done:
   delete buf;
@@ -3044,7 +3043,7 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(exp_time_test("test_data", 16, 50));
   EXPECT_TRUE(mont_exp_time_test("test_data", 16, 50));
   EXPECT_TRUE(rsa_speed_tests(NULL, NULL, "test_data", 0, 500));
-  EXPECT_TRUE(ecc_speed_tests(NULL, "test_data", 0, 500));
+  EXPECT_TRUE(ecc_speed_tests(NULL, "test_data", 0, 200));
 }
 
 TEST_F(BigNumTest, RunTestSuite) {
