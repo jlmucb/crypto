@@ -427,12 +427,13 @@ void RsaKey::PrintKey() {
   }
 }
 
-bool RsaKey::Encrypt(int size_in, byte* in, int* size_out, byte* out,
-                      int speed) {
+bool RsaKey::Encrypt(int size_in, byte* in, int* size_out, byte* out, int speed) {
   int bytes_in_block= bit_size_modulus_/NBITSINBYTE;
 
-  if(size_in>bytes_in_block)
+  if(size_in>bytes_in_block) {
+    LOG(ERROR)<< "RSAKey::Encrypt size_in>bytes_in_block " <<size_in<<" " <<bytes_in_block<<"\n";
     return false;
+  }
 
   int     new_byte_size= (size_in+bytes_in_block-1)/bytes_in_block;
   new_byte_size*= bytes_in_block;
@@ -514,8 +515,10 @@ bool RsaKey::Decrypt(int size_in, byte* in, int* size_out, byte* out,
                       int speed) {
   int bytes_in_block= bit_size_modulus_/NBITSINBYTE;
 
-  if(size_in>bytes_in_block)
+  if(size_in>bytes_in_block) {
+    LOG(ERROR)<< "RSAKey::Decrypt size_in>bytes_in_block "<<size_in<<" " <<bytes_in_block<<"\n";
     return false;
+  }
   int     new_byte_size= (size_in+bytes_in_block-1)/bytes_in_block;
   new_byte_size*= bytes_in_block;
 
@@ -547,7 +550,7 @@ bool RsaKey::Decrypt(int size_in, byte* in, int* size_out, byte* out,
       return false;
     }
     if(!BigModExp(int_inq, *dq_, *q_, int_outq)) {
-      LOG(ERROR)<< "BigModExp failed in RSAKey::Decrypt\n";
+      LOG(ERROR)<< "BigModExp failed in RSAKey::Decrypt "<<size_in<<" " <<bytes_in_block<<"\n";
       return false;
     }
     if(!BigCRT(int_outp, int_outq, *p_, *q_, int_out)) {

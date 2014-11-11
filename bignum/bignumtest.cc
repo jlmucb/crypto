@@ -2257,7 +2257,7 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
 
   if(key2==NULL) {
     key2= new RsaKey();
-    if(key2==NULL || !key2->GenerateRsaKey("test-key", "test", "test", 1024, 
+    if(key2==NULL || !key2->GenerateRsaKey("test-key", "test", "test", 2048, 
           COMMON_YEAR_SECONDS)) {
       printf("Cant generate 2048 bit key\n");
       return false;
@@ -2419,8 +2419,8 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   // 2048, speed 0, Encrypt
   cycles_start_test= ReadRdtsc();
   for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
-      n= 128;
-      if(!key2->Encrypt(128, M, &n, C, 0)) {
+      n= 256;
+      if(!key2->Encrypt(256, M, &n, C, 0)) {
         printf("rsa 2048 bit encrypt test %d failed\n", num_tests_executed);
         ret= false;
         goto done;
@@ -2430,14 +2430,14 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   cycles_diff= cycles_end_test-cycles_start_test;
   printf("rsa2048 encrypt, speed 0, number of tests: %d\n", num_tests_executed);
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
-  printf("time per decrypt %le\n",
+  printf("time per encrypt %le\n",
                 ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
 
   // 2048, speed 0, Decrypt
   cycles_start_test= ReadRdtsc();
   for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
-      n= 128;
-      if(!key2->Decrypt(128, M, &n, C, 0)) {
+      n= 256;
+      if(!key2->Decrypt(256, M, &n, C, 0)) {
         printf("rsa 2048 bit decrypt test %d failed\n", num_tests_executed);
         ret= false;
         goto done;
@@ -2454,8 +2454,8 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   // 2048, speed 1, Encrypt
   cycles_start_test= ReadRdtsc();
   for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
-      n= 128;
-      if(!key2->Encrypt(128, M, &n, C, 1)) {
+      n= 256;
+      if(!key2->Encrypt(256, M, &n, C, 1)) {
         printf("rsa 2048 bit encrypt test %d failed\n", num_tests_executed);
         ret= false;
         goto done;
@@ -2471,8 +2471,8 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   // 2048, speed 1, Decrypt
   cycles_start_test= ReadRdtsc();
   for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
-      n= 128;
-      if(!key2->Decrypt(128, M, &n, C, 1)) {
+      n= 256;
+      if(!key2->Decrypt(256, M, &n, C, 1)) {
         printf("rsa 2048 bit decrypt test %d failed\n", num_tests_executed);
         ret= false;
         goto done;
@@ -2489,8 +2489,8 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   // 2048, speed 2, Encrypt
   cycles_start_test= ReadRdtsc();
   for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
-      n= 128;
-      if(!key2->Encrypt(128, M, &n, C, 2)) {
+      n= 256;
+      if(!key2->Encrypt(256, M, &n, C, 2)) {
         printf("rsa 2048 bit encrypt test %d failed\n", num_tests_executed);
         ret= false;
         goto done;
@@ -2506,8 +2506,8 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   // 2048, speed 2, Decrypt
   cycles_start_test= ReadRdtsc();
   for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
-      n= 128;
-      if(!key2->Decrypt(128, M, &n, C, 2)) {
+      n= 256;
+      if(!key2->Decrypt(256, M, &n, C, 2)) {
         printf("rsa 2048 bit decrypt test %d failed\n", num_tests_executed);
         ret= false;
         goto done;
@@ -2525,8 +2525,8 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   // 2048, speed 3, Encrypt
   cycles_start_test= ReadRdtsc();
   for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
-      n= 128;
-      if(!key2->Encrypt(128, M, &n, C, 3)) {
+      n= 256;
+      if(!key2->Encrypt(256, M, &n, C, 3)) {
         printf("rsa 2048 bit encrypt test %d failed\n", num_tests_executed);
         ret= false;
         goto done;
@@ -2536,14 +2536,14 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   cycles_diff= cycles_end_test-cycles_start_test;
   printf("rsa2048 encrypt, speed 3, number of tests: %d\n", num_tests_executed);
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
-  printf("time per Encrypt %le\n",
+  printf("time per encrypt %le\n",
                 ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
 
   // 2048, speed 0, Decrypt
   cycles_start_test= ReadRdtsc();
   for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
-      n= 128;
-      if(!key2->Decrypt(128, M, &n, C, 3)) {
+      n= 256;
+      if(!key2->Decrypt(256, M, &n, C, 3)) {
         printf("rsa 2048 bit decrypt test %d failed\n", num_tests_executed);
         ret= false;
         goto done;
@@ -2553,7 +2553,7 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   cycles_diff= cycles_end_test-cycles_start_test;
   printf("rsa2048 encrypt, speed 3, number of tests: %d\n", num_tests_executed);
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
-  printf("time per Encrypt %le\n",
+  printf("time per decrypt %le\n",
                 ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
   printf("\n");
 
