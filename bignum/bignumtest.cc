@@ -2414,6 +2414,7 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
   printf("time per Encrypt %le\n",
                 ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+  printf("\n");
 
   // 2048, speed 0, Encrypt
   cycles_start_test= ReadRdtsc();
