@@ -2395,7 +2395,7 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   cycles_diff= cycles_end_test-cycles_start_test;
   printf("rsa1024 encrypt, speed 3, number of tests: %d\n", num_tests_executed);
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
-  printf("time per Encrypt %le\n",
+  printf("time per encrypt %le\n",
                 ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
 
   // 1024, speed 3, Decrypt
@@ -2412,7 +2412,7 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   cycles_diff= cycles_end_test-cycles_start_test;
   printf("rsa1024 decrypt, speed 3, number of tests: %d\n", num_tests_executed);
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
-  printf("time per Encrypt %le\n",
+  printf("time per decrypt %le\n",
                 ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
   printf("\n");
 
