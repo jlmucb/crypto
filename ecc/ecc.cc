@@ -192,7 +192,7 @@ void EccCurve::PrintCurve() {
  *  Point is (x,y)
  */
 bool EccEmbed(EccCurve& c, BigNum& m, CurvePoint& P, int shift, int trys) {
-  BigNum  m_x(c.p_->capacity_);
+  BigNum  m_x(2*c.p_->capacity_);
   BigNum  t1(2*c.p_->capacity_);
   BigNum  t2(2*c.p_->capacity_);
   BigNum  t3(2*c.p_->capacity_);

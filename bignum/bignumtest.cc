@@ -74,11 +74,13 @@ bool readTestData(const char* filename, int sizeBytes, byte* buf) {
   int  bytes_in_file;
 
   if(randfd<0) {
+    printf("Cant open read file\n");
     ret= false;
     goto done;
   }
   bytes_in_file= read(randfd, buf, sizeBytes);
   if(bytes_in_file!=sizeBytes) {
+    printf("bytes read/requested don't match %d, %d\n", sizeBytes, bytes_in_file);
     ret= false;
     goto done;
   }
@@ -1649,7 +1651,7 @@ bool mult_time_test(const char* filename, int size, int num_tests) {
       return false;
     }
   }
-  if(readTestData(filename, 512, buf)) {
+  if(!readTestData(filename, 512, buf)) {
     delete buf;
     return false;
   }
@@ -1709,7 +1711,7 @@ bool square_time_test(const char* filename, int size, int num_tests) {
       return false;
     }
   }
-  if(readTestData(filename, 128, buf)) {
+  if(!readTestData(filename, 128, buf)) {
     delete buf;
     return false;
   }
@@ -1764,7 +1766,7 @@ bool mult_div_stress(const char* filename, int size, int num_tests) {
       return false;
     }
   }
-  if(readTestData(filename, 128, buf)) {
+  if(!readTestData(filename, 128, buf)) {
       delete buf;
       return false;
     }
@@ -1822,7 +1824,7 @@ bool div_time_test(const char* filename, int size, int num_tests) {
       return false;
     }
   }
-  if(readTestData(filename, 512, buf)) {
+  if(!readTestData(filename, 512, buf)) {
       delete buf;
       return false;
   }
@@ -1883,7 +1885,7 @@ bool exp_time_test(const char* filename, int size, int num_tests) {
       return false;
     }
   }
-  if(readTestData(filename, 2048, buf)) {
+  if(!readTestData(filename, 2048, buf)) {
     delete buf;
     return false;
   }
@@ -1960,7 +1962,7 @@ bool mont_exp_time_test(const char* filename, int size, int num_tests) {
       return false;
     }
   }
-  if(readTestData(filename, 2048, buf)) {
+  if(!readTestData(filename, 2048, buf)) {
     delete buf;
     return false;
   }
@@ -2044,7 +2046,8 @@ bool simple_mult_time_test(const char* filename, int size, int num_tests) {
       return false;
     }
   }
-  if(readTestData(filename, 128, buf)) {
+  if(!readTestData(filename, 128, buf)) {
+      printf("Cant read  test data file %s\n", filename);
     delete buf;
     return false;
   }
@@ -2093,7 +2096,7 @@ bool simple_div_time_test(const char* filename, int size, int num_tests) {
       return false;
     }
   }
-  if(readTestData(filename, 128, buf)) {
+  if(!readTestData(filename, 128, buf)) {
     delete buf;
     return false;
   }
@@ -2141,7 +2144,7 @@ bool ecc_speed_tests(EccKey* key, const char* filename, int size, int num_tests)
       return false;
     }
   }
-  if(readTestData(filename, 2048, buf)) {
+  if(!readTestData(filename, 2048, buf)) {
     delete buf;
     return false;
   }
@@ -2171,7 +2174,9 @@ bool ecc_speed_tests(EccKey* key, const char* filename, int size, int num_tests)
 
   byte   M[256];
   byte   C[256];
-  memcpy(M, pbuf, 120);
+  memset(M, 0, 256);
+  memset(C, 0, 256);
+  memcpy(M, pbuf, 30);
   int   n= 128;
   CurvePoint P1(16);
   CurvePoint P2(16);
@@ -2236,7 +2241,7 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
       return false;
     }
   }
-  if(readTestData(filename, 2048, buf)) {
+  if(!readTestData(filename, 2048, buf)) {
     delete buf;
     return false;
   }
