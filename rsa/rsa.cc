@@ -404,6 +404,15 @@ void RsaKey::PrintKey() {
   if(dq_!=NULL) {
     printf("dq: "); PrintNumToConsole(*dq_, 10ULL); printf("\n");
   }
+  if(m_prime_!=NULL) {
+    printf("m_prime: "); PrintNumToConsole(*m_prime_, 10ULL); printf("\n");
+  }
+  if(p_prime_!=NULL) {
+    printf("p_prime: "); PrintNumToConsole(*p_prime_, 10ULL); printf("\n");
+  }
+  if(q_prime_!=NULL) {
+    printf("q_prime: "); PrintNumToConsole(*q_prime_, 10ULL); printf("\n");
+  }
 }
 
 bool RsaKey::Encrypt(int size_in, byte* in, int* size_out, byte* out,
@@ -415,8 +424,12 @@ bool RsaKey::Encrypt(int size_in, byte* in, int* size_out, byte* out,
 
   int     new_byte_size= (size_in+bytes_in_block-1)/bytes_in_block;
   new_byte_size*= bytes_in_block;
-  BigNum  int_in(1+4*new_byte_size/sizeof(uint64_t));
-  BigNum  int_out(1+4*new_byte_size/sizeof(uint64_t));
+  BigNum  int_in(4*new_byte_size/sizeof(uint64_t));
+  BigNum  int_inp(4*new_byte_size/sizeof(uint64_t));
+  BigNum  int_inq(4*new_byte_size/sizeof(uint64_t));
+  BigNum  int_out(4*new_byte_size/sizeof(uint64_t));
+  BigNum  int_outp(4*new_byte_size/sizeof(uint64_t));
+  BigNum  int_outq(4*new_byte_size/sizeof(uint64_t));
   ReverseCpy(new_byte_size, in, (byte*)int_in.value_);
   int_in.Normalize();
   if(speed==0) {
@@ -430,11 +443,52 @@ bool RsaKey::Encrypt(int size_in, byte* in, int* size_out, byte* out,
       return false;
     }
   } else if (speed==2) {
-      // implement CRT
-      LOG(ERROR)<< "RsaKey::Decrypt, bad speed parameter " << speed << "\n";
+    if(!BigMod(int_in, *p_, int_inp)) {
+      LOG(ERROR)<< "BigMod(p) failed in RSAKey::Encrypt\n";
+      return false;
+    }
+    if(!BigMod(int_in, *q_, int_inq)) {
+      LOG(ERROR)<< "BigMod(q) failed in RSAKey::Encrypt\n";
+      return false;
+    }
+    if(!BigModExp(int_inp, *e_, *p_, int_outp)) {
+      LOG(ERROR)<< "BigModExp failed in RSAKey::Encrypt\n";
+      return false;
+    }
+    if(!BigModExp(int_in, *e_, *q_, int_outq)) {
+      LOG(ERROR)<< "BigModExp failed in RSAKey::Encrypt\n";
+      return false;
+    }
+    if(!BigCRT(int_outp, int_outq, *p_, *q_, int_out)) {
+      LOG(ERROR)<< "BigCRT failed in RSAKey::Encrypt\n";
+      return false;
+    }
   } else if (speed==3) {
-      // implement CRT and MonMult
-      LOG(ERROR)<< "RsaKey::Decrypt, bad speed parameter " << speed << "\n";
+    if(p_prime_==NULL || p_prime_==NULL) {
+      LOG(ERROR)<< "uncalculated p_prime_ in RSAKey::Encrypt\n";
+      return false;
+    }
+    int t= BigHighBit(*p_);
+    if(!BigMod(int_in, *p_, int_inp)) {
+      LOG(ERROR)<< "BigMod(p) failed in RSAKey::Encrypt\n";
+      return false;
+    }
+    if(!BigMod(int_in, *q_, int_inq)) {
+      LOG(ERROR)<< "BigMod(q) failed in RSAKey::Encrypt\n";
+      return false;
+    }
+    if(!BigMontExp(int_inp, *e_, t, *p_, *p_prime_, int_outp)) {
+      LOG(ERROR)<< "BigMontExp failed in RSAKey::Encrypt\n";
+      return false;
+    }
+    if(!BigMontExp(int_inq, *e_, t, *q_, *q_prime_, int_outq)) {
+      LOG(ERROR)<< "BigMontExp failed in RSAKey::Decrypt\n";
+      return false;
+    }
+    if(!BigCRT(int_outp, int_outq, *p_, *q_, int_out)) {
+      LOG(ERROR)<< "BigCRT failed in RSAKey::Decrypt\n";
+      return false;
+    }
   } else {
       LOG(ERROR)<< "RsaKey::Encrypt, bad speed parameter " << speed << "\n";
       return false;
@@ -453,11 +507,12 @@ bool RsaKey::Decrypt(int size_in, byte* in, int* size_out, byte* out,
   int     new_byte_size= (size_in+bytes_in_block-1)/bytes_in_block;
   new_byte_size*= bytes_in_block;
 
-
-  BigNum  int_in(2*new_byte_size/sizeof(uint64_t));
-  BigNum  int_out(2*new_byte_size/sizeof(uint64_t));
-  BigNum  int_outp(2*new_byte_size/sizeof(uint64_t));
-  BigNum  int_outq(2*new_byte_size/sizeof(uint64_t));
+  BigNum  int_in(4*new_byte_size/sizeof(uint64_t));
+  BigNum  int_inp(4*new_byte_size/sizeof(uint64_t));
+  BigNum  int_inq(4*new_byte_size/sizeof(uint64_t));
+  BigNum  int_out(4*new_byte_size/sizeof(uint64_t));
+  BigNum  int_outp(4*new_byte_size/sizeof(uint64_t));
+  BigNum  int_outq(4*new_byte_size/sizeof(uint64_t));
   ReverseCpy(new_byte_size, in, (byte*)int_in.value_);
   int_in.Normalize();
   if(speed==0) {
@@ -471,11 +526,15 @@ bool RsaKey::Decrypt(int size_in, byte* in, int* size_out, byte* out,
       return false;
     }
   } else if (speed==2) {
-    if(!BigModExp(int_in, *dp_, *p_, int_outp)) {
+    if(!BigMod(int_in, *p_, int_inp)) {
+      LOG(ERROR)<< "BigMod(p) failed in RSAKey::Decrypt\n";
+      return false;
+    }
+    if(!BigModExp(int_inp, *dp_, *p_, int_outp)) {
       LOG(ERROR)<< "BigModExp failed in RSAKey::Decrypt\n";
       return false;
     }
-    if(!BigModExp(int_in, *dq_, *q_, int_outq)) {
+    if(!BigModExp(int_inq, *dq_, *q_, int_outq)) {
       LOG(ERROR)<< "BigModExp failed in RSAKey::Decrypt\n";
       return false;
     }
@@ -484,12 +543,24 @@ bool RsaKey::Decrypt(int size_in, byte* in, int* size_out, byte* out,
       return false;
     }
   } else if (speed==3) {
+    if(p_prime_==NULL || p_prime_==NULL) {
+      LOG(ERROR)<< "uncalculated p_prime_ in RSAKey::Decrypt\n";
+      return false;
+    }
     int t= BigHighBit(*p_);
-    if(!BigMontExp(int_in, *dp_, t, *p_, *p_prime_, int_outp)) {
+    if(!BigMod(int_in, *p_, int_inp)) {
+      LOG(ERROR)<< "BigMod(p) failed in RSAKey::Decrypt\n";
+      return false;
+    }
+    if(!BigModExp(int_inp, *dp_, *p_, int_outp)) {
+      LOG(ERROR)<< "BigModExp failed in RSAKey::Decrypt\n";
+      return false;
+    }
+    if(!BigMontExp(int_inp, *dp_, t, *p_, *p_prime_, int_outp)) {
       LOG(ERROR)<< "BigMontExp failed in RSAKey::Decrypt\n";
       return false;
     }
-    if(!BigMontExp(int_in, *dq_, t, *q_, *q_prime_, int_outq)) {
+    if(!BigMontExp(int_inq, *dq_, t, *q_, *q_prime_, int_outq)) {
       LOG(ERROR)<< "BigMontExp failed in RSAKey::Decrypt\n";
       return false;
     }
