@@ -98,6 +98,9 @@ uint64_t  test_a[4]= {
 uint64_t  test_b[4]= {
   0xffffffffULL, 0x4ULL, 0xffffffffffffffffULL, 0x6ULL
 };
+uint64_t  test_x1[4]= {
+  0xffffffffffffffffULL, 0ULL, 0ULL, 0ULL
+};
 uint64_t  test_x[4]= {
   0xffffffffffffffffULL, 0xffffffffffffffffULL, 0ULL, 0ULL
 };
@@ -227,12 +230,14 @@ bool simpletest() {
   int size_test_c= sizeof(test_c)/sizeof(uint64_t);
   int size_test_t= sizeof(test_t)/sizeof(uint64_t);
   int size_test_x= sizeof(test_x)/sizeof(uint64_t);
+  int size_test_x1= sizeof(test_x1)/sizeof(uint64_t);
   int size_test_y= sizeof(test_y)/sizeof(uint64_t);
   int size_test_z= sizeof(test_z)/sizeof(uint64_t);
   int real_size_test_a= DigitArrayComputedSize(size_test_a, test_a);
   int real_size_test_b=  DigitArrayComputedSize(size_test_b, test_b);
   int real_size_test_t= DigitArrayComputedSize(size_test_t, test_t);
   int real_size_test_x= DigitArrayComputedSize(size_test_x, test_x);
+  int real_size_test_x1= DigitArrayComputedSize(size_test_x1, test_x1);
   int real_size_test_y= DigitArrayComputedSize(size_test_y, test_y);
   // int real_size_test_z=  DigitArrayComputedSize(size_test_z, test_z);
   DigitArrayZeroNum(sizeof(test_c)/sizeof(uint64_t), test_c);
@@ -265,8 +270,40 @@ bool simpletest() {
 
   printf("\n");
   DigitArrayZeroNum(sizeof(test_c)/sizeof(uint64_t), test_c);
+  k= DigitArrayMult(real_size_test_y, test_y, real_size_test_x1, test_x1, size_test_c, test_c);
+#if 1
+  TempPrintNum(real_size_test_y, test_y); printf("\n * ");
+  TempPrintNum(real_size_test_x1, test_x1);
+  printf("\n");
+  printf(" = ");
+  TempPrintNum(k, test_c); printf("\n");
+  printf("\n");
+#endif
+  if(test_c[0] != test_x1[0] || test_c[1] != test_x1[1] ) {
+    printf("Test 9 failed\n");
+    return false;
+  }
+
+  printf("\n");
+  DigitArrayZeroNum(sizeof(test_c)/sizeof(uint64_t), test_c);
+  k= DigitArrayMult(real_size_test_y, test_y, real_size_test_x, test_x, size_test_c, test_c);
+#if 1
+  TempPrintNum(real_size_test_y, test_y); printf("\n * ");
+  TempPrintNum(real_size_test_x, test_x);
+  printf("\n");
+  printf(" = ");
+  TempPrintNum(k, test_c); printf("\n");
+  printf("\n");
+#endif
+  if(test_c[0] != test_x[0] || test_c[1] != test_x[1] ) {
+    printf("Test 9 failed\n");
+    return false;
+  }
+
+  printf("\n");
+  DigitArrayZeroNum(sizeof(test_c)/sizeof(uint64_t), test_c);
   k= DigitArrayMult(real_size_test_x, test_x, real_size_test_y, test_y, size_test_c, test_c);
-#if 0
+#if 1
   TempPrintNum(real_size_test_x, test_x); printf("\n * ");
   TempPrintNum(real_size_test_y, test_y);
   printf("\n");
@@ -280,9 +317,21 @@ bool simpletest() {
   }
 
   DigitArrayZeroNum(sizeof(test_c)/sizeof(uint64_t), test_c);
+  k= DigitArrayMult(real_size_test_x1, test_x1, real_size_test_x, test_x, 
+                    size_test_c, test_c);
+#if 1
+  TempPrintNum(real_size_test_x1, test_x1); printf("\n * ");
+  TempPrintNum(real_size_test_x, test_x);
+  printf("\n");
+  printf(" = ");
+  TempPrintNum(k, test_c); printf("\n");
+  printf("\n");
+#endif
+
+  DigitArrayZeroNum(sizeof(test_c)/sizeof(uint64_t), test_c);
   k= DigitArrayMult(real_size_test_x, test_x, real_size_test_x, test_x, 
                     size_test_c, test_c);
-#if 0
+#if 1
   TempPrintNum(real_size_test_x, test_x); printf("\n * ");
   TempPrintNum(real_size_test_x, test_x);
   printf("\n");
@@ -2273,8 +2322,7 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   memset(M, 0, 512);
   memset(C, 0, 512);
 
-  // memcpy(M, pbuf, 128);
-  M[0]= 2;
+  memcpy(M, pbuf, 128);
   int   n= 128;
 
   // 1024, speed 0, Encrypt
@@ -3020,15 +3068,15 @@ bool RunTestSuite() {
 #define TESTBUFSIZE 20000
 
 TEST(FirstBigNumCase, FirstBigNumTest) {
-  EXPECT_TRUE(square_test());
   EXPECT_TRUE(simpletest());
+  EXPECT_TRUE(unsigned_arith_tests());
+  EXPECT_TRUE(square_test());
   EXPECT_TRUE(print_tests());
   EXPECT_TRUE(basic_tests());
   EXPECT_TRUE(convert_tests());
   EXPECT_TRUE(bit_tests());
   EXPECT_TRUE(shift_tests());
   EXPECT_TRUE(raw_arith_tests());
-  EXPECT_TRUE(unsigned_arith_tests());
   EXPECT_TRUE(signed_arith_tests());
   EXPECT_TRUE(number_theory_tests());
   EXPECT_TRUE(key_format_tests());

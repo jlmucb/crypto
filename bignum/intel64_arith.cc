@@ -25,7 +25,7 @@
 #include "util.h"
 
 // #define FASTADD
-// #define FASTMULT
+#define FASTMULT
 
 // ------------------------------------------------------------------------
 
@@ -324,12 +324,15 @@ void Uint64MultWithCarryStep(uint64_t a, uint64_t b,
 // result = a+b.  returns size of result.  Error if <0
 int DigitArrayAdd(int size_a, uint64_t* a, int size_b, uint64_t* b, 
                     int size_result, uint64_t* result) {
-  uint64_t  carry_out= 0ULL;
-
-  if(size_a<size_b)
+  if(size_b>size_a)
     return DigitArrayAdd(size_b, b, size_a, a, size_result, result);
+  if(size_result<size_a)
+    return -1;
 
 #ifdef FASTADD
+  uint64_t  size_A= (uint64_t) size_a;
+  uint64_t  size_B= (uint64_t) size_b;
+  uint64_t  carry_out= 0ULL;
 //  Caller ensures sizeIn1>=sizeIn2 and out is at least sizeIn1 in length
 //    r8 : op1 location
 //    r9 : op2 location
@@ -340,8 +343,8 @@ int DigitArrayAdd(int size_a, uint64_t* a, int size_b, uint64_t* b,
 asm volatile (
   "\tmovq   %[in1], %%r8\n"
   "\tmovq   %[in2], %%r9\n"
-  "\tmovq   %[out], %%r15\n"
-  "\tmovq   %[sizeIn2], %%r12\n"
+  "\tmovq   %[result], %%r15\n"
+  "\tmovq   %[size_B], %%r12\n"
   "\txorq   %%r11, %%r11\n"
   "\txorq   %%r14, %%r14\n"
 
@@ -365,8 +368,8 @@ asm volatile (
   "\tcmpq   $0, %%r12\n"
   "\tjg     2b\n"
 
-  "\tmovq   %[sizeIn1], %%r12\n"
-  "\tsubq   %[sizeIn2], %%r12\n"
+  "\tmovq   %[size_A], %%r12\n"
+  "\tsubq   %[size_B], %%r12\n"
 
   // copy or propagate carry
   "8:\n"
@@ -383,8 +386,8 @@ asm volatile (
   "\tmovq   %%r14, %[carry_out]\n"
 
   : [carry_out] "=m" (carry_out)
-  : [in1] "g" (a), [in2] "g" (b), [sizeIn1] "g" (size_a), [sizeIn2] "g" (size_b), 
-    [out] "g" (result)
+  : [in1] "g" (a), [in2] "g" (b), [size_A] "g" (size_A), [size_B] "g" (size_B), 
+    [result] "g" (result)
   : "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r11", "%r12", "%r14", "%r15");
 
   if(carry_out!=0) {
@@ -394,6 +397,7 @@ asm volatile (
   }
 #else
   uint64_t  carry_in= 0ULL;
+  uint64_t  carry_out= 0ULL;
   int       i;
 
   DigitArrayZeroNum(size_result, result);
@@ -451,6 +455,8 @@ int DigitArrayMult(int size_a, uint64_t* a, int size_b, uint64_t* b,
 
 #ifdef FASTMULT
   uint64_t  carry= 0;
+  uint64_t  size_A= (uint64_t)size_a;
+  uint64_t  size_B= (uint64_t)size_b;
 
 //  Caller ensures out is large enough
 //    r8 : current op1 location
@@ -463,7 +469,7 @@ int DigitArrayMult(int size_a, uint64_t* a, int size_b, uint64_t* b,
 asm volatile (
   "\tmovq   %[in1], %%r8\n"
   "\tmovq   %[in2], %%r9\n"
-  "\tmovq   %[out], %%r15\n"
+  "\tmovq   %[result], %%r15\n"
   "\txorq   %%r11, %%r11\n"
   "\txorq   %%r14, %%r14\n"
 
@@ -479,22 +485,22 @@ asm volatile (
   "\taddq   %%r14, %%rax\n"
   "\tadcq   $0, %%rdx\n"
   "\taddq   (%%r15, %%r13, 8), %%rax\n"
-  "\tadcq   $0,%%rdx\n"
+  "\tadcq   $0, %%rdx\n"
   "\tmovq   %%rax, (%%r15, %%r13, 8)\n"
   "\tmovq   %%rdx, %%r14\n"
   "\taddq   $1, %%r12\n"
   "\taddq   $1, %%r13\n"
-  "\tcmpq   %[sizeIn2], %%r12\n"
-  "\tjg     2b\n"
+  "\tcmpq   %[size_B], %%r12\n"
+  "\tjl     2b\n"
 
   "\tmovq   %%r14, (%%r15, %%r13, 8)\n"
+  "\txorq   %%r14, %%r14\n"
   "\naddq   $1, %%r11\n"
-  "\naddq   $1, %%r13\n"
-  "\tcmpq   %[sizeIn1], %%r11\n"
-  "\tjg     2b\n"
+  "\tcmpq   %[size_A], %%r11\n"
+  "\tjl     1b\n"
 
   :: [carry] "m" (carry), [in1] "g" (a), [in2] "g" (b), 
-      [sizeIn1] "g" (size_a), [sizeIn2] "g" (size_b), [out] "g" (result)
+      [size_A] "g" (size_A), [size_B] "g" (size_B), [result] "g" (result)
   : "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r11", 
     "%r12", "%r13", "%r14", "%r15");
 #else
