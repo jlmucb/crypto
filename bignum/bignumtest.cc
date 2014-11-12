@@ -44,21 +44,21 @@ uint64_t  cycles_per_second= 10;
 bool makeTestData(const char* filename, int sizeBytes) {
   byte* buf= new byte[sizeBytes];
 
-  int randfd= open("/dev/random", O_RDONLY);
+  int randfd= open("/dev/urandom", O_RDONLY);
   int randfile= creat(filename, S_IRWXU|S_IRWXG);
   if(randfd<0 || randfile<0) {
-    printf("Cant create test file\n");
+    printf("makeTestData: cant create test file\n");
     delete buf;
     return false;
   }
   int bytes_in_file= read(randfd, buf, sizeBytes);
   if(bytes_in_file!=sizeBytes) {
-    printf("Cant read %d bytes in data file\n", sizeBytes);
+    printf("makeTestData: Cant read %d bytes in data file\n", sizeBytes);
     delete buf;
     return false;
   }
   if(write(randfile, buf, sizeBytes)<0) {
-    printf("Cant write test file\n");
+    printf("makeTestData: Cant write test file\n");
     delete buf;
     return false;
   }
@@ -74,13 +74,13 @@ bool readTestData(const char* filename, int sizeBytes, byte* buf) {
   int  bytes_in_file;
 
   if(randfd<0) {
-    printf("Cant open read file\n");
+    printf("readTestData: Cant open read file\n");
     ret= false;
     goto done;
   }
   bytes_in_file= read(randfd, buf, sizeBytes);
   if(bytes_in_file!=sizeBytes) {
-    printf("bytes read/requested don't match %d, %d\n", sizeBytes, bytes_in_file);
+    printf("readTestData: bytes read/requested don't match %d, %d\n", sizeBytes, bytes_in_file);
     ret= false;
     goto done;
   }
@@ -3065,7 +3065,7 @@ bool RunTestSuite() {
   return true;
 }
 
-#define TESTBUFSIZE 20000
+#define TESTBUFSIZE 2048
 
 TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(simpletest());

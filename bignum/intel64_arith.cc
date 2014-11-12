@@ -570,6 +570,7 @@ int DigitArraySquare(int size_a, uint64_t* a,
     "\tmovq   %%r9, %[cur_out]\n"
     "\tsubq   $8, %[cur_out]\n"
 
+    "\t.balign 16\n"
     "2:\n"
     "\tmovq   %[cur_in], %%r8\n"
     "\taddq   $8, %%r8\n"
@@ -626,6 +627,7 @@ int DigitArraySquare(int size_a, uint64_t* a,
     "\tcmpq   %%r9, %%r12\n"
     "\tjg     3b\n"
     "\tjmp    2b\n"
+    "\t.balign 16\n"
     "11:\n"
 
   : [cur_in] "=m" (cur_in), [cur_out] "=m" (cur_out)
@@ -646,6 +648,7 @@ int DigitArrayMultBy(int capacity_a, int size_a, uint64_t* a, uint64_t x) {
     "\txorq   %%rbx, %%rbx\n"     // clear ctr
     "\tmovl   %[size_a],%%ebx\n"  // ctr
     "\tmovq   %[a], %%rcx\n"
+    "\t.balign  16\n"
     "1:\n"
     "\tmovq   (%%rcx), %%rax\n"
     "\tmulq   %[x]\n"
@@ -653,6 +656,7 @@ int DigitArrayMultBy(int capacity_a, int size_a, uint64_t* a, uint64_t x) {
     "\tmovq   $0, %%r8\n"
     "\tjnc    2f\n"
     "\tmovq   $1,%%r8\n"
+    "\t.balign  16\n"
     "\t2:\n"
     "\taddq   %%rdx,%%r8\n"
     "\tmovq   %%rax,(%%rcx)\n"
