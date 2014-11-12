@@ -24,6 +24,9 @@
 #include "conversions.h"
 #include "util.h"
 
+// #define FASTADD
+// #define FASTMULT
+
 // ------------------------------------------------------------------------
 
 
@@ -215,6 +218,7 @@ void Uint64SubStep(uint64_t a, uint64_t b, uint64_t* result, uint64_t* borrow) {
 }
 
 //  carry:result= a*b
+//  mulq   op:    rdx:rax= %rax*op
 void Uint64MultStep(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry) {
 
   asm volatile (
@@ -322,15 +326,77 @@ void Uint64MultWithCarryStep(uint64_t a, uint64_t b,
 // result = a+b.  returns size of result.  Error if <0
 int DigitArrayAdd(int size_a, uint64_t* a, int size_b, uint64_t* b, 
                     int size_result, uint64_t* result) {
-  uint64_t  carry_in= 0ULL;
   uint64_t  carry_out= 0ULL;
-  int       i;
 
   if(size_a<size_b)
     return DigitArrayAdd(size_b, b, size_a, a, size_result, result);
 
-  if(size_result<size_a)
-    return -1;
+#ifdef FASTADD
+//  Caller ensures sizeIn1>=sizeIn2 and out is at least sizeIn1 in length
+//    r8 : op1 location
+//    r9 : op2 location
+//    r11: in1 index
+//    r12: in2 words left
+//    r14: carry
+//    r15: current out location
+asm volatile (
+  "\tmovq   %[in1], %%r8\n"
+  "\tmovq   %[in2], %%r9\n"
+  "\tmovq   %[out], %%r15\n"
+  "\tmovq   %[sizeIn2],%%r12\n"
+  "\txorq     %%r11, %%r11\n"
+  "\txorq     %%r14, %%r14\n"
+
+  // add loop
+  "2:\n"
+  "\tmovq   (%%r8, %%r11,8), %%rax\n"
+  "\taddq   (%%r9, %%r11,8), %%rax\n"
+  "\tadcq   %%r14, %%rax\n"
+  "\tjc     6f\n"
+  // no carry
+  "\txorq   %%r14, %%r14\n"
+  "\tjmp    7f\n"
+  // carry
+  "6:\n"
+  "\tmovq   $1, %%r14\n"
+
+  "7:\n"
+  "\tmovq   %%rax, (%%r15, %%r11, 8)\n"
+  "\taddq   $1,%%r11\n"
+  "\tsubq   $1,%%r12\n"
+  "\tcmpq   $0, %%r12\n"
+  "\tjg     2b\n"
+
+  "\tmovq   %[sizeIn1], %%r12\n"
+  "\tsubq   %[sizeIn2], %%r12\n"
+
+  // copy or propagate carry
+  "8:\n"
+  "\taddq   (%%r8, %%r11, 8), %%r14\n"
+  "\tjc     9f\n"
+  "\txorq   %%r14, %%r14\n"
+
+  "9:\n"
+  "\tmovq   %%r14, (%%r15, %%r11, 8)\n"
+  "\taddq   $1, %%r11\n"
+  "\tsubq   $1,%%r12\n"
+  "\tcmpq   $0, %%r12\n"
+  "\tjg     8b\n"
+  "\tmovq   %%r14, %[carry_out]\n"
+
+  : [carry_out] "=m" (carry_out)
+  : [in1] "g" (a), [in2] "g" (b), [sizeIn1] "g" (size_a), [sizeIn2] "g" (size_b), 
+    [out] "g" (result)
+  : "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r11", "%r12", "%r14", "%r15");
+
+  if(carry_out!=0) {
+    if(size_a>=size_result)
+      return -1;
+    result[size_a]= carry_out;
+  }
+#else
+  uint64_t  carry_in= 0ULL;
+  int       i;
 
   DigitArrayZeroNum(size_result, result);
   for(i=0; i<size_b; i++) {
@@ -347,6 +413,7 @@ int DigitArrayAdd(int size_a, uint64_t* a, int size_b, uint64_t* b,
       return -1;
     result[i]= carry_out;
   }
+#endif
   return DigitArrayComputedSize(size_result, result);
 }
 
@@ -378,19 +445,65 @@ int DigitArraySub(int size_a, uint64_t* a, int size_b, uint64_t* b,
 // result = a*b.  returns size of result.  Error if <0
 int DigitArrayMult(int size_a, uint64_t* a, int size_b, uint64_t* b, 
                     int size_result, uint64_t* result) {
-  int       i, j;
-  uint64_t  carry_in= 0;
-  uint64_t  carry_out= 0;
-
-#ifdef EXTRADEBUG
-printf("DigitArrayMult (%d, %d, %d)\n", size_a, size_b, size_result);
-#endif
   // output is size_a+size_b or size_a+size_b-1 uint64_t elements
   if((size_a+size_b)>size_result) {
     LOG(ERROR) << "DigitArrayMult: result is too small\n";
     return -1;
   }
   DigitArrayZeroNum(size_result, result);
+
+#ifdef FASTMULT
+  uint64_t  carry= 0;
+
+//  Caller ensures out is large enough
+//    r8 : current op1 location
+//    r9 : current op2 location
+//    r11: in1 index
+//    r12: in2 index
+//    r13: current output index
+//    r14: carry
+//    r15: current out location
+asm volatile (
+  "\tmovq   %[in1], %%r8\n"
+  "\tmovq   %[in2], %%r9\n"
+  "\tmovq   %[out], %%r15\n"
+  "\txorq   %%r11, %%r11\n"
+  "\txorq   %%r14, %%r14\n"
+
+  "1:\n"
+  "\txorq   %%r12, %%r12\n"
+  "\tmovq   %%r11, %%r13\n"
+
+  "2:\n"
+  "\tmovq   (%%r8, %%r11, 8), %%rax\n"
+  "\tmulq   (%%r8, %%r12, 8)\n"
+  "\taddq   %%r14, %%rax\n"
+  "\tadcq   $0, %%rdx\n"
+  "\taddq   (%%r15, %%r13, 8), %%rax\n"
+  "\tadcq   $0,%%rdx\n"
+  "\tmovq   %%rax, (%%r15, %%r13, 8)\n"
+  // there should be no further carry
+  "\tmovq   %%rdx, %%r14\n"
+  "\taddq   $1, %%r12\n"
+  "\taddq   $1, %%r13\n"
+  "\tcmpq   %[sizeIn2], %%r12\n"
+  "\tjg     2b\n"
+
+  "\tmovq   %%r14, (%%r15, %%r13, 8)\n"
+  "\naddq   $1, %%r11\n"
+  "\naddq   $1, %%r13\n"
+  "\tcmpq   %[sizeIn1], %%r11\n"
+  "\tjg     2b\n"
+
+  :: [carry] "m" (carry), [in1] "g" (a), [in2] "g" (b), 
+      [sizeIn1] "g" (size_a), [sizeIn2] "g" (size_b), [out] "g" (result)
+  : "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r11", 
+    "%r12", "%r13", "%r14", "%r15");
+#else
+  int       i, j;
+  uint64_t  carry_in= 0;
+  uint64_t  carry_out= 0;
+
   for(i=0; i<size_a; i++) {
     carry_in= 0;
     for(j=0; j<size_b; j++) {
@@ -401,6 +514,7 @@ printf("DigitArrayMult (%d, %d, %d)\n", size_a, size_b, size_result);
     }
     result[i+j]= carry_out;
   }
+#endif
   return DigitArrayComputedSize(size_result, result);
 }
 
