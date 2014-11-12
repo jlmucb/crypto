@@ -321,8 +321,6 @@ void Uint64MultWithCarryStep(uint64_t a, uint64_t b,
   :"cc", "memory", "%rax", "%rbx", "%rcx", "%rdx");
 }
 
-// ------------------------------------------------------------------------
-
 // result = a+b.  returns size of result.  Error if <0
 int DigitArrayAdd(int size_a, uint64_t* a, int size_b, uint64_t* b, 
                     int size_result, uint64_t* result) {
@@ -343,9 +341,9 @@ asm volatile (
   "\tmovq   %[in1], %%r8\n"
   "\tmovq   %[in2], %%r9\n"
   "\tmovq   %[out], %%r15\n"
-  "\tmovq   %[sizeIn2],%%r12\n"
-  "\txorq     %%r11, %%r11\n"
-  "\txorq     %%r14, %%r14\n"
+  "\tmovq   %[sizeIn2], %%r12\n"
+  "\txorq   %%r11, %%r11\n"
+  "\txorq   %%r14, %%r14\n"
 
   // add loop
   "2:\n"
@@ -373,11 +371,11 @@ asm volatile (
   // copy or propagate carry
   "8:\n"
   "\taddq   (%%r8, %%r11, 8), %%r14\n"
+  "\tmovq   %%r14, (%%r15, %%r11, 8)\n"
   "\tjc     9f\n"
   "\txorq   %%r14, %%r14\n"
 
   "9:\n"
-  "\tmovq   %%r14, (%%r15, %%r11, 8)\n"
   "\taddq   $1, %%r11\n"
   "\tsubq   $1,%%r12\n"
   "\tcmpq   $0, %%r12\n"
@@ -407,7 +405,6 @@ asm volatile (
       Uint64AddWithCarryStep(a[i], 0ULL, carry_in, &result[i], &carry_out);
       carry_in= carry_out;
   }
-
   if(carry_out!=0) {
     if(i>=size_result)
       return -1;
@@ -470,19 +467,20 @@ asm volatile (
   "\txorq   %%r11, %%r11\n"
   "\txorq   %%r14, %%r14\n"
 
+  // outer mult loop
   "1:\n"
   "\txorq   %%r12, %%r12\n"
   "\tmovq   %%r11, %%r13\n"
 
+  // inner mult loop
   "2:\n"
   "\tmovq   (%%r8, %%r11, 8), %%rax\n"
-  "\tmulq   (%%r8, %%r12, 8)\n"
+  "\tmulq   (%%r9, %%r12, 8)\n"
   "\taddq   %%r14, %%rax\n"
   "\tadcq   $0, %%rdx\n"
   "\taddq   (%%r15, %%r13, 8), %%rax\n"
   "\tadcq   $0,%%rdx\n"
   "\tmovq   %%rax, (%%r15, %%r13, 8)\n"
-  // there should be no further carry
   "\tmovq   %%rdx, %%r14\n"
   "\taddq   $1, %%r12\n"
   "\taddq   $1, %%r13\n"
