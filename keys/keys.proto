@@ -17,6 +17,8 @@ message crypto_rsa_key_message {
     optional string dp                          = 8;
     optional string dq                          = 9;
     optional string m_prime                     =10;
+    optional string p_prime                     =11;
+    optional string q_prime                     =12;
   }
 
 message crypto_ecc_curve_message {

@@ -2322,7 +2322,7 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   memset(M, 0, 512);
   memset(C, 0, 512);
 
-  memcpy(M, pbuf, 128);
+  memcpy(M, pbuf, 127);
   int   n= 128;
 
   // 1024, speed 0, Encrypt

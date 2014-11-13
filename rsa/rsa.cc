@@ -222,6 +222,18 @@ bool RsaKey::SerializeKeyToMessage(crypto_rsa_key_message& msg) {
     msg.set_m_prime(s->c_str());
     delete s;
   }
+  if(p_prime_!=NULL) {
+    string* s= ByteToBase64RightToLeft(
+                  p_prime_->size_*sizeof(uint64_t), (byte*)p_prime_->value_);
+    msg.set_p_prime(s->c_str());
+    delete s;
+  }
+  if(m_prime_!=NULL) {
+    string* s= ByteToBase64RightToLeft(
+                  q_prime_->size_*sizeof(uint64_t), (byte*)q_prime_->value_);
+    msg.set_q_prime(s->c_str());
+    delete s;
+  }
   return true;
 }
 
@@ -329,6 +341,30 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
       LOG(ERROR)<<"RsaKey::DeserializeKeyFromMessage: cant encode\n";
     }
     m_prime_->Normalize();
+  }
+  if(msg.has_p_prime()) {
+    if(p_prime_==NULL) {
+      p_prime_= new BigNum(bignum_size);
+    }
+    k= Base64ToByteRightToLeft((char*)(msg.p_prime().c_str()),
+            bignum_size*sizeof(uint64_t),
+            (byte*)p_prime_->value_);
+    if(k<0) {
+      LOG(ERROR)<<"RsaKey::DeserializeKeyFromMessage: cant encode\n";
+    }
+    m_prime_->Normalize();
+  }
+  if(msg.has_q_prime()) {
+    if(q_prime_==NULL) {
+      q_prime_= new BigNum(bignum_size);
+    }
+    k= Base64ToByteRightToLeft((char*)(msg.q_prime().c_str()),
+            bignum_size*sizeof(uint64_t),
+            (byte*)q_prime_->value_);
+    if(k<0) {
+      LOG(ERROR)<<"RsaKey::DeserializeKeyFromMessage: cant encode\n";
+    }
+    q_prime_->Normalize();
   }
   return true;
 }

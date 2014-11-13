@@ -24,8 +24,6 @@
 #include "conversions.h"
 #include "util.h"
 
-// #define FASTADD
-#define FASTMULT
 
 // ------------------------------------------------------------------------
 
@@ -329,73 +327,6 @@ int DigitArrayAdd(int size_a, uint64_t* a, int size_b, uint64_t* b,
   if(size_result<size_a)
     return -1;
 
-#ifdef FASTADD
-  uint64_t  size_A= (uint64_t) size_a;
-  uint64_t  size_B= (uint64_t) size_b;
-  uint64_t  carry_out= 0ULL;
-//  Caller ensures sizeIn1>=sizeIn2 and out is at least sizeIn1 in length
-//    r8 : op1 location
-//    r9 : op2 location
-//    r11: in1 index
-//    r12: in2 words left
-//    r14: carry
-//    r15: current out location
-asm volatile (
-  "\tmovq   %[in1], %%r8\n"
-  "\tmovq   %[in2], %%r9\n"
-  "\tmovq   %[result], %%r15\n"
-  "\tmovq   %[size_B], %%r12\n"
-  "\txorq   %%r11, %%r11\n"
-  "\txorq   %%r14, %%r14\n"
-
-  // add loop
-  "2:\n"
-  "\tmovq   (%%r8, %%r11,8), %%rax\n"
-  "\taddq   (%%r9, %%r11,8), %%rax\n"
-  "\tadcq   %%r14, %%rax\n"
-  "\tjc     6f\n"
-  // no carry
-  "\txorq   %%r14, %%r14\n"
-  "\tjmp    7f\n"
-  // carry
-  "6:\n"
-  "\tmovq   $1, %%r14\n"
-
-  "7:\n"
-  "\tmovq   %%rax, (%%r15, %%r11, 8)\n"
-  "\taddq   $1,%%r11\n"
-  "\tsubq   $1,%%r12\n"
-  "\tcmpq   $0, %%r12\n"
-  "\tjg     2b\n"
-
-  "\tmovq   %[size_A], %%r12\n"
-  "\tsubq   %[size_B], %%r12\n"
-
-  // copy or propagate carry
-  "8:\n"
-  "\taddq   (%%r8, %%r11, 8), %%r14\n"
-  "\tmovq   %%r14, (%%r15, %%r11, 8)\n"
-  "\tjc     9f\n"
-  "\txorq   %%r14, %%r14\n"
-
-  "9:\n"
-  "\taddq   $1, %%r11\n"
-  "\tsubq   $1,%%r12\n"
-  "\tcmpq   $0, %%r12\n"
-  "\tjg     8b\n"
-  "\tmovq   %%r14, %[carry_out]\n"
-
-  : [carry_out] "=m" (carry_out)
-  : [in1] "g" (a), [in2] "g" (b), [size_A] "g" (size_A), [size_B] "g" (size_B), 
-    [result] "g" (result)
-  : "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r11", "%r12", "%r14", "%r15");
-
-  if(carry_out!=0) {
-    if(size_a>=size_result)
-      return -1;
-    result[size_a]= carry_out;
-  }
-#else
   uint64_t  carry_in= 0ULL;
   uint64_t  carry_out= 0ULL;
   int       i;
@@ -414,7 +345,6 @@ asm volatile (
       return -1;
     result[i]= carry_out;
   }
-#endif
   return DigitArrayComputedSize(size_result, result);
 }
 
@@ -443,6 +373,7 @@ int DigitArraySub(int size_a, uint64_t* a, int size_b, uint64_t* b,
   return DigitArrayComputedSize(size_result, result);
 }
 
+#define FASTMULT
 // result = a*b.  returns size of result.  Error if <0
 int DigitArrayMult(int size_a, uint64_t* a, int size_b, uint64_t* b, 
                     int size_result, uint64_t* result) {
