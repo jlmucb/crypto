@@ -243,11 +243,15 @@ bool checkBigModMult(BigNum& ab, BigNum& m, BigNum& r) {
 }
 
 bool BigModMult(BigNum& a, BigNum& b, BigNum& m, BigNum& r) {
-  if(!BigModNormalize(a,m))
+  int   n= a.size_>b.size_?a.size_:b.size_;
+
+  if(m.size_>n)
+    n= m.size_;
+  if(!BigModNormalize(a, m))
     return false;
-  if(!BigModNormalize(b,m))
+  if(!BigModNormalize(b, m))
     return false;
-  BigNum  t(4*m.capacity_+2);
+  BigNum  t(2*n+2);
   if(!BigUnsignedMult(a, b, t))
     return false;
   return BigMod(t, m, r);
@@ -305,8 +309,8 @@ bool BigModExp(BigNum& b, BigNum& e, BigNum& m, BigNum& r) {
     goto done;
   }
   for(i=0;i<2; i++) {
-    accum[i]= new BigNum(4*m.capacity_+1);
-    doubled[i]= new BigNum(4*m.capacity_+1);
+    accum[i]= new BigNum(4*m.size_+1);
+    doubled[i]= new BigNum(4*m.size_+1);
   }
   accum[accum_current]->CopyFrom(Big_One);
   doubled[doubler_current]->CopyFrom(b);
@@ -436,10 +440,10 @@ bool FillRandom(int n, BigNum** random_array) {
  *  }
  */
 bool BigMillerRabin(BigNum& n, BigNum** random_a, int trys) {
-  BigNum  n_minus_1(2*n.capacity_);
-  BigNum  odd_part_n_minus_1(2*n.capacity_);
-  BigNum  y(4*n.capacity_);
-  BigNum  z(4*n.capacity_);
+  BigNum  n_minus_1(2*n.size_);
+  BigNum  odd_part_n_minus_1(2*n.size_);
+  BigNum  y(4*n.size_+1);
+  BigNum  z(4*n.size_+1);
   int     i;
   int     j;
   int     shift;
@@ -579,22 +583,22 @@ int smallestunitaryexponent(BigNum& b, BigNum& p, int maxm) {
 }
 
 bool BigModTonelliShanks(BigNum& a, BigNum& p, BigNum& s) {
-  BigNum    t1(2*p.capacity_+1);
-  BigNum    t2(2*p.capacity_+1);
+  BigNum    t1(2*p.size_+1);
+  BigNum    t2(2*p.size_+1);
 
-  BigNum    q(2*p.capacity_+1);       // p-1= 2^max_two_power q
-  BigNum    p_minus(2*p.capacity_+1);
+  BigNum    q(2*p.size_+1);       // p-1= 2^max_two_power q
+  BigNum    p_minus(2*p.size_+1);
 
   int       max_two_power;
   int       m;
 
-  BigNum    e(2*p.capacity_+1);       // exponent
-  BigNum    n(2*p.capacity_+1);       // non-residue
-  BigNum    x(2*p.capacity_+1);
-  BigNum    y(2*p.capacity_+1);
-  BigNum    z(2*p.capacity_+1);
-  BigNum    b(2*p.capacity_+1);
-  BigNum    t(2*p.capacity_+1);
+  BigNum    e(2*p.size_+1);       // exponent
+  BigNum    n(2*p.size_+1);       // non-residue
+  BigNum    x(2*p.size_+1);
+  BigNum    y(2*p.size_+1);
+  BigNum    z(2*p.size_+1);
+  BigNum    b(2*p.size_+1);
+  BigNum    t(2*p.size_+1);
 
   if(!BigUnsignedSub(p, Big_One, p_minus)) {
     LOG(ERROR) << "BigUnsignedSub 1 in BigModTonelliShanks failed\n";
@@ -705,9 +709,9 @@ bool BigModSquareRoot(BigNum& n, BigNum& p, BigNum& r) {
   if(bot==1)
       return BigModTonelliShanks(n, p, r);
   
-  BigNum  t1(1+2*p.capacity_);
-  BigNum  t2(1+2*p.capacity_);
-  BigNum  t3(1+2*p.capacity_);
+  BigNum  t1(1+2*p.size_);
+  BigNum  t2(1+2*p.size_);
+  BigNum  t3(1+2*p.size_);
   if(bot==3 || bot==7) {
     if(!BigUnsignedAdd(p, Big_One, p_temp)) {
       LOG(ERROR) << "BigUnsignedAdd 1 in BigModSquareRoot failed\n";
@@ -838,17 +842,20 @@ bool BigMakeMont(BigNum& a, int r, BigNum& m, BigNum& mont_a) {
 // BigMontParams
 //  Calculate m': RR'-mm'=1
 bool BigMontParams(BigNum& m, int r, BigNum& m_prime) {
-  BigNum  g(2*m.capacity_+1);
-  BigNum  R(2*m.capacity_+1);
-  BigNum  R_prime(2*m.capacity_+1);
-  BigNum  neg_m_prime(2*m.capacity_+1);
+  int     n= (r+NBITSINUINT64-1)/NBITSINUINT64;
+  if(m.size_>n)
+    n= m.size_;
+  BigNum  g(2*n+1);
+  BigNum  R(2*n+1);
+  BigNum  R_prime(2*n+1);
+  BigNum  neg_m_prime(2*n+1);
 
   if(!BigShift(Big_One, r, R)) {
     LOG(ERROR) << "BigShift fails in BigMontParams\n";
     return false;
   }
   if(!BigExtendedGCD(m, R, neg_m_prime, R_prime, g)){
-    LOG(ERROR) << "BigExtendedGCD fails in BigExtendedGCD\n";
+    LOG(ERROR) << "BigExtendedGCD fails in BigMontParams\n";
     return false;
   }
 #if 0
@@ -858,6 +865,10 @@ bool BigMontParams(BigNum& m, int r, BigNum& m_prime) {
   printf("R_prime: "); PrintNumToConsole(R_prime, 10); printf("\n");
   printf("neg_m_prime: "); PrintNumToConsole(neg_m_prime, 10); printf("\n");
 #endif
+  if(!BigModNormalize(neg_m_prime, R)) {
+    LOG(ERROR) << "BigModNormalize fails in BigMontParams\n";
+    return false;
+  }
   if(!BigSub(R, neg_m_prime, m_prime)) {
     LOG(ERROR) << "BigSub fails in BigMontParams\n";
     return false;
@@ -867,11 +878,17 @@ bool BigMontParams(BigNum& m, int r, BigNum& m_prime) {
 
 // BigMontReduce(a,m,r)= a R^(-1) (mod m)
 bool BigMontReduce(BigNum& a, int r, BigNum& m, BigNum& m_prime, BigNum& mont_a) {
-  BigNum t(4*m.capacity_+1);
-  BigNum u(4*m.capacity_+1);
-  BigNum v(4*m.capacity_+1);
-  BigNum w(4*m.capacity_+1);
-  BigNum R(4*m.capacity_+1);
+  int     k= (r+NBITSINUINT64-1)/NBITSINUINT64;
+  int     n= k;
+  if(m.size_>n)
+    n= m.size_;
+  if(a.size_>n)
+    n= a.size_;
+  BigNum t(2*n+1);
+  BigNum u(2*n+1);
+  BigNum v(2*n+1);
+  BigNum w(2*n+1);
+  BigNum R(2*n+1);
   int     i;
 
   if(!BigMult(a, m_prime, t))
@@ -899,7 +916,14 @@ bool BigMontReduce(BigNum& a, int r, BigNum& m, BigNum& m_prime, BigNum& mont_a)
 
 bool BigMontMult(BigNum& aR, BigNum& bR, BigNum& m, uint64_t r,
                  BigNum& m_prime, BigNum& abR) {
-  BigNum  t(4*m.capacity_+1);
+  int     n= (r+NBITSINUINT64-1)/NBITSINUINT64;
+  if(m.size_>n)
+    n= m.size_;
+  if(aR.size_>n)
+    n= aR.size_;
+  if(bR.size_>n)
+    n= bR.size_;
+  BigNum  t(2*n+1);
   bool    ret= true;
 
   if(!BigUnsignedMult(aR, bR, t)) {
@@ -928,9 +952,16 @@ bool BigMontMult(BigNum& aR, BigNum& bR, BigNum& m, uint64_t r,
  */
 bool BigMontExp(BigNum& b, BigNum& e, int r, BigNum& m, 
                 BigNum& m_prime, BigNum& out) {
-  BigNum  square(4*m.capacity_+1);
-  BigNum  accum(4*m.capacity_+1);
-  BigNum  t(4*m.capacity_+1);
+  int     n= (r+NBITSINUINT64-1)/NBITSINUINT64;
+  if(m.size_>n)
+    n= m.size_;
+  if(b.size_>n)
+    n= b.size_;
+  if(e.size_>n)
+    n= e.size_;
+  BigNum  square(4*n+1);
+  BigNum  accum(4*n+1);
+  BigNum  t(4*n+1);
   int     k= BigHighBit(e); 
   int     i;
 
