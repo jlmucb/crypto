@@ -826,7 +826,12 @@ bool BigModSquareRoot(BigNum& n, BigNum& p, BigNum& r) {
 
 // BigMakeMont(a,m,r)= a R (mod m)
 bool BigMakeMont(BigNum& a, int r, BigNum& m, BigNum& mont_a) {
-  BigNum  t1(2*m.capacity_);
+  int     n= a.size_>m.size_?a.size_:m.size_;
+  int     k= (r+NBITSINUINT64-1)/NBITSINUINT64;
+  if(k>n)
+    n= k;
+
+  BigNum  t1(1+2*n);
 
   if(m.IsZero()) {
     LOG(ERROR) << "Modulus is 0 BigMakeMont\n";
@@ -878,41 +883,51 @@ bool BigMontParams(BigNum& m, int r, BigNum& m_prime) {
 
 // BigMontReduce(a,m,r)= a R^(-1) (mod m)
 bool BigMontReduce(BigNum& a, int r, BigNum& m, BigNum& m_prime, BigNum& mont_a) {
-// printf("BigMontReduce: a.size_: %d, r: %d, m_prime.size: %d\n", a.size_, r, m_prime.size_);
-  int     k= (r+NBITSINUINT64-1)/NBITSINUINT64;
-  int     n= k;
+  int     n= (r+NBITSINUINT64-1)/NBITSINUINT64;
   if(m.size_>n)
     n= m.size_;
   if(a.size_>n)
     n= a.size_;
-  BigNum t(2*n+1);
-  BigNum u(2*n+1);
-  BigNum v(2*n+1);
-  BigNum w(2*n+1);
-  BigNum R(2*n+1);
+  BigNum t(4*n+1);
+  BigNum v(4*n+1);
+  BigNum w(4*n+1);
+  BigNum R(4*n+1);
   int     i;
 
   if(!BigMult(a, m_prime, t))
     return false;
 
   // reduce t mod 2^r
-  if(!BigShift(Big_One, r, u))
-    return false;
-  if(!BigUnsignedSubFrom(u, Big_One))
-    return false;
-  for(i=0;i<t.size_;i++)
-    u.value_[i]&= t.value_[i];
-  u.Normalize();
+  int       k= r/NBITSINUINT64;
+  uint64_t  u;
 
-  if(!BigMult(u, m, w))
+  for(i=(k+1);i<t.capacity_;i++)
+    t.value_[i]= 0ULL;
+  int l= r-(k*NBITSINUINT64);
+  u= (0xffffffffffffffffULL)>>(NBITSINUINT64-l);
+  t.value_[k]= t.value_[k]&u;
+  t.Normalize();
+
+  if(!BigMult(t, m, w)) {
+    LOG(ERROR) << "BigMult error in BigMontReduce\n";
     return false;
-  if(!BigAdd(w, a, v))
+  }
+  if(!BigAdd(w, a, v)) {
+    LOG(ERROR) << "BigAdd error in BigMontReduce\n";
     return false;
-  if(!BigShift(v, -r, mont_a))
+  }
+  if(!BigShift(v, -r, mont_a)) {
+    LOG(ERROR) << "BigShift error in BigMontReduce\n";
     return false;
+  }
   if(BigCompare(m, mont_a)<=0) {
-    if(!BigUnsignedSubFrom(mont_a, m))
+    if(!BigUnsignedSubFrom(mont_a, m)) {
+      LOG(ERROR) << "BigUnsignedSubFrom error in BigMontReduce\n";
       return false;
+    }
+  }
+  if(BigCompare(m, mont_a)<=0) {
+    BigModNormalize(mont_a, m);
   }
   return true;
 }
@@ -926,6 +941,8 @@ bool BigMontMult(BigNum& aR, BigNum& bR, BigNum& m, uint64_t r,
     n= aR.size_;
   if(bR.size_>n)
     n= bR.size_;
+
+
   BigNum  t(2*n+1);
   bool    ret= true;
 
@@ -936,6 +953,9 @@ bool BigMontMult(BigNum& aR, BigNum& bR, BigNum& m, uint64_t r,
   if(ret && !BigMontReduce(t, r, m, m_prime, abR)) {
     LOG(ERROR)<< "BigMontReduce fails in BigMontMult\n";
     ret= false;
+  }
+  if(BigCompare(abR, m)>=0) {
+    BigModNormalize(abR, m);
   }
   return ret;
 }
@@ -962,6 +982,7 @@ bool BigMontExp(BigNum& b, BigNum& e, int r, BigNum& m,
     n= b.size_;
   if(e.size_>n)
     n= e.size_;
+
   BigNum  square(4*n+1);
   BigNum  accum(4*n+1);
   BigNum  t(4*n+1);
@@ -987,8 +1008,9 @@ bool BigMontExp(BigNum& b, BigNum& e, int r, BigNum& m,
     t.ZeroNum();
     if(i!=k) {
       if(!BigMontMult(square, square, m, r, m_prime, t)) {
-printf("square.size_: %d, m.size_: %d, m_prime.size_: %d\n", square.size_, m.size_, m_prime.size_);
-        LOG(ERROR) << "BigMontMult 4 fails in BigMontExp " << m.size_ << ", " << square.size_ << "\n";
+          printf("b.size_: %d, square.size_: %d, m.size_: %d, m_prime.size_: %d\n", 
+                 b.size_, square.size_, m.size_, m_prime.size_);
+        LOG(ERROR) << "BigMontMult 4 fails in BigMontExp " << i<< " " << m.size_ << ", " << square.size_ << "\n";
         return false;
       }
       square.CopyFrom(t);
