@@ -878,6 +878,7 @@ bool BigMontParams(BigNum& m, int r, BigNum& m_prime) {
 
 // BigMontReduce(a,m,r)= a R^(-1) (mod m)
 bool BigMontReduce(BigNum& a, int r, BigNum& m, BigNum& m_prime, BigNum& mont_a) {
+// printf("BigMontReduce: a.size_: %d, r: %d, m_prime.size: %d\n", a.size_, r, m_prime.size_);
   int     k= (r+NBITSINUINT64-1)/NBITSINUINT64;
   int     n= k;
   if(m.size_>n)
@@ -893,6 +894,7 @@ bool BigMontReduce(BigNum& a, int r, BigNum& m, BigNum& m_prime, BigNum& mont_a)
 
   if(!BigMult(a, m_prime, t))
     return false;
+
   // reduce t mod 2^r
   if(!BigShift(Big_One, r, u))
     return false;
@@ -901,6 +903,7 @@ bool BigMontReduce(BigNum& a, int r, BigNum& m, BigNum& m_prime, BigNum& mont_a)
   for(i=0;i<t.size_;i++)
     u.value_[i]&= t.value_[i];
   u.Normalize();
+
   if(!BigMult(u, m, w))
     return false;
   if(!BigAdd(w, a, v))
@@ -984,6 +987,7 @@ bool BigMontExp(BigNum& b, BigNum& e, int r, BigNum& m,
     t.ZeroNum();
     if(i!=k) {
       if(!BigMontMult(square, square, m, r, m_prime, t)) {
+printf("square.size_: %d, m.size_: %d, m_prime.size_: %d\n", square.size_, m.size_, m_prime.size_);
         LOG(ERROR) << "BigMontMult 4 fails in BigMontExp " << m.size_ << ", " << square.size_ << "\n";
         return false;
       }
