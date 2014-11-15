@@ -890,7 +890,7 @@ bool BigMontReduce(BigNum& a, int r, BigNum& m, BigNum& m_prime, BigNum& mont_a)
 
 bool BigMontMult(BigNum& aR, BigNum& bR, BigNum& m, uint64_t r,
                  BigNum& m_prime, BigNum& abR) {
-  BigNum  t(2*m.capacity_+1);
+  BigNum  t(4*m.capacity_+1);
   bool    ret= true;
 
   if(!BigUnsignedMult(aR, bR, t)) {
@@ -919,9 +919,9 @@ bool BigMontMult(BigNum& aR, BigNum& bR, BigNum& m, uint64_t r,
  */
 bool BigMontExp(BigNum& b, BigNum& e, int r, BigNum& m, 
                 BigNum& m_prime, BigNum& out) {
-  BigNum  square(2*m.capacity_+1);
-  BigNum  accum(2*m.capacity_+1);
-  BigNum  t(2*m.capacity_+1);
+  BigNum  square(4*m.capacity_+1);
+  BigNum  accum(4*m.capacity_+1);
+  BigNum  t(4*m.capacity_+1);
   int     k= BigHighBit(e); 
   int     i;
 
@@ -930,13 +930,13 @@ bool BigMontExp(BigNum& b, BigNum& e, int r, BigNum& m,
     return false;
   }
   if(!BigMakeMont(Big_One, r, m, accum)) {
-    LOG(ERROR) << "BigMakeMont 2 fails in BigMontExp\n";
+    LOG(ERROR) << "BigMontMult 2 fails in BigMontExp " << m.size_ << ", " << square.size_ << "\n";
     return false;
   }
   for(i=1; i<=k; i++) {
     if(BigBitPositionOn(e, i)) {
       if(!BigMontMult(accum, square, m, r, m_prime, t)) {
-        LOG(ERROR) << "BigMontMult 2 fails in BigMontExp\n";
+        LOG(ERROR) << "BigMontMult 3 fails in BigMontExp " << m.size_ << ", " << square.size_ << "\n";
         return false;
       }
     accum.CopyFrom(t);
@@ -944,7 +944,7 @@ bool BigMontExp(BigNum& b, BigNum& e, int r, BigNum& m,
     t.ZeroNum();
     if(i!=k) {
       if(!BigMontMult(square, square, m, r, m_prime, t)) {
-        LOG(ERROR) << "BigMontMult 2 fails in BigMontExp\n";
+        LOG(ERROR) << "BigMontMult 4 fails in BigMontExp " << m.size_ << ", " << square.size_ << "\n";
         return false;
       }
       square.CopyFrom(t);

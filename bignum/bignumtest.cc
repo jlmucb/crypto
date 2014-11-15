@@ -2019,8 +2019,8 @@ bool mont_exp_time_test(const char* filename, int size, int num_tests) {
   BigNum    b(size+1);
   BigNum    e(size+1);
   BigNum    m(size+1);
-  BigNum    r(2*size+2);
-  BigNum    m_prime(2*size+2);
+  BigNum    r(4*size+2);
+  BigNum    m_prime(4*size+2);
   int       byte_size_copy= size*sizeof(uint64_t);
   byte*     pbuf= buf;
   byte*     pb= (byte*)b.value_;
