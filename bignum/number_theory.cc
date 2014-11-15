@@ -863,13 +863,6 @@ bool BigMontParams(BigNum& m, int r, BigNum& m_prime) {
     LOG(ERROR) << "BigExtendedGCD fails in BigMontParams\n";
     return false;
   }
-#if 0
-  printf("g: "); PrintNumToConsole(g, 10); printf("\n");
-  printf("m: "); PrintNumToConsole(m, 10); printf("\n");
-  printf("R: "); PrintNumToConsole(R, 10); printf("\n");
-  printf("R_prime: "); PrintNumToConsole(R_prime, 10); printf("\n");
-  printf("neg_m_prime: "); PrintNumToConsole(neg_m_prime, 10); printf("\n");
-#endif
   if(!BigModNormalize(neg_m_prime, R)) {
     LOG(ERROR) << "BigModNormalize fails in BigMontParams\n";
     return false;
@@ -927,6 +920,7 @@ bool BigMontReduce(BigNum& a, int r, BigNum& m, BigNum& m_prime, BigNum& mont_a)
     }
   }
   if(BigCompare(m, mont_a)<=0) {
+    // shouldn't need this
     BigModNormalize(mont_a, m);
   }
   return true;
@@ -955,6 +949,7 @@ bool BigMontMult(BigNum& aR, BigNum& bR, BigNum& m, uint64_t r,
     ret= false;
   }
   if(BigCompare(abR, m)>=0) {
+    // shouldn't need this
     BigModNormalize(abR, m);
   }
   return ret;
