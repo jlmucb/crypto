@@ -27,7 +27,7 @@ bool BigExtendedGCD(BigNum& a, BigNum& b, BigNum& x, BigNum& y, BigNum& g) {
   BigNum* b_coeff[3]= {NULL, NULL, NULL};
   BigNum* c[3]= {NULL, NULL, NULL};
 
-  int     n= a.capacity_>b.capacity_?a.capacity_:b.capacity_;
+  int     n= a.size_>b.size_?a.size_:b.size_;
   BigNum  q(2*n+1);
   BigNum  r(2*n+1);
   BigNum  t1(2*n+1);
@@ -93,14 +93,18 @@ done:
 }
 
 bool BigCRT(BigNum& s1, BigNum& s2, BigNum& m1, BigNum& m2, BigNum& r) {
-  int     m= m1.capacity_>m2.capacity_?m1.capacity_:m2.capacity_;
-  BigNum  u1(2*m+1);
-  BigNum  u2(2*m+1);
-  BigNum  t1(2*m+1);
-  BigNum  t2(2*m+1);
-  BigNum  r1(2*m+1);
-  BigNum  r2(2*m+1);
-  BigNum  n(2*m+1);
+  int     m= m1.size_>m2.size_?m1.size_:m2.size_;
+  if(s1.size_>m)
+    m= s1.size_;
+  if(s2.size_>m)
+    m= s2.size_;
+  BigNum  u1(3*m+1);
+  BigNum  u2(3*m+1);
+  BigNum  t1(3*m+1);
+  BigNum  t2(3*m+1);
+  BigNum  r1(3*m+1);
+  BigNum  r2(3*m+1);
+  BigNum  n(3*m+1);
 
   // u1 m1 + u2 m2= 1
   if(!BigExtendedGCD(m1, m2, u1, u2, t1))
@@ -136,8 +140,10 @@ bool BigMod(BigNum& a, BigNum& m, BigNum& r) {
 bool BigModNormalize(BigNum& a, BigNum& m) {
   if(!a.sign_ && BigCompare(a, m)<0)
     return true;
-  BigNum  t1(1+2*m.capacity_);
-  BigNum  t2(1+2*m.capacity_);
+
+  int     n= a.size_>m.size_?a.size_:m.size_;
+  BigNum  t1(1+2*n);
+  BigNum  t2(1+2*n);
 
   if(a.sign_) {
     if(!BigUnsignedEuclid(a, m, t1, t2)) 
@@ -267,7 +273,10 @@ bool BigModInv(BigNum& a, BigNum& m, BigNum& r) {
 
 // r= a/b
 bool BigModDiv(BigNum& a, BigNum& b, BigNum& m, BigNum& r) {
-  BigNum  x(4*m.capacity_+1);
+  int     n= a.size_>b.size_?a.size_:b.size_;
+  if(m.size_>n)
+    n= m.size_;
+  BigNum  x(3*n+1);
 
   if(!BigModInv(b, m, x))
     return false;
