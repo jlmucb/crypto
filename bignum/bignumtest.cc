@@ -27,6 +27,8 @@
 
 using namespace std;
 
+EccKey* ext_ecc_key= NULL;
+
 class BigNumTest : public ::testing::Test {
  protected:
   virtual void SetUp();
@@ -1913,7 +1915,7 @@ done:
   printf("div_time_test number of successful tests: %d\n", num_tests_executed);
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
   if(num_tests_executed>0)
-    printf("time per %d bit multiply %le\n", size*NBITSINUINT64, 
+    printf("time per %d bit divide %le\n", size*NBITSINUINT64, 
                           ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
   printf("END_DIV_TIME_TESTS\n");
   return ret;
@@ -2075,6 +2077,177 @@ done:
                           ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
   printf("END_MONT_EXP_TESTS\n");
   return ret;
+}
+
+uint64_t  T1= 0x6666666666666666;
+
+bool ecc_add_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
+  printf("\nECC_ADD_TIME_TEST\n");
+  if(ecc_key==NULL)
+    return false;
+  CurvePoint  P(8);
+  CurvePoint  Q(8);
+  CurvePoint  R(8);
+  P.MakeZero();
+  Q.MakeZero();
+  R.MakeZero();
+
+  P.x_->value_[0]= 0x7ULL;
+  P.y_->value_[0]= 0x9ULL;
+  Q.x_->value_[0]= 0x7ULL;
+  Q.y_->value_[0]= 0x9ULL;
+
+  uint64_t  cycles_start_test= ReadRdtsc();
+  int       num_tests_executed;
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    if(!EccAdd(ecc_key->c_, P, Q, R)) {
+      return false;
+    }
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("ecc_add_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per add %le\n",
+                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+  printf("END ECC_ADD_TIME_TEST\n");
+  return true;
+}
+
+bool ecc_mult_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
+  printf("\nECC_MULT_TIME_TEST\n");
+  if(ecc_key==NULL)
+    return false;
+  CurvePoint  P(8);
+  CurvePoint  R(8);
+  BigNum      x(8);
+  P.MakeZero();
+  R.MakeZero();
+
+  P.x_->value_[0]= 0x7ULL;
+  P.y_->value_[0]= 0x9ULL;
+
+  int i;
+  for(i=0; i<6; i++)
+    x.value_[i]= T1;
+
+  uint64_t  cycles_start_test= ReadRdtsc();
+  int       num_tests_executed;
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    if(!EccMult(ecc_key->c_, P, x, R)) {
+      return false;
+    }
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("ecc_mult__time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per mult %le\n",
+                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+  printf("END ECC_MULT_TIME_TEST\n");
+  return true;
+}
+
+bool ecc_extract_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
+  printf("\nECC_EXTRACT_TIME_TEST\n");
+#if 0
+  if(ecc_key==NULL)
+    return false;
+  CurvePoint  P(8);
+  P.MakeZero();
+  BigNum      x(8);
+  uint64_t  cycles_start_test= ReadRdtsc();
+  int       num_tests_executed;
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    if(!EccExtract(ecc_key->c_, P, x, 8)) {
+      return false;
+    }
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("ecc_extract_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per gen %le\n",
+                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+#endif
+  printf("END ECC_EXTRACT_TIME_TEST\n");
+  return true;
+}
+
+bool ecc_embed_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
+  printf("\nECC_EMBED_TIME_TEST\n");
+#if 0
+  if(ecc_key==NULL)
+    return false;
+  CurvePoint  P(8);
+  CurvePoint  R(8);
+  BigNum      x(8);
+  P.MakeZero();
+  R.MakeZero();
+ 
+  uint64_t  cycles_start_test= ReadRdtsc();
+  int       num_tests_executed;
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    if(!EccEmbed(ecc_key->c_, x, P, 8, 20)) {
+      return false;
+    }
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("ecc_embed_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per gen %le\n",
+                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+#endif
+  printf("END ECC_EMBED_TIME_TEST\n");
+  return true;
+}
+
+bool rsa1024_gen_time_test(const char* filename, int num_tests) {
+  printf("\nRSA1024_GEN_TIME_TEST\n");
+  uint64_t  cycles_start_test= ReadRdtsc();
+  int       num_tests_executed;
+  RsaKey* key;
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    key= new RsaKey();
+    if(!key->GenerateRsaKey("test-key", "test", "test", 1024, COMMON_YEAR_SECONDS)) {
+      printf("Cant generate 1024 bit key\n");
+      return false;
+    }
+    delete key;
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("rsa1024_gen_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per gen %le\n",
+                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+  printf("\nEND RSA1024_GEN_TIME_TEST\n");
+  return true;
+}
+
+bool rsa2048_gen_time_test(const char* filename, int num_tests) {
+  printf("\nRSA2048_GEN_TIME_TEST\n");
+  uint64_t  cycles_start_test= ReadRdtsc();
+  RsaKey* key;
+  int       num_tests_executed;
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    key= new RsaKey();
+    if(!key->GenerateRsaKey("test-key", "test", "test", 2048, COMMON_YEAR_SECONDS)) {
+      printf("Cant generate 2048 bit key\n");
+      return false;
+    }
+    delete key;
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("rsa1024_gen_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per gen %le\n",
+                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+  printf("\nEND RSA1024_GEN_TIME_TEST\n");
+  printf("\nEND RSA2048_GEN_TIME_TEST\n");
+  return true;
 }
 
 bool simple_mult_time_test(const char* filename, int size, int num_tests) {
@@ -3017,6 +3190,7 @@ bool ecc_tests() {
   // BigOne.CopyTo(secret);
   EccKey*         ecc_key= new EccKey();
   extern EccKey   P256_Key;
+  ext_ecc_key= ecc_key;
 
   printf("About to MakeEccKey\n");
   if(!ecc_key->MakeEccKey("JlmEccCode1", "key-exchange", "jlm", 256, 
@@ -3094,6 +3268,12 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(mont_exp_time_test("test_data", 16, 50));
   EXPECT_TRUE(rsa_speed_tests(NULL, NULL, "test_data", 0, 500));
   EXPECT_TRUE(ecc_speed_tests(NULL, "test_data", 0, 200));
+  EXPECT_TRUE(ecc_add_time_test("test_data", ext_ecc_key, 200));
+  EXPECT_TRUE(ecc_mult_time_test("test_data", ext_ecc_key, 200));
+  EXPECT_TRUE(ecc_extract_time_test("test_data", ext_ecc_key, 200));
+  EXPECT_TRUE(ecc_embed_time_test("test_data", ext_ecc_key, 200));
+  EXPECT_TRUE(rsa1024_gen_time_test("test_data", 20));
+  EXPECT_TRUE(rsa2048_gen_time_test("test_data", 20));
 }
 
 TEST_F(BigNumTest, RunTestSuite) {
