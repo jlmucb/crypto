@@ -584,6 +584,28 @@ bool print_tests() {
 
 // --------------------------------------------------------------------------------------
 
+bool getrand_time_tests(int num_tests) {
+  printf("\nGETRAND_TIME_TESTS\n");
+  byte      buf[64];
+  int       size= 256;
+  int       num_tests_executed;
+
+  uint64_t  cycles_start_test= ReadRdtsc();
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    if(!GetCryptoRand(size, buf)) {
+      return false;
+    }
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("get_rand_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per %d bit pull %le\n", size,
+                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+  printf("\nEND GETRAND_TIME_TESTS\n");
+  return true;
+}
+
 bool basic_tests() {
   printf("\nBASIC_TESTS\n");
   BigNum  a(2);
@@ -2114,6 +2136,35 @@ bool ecc_add_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
   return true;
 }
 
+bool ecc_double_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
+  printf("\nECC_DOUBLE_TIME_TEST\n");
+  if(ecc_key==NULL)
+    return false;
+  CurvePoint  P(8);
+  CurvePoint  R(8);
+  P.MakeZero();
+  R.MakeZero();
+
+  P.x_->value_[0]= 0x7ULL;
+  P.y_->value_[0]= 0x9ULL;
+
+  uint64_t  cycles_start_test= ReadRdtsc();
+  int       num_tests_executed;
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    if(!EccDouble(ecc_key->c_, P, R)) {
+      return false;
+    }
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("ecc_double_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per add %le\n",
+                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+  printf("END ECC_DOUBLE_TIME_TEST\n");
+  return true;
+}
+
 bool ecc_mult_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
   printf("\nECC_MULT_TIME_TEST\n");
   if(ecc_key==NULL)
@@ -2150,40 +2201,44 @@ bool ecc_mult_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
 
 bool ecc_extract_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
   printf("\nECC_EXTRACT_TIME_TEST\n");
-#if 0
   if(ecc_key==NULL)
     return false;
   CurvePoint  P(8);
-  P.MakeZero();
   BigNum      x(8);
+  P.MakeZero();
+
+  P.x_->value_[0]= 0x7ULL;
+  P.y_->value_[0]= 0x9ULL;
+  P.z_->value_[0]= 0x1ULL;
+
   uint64_t  cycles_start_test= ReadRdtsc();
   int       num_tests_executed;
   for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
     if(!EccExtract(ecc_key->c_, P, x, 8)) {
-      return false;
+      printf("Extract failure at %d\n", num_tests_executed);
+      // return false;
     }
   }
   uint64_t  cycles_end_test= ReadRdtsc();
   uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
   printf("ecc_extract_time_test number of successful tests: %d\n", num_tests_executed);
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
-  printf("time per gen %le\n",
+  printf("time per extract %le\n",
                           ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
-#endif
   printf("END ECC_EXTRACT_TIME_TEST\n");
   return true;
 }
 
 bool ecc_embed_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
   printf("\nECC_EMBED_TIME_TEST\n");
-#if 0
   if(ecc_key==NULL)
     return false;
   CurvePoint  P(8);
-  CurvePoint  R(8);
   BigNum      x(8);
   P.MakeZero();
-  R.MakeZero();
+
+  P.x_->value_[0]= 0x7ULL;
+  P.y_->value_[0]= 0x9ULL;
  
   uint64_t  cycles_start_test= ReadRdtsc();
   int       num_tests_executed;
@@ -2196,9 +2251,8 @@ bool ecc_embed_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
   uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
   printf("ecc_embed_time_test number of successful tests: %d\n", num_tests_executed);
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
-  printf("time per gen %le\n",
+  printf("time per embed %le\n",
                           ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
-#endif
   printf("END ECC_EMBED_TIME_TEST\n");
   return true;
 }
@@ -2402,12 +2456,20 @@ bool ecc_speed_tests(EccKey* key, const char* filename, int size, int num_tests)
   int   n= 128;
   CurvePoint P1(16);
   CurvePoint P2(16);
+  BigNum ksecret(8);
+  if(!GetCryptoRand(256, (byte*)ksecret.value_)) {
+    LOG(ERROR)<<"GetCryptoRandom error in EccKey::Encrypt\n";
+    return false;
+  }
+  ksecret.Normalize();
+  P1.MakeZero();
+  P2.MakeZero();
 
   // ECC, Encrypt
   cycles_start_test= ReadRdtsc();
   for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
       n= 128;
-      if(!key->Encrypt(32, M, P1, P2)) {
+      if(!key->Encrypt(32, M, ksecret, P1, P2)) {
         printf("ecc encrypt test %d failed\n", num_tests_executed);
         ret= false;
         goto done;
@@ -3211,10 +3273,16 @@ bool ecc_tests() {
               };
   byte        decrypted[32];
   int         size= 30;
+  BigNum      ksecret(8);
+
+  if(!GetCryptoRand(256, (byte*)ksecret.value_)) {
+    LOG(ERROR)<<"GetCryptoRandom error in EccKey::Encrypt\n";
+    return false;
+  }
 
   memset(decrypted, 0, 32);
   printf("Plain bytes: ");  PrintBytes(32, plain); printf("\n");
-  if(!ecc_key->Encrypt(32, plain, pt1, pt2)) {
+  if(!ecc_key->Encrypt(32, plain, ksecret, pt1, pt2)) {
     printf("EccEncrypt fails\n");
     return false;
   }
@@ -3242,6 +3310,7 @@ bool RunTestSuite() {
 #define TESTBUFSIZE 2048
 
 TEST(FirstBigNumCase, FirstBigNumTest) {
+  EXPECT_TRUE(getrand_time_tests(100));
   EXPECT_TRUE(simpletest());
   EXPECT_TRUE(unsigned_arith_tests());
   EXPECT_TRUE(square_test());
@@ -3269,6 +3338,7 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(rsa_speed_tests(NULL, NULL, "test_data", 0, 500));
   EXPECT_TRUE(ecc_speed_tests(NULL, "test_data", 0, 200));
   EXPECT_TRUE(ecc_add_time_test("test_data", ext_ecc_key, 200));
+  EXPECT_TRUE(ecc_double_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_mult_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_extract_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_embed_time_test("test_data", ext_ecc_key, 200));

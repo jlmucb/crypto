@@ -288,6 +288,12 @@ bool EccExtract(EccCurve& c, CurvePoint&  P, BigNum& m, int shift) {
     return false;
    }
   if(BigCompare(t1, t2)!=0) {
+    printf("Extract compare error:\n");
+    printf("P:\n");
+    P.PrintPoint();
+    printf("\n");
+    printf("t1: "); PrintNumToConsole(t1, 10ULL); printf("\n");
+    printf("t2: "); PrintNumToConsole(t2, 10ULL); printf("\n");
     LOG(ERROR) << "BigCompare failed in EccExtract\n";
     return false;
   }
@@ -845,9 +851,8 @@ bool InitEccCurves() {
 //  embed message into point M
 //  pick k at random
 //  send (kG, kBase+M)
-bool EccKey::Encrypt(int size, byte* plain, CurvePoint& pt1, CurvePoint& pt2) {
+bool EccKey::Encrypt(int size, byte* plain, BigNum& k, CurvePoint& pt1, CurvePoint& pt2) {
   BigNum      m(c_.p_->capacity_);
-  BigNum      k(c_.p_->capacity_);
   CurvePoint  P(c_.p_->capacity_);
   CurvePoint  R(c_.p_->capacity_);
 
@@ -881,7 +886,6 @@ bool EccKey::Encrypt(int size, byte* plain, CurvePoint& pt1, CurvePoint& pt2) {
 //  extract message from M
 bool EccKey::Decrypt(CurvePoint& pt1, CurvePoint& pt2, int* size, byte* plain) {
   BigNum      m(c_.p_->capacity_);
-  BigNum      k(c_.p_->capacity_);
   CurvePoint  P(c_.p_->capacity_);
   CurvePoint  R(c_.p_->capacity_);
 

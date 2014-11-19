@@ -135,7 +135,7 @@ public:
   bool    DeserializeKeyFromMessage(crypto_ecc_key_message&);
   void    PrintKey();
 
-  bool    Encrypt(int size, byte* plain, CurvePoint& pt1, CurvePoint& pt2);
+  bool    Encrypt(int size, byte* plain, BigNum& k, CurvePoint& pt1, CurvePoint& pt2);
   bool    Decrypt(CurvePoint& pt1, CurvePoint& pt2, int* size, byte* plain);
 };
 
