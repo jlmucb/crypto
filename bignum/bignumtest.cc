@@ -2165,6 +2165,8 @@ bool ecc_double_time_test(const char* filename, EccKey* ecc_key, int num_tests) 
   return true;
 }
 
+CurvePoint  extP(16);
+
 bool ecc_mult_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
   printf("\nECC_MULT_TIME_TEST\n");
   if(ecc_key==NULL)
@@ -2203,13 +2205,10 @@ bool ecc_extract_time_test(const char* filename, EccKey* ecc_key, int num_tests)
   printf("\nECC_EXTRACT_TIME_TEST\n");
   if(ecc_key==NULL)
     return false;
-  CurvePoint  P(8);
-  BigNum      x(8);
-  P.MakeZero();
+  CurvePoint  P(16);
+  BigNum      x(16);
 
-  P.x_->value_[0]= 0x7ULL;
-  P.y_->value_[0]= 0x9ULL;
-  P.z_->value_[0]= 0x1ULL;
+  P.CopyFrom(extP);
 
   uint64_t  cycles_start_test= ReadRdtsc();
   int       num_tests_executed;
@@ -2233,13 +2232,13 @@ bool ecc_embed_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
   printf("\nECC_EMBED_TIME_TEST\n");
   if(ecc_key==NULL)
     return false;
-  CurvePoint  P(8);
-  BigNum      x(8);
+  CurvePoint  P(16);
+  BigNum      x(16);
   P.MakeZero();
+  int         i;
 
-  P.x_->value_[0]= 0x7ULL;
-  P.y_->value_[0]= 0x9ULL;
- 
+  for(i=0;i<6;i++) x.value_[0]= T1;
+
   uint64_t  cycles_start_test= ReadRdtsc();
   int       num_tests_executed;
   for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
@@ -2253,6 +2252,7 @@ bool ecc_embed_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
   printf("time per embed %le\n",
                           ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+  extP.CopyFrom(P);
   printf("END ECC_EMBED_TIME_TEST\n");
   return true;
 }
@@ -2481,7 +2481,6 @@ bool ecc_speed_tests(EccKey* key, const char* filename, int size, int num_tests)
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
   printf("time per encrypt %le\n",
                 ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
-
   // ECC, decrypt
   cycles_start_test= ReadRdtsc();
   for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
@@ -2498,11 +2497,10 @@ bool ecc_speed_tests(EccKey* key, const char* filename, int size, int num_tests)
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
   printf("time per decrypt %le\n",
                 ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
-  printf("\n");
 
 done:
   delete buf;
-  printf("\nEND_ECC_SPEED_TESTS\n");
+  printf("END_ECC_SPEED_TESTS\n");
   return ret;
 }
 
@@ -3340,8 +3338,8 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(ecc_add_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_double_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_mult_time_test("test_data", ext_ecc_key, 200));
-  EXPECT_TRUE(ecc_extract_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_embed_time_test("test_data", ext_ecc_key, 200));
+  EXPECT_TRUE(ecc_extract_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(rsa1024_gen_time_test("test_data", 20));
   EXPECT_TRUE(rsa2048_gen_time_test("test_data", 20));
 }

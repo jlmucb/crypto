@@ -862,11 +862,6 @@ bool EccKey::Encrypt(int size, byte* plain, BigNum& k, CurvePoint& pt1, CurvePoi
     LOG(ERROR)<<"EccEmbed error in EccKey::Encrypt\n";
     return false;
   }
-  if(!GetCryptoRand(bit_size_modulus_, (byte*)k.value_)) {
-    LOG(ERROR)<<"GetCryptoRandom error in EccKey::Encrypt\n";
-    return false;
-  }
-  k.Normalize();
   if(!EccMult(c_, g_, k, pt1)) {
     LOG(ERROR)<<"EccMult error in EccKey::Encrypt\n";
     return false;
