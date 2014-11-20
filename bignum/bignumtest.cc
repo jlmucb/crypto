@@ -2181,8 +2181,9 @@ bool ecc_mult_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
   P.y_->value_[0]= 0x9ULL;
 
   int i;
-  for(i=0; i<6; i++)
+  for(i=0; i<3; i++)
     x.value_[i]= T1;
+  x.Normalize();
 
   uint64_t  cycles_start_test= ReadRdtsc();
   int       num_tests_executed;
@@ -2196,7 +2197,7 @@ bool ecc_mult_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
   printf("ecc_mult__time_test number of successful tests: %d\n", num_tests_executed);
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
   printf("time per mult %le\n",
-                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+         ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
   printf("END ECC_MULT_TIME_TEST\n");
   return true;
 }
