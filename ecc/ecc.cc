@@ -454,6 +454,20 @@ bool EccMult(EccCurve& c, CurvePoint& P, BigNum& x, CurvePoint& R) {
   return true;
 }
 
+/*
+ *  Projective Addition
+ *
+ *    P != +- Q
+ *    y^2z=x^3+axz^2+bz^3
+ *  
+ *    x[3]= vA, y[3]= u(v^2x[1]z[2]-A)-v^3y[1]z[2], z[3]= vz[1] z[2]
+ *    A=u^2z[1]z[2]-v^3-2v^2x[1]z[2]
+ *
+ *    R= 2P
+ *    x[3]=2hs, y[3]= w(4B-h) -8y[1]^2s^2, z[3]= 8s^3
+ *    w=az[1]^2+3[x1]^2, s=y[1]z[1], B= x[1]y[1]s, h= w^2-8B
+ */
+
 EccKey::EccKey() {
   bit_size_modulus_= 0;
   a_= NULL;
