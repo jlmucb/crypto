@@ -422,23 +422,29 @@ bool EccDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
 bool JacobianToAffine(EccCurve& c, CurvePoint& P) {
   BigNum  x(1+2*c.p_->size_);
   BigNum  y(1+2*c.p_->size_);
-  BigNum  z(1+2*c.p_->size_);
   BigNum  zinv(1+2*c.p_->size_);
+  BigNum  z(1+2*c.p_->size_);
   BigNum  t(1+2*c.p_->size_);
 
   if(P.z_->IsZero()) {
-    LOG(ERROR) << "JacobianToAffine x is 0\n";
+    LOG(ERROR) << "JacobianToAffine z is 0\n";
     printf("x: "); PrintNumToConsole(*P.z_, 10ULL); printf("\n");
     return false;
   }
+  if(P.z_->IsOne())
+    return true;
   if(!BigModInv(*P.z_, *c.p_, zinv)) {
     LOG(ERROR) << "JacobianToAffine can't BigModInv\n";
     return false;
   }
+printf("c.p: %lld\n", c.p_->value_[0]);
+printf("P.z: %lld\n", P.z_->value_[0]);
+printf("zinv: %lld\n", zinv.value_[0]);
   if(!BigModMult(zinv, zinv, *c.p_, z)) {
     LOG(ERROR) << "JacobianToAffine BigModMult(1) failed\n";
     return false;
   }
+printf("z(zinv^2): %lld\n", z.value_[0]);
   if(!BigModMult(*P.x_, z, *c.p_, x)) {
     LOG(ERROR) << "JacobianToAffine BigModMult(2) failed\n";
     return false;
@@ -447,6 +453,7 @@ bool JacobianToAffine(EccCurve& c, CurvePoint& P) {
     LOG(ERROR) << "JacobianToAffine BigModMult(3) failed\n";
     return false;
   }
+printf("t(zinv^3): %lld\n", t.value_[0]);
   if(!BigModMult(*P.y_, t, *c.p_, y)) {
     LOG(ERROR) << "JacobianToAffine BigModMult(4) failed\n";
     return false;
@@ -479,127 +486,169 @@ bool JacobianAdd(EccCurve& c, CurvePoint& P, CurvePoint& Q, CurvePoint& R) {
     LOG(ERROR) << "JacobianAdd BigModMult(1) failed\n";
     return false;
   }
+printf("c.p: %lld\n", c.p_->value_[0]);
+printf("P.z: %lld\n", P.z_->value_[0]);
+printf("z1: %lld\n", z1.value_[0]);
   if(!BigModMult(*Q.z_, *Q.z_, *c.p_, z2)) {
     LOG(ERROR) << "JacobianAdd BigModMult(2) failed\n";
     return false;
   }
+printf("z2: %lld\n", z2.value_[0]);
   if(!BigModMult(*P.x_, z2, *c.p_, u1)) {
     LOG(ERROR) << "JacobianAdd BigModMult(3) failed\n";
     return false;
   }
+printf("P.x: %lld\n", P.x_->value_[0]);
+printf("u1: %lld\n", u1.value_[0]);
   if(!BigModMult(*Q.x_, z1, *c.p_, u2)) {
     LOG(ERROR) << "JacobianAdd BigModMult(4) failed\n";
     return false;
   }
+printf("Q.x: %lld\n", Q.x_->value_[0]);
+printf("u2: %lld\n", u2.value_[0]);
   if(!BigModSub(u2, u1, *c.p_, h)) {
     LOG(ERROR) << "JacobianAdd BigModSub(1) failed\n";
     return false;
   }
+printf("u2-u1: %lld\n", h.value_[0]);
   if(!BigShift(h, 1, t)) {
     LOG(ERROR) << "JacobianAdd BigShift(1) failed\n";
     return false;
   }
   BigModNormalize(t, *c.p_);
+printf("t: %lld\n", t.value_[0]);
   if(!BigModMult(t, t, *c.p_, i)) {
     LOG(ERROR) << "JacobianAdd BigModMult(5) failed\n";
     return false;
   }
+printf("i: %lld\n", i.value_[0]);
   if(!BigModMult(i, h, *c.p_, j)) {
     LOG(ERROR) << "JacobianAdd BigModMult(6) failed\n";
     return false;
   }
+printf("j: %lld\n", j.value_[0]);
   if(!BigModMult(z2, *Q.z_, *c.p_, z23)) {
     LOG(ERROR) << "JacobianAdd BigModMult(7) failed\n";
     return false;
   }
+printf("Q.z: %lld\n", Q.z_->value_[0]);
+printf("z23: %lld\n", z23.value_[0]);
   if(!BigModMult(*P.y_, z23, *c.p_, s1)) {
     LOG(ERROR) << "JacobianAdd BigModMult(8) failed\n";
     return false;
   }
+printf("s1: %lld\n", s1.value_[0]);
   if(!BigModMult(z1, *P.z_, *c.p_, z13)) {
     LOG(ERROR) << "JacobianAdd BigModMult(9) failed\n";
     return false;
   }
+printf("z13: %lld\n", z13.value_[0]);
   if(!BigModMult(*Q.y_, z13, *c.p_, s2)) {
     LOG(ERROR) << "JacobianAdd BigModMult(10) failed\n";
     return false;
   }
+printf("s2: %lld\n", s2.value_[0]);
   t.ZeroNum();
   if(!BigModSub(s2, s1, *c.p_, t)) {
     LOG(ERROR) << "JacobianAdd BigModSub(2) failed\n";
     return false;
   }
+printf("s2-s1: %lld\n", t.value_[0]);
+  // todo: if r is zero return double
   if(!BigShift(t, 1, r)) {
     LOG(ERROR) << "JacobianAdd BigShift(1) failed\n";
     return false;
   }
   BigModNormalize(r, *c.p_);
+printf("r: %lld\n", r.value_[0]);
   if(!BigModMult(u1, i, *c.p_, v)) {
     LOG(ERROR) << "JacobianAdd BigModMult(11) failed\n";
     return false;
   }
+printf("v: %lld\n", v.value_[0]);
   t.ZeroNum();
-  if(!BigModMult(r, v, *c.p_, t)) {
+  if(!BigModMult(r, r, *c.p_, t)) {
     LOG(ERROR) << "JacobianAdd BigModMult(12) failed\n";
     return false;
   }
-  if(!BigModMult(t, t, *c.p_, w)) {
-    LOG(ERROR) << "JacobianAdd BigModMult(13) failed\n";
-    return false;
-  }
-  if(!BigModMult(w, j, *c.p_, *R.x_)) {
-    LOG(ERROR) << "JacobianAdd BigModMult(14) failed\n";
-    return false;
-  }
-  t.ZeroNum();
-  if(!BigModSub(v, *R.x_, *c.p_, t)) {
+printf("t(r^2): %lld\n", t.value_[0]);
+  w.ZeroNum();
+  if(!BigModSub(t, j, *c.p_, w)) {
     LOG(ERROR) << "JacobianAdd BigModSub(3) failed\n";
     return false;
   }
-  if(!BigModMult(r, t, *c.p_, *R.y_)) {
+printf("w(r^2-j): %lld\n", t.value_[0]);
+  t.ZeroNum();
+  if(!BigModSub(w, v, *c.p_, t)) {
+    LOG(ERROR) << "JacobianAdd BigModSub(3) failed\n";
+    return false;
+  }
+printf("t(r^2-j-v): %lld\n", t.value_[0]);
+  if(!BigModSub(t, v, *c.p_, *R.x_)) {
+    LOG(ERROR) << "JacobianAdd BigModSub(4) failed\n";
+    return false;
+  }
+printf("R.x: %lld\n", R.x_->value_[0]);
+
+  t.ZeroNum();
+  w.ZeroNum();
+  if(!BigModSub(v, *R.x_,*c.p_, t)) {   // t is v-x3
+    LOG(ERROR) << "JacobianAdd BigModSub(5) failed\n";
+    return false;
+  }
+printf("t(v-x3): %lld\n", t.value_[0]);
+  if(!BigModMult(r, t, *c.p_, w)) {     // w is r*v
     LOG(ERROR) << "JacobianAdd BigModMult(15) failed\n";
     return false;
   }
+printf("w(r*v): %lld\n", w.value_[0]);
   t.ZeroNum();
   if(!BigModMult(s1, j, *c.p_, t)) {
     LOG(ERROR) << "JacobianAdd BigModMult(16) failed\n";
     return false;
   }
+printf("t(s1*j): %lld\n", t.value_[0]);
   if(!BigShift(t, 1, s1)) {
     LOG(ERROR) << "JacobianAdd BigShift(1) failed\n";
     return false;
   }
   BigModNormalize(s1, *c.p_);
-  t.ZeroNum();
-  if(!BigModSub(*R.y_, s1, *c.p_, t)) {
-    LOG(ERROR) << "JacobianAdd BigModSub(4) failed\n";
+printf("s1: %lld\n", s1.value_[0]);
+  if(!BigModSub(w, s1, *c.p_, *R.y_)) {
+    LOG(ERROR) << "JacobianAdd BigModSub(6) failed\n";
     LOG(ERROR) << "R.y: "<<R.y_->size_<<", s1: "<< s1.size_ << ", c.p_: " <<c.p_->size_<< ", t: "<< t.size_<<"\n";
     return false;
   }
-  t.CopyTo(*R.y_);
+printf("R.y: %lld\n", R.y_->value_[0]);
+
   t.ZeroNum();
   if(!BigModAdd(*P.z_, *Q.z_, *c.p_, t)) {
     LOG(ERROR) << "JacobianAdd BigModAdd(1) failed\n";
     return false;
   }
+printf("t(P.x+Q.z): %lld\n", t.value_[0]);
   if(!BigModMult(t, t, *c.p_, z3)) {
     LOG(ERROR) << "JacobianAdd BigModMult(17) failed\n";
     return false;
   }
+printf("z3(P.x+Q.z)^2: %lld\n", z3.value_[0]);
   t.ZeroNum();
   if(!BigModSub(z3, z1, *c.p_, t)) {
     LOG(ERROR) << "JacobianAdd BigModSub(5) failed\n";
     return false;
   }
+printf("t: %lld\n", t.value_[0]);
   w.ZeroNum();
   if(!BigModSub(t, z2, *c.p_, w)) {
     LOG(ERROR) << "JacobianAdd BigModSub(6) failed\n";
     return false;
   }
+printf("w: %lld\n", w.value_[0]);
   if(!BigModMult(h, w, *c.p_, *R.z_)) {
     LOG(ERROR) << "JacobianAdd BigModMult(18) failed\n";
     return false;
   }
+printf("R.z: %lld\n", R.z_->value_[0]);
   return true;
 }
 
@@ -617,46 +666,57 @@ bool JacobianDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
     LOG(ERROR) << "JacobianDouble BigModMult(1) failed\n";
     return false;
   }
+printf("Double c.p: %lld\n", c.p_->value_[0]);
+printf("P.z: %lld\n", P.z_->value_[0]);
+printf("d(z^2): %lld\n", d.value_[0]);
   if(!BigModMult(*P.y_, *P.y_, *c.p_, g)) {
     LOG(ERROR) << "JacobianDouble BigModMult(2) failed\n";
     return false;
   }
-  if(!BigModSub(*P.x_, d, *c.p_, t)) {
+printf("g(y^2): %lld\n", g.value_[0]);
+  if(!BigModSub(*P.x_, d, *c.p_, a)) {
     LOG(ERROR) << "JacobianDouble  BigModSub(1) failed\n";
     return false;
   }
-  if(!BigModAdd(*P.x_, d, *c.p_, w)) {
+printf("a(P.x-d): %lld\n", a.value_[0]);
+  if(!BigModAdd(*P.x_, d, *c.p_, t)) {
     LOG(ERROR) << "JacobianDouble BigModAdd(1) failed\n";
     return false;
   }
-  if(!BigModMult(t, w, *c.p_, a2)) {
+printf("t(P.x+d): %lld\n", t.value_[0]);
+  if(!BigModMult(a, t, *c.p_, a2)) {
     LOG(ERROR) << "JacobianDouble BigModMult(3) failed\n";
     return false;
   }
-  w.ZeroNum();
-  if(!BigShift(t,1,w)) {
+printf("a2((P.x-d)*(P.x+d)): %lld\n", a2.value_[0]);
+  if(!BigShift(a2,1,w)) {
     LOG(ERROR) << "JacobianDouble BigShift(1) failed\n";
     return false;
   }
   BigModNormalize(w, *c.p_);
+printf("w(a2<<1)): %lld\n", w.value_[0]);
   if(!BigModAdd(w, a2, *c.p_, a)) {
     LOG(ERROR) << "JacobianDouble BigModAdd(2) failed\n";
     return false;
   }
+printf("a(a2+w)): %lld\n", a.value_[0]);
   if(!BigModMult(*P.x_, g, *c.p_, b)) {
     LOG(ERROR) << "JacobianDouble BigModMult(4) failed\n";
     return false;
   }
+printf("b(P.x+g)): %lld\n", b.value_[0]);
   w.ZeroNum();
   if(!BigModMult(a, a, *c.p_, w)) {
     LOG(ERROR) << "JacobianDouble BigModMult(5) failed\n";
     return false;
   }
+printf("w(a*a)): %lld\n", w.value_[0]);
   if(!BigShift(b,3,b8)) {
     LOG(ERROR) << "JacobianDouble BigShift(2) failed\n";
     return false;
   }
   BigModNormalize(b8, *c.p_);
+printf("b8: %lld\n", b8.value_[0]);
   if(!BigModAdd(w, a2, *c.p_, a)) {
     LOG(ERROR) << "JacobianDouble BigModMult(6) failed\n";
     return false;
@@ -665,55 +725,69 @@ bool JacobianDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
     LOG(ERROR) << "JacobianDouble BigModSub(2) failed\n";
     return false;
   }
+printf("R.x: %lld\n", R.x_->value_[0]);
+
   t.ZeroNum();
   if(!BigModAdd(*P.z_, *P.y_, *c.p_, t)) {
     LOG(ERROR) << "JacobianDouble BigModAdd(3) failed\n";
     return false;
   }
+printf("t(P.y+P.z): %lld\n", t.value_[0]);
   w.ZeroNum();
   if(!BigModMult(t, t, *c.p_, w)) {
     LOG(ERROR) << "JacobianDouble BigModMult(7) failed\n";
     return false;
   }
+printf("w(P.y+P.z)^2: %lld\n", w.value_[0]);
   t.ZeroNum();
   if(!BigModSub(w, g, *c.p_, t)) {
     LOG(ERROR) << "JacobianDouble BigModSub(3) failed\n";
     return false;
   }
+printf("t(P.y+P.z)^2-g: %lld\n", w.value_[0]);
   if(!BigModSub(t, d, *c.p_, *R.z_)) {
     LOG(ERROR) << "JacobianDouble BigModSub(4) failed\n";
     LOG(ERROR) << "t: "<<t.size_<<", d: "<< d.size_ << ", c.p_: " <<c.p_->size_<< ", R.z_: "<< R.z_->size_<<"\n";
     return false;
   }
+printf("R.z: %lld\n", R.z_->value_[0]);
+
   w.ZeroNum();
   if(!BigShift(b,2,w)) {
     LOG(ERROR) << "JacobianDouble BigShift(3) failed\n";
     return false;
   }
   BigModNormalize(w, *c.p_);
+  b.ZeroNum();
+printf("w(4b): %lld\n", w.value_[0]);
   if(!BigModSub(w, *R.x_, *c.p_, b)) {
     LOG(ERROR) << "JacobianDouble BigModSub(5) failed\n";
     return false;
   }
+printf("b(4b-R.x): %lld\n", b.value_[0]);
   t.ZeroNum();
   w.ZeroNum();
   if(!BigModMult(a, b, *c.p_, w)) {
     LOG(ERROR) << "JacobianDouble BigModMult(8) failed\n";
     return false;
   }
+printf("w(a*b): %lld\n", w.value_[0]);
   if(!BigModMult(g, g, *c.p_, t)) {
     LOG(ERROR) << "JacobianDouble BigModMult(9) failed\n";
     return false;
   }
+printf("t(g*g): %lld\n", t.value_[0]);
   if(!BigShift(t,3,g)) {
     LOG(ERROR) << "JacobianDouble BigModShift(4) failed\n";
     return false;
   }
   BigModNormalize(g, *c.p_);
+printf("g: %lld\n", g.value_[0]);
   if(!BigModSub(w, g, *c.p_, *R.y_)) {
     LOG(ERROR) << "JacobianDouble BigModSub(6) failed\n";
     return false;
   }
+printf("R.y: %lld\n", R.y_->value_[0]);
   return true;
 }
 

@@ -210,7 +210,6 @@ bool BigModSub(BigNum& a, BigNum& b, BigNum& m, BigNum& r) {
   if(!ret)
     goto done;
   ret= BigModNormalize(r, m);
-
 done:
   return ret;
 }

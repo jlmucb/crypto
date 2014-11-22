@@ -3150,18 +3150,8 @@ bool rsa_tests() {
   return true;
 }
 
-bool ecc_tests() {
-  printf("\nECC_TESTS\n");
-  /*
-   *      CurvePoint(CurvePoint& P);
-   *      ~CurvePoint();
-   *      bool  IsZero();
-   *      void  Clear();
-   *      void  MakeZero();
-   *      bool  CopyFrom(CurvePoint& P);
-   *      bool  CopyTo(CurvePoint& P);
-   */
-
+bool simple_ecc_tests() {
+  printf("\nSIMPLE_ECC_TESTS\n");
   BigNum      b(1,4ULL);
   BigNum      c(1,4ULL);
   BigNum      p(1,5ULL);
@@ -3196,6 +3186,8 @@ bool ecc_tests() {
   CurvePoint  P3(x3, y3);
   CurvePoint  R2(9);
   // For y^2= x^3+4x+4 (mod 2773), 2(1,3)= (1771, 705)
+
+  printf("PrintCurve: "); curve_2.PrintCurve(); printf("\n");
   if(!EccMult(curve_2, P3, t, R2)) {
     printf("cant Ecc Mult\n");
     return false;
@@ -3211,6 +3203,19 @@ bool ecc_tests() {
   }
 
   printf("PrintCurve: "); curve_2.PrintCurve(); printf("\n");
+  if(!EccAdd(curve_2, P3, P3, R2)) {
+    printf("cant Ecc Add\n");
+    return false;
+  }
+  P3.PrintPoint();
+  printf(" + ");
+  P3.PrintPoint();
+  printf(" = ");
+  R2.PrintPoint();
+  printf("\n");
+  if(R2.x_->value_[0]!=1771ULL || R2.y_->value_[0]!=705ULL) {
+    return false;
+  }
 
   CurvePoint  z(1);
   CurvePoint  w(1);
@@ -3237,6 +3242,139 @@ bool ecc_tests() {
   printf(" = ");
   R3.PrintPoint();
   printf("\n");
+  printf("END SIMPLE_ECC_TESTS\n");
+
+  return true;
+}
+
+bool simple_jacobian_ecc_tests() {
+  printf("\nSIMPLE_JACOBIAN_ECC_TESTS\n");
+  BigNum      b(1,4ULL);
+  BigNum      c(1,4ULL);
+  BigNum      p(1,5ULL);
+  EccCurve    curve_1(b,c,p);
+
+  BigNum      x1(1, 1ULL);
+  BigNum      y1(1, 2ULL);
+  BigNum      x2(1, 4ULL);
+  BigNum      y2(1, 3ULL);
+  CurvePoint  P1(x1, y1);
+  CurvePoint  P2(x2, y2);
+  CurvePoint  R1(9);
+  // For y^2= x^3+4x+4 (mod 5), (1,2)+(4,3)= (4,2)
+  if(!JacobianAdd(curve_1, P1, P2, R1)) {
+    return false;
+  }
+  P1.PrintPoint();
+  printf(" + ");
+  P2.PrintPoint();
+  printf(" = ");
+  R1.PrintPoint();
+  printf("\n");
+  if(!JacobianToAffine(curve_1, R1)) {
+    printf("JacobianToAffine failed\n");
+    return false;
+  }
+  printf("Affine: ");
+  R1.PrintPoint();
+  printf("\n");
+  if(R1.x_->value_[0]!=4ULL || R1.y_->value_[0]!=2ULL) {
+    return false;
+  }
+
+  BigNum      q(1,2773ULL);
+  EccCurve    curve_2(b,c,q);
+  BigNum      x3(1, 1ULL);
+  BigNum      y3(1, 3ULL);
+  BigNum      t(1, 2ULL);
+  CurvePoint  P3(x3, y3);
+  CurvePoint  R2(9);
+  // For y^2= x^3+4x+4 (mod 2773), 2(1,3)= (1771, 705)
+
+  if(!JacobianAdd(curve_2, P3, P3, R2)) {
+    printf("cant Ecc Mult\n");
+    return false;
+  }
+  P3.PrintPoint();
+  printf(" + ");
+  P3.PrintPoint();
+  printf(" = ");
+  R2.PrintPoint();
+  printf("\n");
+  if(!JacobianToAffine(curve_2, R2)) {
+    printf("JacobianToAffine failed\n");
+    return false;
+  }
+  printf("Affine: ");
+  R2.PrintPoint();
+  printf("\n");
+
+  if(!JacobianDouble(curve_2, P3, R2)) {
+    printf("cant Ecc Mult\n");
+    return false;
+  }
+  printf("Double ");
+  P3.PrintPoint();
+  printf(" = ");
+  R2.PrintPoint();
+  printf("\n");
+  if(!JacobianToAffine(curve_2, R2)) {
+    printf("JacobianToAffine failed\n");
+    return false;
+  }
+  printf("Affine: ");
+  R2.PrintPoint();
+  printf("\n");
+  if(R2.x_->value_[0]!=1771ULL || R2.y_->value_[0]!=705ULL) {
+    return false;
+  }
+
+  if(!JacobianPointMult(curve_2, t, P3, R2)) {
+    printf("cant Ecc Mult\n");
+    return false;
+  }
+  PrintNumToConsole(t,10ULL);
+  printf(" * ");
+  P3.PrintPoint();
+  printf(" = ");
+  R2.PrintPoint();
+  printf("\n");
+  if(!JacobianToAffine(curve_2, R2)) {
+    printf("JacobianToAffine failed\n");
+    return false;
+  }
+  printf("Affine: ");
+  R2.PrintPoint();
+  printf("\n");
+  if(R2.x_->value_[0]!=1771ULL || R2.y_->value_[0]!=705ULL) {
+    return false;
+  }
+
+  printf("PrintCurve: "); curve_2.PrintCurve(); printf("\n");
+
+  CurvePoint  z(1);
+  CurvePoint  w(1);
+  z.MakeZero();
+  if(!JacobianPointMult(curve_2, t, z, w)) {
+    printf("cant Ecc Mult\n");
+    return false;
+  }
+  PrintNumToConsole(t,10ULL);
+  printf(" * ");
+  z.PrintPoint();
+  printf(" = ");
+  w.PrintPoint();
+  printf("\n");
+  printf("Affine: ");
+  w.PrintPoint();
+  printf("\n");
+  printf("END SIMPLE_JACOBIAN_ECC_TESTS\n");
+  return true;
+}
+
+
+bool ecc_tests() {
+  printf("\nECC_TESTS\n");
 
   if(!InitEccCurves()) {
     printf("Can't init nist curve\n");
@@ -3248,7 +3386,6 @@ bool ecc_tests() {
     return false;
   }
   secret.Normalize();
-  // BigOne.CopyTo(secret);
   EccKey*         ecc_key= new EccKey();
   extern EccKey   P256_Key;
   ext_ecc_key= ecc_key;
@@ -3325,6 +3462,8 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(key_store_tests());
   EXPECT_TRUE(rsa_tests());
   EXPECT_TRUE(mont_arith_tests());
+  EXPECT_TRUE(simple_ecc_tests());
+  // EXPECT_TRUE(simple_jacobian_ecc_tests());
   EXPECT_TRUE(ecc_tests());
   EXPECT_TRUE(simple_mult_time_test("test_data", TESTBUFSIZE, 1000000));
   EXPECT_TRUE(simple_div_time_test("test_data", TESTBUFSIZE,  1000000));
