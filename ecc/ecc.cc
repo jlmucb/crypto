@@ -410,6 +410,9 @@ bool EccDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
   return EccAdd(c, P, P, R);
 }
 
+//  The following routines use Jacobian projective coordinates
+//      Ref: Go elliptic curve implementation, hyperellitptic.org
+
 bool JacobianToAffine(EccCurve& c, CurvePoint& P) {
   BigNum  x(1+2*c.p_->size_);
   BigNum  y(1+2*c.p_->size_);
@@ -623,7 +626,10 @@ bool JacobianDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
     return false;
   }
   w.ZeroNum();
-  BigShift(t,1,w);
+  if(!BigShift(t,1,w)) {
+    LOG(ERROR) << "JacobianDouble BigShift(1) failed\n";
+    return false;
+  }
   BigModNormalize(w, *c.p_);
   if(!BigModAdd(w, a2, *c.p_, a)) {
     LOG(ERROR) << "JacobianDouble BigModAdd(2) failed\n";
@@ -638,7 +644,10 @@ bool JacobianDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
     LOG(ERROR) << "JacobianDouble BigModMult(5) failed\n";
     return false;
   }
-  BigShift(b,3,b8);
+  if(!BigShift(b,3,b8)) {
+    LOG(ERROR) << "JacobianDouble BigShift(2) failed\n";
+    return false;
+  }
   BigModNormalize(b8, *c.p_);
   if(!BigModAdd(w, a2, *c.p_, a)) {
     LOG(ERROR) << "JacobianDouble BigModMult(6) failed\n";
@@ -649,7 +658,7 @@ bool JacobianDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
     return false;
   }
   t.ZeroNum();
-  if(!BigModAdd(*P.x_, *P.y_, *c.p_, t)) {
+  if(!BigModAdd(*P.z_, *P.y_, *c.p_, t)) {
     LOG(ERROR) << "JacobianDouble BigModAdd(3) failed\n";
     return false;
   }
@@ -668,7 +677,10 @@ bool JacobianDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
     return false;
   }
   w.ZeroNum();
-  BigShift(b,2,w);
+  if(!BigShift(b,2,w)) {
+    LOG(ERROR) << "JacobianDouble BigShift(3) failed\n";
+    return false;
+  }
   BigModNormalize(w, *c.p_);
   if(!BigModSub(w, *R.x_, *c.p_, b)) {
     LOG(ERROR) << "JacobianSub BigModSub(5) failed\n";
@@ -685,7 +697,7 @@ bool JacobianDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
     return false;
   }
   if(!BigShift(t,3,g)) {
-    LOG(ERROR) << "JacobianSub BigModShift(9) failed\n";
+    LOG(ERROR) << "JacobianSub BigModShift(4) failed\n";
     return false;
   }
   BigModNormalize(g, *c.p_);
@@ -704,6 +716,7 @@ bool JacobianPointMult(EccCurve& c, BigNum& x, CurvePoint& P, CurvePoint& R) {
   if(x.IsOne()) {
     return R.CopyFrom(P);
   }
+
   int         k=  BigHighBit(x);
   int         i;
   CurvePoint  double_point(P);
@@ -744,6 +757,8 @@ bool EccMult(EccCurve& c, CurvePoint& P, BigNum& x, CurvePoint& R) {
   if(x.IsOne()) {
     return R.CopyFrom(P);
   }
+
+#ifndef JACOBIANCOORDS
   int         k=  BigHighBit(x);
   int         i;
   CurvePoint  double_point(P);
@@ -768,14 +783,19 @@ bool EccMult(EccCurve& c, CurvePoint& P, BigNum& x, CurvePoint& R) {
     t1.CopyTo(accum_point);
     t1.MakeZero();
   }
-
+  accum_point.CopyTo(R);
+#else
+  if(!JacobianPointMult(c, x, P, R)) {
+    LOG(ERROR) << "JacobianPointMult failed\n";
+    return false;
+  }
+  if(!JacobianToAffine(c,  R)) {
+    LOG(ERROR) << "JacobianToAffine failed\n";
+    return false;
+  }
+#endif
   if(x.IsNegative()) {
-    t1.MakeZero();
-    if(!EccSub(c, t1,accum_point, R)) {
-      return false;
-    }
-  } else {
-    accum_point.CopyTo(R);
+    R.y_->ToggleSign();
   }
   return true;
 }
