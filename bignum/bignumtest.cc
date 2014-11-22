@@ -3334,15 +3334,15 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(div_time_test("test_data", 32, 5000));
   EXPECT_TRUE(exp_time_test("test_data", 16, 50));
   EXPECT_TRUE(mont_exp_time_test("test_data", 16, 50));
-  // EXPECT_TRUE(rsa_speed_tests(NULL, NULL, "test_data", 0, 500));
+  EXPECT_TRUE(rsa_speed_tests(NULL, NULL, "test_data", 0, 500));
   EXPECT_TRUE(ecc_speed_tests(NULL, "test_data", 0, 200));
   EXPECT_TRUE(ecc_add_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_double_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_mult_time_test("test_data", ext_ecc_key, 200));
-  // EXPECT_TRUE(ecc_embed_time_test("test_data", ext_ecc_key, 200));
-  // EXPECT_TRUE(ecc_extract_time_test("test_data", ext_ecc_key, 200));
-  // EXPECT_TRUE(rsa1024_gen_time_test("test_data", 20));
-  // EXPECT_TRUE(rsa2048_gen_time_test("test_data", 20));
+  EXPECT_TRUE(ecc_embed_time_test("test_data", ext_ecc_key, 200));
+  EXPECT_TRUE(ecc_extract_time_test("test_data", ext_ecc_key, 200));
+  EXPECT_TRUE(rsa1024_gen_time_test("test_data", 20));
+  EXPECT_TRUE(rsa2048_gen_time_test("test_data", 20));
 }
 
 TEST_F(BigNumTest, RunTestSuite) {

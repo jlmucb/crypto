@@ -428,6 +428,7 @@ bool JacobianToAffine(EccCurve& c, CurvePoint& P) {
 
   if(P.z_->IsZero()) {
     LOG(ERROR) << "JacobianToAffine x is 0\n";
+    printf("x: "); PrintNumToConsole(*P.z_, 10ULL); printf("\n");
     return false;
   }
   if(!BigModInv(*P.z_, *c.p_, zinv)) {
