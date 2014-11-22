@@ -410,6 +410,332 @@ bool EccDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
   return EccAdd(c, P, P, R);
 }
 
+bool JacobianToAffine(EccCurve& c, CurvePoint& P) {
+  BigNum  x(1+2*c.p_->size_);
+  BigNum  y(1+2*c.p_->size_);
+  BigNum  z(1+2*c.p_->size_);
+  BigNum  zinv(1+2*c.p_->size_);
+  BigNum  t(1+2*c.p_->size_);
+
+  if(P.z_->IsZero()) {
+    LOG(ERROR) << "JacobianToAffine x is 0\n";
+    return false;
+  }
+  if(!BigModInv(*P.z_, *c.p_, zinv)) {
+    LOG(ERROR) << "JacobianToAffine can't BigModInv\n";
+    return false;
+  }
+  if(!BigModMult(zinv, zinv, *c.p_, z)) {
+    LOG(ERROR) << "JacobianToAffine BigModMult(1) failed\n";
+    return false;
+  }
+  if(!BigModMult(*P.x_, z, *c.p_, x)) {
+    LOG(ERROR) << "JacobianToAffine BigModMult(2) failed\n";
+    return false;
+  }
+  if(!BigModMult(z, zinv, *c.p_, t)) {
+    LOG(ERROR) << "JacobianToAffine BigModMult(3) failed\n";
+    return false;
+  }
+  if(!BigModMult(*P.y_, t, *c.p_, y)) {
+    LOG(ERROR) << "JacobianToAffine BigModMult(4) failed\n";
+    return false;
+  }
+  P.x_->CopyFrom(x);
+  P.y_->CopyFrom(y);
+  P.z_->CopyFrom(Big_One);
+  return true;
+}
+
+bool JacobianAdd(EccCurve& c, CurvePoint& P, CurvePoint& Q, CurvePoint& R) {
+  BigNum  z1(1+2*c.p_->size_);
+  BigNum  z2(1+2*c.p_->size_);
+  BigNum  z3(1+2*c.p_->size_);
+  BigNum  z13(1+2*c.p_->size_);
+  BigNum  z23(1+2*c.p_->size_);
+  BigNum  u1(1+2*c.p_->size_);
+  BigNum  u2(1+2*c.p_->size_);
+  BigNum  h(1+2*c.p_->size_);
+  BigNum  i(1+2*c.p_->size_);
+  BigNum  j(1+2*c.p_->size_);
+  BigNum  t(1+2*c.p_->size_);
+  BigNum  s1(1+2*c.p_->size_);
+  BigNum  s2(1+2*c.p_->size_);
+  BigNum  r(1+2*c.p_->size_);
+  BigNum  v(1+2*c.p_->size_);
+  BigNum  w(1+2*c.p_->size_);
+
+  if(!BigModMult(*P.z_, *P.z_, *c.p_, z1)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(1) failed\n";
+    return false;
+  }
+  if(!BigModMult(*Q.z_, *Q.z_, *c.p_, z2)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(2) failed\n";
+    return false;
+  }
+  if(!BigModMult(*P.x_, z2, *c.p_, u1)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(3) failed\n";
+    return false;
+  }
+  if(!BigModMult(*Q.x_, z1, *c.p_, u2)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(4) failed\n";
+    return false;
+  }
+  if(!BigModSub(u2, u1, *c.p_, h)) {
+    LOG(ERROR) << "JacobianAdd BigModSub(1) failed\n";
+    return false;
+  }
+  if(!BigShift(h, 1, t)) {
+    LOG(ERROR) << "JacobianAdd BigShift(1) failed\n";
+    return false;
+  }
+  BigModNormalize(t, *c.p_);
+  if(!BigModMult(t, t, *c.p_, i)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(5) failed\n";
+    return false;
+  }
+  if(!BigModMult(i, h, *c.p_, j)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(6) failed\n";
+    return false;
+  }
+  if(!BigModMult(z2, *Q.z_, *c.p_, z23)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(7) failed\n";
+    return false;
+  }
+  if(!BigModMult(*P.y_, z23, *c.p_, s1)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(8) failed\n";
+    return false;
+  }
+  if(!BigModMult(z1, *P.z_, *c.p_, z13)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(9) failed\n";
+    return false;
+  }
+  if(!BigModMult(*Q.y_, z13, *c.p_, s2)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(10) failed\n";
+    return false;
+  }
+  t.ZeroNum();
+  if(!BigModSub(s2, s1, *c.p_, t)) {
+    LOG(ERROR) << "JacobianAdd BigModSub(2) failed\n";
+    return false;
+  }
+  if(!BigShift(t, 1, r)) {
+    LOG(ERROR) << "JacobianAdd BigShift(1) failed\n";
+    return false;
+  }
+  BigModNormalize(r, *c.p_);
+  if(!BigModMult(u1, i, *c.p_, v)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(11) failed\n";
+    return false;
+  }
+  t.ZeroNum();
+  if(!BigModMult(r, v, *c.p_, t)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(12) failed\n";
+    return false;
+  }
+  if(!BigModMult(t, t, *c.p_, w)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(13) failed\n";
+    return false;
+  }
+  if(!BigModMult(w, j, *c.p_, *R.x_)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(14) failed\n";
+    return false;
+  }
+  t.ZeroNum();
+  if(!BigModSub(v, *R.x_, *c.p_, t)) {
+    LOG(ERROR) << "JacobianAdd BigModSub(3) failed\n";
+    return false;
+  }
+  if(!BigModMult(r, t, *c.p_, *R.y_)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(15) failed\n";
+    return false;
+  }
+  t.ZeroNum();
+  if(!BigModMult(s1, j, *c.p_, t)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(16) failed\n";
+    return false;
+  }
+  if(!BigShift(t, 1, s1)) {
+    LOG(ERROR) << "JacobianAdd BigShift(1) failed\n";
+    return false;
+  }
+  BigModNormalize(s1, *c.p_);
+  t.ZeroNum();
+  if(!BigModSub(*R.y_, s1, *c.p_, t)) {
+    LOG(ERROR) << "JacobianAdd BigModSub(4) failed\n";
+    return false;
+  }
+  t.CopyTo(*R.y_);
+  t.ZeroNum();
+  if(!BigModAdd(*P.z_, *Q.z_, *c.p_, t)) {
+    LOG(ERROR) << "JacobianAdd BigModAdd(1) failed\n";
+    return false;
+  }
+  if(!BigModMult(t, t, *c.p_, z3)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(17) failed\n";
+    return false;
+  }
+  t.ZeroNum();
+  if(!BigModSub(z3, z1, *c.p_, t)) {
+    LOG(ERROR) << "JacobianAdd BigModSub(5) failed\n";
+    return false;
+  }
+  w.ZeroNum();
+  if(!BigModSub(t, z2, *c.p_, w)) {
+    LOG(ERROR) << "JacobianAdd BigModSub(6) failed\n";
+    return false;
+  }
+  if(!BigModMult(h, w, *c.p_, *R.z_)) {
+    LOG(ERROR) << "JacobianAdd BigModMult(18) failed\n";
+    return false;
+  }
+  return true;
+}
+
+bool JacobianDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
+  BigNum  a(1+2*c.p_->size_);
+  BigNum  b(1+2*c.p_->size_);
+  BigNum  d(1+2*c.p_->size_);
+  BigNum  g(1+2*c.p_->size_);
+  BigNum  a2(1+2*c.p_->size_);
+  BigNum  b8(1+2*c.p_->size_);
+  BigNum  t(1+2*c.p_->size_);
+  BigNum  w(1+2*c.p_->size_);
+
+  if(!BigModMult(*P.z_, *P.z_, *c.p_, d)) {
+    LOG(ERROR) << "JacobianDouble BigModMult(1) failed\n";
+    return false;
+  }
+  if(!BigModMult(*P.y_, *P.y_, *c.p_, g)) {
+    LOG(ERROR) << "JacobianDouble BigModMult(2) failed\n";
+    return false;
+  }
+  if(!BigModSub(*P.x_, d, *c.p_, t)) {
+    LOG(ERROR) << "JacobianSub BigModSub(1) failed\n";
+    return false;
+  }
+  if(!BigModAdd(*P.x_, d, *c.p_, w)) {
+    LOG(ERROR) << "JacobianSub BigModAdd(1) failed\n";
+    return false;
+  }
+  if(!BigModMult(t, w, *c.p_, a2)) {
+    LOG(ERROR) << "JacobianDouble BigModMult(3) failed\n";
+    return false;
+  }
+  w.ZeroNum();
+  BigShift(t,1,w);
+  BigModNormalize(w, *c.p_);
+  if(!BigModAdd(w, a2, *c.p_, a)) {
+    LOG(ERROR) << "JacobianDouble BigModAdd(2) failed\n";
+    return false;
+  }
+  if(!BigModMult(*P.x_, g, *c.p_, b)) {
+    LOG(ERROR) << "JacobianDouble BigModMult(4) failed\n";
+    return false;
+  }
+  w.ZeroNum();
+  if(!BigModMult(a, a, *c.p_, w)) {
+    LOG(ERROR) << "JacobianDouble BigModMult(5) failed\n";
+    return false;
+  }
+  BigShift(b,3,b8);
+  BigModNormalize(b8, *c.p_);
+  if(!BigModAdd(w, a2, *c.p_, a)) {
+    LOG(ERROR) << "JacobianDouble BigModMult(6) failed\n";
+    return false;
+  }
+  if(!BigModSub(w, b8, *c.p_, *R.x_)) {
+    LOG(ERROR) << "JacobianSub BigModSub(2) failed\n";
+    return false;
+  }
+  t.ZeroNum();
+  if(!BigModAdd(*P.x_, *P.y_, *c.p_, t)) {
+    LOG(ERROR) << "JacobianDouble BigModAdd(3) failed\n";
+    return false;
+  }
+  w.ZeroNum();
+  if(!BigModMult(t, t, *c.p_, w)) {
+    LOG(ERROR) << "JacobianDouble BigModMult(7) failed\n";
+    return false;
+  }
+  t.ZeroNum();
+  if(!BigModSub(w, g, *c.p_, t)) {
+    LOG(ERROR) << "JacobianSub BigModSub(3) failed\n";
+    return false;
+  }
+  if(!BigModSub(t, d, *c.p_, *R.z_)) {
+    LOG(ERROR) << "JacobianSub BigModSub(4) failed\n";
+    return false;
+  }
+  w.ZeroNum();
+  BigShift(b,2,w);
+  BigModNormalize(w, *c.p_);
+  if(!BigModSub(w, *R.x_, *c.p_, b)) {
+    LOG(ERROR) << "JacobianSub BigModSub(5) failed\n";
+    return false;
+  }
+  t.ZeroNum();
+  w.ZeroNum();
+  if(!BigModMult(a, b, *c.p_, w)) {
+    LOG(ERROR) << "JacobianSub BigModMult(8) failed\n";
+    return false;
+  }
+  if(!BigModMult(g, g, *c.p_, t)) {
+    LOG(ERROR) << "JacobianSub BigModMult(9) failed\n";
+    return false;
+  }
+  if(!BigShift(t,3,g)) {
+    LOG(ERROR) << "JacobianSub BigModShift(9) failed\n";
+    return false;
+  }
+  BigModNormalize(g, *c.p_);
+  if(!BigModSub(w, g, *c.p_, *R.y_)) {
+    LOG(ERROR) << "JacobianSub BigModSub(6) failed\n";
+    return false;
+  }
+  return true;
+}
+
+bool JacobianPointMult(EccCurve& c, BigNum& x, CurvePoint& P, CurvePoint& R) {
+  if(x.IsZero()) {
+    R.MakeZero();
+    return true;
+  }
+  if(x.IsOne()) {
+    return R.CopyFrom(P);
+  }
+  int         k=  BigHighBit(x);
+  int         i;
+  CurvePoint  double_point(P);
+  CurvePoint  accum_point(2*c.p_->capacity_);
+  CurvePoint  t1(2*c.p_->capacity_);
+
+  accum_point.MakeZero();
+  for(i=1; i<k; i++) {
+    if(BigBitPositionOn(x, i)) {
+      JacobianAdd(c, accum_point, double_point, t1);
+      t1.CopyTo(accum_point);
+      t1.MakeZero();
+    }
+    if(!JacobianDouble(c, double_point, t1)) {
+      return false;
+    }
+    t1.CopyTo(double_point);
+    t1.MakeZero();
+  }
+  if(BigBitPositionOn(x, i)) {
+    JacobianAdd(c, accum_point, double_point, t1);
+    t1.CopyTo(accum_point);
+    t1.MakeZero();
+  }
+
+  accum_point.CopyTo(R);
+  if(x.IsNegative()) {
+    R.y_->ToggleSign();
+  }
+  return true;
+}
+
 bool EccMult(EccCurve& c, CurvePoint& P, BigNum& x, CurvePoint& R) {
   if(x.IsZero()) {
     R.MakeZero();
