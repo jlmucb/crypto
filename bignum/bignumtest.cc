@@ -3173,7 +3173,7 @@ bool ecc_tests() {
   BigNum      y2(1, 3ULL);
   CurvePoint  P1(x1, y1);
   CurvePoint  P2(x2, y2);
-  CurvePoint  R1(1);
+  CurvePoint  R1(9);
   // For y^2= x^3+4x+4 (mod 5), (1,2)+(4,3)= (4,2)
   if(!EccAdd(curve_1, P1, P2, R1)) {
     return false;
@@ -3194,7 +3194,7 @@ bool ecc_tests() {
   BigNum      y3(1, 3ULL);
   BigNum      t(1, 2ULL);
   CurvePoint  P3(x3, y3);
-  CurvePoint  R2(1);
+  CurvePoint  R2(9);
   // For y^2= x^3+4x+4 (mod 2773), 2(1,3)= (1771, 705)
   if(!EccMult(curve_2, P3, t, R2)) {
     printf("cant Ecc Mult\n");
@@ -3334,15 +3334,15 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(div_time_test("test_data", 32, 5000));
   EXPECT_TRUE(exp_time_test("test_data", 16, 50));
   EXPECT_TRUE(mont_exp_time_test("test_data", 16, 50));
-  EXPECT_TRUE(rsa_speed_tests(NULL, NULL, "test_data", 0, 500));
+  // EXPECT_TRUE(rsa_speed_tests(NULL, NULL, "test_data", 0, 500));
   EXPECT_TRUE(ecc_speed_tests(NULL, "test_data", 0, 200));
   EXPECT_TRUE(ecc_add_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_double_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_mult_time_test("test_data", ext_ecc_key, 200));
-  EXPECT_TRUE(ecc_embed_time_test("test_data", ext_ecc_key, 200));
-  EXPECT_TRUE(ecc_extract_time_test("test_data", ext_ecc_key, 200));
-  EXPECT_TRUE(rsa1024_gen_time_test("test_data", 20));
-  EXPECT_TRUE(rsa2048_gen_time_test("test_data", 20));
+  // EXPECT_TRUE(ecc_embed_time_test("test_data", ext_ecc_key, 200));
+  // EXPECT_TRUE(ecc_extract_time_test("test_data", ext_ecc_key, 200));
+  // EXPECT_TRUE(rsa1024_gen_time_test("test_data", 20));
+  // EXPECT_TRUE(rsa2048_gen_time_test("test_data", 20));
 }
 
 TEST_F(BigNumTest, RunTestSuite) {
