@@ -3125,8 +3125,6 @@ bool key_store_tests() {
     return false;
   }
 
-  // There's a memory corruption problem somewhere in the following
-#if 0
   if(!key_store.ReadStore("TestKeyStore")) {
     printf("Cant read key store\n");
     return false;
@@ -3136,6 +3134,8 @@ bool key_store_tests() {
     return false;
   }
 
+  // There's a memory corruption problem somewhere in the following
+#if 0
   CryptoKey*    p_msg= NULL;
   string*       p_string= NULL;
   if(!key_store.FindKey("JohnsStoreKey1", &p_string, &p_msg)) {
