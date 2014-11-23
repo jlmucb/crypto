@@ -582,6 +582,67 @@ bool print_tests() {
   return true;
 }
 
+bool CompareEccAdd(EccCurve& c, CurvePoint& P, CurvePoint& Q) {
+  CurvePoint R1(9);
+  CurvePoint R2(9);
+
+  if(!EccAdd(c, P, Q, R1)) {
+    printf("CompareEccAdd fails in EccMult\n");
+    return false;
+  }
+  if(!ProjectiveAdd(c, P, Q, R2)) {
+    printf("CompareEccAdd fails in ProjectiveMult\n");
+    return false;
+  }
+  if(!ProjectiveToAffine(c,  R2)) {
+    printf("CompareEccAdd fails in ProjectiveToAffine\n");
+    return false;
+  }
+  if(BigCompare(*R1.x_, *R2.x_)!=0 || BigCompare(*R1.y_, *R2.y_)!=0) {
+    printf("CompareEccAdd results differ\n");
+    P.PrintPoint();
+    printf(" + ");
+    Q.PrintPoint();
+    printf("\n");
+    R1.PrintPoint();
+    printf("\n");
+    R2.PrintPoint();
+    printf("\n");
+    return false;
+  }
+  return true;
+}
+
+bool CompareEccMultiply(EccCurve& c, BigNum& x, CurvePoint& P) {
+  CurvePoint R1(9);
+  CurvePoint R2(9);
+
+  if(!EccMult(c, P, x, R1)) {
+    printf("CompareEccMultiply fails in EccMult\n");
+    return false;
+  }
+  if(!ProjectivePointMult(c, x, P, R2)) {
+    printf("CompareEccMultiply fails in ProjectiveMult\n");
+    return false;
+  }
+  if(!ProjectiveToAffine(c,  R2)) {
+    printf("CompareEccMultiply fails in ProjectiveToAffine\n");
+    return false;
+  }
+  if(BigCompare(*R1.x_, *R2.x_)!=0 || BigCompare(*R1.y_, *R2.y_)!=0) {
+    printf("CompareEccMultiply results differ\n");
+    PrintNumToConsole(x, 10ULL); 
+    P.PrintPoint();
+    printf("\n");
+    R1.PrintPoint();
+    printf("\n");
+    R2.PrintPoint();
+    printf("\n");
+    return false;
+  }
+  return true;
+}
+
 // --------------------------------------------------------------------------------------
 
 bool getrand_time_tests(int num_tests) {
@@ -2164,6 +2225,54 @@ bool ecc_double_time_test(const char* filename, EccKey* ecc_key, int num_tests) 
   printf("END ECC_DOUBLE_TIME_TEST\n");
   return true;
 }
+bool ecc_projective_compare_tests(EccKey* ecc_key, int n) {
+  CurvePoint  P(9);
+  CurvePoint  Q(9);
+  BigNum      x(9);
+  BigNum      m(9);
+  BigNum      u(9);
+  BigNum      t(9);
+  int         i;
+  int         k= 0;
+
+  printf("\nECC_PROJECTIVE_COMPARE_TEST\n");
+
+  m.value_[0]= 0x70707070ULL;
+  m.value_[1]= 0x30303030ULL;
+  m.Normalize();
+  x.value_[0]= 0x70707070ULL;
+  x.Normalize();
+  u.value_[0]= 0x23ULL;
+  u.Normalize();
+  for(i=0; i<n;i++) {
+    t.ZeroNum();
+    if(!BigModAdd(m, u, *(ecc_key->c_.p_), t)) {
+      printf("BigModMult failure\n");
+      continue;
+    }
+    t.CopyTo(m);
+    if(!EccEmbed(ecc_key->c_, m, P, 10, 500)) {
+      printf("Embed failure\n");
+      continue;
+    }
+    if(!EccEmbed(ecc_key->c_, m, Q, 10, 500)) {
+      printf("Embed failure\n");
+      continue;
+    }
+    k++;
+    if(!CompareEccAdd(ecc_key->c_, P, Q)) {
+      return false;
+    }
+    if(!CompareEccAdd(ecc_key->c_, P, P)) {
+      return false;
+    }
+    if(!CompareEccMultiply(ecc_key->c_, x, P)) {
+      return false;
+    }
+  }
+  printf("\nEND ECC_PROJECTIVE_COMPARE_TEST %d\n", k);
+  return true;
+}
 
 CurvePoint  extP(16);
 
@@ -3515,6 +3624,7 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(ecc_projective_mult_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_embed_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_extract_time_test("test_data", ext_ecc_key, 200));
+  EXPECT_TRUE(ecc_projective_compare_tests(ext_ecc_key, 400));
   EXPECT_TRUE(ecc_speed_tests(NULL, "test_data", 0, 200));
 /*
   EXPECT_TRUE(rsa_tests());

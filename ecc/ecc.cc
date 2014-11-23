@@ -208,7 +208,7 @@ bool EccEmbed(EccCurve& c, BigNum& m, CurvePoint& P, int shift, int trys) {
     return false;
   }
   if(BigCompare(*c.p_, m_x)<=0) { 
-    LOG(ERROR) << "BigCompare  failed in EccEmbed\n";
+    LOG(ERROR) << "BigCompare failed in EccEmbed\n";
     return false;
   }
   for(i= 0; i<trys; i++) {
