@@ -21,8 +21,7 @@
 #include "keys.pb.h"
 #include "intel64_arith.h"
 #include "conversions.h"
-
-// #define PROJECTIVECOORDS
+#define FASTECCMULT
 
 EccKey        P256_Key;
 bool          P256_key_valid= false;
@@ -472,7 +471,7 @@ bool ProjectiveAdd(EccCurve& c, CurvePoint& P, CurvePoint& Q, CurvePoint& R) {
   BigNum  t1(1+2*c.p_->size_);
   BigNum  t2(1+2*c.p_->size_);
   BigNum  t3(1+2*c.p_->size_);
-  BigNum  t4(1+2*c.p_->size_);
+  BigNum  t4(1+4*c.p_->size_);
   BigNum  a1(1+2*c.p_->size_);
   BigNum  a2(1+2*c.p_->size_);
   BigNum  b1(1+2*c.p_->size_);
@@ -813,8 +812,6 @@ bool EccMult(EccCurve& c, CurvePoint& P, BigNum& x, CurvePoint& R) {
   if(x.IsOne()) {
     return R.CopyFrom(P);
   }
-
-#ifndef PROJECTIVECOORDS
   int         k=  BigHighBit(x);
   int         i;
   CurvePoint  double_point(P);
@@ -840,7 +837,20 @@ bool EccMult(EccCurve& c, CurvePoint& P, BigNum& x, CurvePoint& R) {
     t1.MakeZero();
   }
   accum_point.CopyTo(R);
-#else
+  if(x.IsNegative()) {
+    R.y_->ToggleSign();
+  }
+  return true;
+}
+
+bool FasterEccMult(EccCurve& c, CurvePoint& P, BigNum& x, CurvePoint& R) {
+  if(x.IsZero()) {
+    R.MakeZero();
+    return true;
+  }
+  if(x.IsOne()) {
+    return R.CopyFrom(P);
+  }
   if(!ProjectivePointMult(c, x, P, R)) {
     LOG(ERROR) << "ProjectivePointMult failed\n";
     return false;
@@ -849,7 +859,6 @@ bool EccMult(EccCurve& c, CurvePoint& P, BigNum& x, CurvePoint& R) {
     LOG(ERROR) << "ProjectiveToAffine failed\n";
     return false;
   }
-#endif
   if(x.IsNegative()) {
     R.y_->ToggleSign();
   }
@@ -1264,6 +1273,31 @@ bool EccKey::Encrypt(int size, byte* plain, BigNum& k, CurvePoint& pt1, CurvePoi
     LOG(ERROR)<<"EccEmbed error in EccKey::Encrypt\n";
     return false;
   }
+#ifdef FASTECCMULT
+  if(!EccMult(c_, g_, k, pt1)) {
+    LOG(ERROR)<<"EccMult error in EccKey::Encrypt\n";
+    return false;
+  }
+// TODO: Find the bug!
+#if 0
+CurvePoint  pt3(16);
+  if(!FasterEccMult(c_, g_, k, pt3)) {
+    LOG(ERROR)<<"EccMult error in EccKey::Encrypt\n";
+    return false;
+  }
+if(BigCompare(*pt1.x_, *pt3.x_)!=0 || BigCompare(*pt1.y_, *pt3.y_)!=0) {
+  printf("\nFaster diff\n");
+  PrintNumToConsole(k, 10ULL); printf("\n");
+  g_.PrintPoint(); printf("\n");
+  pt1.PrintPoint(); printf("\n");
+  pt3.PrintPoint(); printf("\n");
+}
+#endif
+  if(!FasterEccMult(c_, base_, k, R)) {
+    LOG(ERROR)<<"EccMult error in EccKey::Encrypt\n";
+    return false;
+  }
+#else
   if(!EccMult(c_, g_, k, pt1)) {
     LOG(ERROR)<<"EccMult error in EccKey::Encrypt\n";
     return false;
@@ -1272,6 +1306,7 @@ bool EccKey::Encrypt(int size, byte* plain, BigNum& k, CurvePoint& pt1, CurvePoi
     LOG(ERROR)<<"EccMult error in EccKey::Encrypt\n";
     return false;
   }
+#endif
   if(!EccAdd(c_, R, P, pt2)) {
     LOG(ERROR)<<"EccAdd error in EccKey::Encrypt\n";
     return false;
@@ -1286,10 +1321,17 @@ bool EccKey::Decrypt(CurvePoint& pt1, CurvePoint& pt2, int* size, byte* plain) {
   CurvePoint  P(c_.p_->capacity_);
   CurvePoint  R(c_.p_->capacity_);
 
+#ifdef FASTECCMULT
+  if(!FasterEccMult(c_, pt1, *a_, R)) {
+    LOG(ERROR)<<"EccMult error in EccKey::Decrypt\n";
+    return false;
+  }
+#else
   if(!EccMult(c_, pt1, *a_, R)) {
     LOG(ERROR)<<"EccMult error in EccKey::Decrypt\n";
     return false;
   }
+#endif
   if(!EccSub(c_, pt2, R, P)) {
     LOG(ERROR)<<"EccAdd error in EccKey::Decrypt\n";
     return false;

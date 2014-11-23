@@ -68,6 +68,7 @@ bool EccAdd(EccCurve& c, CurvePoint& P, CurvePoint& Q, CurvePoint& R);
 bool EccSub(EccCurve& c, CurvePoint& P, CurvePoint& Q, CurvePoint& R);
 bool EccDouble(EccCurve& c, CurvePoint& P, CurvePoint& R);
 bool EccMult(EccCurve& c, CurvePoint& P, BigNum& x, CurvePoint& R);
+bool FasterEccMult(EccCurve& c, CurvePoint& P, BigNum& x, CurvePoint& R);
 bool ProjectiveToAffine(EccCurve& c, CurvePoint& P);
 bool ProjectiveAdd(EccCurve& c, CurvePoint& P, CurvePoint& Q, CurvePoint& R);
 bool ProjectiveDouble(EccCurve& c, CurvePoint& P, CurvePoint& R);

@@ -2577,10 +2577,10 @@ bool ecc_speed_tests(EccKey* key, const char* filename, int size, int num_tests)
     return false;
   }
 
-  BigNum secret(64);
+  BigNum secret(8);
   if(key==NULL) {
     key= new EccKey();
-    if(!GetCryptoRand(64*NBITSINBYTE, (byte*)secret.value_)) {
+    if(!GetCryptoRand(4*NBITSINUINT64-10, (byte*)secret.value_)) {
       printf("Cant generate ecc key\n");
       return false;
     }
@@ -3525,7 +3525,7 @@ bool ecc_tests() {
     return false;
   }
   BigNum secret(8);
-  if(!GetCryptoRand(256, (byte*)secret.value_)) {
+  if(!GetCryptoRand(252, (byte*)secret.value_)) {
     printf("Cant get random bits\n");
     return false;
   }
@@ -3555,7 +3555,7 @@ bool ecc_tests() {
   int         size= 30;
   BigNum      ksecret(8);
 
-  if(!GetCryptoRand(256, (byte*)ksecret.value_)) {
+  if(!GetCryptoRand(252, (byte*)ksecret.value_)) {
     LOG(ERROR)<<"GetCryptoRandom error in EccKey::Encrypt\n";
     return false;
   }
