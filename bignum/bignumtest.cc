@@ -3516,10 +3516,12 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(ecc_embed_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_extract_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_speed_tests(NULL, "test_data", 0, 200));
+/*
   EXPECT_TRUE(rsa_tests());
   EXPECT_TRUE(rsa_speed_tests(NULL, NULL, "test_data", 0, 500));
   EXPECT_TRUE(rsa1024_gen_time_test("test_data", 20));
   EXPECT_TRUE(rsa2048_gen_time_test("test_data", 20));
+*/
 }
 
 TEST_F(BigNumTest, RunTestSuite) {

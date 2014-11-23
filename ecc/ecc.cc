@@ -24,7 +24,6 @@
 
 // #define PROJECTIVECOORDS
 
-
 EccKey        P256_Key;
 bool          P256_key_valid= false;
 
@@ -699,11 +698,13 @@ bool ProjectiveDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
     LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
-  if(!BigShift(t1, 1, *R.x_)) {
+  t2.ZeroNum();
+  if(!BigShift(t1, 1, t2)) {
     LOG(ERROR) << "ProjectiveDouble Bigshift(x) failed\n";
     return false;
   }
-  BigModNormalize(*R.x_, *c.p_);
+  BigModNormalize(t2, *c.p_);
+  R.x_->CopyFrom(t2);
 
   // z3= 8s^3
   if(!BigModMult(s, s, *c.p_, s_squared)) {
@@ -714,11 +715,13 @@ bool ProjectiveDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
     LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
-  if(!BigShift(t1, 3, *R.z_)) {
+  t2.ZeroNum();
+  if(!BigShift(t1, 3, t2)) {
     LOG(ERROR) << "ProjectiveDouble Bigshift(x) failed\n";
     return false;
   }
-  BigModNormalize(*R.z_, *c.p_);
+  BigModNormalize(t2, *c.p_);
+  R.z_->CopyFrom(t2);
 
   // y3= w(4B-h) -8y1^2s^2
   if(!BigModMult(*P.y_, *P.y_, *c.p_, y1_squared)) {
@@ -839,11 +842,11 @@ bool EccMult(EccCurve& c, CurvePoint& P, BigNum& x, CurvePoint& R) {
   accum_point.CopyTo(R);
 #else
   if(!ProjectivePointMult(c, x, P, R)) {
-    LOG(ERROR) << "JacobianPointMult failed\n";
+    LOG(ERROR) << "ProjectivePointMult failed\n";
     return false;
   }
   if(!ProjectiveToAffine(c,  R)) {
-    LOG(ERROR) << "JacobianToAffine failed\n";
+    LOG(ERROR) << "ProjectiveToAffine failed\n";
     return false;
   }
 #endif
