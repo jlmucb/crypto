@@ -416,46 +416,48 @@ bool EccDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
   return EccAdd(c, P, P, R);
 }
 
-//  The following routines use Jacobian projective coordinates
-//      Ref: Go elliptic curve implementation, hyperellitptic.org
 
-bool JacobianToAffine(EccCurve& c, CurvePoint& P) {
+
+//  For Jacobian projective coordinates, see hyperellitptic.org
+
+//  From Cohen, Miyaka, Ono
+//  Projective Addition
+//    y^2z=x^3+axz^2+bz^3
+//    P != +- Q
+//    u= y2z1-y1z2, v=x2z1-x1z2, A= u^2z1z2-v^3-2v^2x1z2
+//    x3= vA, y3= u(v^2x1z2-A)-v^3y1z2, z3= v^3z1z2
+//    A=u^2z[1]z[2]-v^3-2v^2x[1]z[2]
+//  Doubling
+//    R= 2P
+//    x3=2hs, y3= w(4B-h) -8y[1]^2s^2, z3= 8s^3
+//    w=az1^2+3x1^2, s=y1z1, B= x1y1s, h= w^2-8B
+//
+
+bool ProjectiveToAffine(EccCurve& c, CurvePoint& P) {
   BigNum  x(1+2*c.p_->size_);
   BigNum  y(1+2*c.p_->size_);
   BigNum  zinv(1+2*c.p_->size_);
-  BigNum  z(1+2*c.p_->size_);
-  BigNum  t(1+2*c.p_->size_);
 
   if(P.z_->IsZero()) {
-    LOG(ERROR) << "JacobianToAffine z is 0\n";
+    LOG(ERROR) << "ProjectiveToAffine z is 0\n";
     printf("x: "); PrintNumToConsole(*P.z_, 10ULL); printf("\n");
     return false;
   }
   if(P.z_->IsOne())
     return true;
   if(!BigModInv(*P.z_, *c.p_, zinv)) {
-    LOG(ERROR) << "JacobianToAffine can't BigModInv\n";
+    LOG(ERROR) << "ProjectiveToAffine can't BigModInv\n";
     return false;
   }
 printf("c.p: %lld\n", c.p_->value_[0]);
 printf("P.z: %lld\n", P.z_->value_[0]);
 printf("zinv: %lld\n", zinv.value_[0]);
-  if(!BigModMult(zinv, zinv, *c.p_, z)) {
-    LOG(ERROR) << "JacobianToAffine BigModMult(1) failed\n";
+  if(!BigModMult(*P.x_, zinv, *c.p_, x)) {
+    LOG(ERROR) << "ProjectiveToAffine BigModMult(2) failed\n";
     return false;
   }
-printf("z(zinv^2): %lld\n", z.value_[0]);
-  if(!BigModMult(*P.x_, z, *c.p_, x)) {
-    LOG(ERROR) << "JacobianToAffine BigModMult(2) failed\n";
-    return false;
-  }
-  if(!BigModMult(z, zinv, *c.p_, t)) {
-    LOG(ERROR) << "JacobianToAffine BigModMult(3) failed\n";
-    return false;
-  }
-printf("t(zinv^3): %lld\n", t.value_[0]);
-  if(!BigModMult(*P.y_, t, *c.p_, y)) {
-    LOG(ERROR) << "JacobianToAffine BigModMult(4) failed\n";
+  if(!BigModMult(*P.y_, zinv, *c.p_, y)) {
+    LOG(ERROR) << "ProjectiveToAffine BigModMult(3) failed\n";
     return false;
   }
   P.x_->CopyFrom(x);
@@ -464,334 +466,277 @@ printf("t(zinv^3): %lld\n", t.value_[0]);
   return true;
 }
 
-bool JacobianAdd(EccCurve& c, CurvePoint& P, CurvePoint& Q, CurvePoint& R) {
-  BigNum  z1(1+2*c.p_->size_);
-  BigNum  z2(1+2*c.p_->size_);
-  BigNum  z3(1+2*c.p_->size_);
-  BigNum  z13(1+2*c.p_->size_);
-  BigNum  z23(1+2*c.p_->size_);
-  BigNum  u1(1+2*c.p_->size_);
-  BigNum  u2(1+2*c.p_->size_);
-  BigNum  h(1+2*c.p_->size_);
-  BigNum  i(1+2*c.p_->size_);
-  BigNum  j(1+2*c.p_->size_);
-  BigNum  t(1+2*c.p_->size_);
-  BigNum  s1(1+2*c.p_->size_);
-  BigNum  s2(1+2*c.p_->size_);
-  BigNum  r(1+2*c.p_->size_);
+bool ProjectiveAdd(EccCurve& c, CurvePoint& P, CurvePoint& Q, CurvePoint& R) {
+  BigNum  u(1+2*c.p_->size_);
   BigNum  v(1+2*c.p_->size_);
+  BigNum  A(1+2*c.p_->size_);
+  BigNum  u_squared(1+2*c.p_->size_);
+  BigNum  v_squared(1+2*c.p_->size_);
   BigNum  w(1+2*c.p_->size_);
+  BigNum  t(1+2*c.p_->size_);
+  BigNum  t1(1+2*c.p_->size_);
+  BigNum  t2(1+2*c.p_->size_);
+  BigNum  t3(1+2*c.p_->size_);
+  BigNum  t4(1+2*c.p_->size_);
 
-  if(!BigModMult(*P.z_, *P.z_, *c.p_, z1)) {
-    LOG(ERROR) << "JacobianAdd BigModMult(1) failed\n";
-    return false;
-  }
 printf("c.p: %lld\n", c.p_->value_[0]);
 printf("P.z: %lld\n", P.z_->value_[0]);
-printf("z1: %lld\n", z1.value_[0]);
-  if(!BigModMult(*Q.z_, *Q.z_, *c.p_, z2)) {
-    LOG(ERROR) << "JacobianAdd BigModMult(2) failed\n";
+
+  // If P=O, Q
+  // If Q=O, P
+  // If P= -Q, zero
+  // If P= Q, use doubling
+
+  // u= y2z1-y1z2 
+  if(!BigModMult(*Q.y_, *P.z_, *c.p_, t)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
     return false;
   }
-printf("z2: %lld\n", z2.value_[0]);
-  if(!BigModMult(*P.x_, z2, *c.p_, u1)) {
-    LOG(ERROR) << "JacobianAdd BigModMult(3) failed\n";
+  if(!BigModMult(*P.y_, *Q.z_, *c.p_, w)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
     return false;
   }
-printf("P.x: %lld\n", P.x_->value_[0]);
-printf("u1: %lld\n", u1.value_[0]);
-  if(!BigModMult(*Q.x_, z1, *c.p_, u2)) {
-    LOG(ERROR) << "JacobianAdd BigModMult(4) failed\n";
+  if(!BigModSub(t, w, *c.p_, u)) {
+    LOG(ERROR) << "ProjectiveAdd BigModSub(x) failed\n";
     return false;
   }
-printf("Q.x: %lld\n", Q.x_->value_[0]);
-printf("u2: %lld\n", u2.value_[0]);
-  if(!BigModSub(u2, u1, *c.p_, h)) {
-    LOG(ERROR) << "JacobianAdd BigModSub(1) failed\n";
+printf("u: %lld\n", u.value_[0]);
+  // v=x2z1-x1z2
+  if(!BigModMult(*Q.x_, *P.z_, *c.p_, t)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
     return false;
   }
-printf("u2-u1: %lld\n", h.value_[0]);
-  if(!BigShift(h, 1, t)) {
-    LOG(ERROR) << "JacobianAdd BigShift(1) failed\n";
+  if(!BigModMult(*P.x_, *Q.z_, *c.p_, w)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
     return false;
   }
-  BigModNormalize(t, *c.p_);
-printf("t: %lld\n", t.value_[0]);
-  if(!BigModMult(t, t, *c.p_, i)) {
-    LOG(ERROR) << "JacobianAdd BigModMult(5) failed\n";
-    return false;
-  }
-printf("i: %lld\n", i.value_[0]);
-  if(!BigModMult(i, h, *c.p_, j)) {
-    LOG(ERROR) << "JacobianAdd BigModMult(6) failed\n";
-    return false;
-  }
-printf("j: %lld\n", j.value_[0]);
-  if(!BigModMult(z2, *Q.z_, *c.p_, z23)) {
-    LOG(ERROR) << "JacobianAdd BigModMult(7) failed\n";
-    return false;
-  }
-printf("Q.z: %lld\n", Q.z_->value_[0]);
-printf("z23: %lld\n", z23.value_[0]);
-  if(!BigModMult(*P.y_, z23, *c.p_, s1)) {
-    LOG(ERROR) << "JacobianAdd BigModMult(8) failed\n";
-    return false;
-  }
-printf("s1: %lld\n", s1.value_[0]);
-  if(!BigModMult(z1, *P.z_, *c.p_, z13)) {
-    LOG(ERROR) << "JacobianAdd BigModMult(9) failed\n";
-    return false;
-  }
-printf("z13: %lld\n", z13.value_[0]);
-  if(!BigModMult(*Q.y_, z13, *c.p_, s2)) {
-    LOG(ERROR) << "JacobianAdd BigModMult(10) failed\n";
-    return false;
-  }
-printf("s2: %lld\n", s2.value_[0]);
-  t.ZeroNum();
-  if(!BigModSub(s2, s1, *c.p_, t)) {
-    LOG(ERROR) << "JacobianAdd BigModSub(2) failed\n";
-    return false;
-  }
-printf("s2-s1: %lld\n", t.value_[0]);
-  // todo: if r is zero return double
-  if(!BigShift(t, 1, r)) {
-    LOG(ERROR) << "JacobianAdd BigShift(1) failed\n";
-    return false;
-  }
-  BigModNormalize(r, *c.p_);
-printf("r: %lld\n", r.value_[0]);
-  if(!BigModMult(u1, i, *c.p_, v)) {
-    LOG(ERROR) << "JacobianAdd BigModMult(11) failed\n";
+  if(!BigModSub(t, w, *c.p_, v)) {
+    LOG(ERROR) << "ProjectiveAdd BigModSub(x) failed\n";
     return false;
   }
 printf("v: %lld\n", v.value_[0]);
+  // A= u^2z1z2-v^3-2v^2x1z2
+  if(!BigModMult(u, u, *c.p_, u_squared)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
+    return false;
+  }
+  if(!BigModMult(v, v, *c.p_, v_squared)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
+    return false;
+  }
+  if(!BigModMult(u_squared, *P.z_, *c.p_, t)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
+    return false;
+  }
+  if(!BigModMult(t, *Q.z_, *c.p_, t1)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
+    return false;
+  }
+  if(!BigModMult(v_squared, v, *c.p_, t2)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
+    return false;
+  }
+  if(!BigModMult(v_squared, *P.x_, *c.p_, t)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
+    return false;
+  }
+  if(!BigModMult(t, *Q.z_, *c.p_, t4)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
+    return false;
+  }
+  if(!BigShift(t4, 1, t3)) {
+    LOG(ERROR) << "ProjectiveAdd BigShift(x) failed\n";
+    return false;
+  }
+  BigModNormalize(t3, *c.p_);
   t.ZeroNum();
-  if(!BigModMult(r, r, *c.p_, t)) {
-    LOG(ERROR) << "JacobianAdd BigModMult(12) failed\n";
+  if(!BigModSub(t1, t2, *c.p_, t)) {
+    LOG(ERROR) << "ProjectiveAdd BigModSub(x) failed\n";
     return false;
   }
-printf("t(r^2): %lld\n", t.value_[0]);
-  w.ZeroNum();
-  if(!BigModSub(t, j, *c.p_, w)) {
-    LOG(ERROR) << "JacobianAdd BigModSub(3) failed\n";
+  if(!BigModSub(t, t3, *c.p_, A)) {
+    LOG(ERROR) << "ProjectiveAdd BigModSub(x) failed\n";
     return false;
   }
-printf("w(r^2-j): %lld\n", t.value_[0]);
-  t.ZeroNum();
-  if(!BigModSub(w, v, *c.p_, t)) {
-    LOG(ERROR) << "JacobianAdd BigModSub(3) failed\n";
-    return false;
-  }
-printf("t(r^2-j-v): %lld\n", t.value_[0]);
-  if(!BigModSub(t, v, *c.p_, *R.x_)) {
-    LOG(ERROR) << "JacobianAdd BigModSub(4) failed\n";
+printf("A: %lld\n", A.value_[0]);
+  // x3= vA
+  if(!BigModMult(v, A, *c.p_, *R.x_)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
     return false;
   }
 printf("R.x: %lld\n", R.x_->value_[0]);
-
+  // z3= v^3z1z2
+  if(!BigModMult(*P.z_, *Q.z_, *c.p_, t)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
+    return false;
+  }
+  if(!BigModMult(t, t2, *c.p_, *R.z_)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
+    return false;
+  }
+  // y3= u(v^2x1z2-A)-v^3y1z2
   t.ZeroNum();
-  w.ZeroNum();
-  if(!BigModSub(v, *R.x_,*c.p_, t)) {   // t is v-x3
-    LOG(ERROR) << "JacobianAdd BigModSub(5) failed\n";
+  if(!BigModSub(t4, A, *c.p_, t)) {
+    LOG(ERROR) << "ProjectiveAdd BigModSub(x) failed\n";
     return false;
   }
-printf("t(v-x3): %lld\n", t.value_[0]);
-  if(!BigModMult(r, t, *c.p_, w)) {     // w is r*v
-    LOG(ERROR) << "JacobianAdd BigModMult(15) failed\n";
+  if(!BigModMult(t, u, *c.p_, w)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
     return false;
   }
-printf("w(r*v): %lld\n", w.value_[0]);
-  t.ZeroNum();
-  if(!BigModMult(s1, j, *c.p_, t)) {
-    LOG(ERROR) << "JacobianAdd BigModMult(16) failed\n";
+  if(!BigModMult(t2, *P.y_, *c.p_, t)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
     return false;
   }
-printf("t(s1*j): %lld\n", t.value_[0]);
-  if(!BigShift(t, 1, s1)) {
-    LOG(ERROR) << "JacobianAdd BigShift(1) failed\n";
+  if(!BigModMult(t, *Q.z_, *c.p_, t4)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
     return false;
   }
-  BigModNormalize(s1, *c.p_);
-printf("s1: %lld\n", s1.value_[0]);
-  if(!BigModSub(w, s1, *c.p_, *R.y_)) {
-    LOG(ERROR) << "JacobianAdd BigModSub(6) failed\n";
-    LOG(ERROR) << "R.y: "<<R.y_->size_<<", s1: "<< s1.size_ << ", c.p_: " <<c.p_->size_<< ", t: "<< t.size_<<"\n";
+  if(!BigModSub(w, t4, *c.p_, *R.y_)) {
+    LOG(ERROR) << "ProjectiveAdd BigModSub(x) failed\n";
     return false;
   }
 printf("R.y: %lld\n", R.y_->value_[0]);
+  return true;
+}
 
-  t.ZeroNum();
-  if(!BigModAdd(*P.z_, *Q.z_, *c.p_, t)) {
-    LOG(ERROR) << "JacobianAdd BigModAdd(1) failed\n";
+bool ProjectiveDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
+  BigNum  w(1+2*c.p_->size_);
+  BigNum  w_squared(1+2*c.p_->size_);
+  BigNum  s(1+2*c.p_->size_);
+  BigNum  s_squared(1+2*c.p_->size_);
+  BigNum  h(1+2*c.p_->size_);
+  BigNum  B(1+2*c.p_->size_);
+  BigNum  t1(1+2*c.p_->size_);
+  BigNum  t2(1+2*c.p_->size_);
+  BigNum  t3(1+2*c.p_->size_);
+  BigNum  z1_squared(1+2*c.p_->size_);
+  BigNum  x1_squared(1+2*c.p_->size_);
+  BigNum  y1_squared(1+2*c.p_->size_);
+
+  // w=az1^2+3x1^2
+  if(!BigModMult(*P.z_, *P.z_, *c.p_, z1_squared)) {
+    LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
-printf("t(P.x+Q.z): %lld\n", t.value_[0]);
-  if(!BigModMult(t, t, *c.p_, z3)) {
-    LOG(ERROR) << "JacobianAdd BigModMult(17) failed\n";
+  if(!BigModMult(*P.x_, *P.x_, *c.p_, x1_squared)) {
+    LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
-printf("z3(P.x+Q.z)^2: %lld\n", z3.value_[0]);
-  t.ZeroNum();
-  if(!BigModSub(z3, z1, *c.p_, t)) {
-    LOG(ERROR) << "JacobianAdd BigModSub(5) failed\n";
+  if(!BigModMult(*c.a_, z1_squared, *c.p_, t1)) {
+    LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
-printf("t: %lld\n", t.value_[0]);
-  w.ZeroNum();
-  if(!BigModSub(t, z2, *c.p_, w)) {
-    LOG(ERROR) << "JacobianAdd BigModSub(6) failed\n";
+  if(!BigModMult(Big_Three, x1_squared, *c.p_, t2)) {
+    LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
+    return false;
+  }
+  if(!BigModAdd(t1, t2, *c.p_, w)) {
+    LOG(ERROR) << "ProjectiveDouble BigModAdd(x) failed\n";
     return false;
   }
 printf("w: %lld\n", w.value_[0]);
-  if(!BigModMult(h, w, *c.p_, *R.z_)) {
-    LOG(ERROR) << "JacobianAdd BigModMult(18) failed\n";
+  // s=y1z1
+  if(!BigModMult(*P.y_, *P.z_, *c.p_, s)) {
+    LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
-printf("R.z: %lld\n", R.z_->value_[0]);
-  return true;
-}
+printf("s: %lld\n", s.value_[0]);
+  // B= x1y1s
+  if(!BigModMult(*P.x_, *P.y_, *c.p_, t1)) {
+    LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
+    return false;
+  }
+  if(!BigModMult(s, t1, *c.p_, B)) {
+    LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
+    return false;
+  }
+printf("B: %lld\n", B.value_[0]);
+  // h= w^2-8B
+  if(!BigModMult(w, w, *c.p_, w_squared)) {
+    LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
+    return false;
+  }
+  t1.ZeroNum();
+  if(!BigShift(B, 3, t1)) {
+    LOG(ERROR) << "ProjectiveDouble Bigshift(x) failed\n";
+    return false;
+  }
+  BigModNormalize(t1, *c.p_);
+  if(!BigModSub(w_squared, t1, *c.p_, h)) {
+    LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
+    return false;
+  }
+printf("h: %lld\n", h.value_[0]);
 
-bool JacobianDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
-  BigNum  a(1+2*c.p_->size_);
-  BigNum  b(1+2*c.p_->size_);
-  BigNum  d(1+2*c.p_->size_);
-  BigNum  g(1+2*c.p_->size_);
-  BigNum  a2(1+2*c.p_->size_);
-  BigNum  b8(1+2*c.p_->size_);
-  BigNum  t(1+2*c.p_->size_);
-  BigNum  w(1+2*c.p_->size_);
-
-  if(!BigModMult(*P.z_, *P.z_, *c.p_, d)) {
-    LOG(ERROR) << "JacobianDouble BigModMult(1) failed\n";
+  // x3=2hs
+  t1.ZeroNum();
+  if(!BigModMult(h, s, *c.p_, t1)) {
+    LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
-printf("Double c.p: %lld\n", c.p_->value_[0]);
-printf("P.z: %lld\n", P.z_->value_[0]);
-printf("d(z^2): %lld\n", d.value_[0]);
-  if(!BigModMult(*P.y_, *P.y_, *c.p_, g)) {
-    LOG(ERROR) << "JacobianDouble BigModMult(2) failed\n";
+  if(!BigShift(t1, 1, *R.x_)) {
+    LOG(ERROR) << "ProjectiveDouble Bigshift(x) failed\n";
     return false;
   }
-printf("g(y^2): %lld\n", g.value_[0]);
-  if(!BigModSub(*P.x_, d, *c.p_, a)) {
-    LOG(ERROR) << "JacobianDouble  BigModSub(1) failed\n";
-    return false;
-  }
-printf("a(P.x-d): %lld\n", a.value_[0]);
-  if(!BigModAdd(*P.x_, d, *c.p_, t)) {
-    LOG(ERROR) << "JacobianDouble BigModAdd(1) failed\n";
-    return false;
-  }
-printf("t(P.x+d): %lld\n", t.value_[0]);
-  if(!BigModMult(a, t, *c.p_, a2)) {
-    LOG(ERROR) << "JacobianDouble BigModMult(3) failed\n";
-    return false;
-  }
-printf("a2((P.x-d)*(P.x+d)): %lld\n", a2.value_[0]);
-  if(!BigShift(a2,1,w)) {
-    LOG(ERROR) << "JacobianDouble BigShift(1) failed\n";
-    return false;
-  }
-  BigModNormalize(w, *c.p_);
-printf("w(a2<<1)): %lld\n", w.value_[0]);
-  if(!BigModAdd(w, a2, *c.p_, a)) {
-    LOG(ERROR) << "JacobianDouble BigModAdd(2) failed\n";
-    return false;
-  }
-printf("a(a2+w)): %lld\n", a.value_[0]);
-  if(!BigModMult(*P.x_, g, *c.p_, b)) {
-    LOG(ERROR) << "JacobianDouble BigModMult(4) failed\n";
-    return false;
-  }
-printf("b(P.x+g)): %lld\n", b.value_[0]);
-  w.ZeroNum();
-  if(!BigModMult(a, a, *c.p_, w)) {
-    LOG(ERROR) << "JacobianDouble BigModMult(5) failed\n";
-    return false;
-  }
-printf("w(a*a)): %lld\n", w.value_[0]);
-  if(!BigShift(b,3,b8)) {
-    LOG(ERROR) << "JacobianDouble BigShift(2) failed\n";
-    return false;
-  }
-  BigModNormalize(b8, *c.p_);
-printf("b8: %lld\n", b8.value_[0]);
-  if(!BigModAdd(w, a2, *c.p_, a)) {
-    LOG(ERROR) << "JacobianDouble BigModMult(6) failed\n";
-    return false;
-  }
-  if(!BigModSub(w, b8, *c.p_, *R.x_)) {
-    LOG(ERROR) << "JacobianDouble BigModSub(2) failed\n";
-    return false;
-  }
+  BigModNormalize(*R.x_, *c.p_);
 printf("R.x: %lld\n", R.x_->value_[0]);
 
-  t.ZeroNum();
-  if(!BigModAdd(*P.z_, *P.y_, *c.p_, t)) {
-    LOG(ERROR) << "JacobianDouble BigModAdd(3) failed\n";
+  // z3= 8s^3
+  if(!BigModMult(s, s, *c.p_, s_squared)) {
+    LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
-printf("t(P.y+P.z): %lld\n", t.value_[0]);
-  w.ZeroNum();
-  if(!BigModMult(t, t, *c.p_, w)) {
-    LOG(ERROR) << "JacobianDouble BigModMult(7) failed\n";
+  if(!BigModMult(s_squared, s, *c.p_, t1)) {
+    LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
-printf("w(P.y+P.z)^2: %lld\n", w.value_[0]);
-  t.ZeroNum();
-  if(!BigModSub(w, g, *c.p_, t)) {
-    LOG(ERROR) << "JacobianDouble BigModSub(3) failed\n";
+  if(!BigShift(t1, 3, *R.z_)) {
+    LOG(ERROR) << "ProjectiveDouble Bigshift(x) failed\n";
     return false;
   }
-printf("t(P.y+P.z)^2-g: %lld\n", w.value_[0]);
-  if(!BigModSub(t, d, *c.p_, *R.z_)) {
-    LOG(ERROR) << "JacobianDouble BigModSub(4) failed\n";
-    LOG(ERROR) << "t: "<<t.size_<<", d: "<< d.size_ << ", c.p_: " <<c.p_->size_<< ", R.z_: "<< R.z_->size_<<"\n";
-    return false;
-  }
+  BigModNormalize(*R.z_, *c.p_);
 printf("R.z: %lld\n", R.z_->value_[0]);
 
-  w.ZeroNum();
-  if(!BigShift(b,2,w)) {
-    LOG(ERROR) << "JacobianDouble BigShift(3) failed\n";
+  // y3= w(4B-h) -8y1^2s^2
+  if(!BigModMult(*P.y_, *P.y_, *c.p_, y1_squared)) {
+    LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
-  BigModNormalize(w, *c.p_);
-  b.ZeroNum();
-printf("w(4b): %lld\n", w.value_[0]);
-  if(!BigModSub(w, *R.x_, *c.p_, b)) {
-    LOG(ERROR) << "JacobianDouble BigModSub(5) failed\n";
+  t1.ZeroNum();
+  t2.ZeroNum();
+  if(!BigShift(B, 2, t1)) {
+    LOG(ERROR) << "ProjectiveDouble Bigshift(x) failed\n";
     return false;
   }
-printf("b(4b-R.x): %lld\n", b.value_[0]);
-  t.ZeroNum();
-  w.ZeroNum();
-  if(!BigModMult(a, b, *c.p_, w)) {
-    LOG(ERROR) << "JacobianDouble BigModMult(8) failed\n";
+  BigModNormalize(t1, *c.p_);
+  if(!BigModSub(t1, h, *c.p_, t2)) {
+    LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
-printf("w(a*b): %lld\n", w.value_[0]);
-  if(!BigModMult(g, g, *c.p_, t)) {
-    LOG(ERROR) << "JacobianDouble BigModMult(9) failed\n";
+  t1.ZeroNum();
+  if(!BigModMult(w, t2, *c.p_, t1)) {
+    LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
-printf("t(g*g): %lld\n", t.value_[0]);
-  if(!BigShift(t,3,g)) {
-    LOG(ERROR) << "JacobianDouble BigModShift(4) failed\n";
+  if(!BigModMult(s_squared, y1_squared, *c.p_, t2)) {
+    LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
-  BigModNormalize(g, *c.p_);
-printf("g: %lld\n", g.value_[0]);
-  if(!BigModSub(w, g, *c.p_, *R.y_)) {
-    LOG(ERROR) << "JacobianDouble BigModSub(6) failed\n";
+  if(!BigShift(t2, 3, t3)) {
+    LOG(ERROR) << "ProjectiveDouble Bigshift(x) failed\n";
+    return false;
+  }
+  BigModNormalize(t3, *c.p_);
+  if(!BigModSub(t1, t3, *c.p_, *R.y_)) {
+    LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
 printf("R.y: %lld\n", R.y_->value_[0]);
   return true;
 }
 
-bool JacobianPointMult(EccCurve& c, BigNum& x, CurvePoint& P, CurvePoint& R) {
+bool ProjectivePointMult(EccCurve& c, BigNum& x, CurvePoint& P, CurvePoint& R) {
   if(x.IsZero()) {
     R.MakeZero();
     return true;
@@ -809,18 +754,18 @@ bool JacobianPointMult(EccCurve& c, BigNum& x, CurvePoint& P, CurvePoint& R) {
   accum_point.MakeZero();
   for(i=1; i<k; i++) {
     if(BigBitPositionOn(x, i)) {
-      JacobianAdd(c, accum_point, double_point, t1);
+      ProjectiveAdd(c, accum_point, double_point, t1);
       t1.CopyTo(accum_point);
       t1.MakeZero();
     }
-    if(!JacobianDouble(c, double_point, t1)) {
+    if(!ProjectiveDouble(c, double_point, t1)) {
       return false;
     }
     t1.CopyTo(double_point);
     t1.MakeZero();
   }
   if(BigBitPositionOn(x, i)) {
-    JacobianAdd(c, accum_point, double_point, t1);
+    ProjectiveAdd(c, accum_point, double_point, t1);
     t1.CopyTo(accum_point);
     t1.MakeZero();
   }
@@ -841,7 +786,7 @@ bool EccMult(EccCurve& c, CurvePoint& P, BigNum& x, CurvePoint& R) {
     return R.CopyFrom(P);
   }
 
-#ifndef JACOBIANCOORDS
+#ifndef PROJECTIVECOORDS
   int         k=  BigHighBit(x);
   int         i;
   CurvePoint  double_point(P);
@@ -868,11 +813,11 @@ bool EccMult(EccCurve& c, CurvePoint& P, BigNum& x, CurvePoint& R) {
   }
   accum_point.CopyTo(R);
 #else
-  if(!JacobianPointMult(c, x, P, R)) {
+  if(!ProjectivePointMult(c, x, P, R)) {
     LOG(ERROR) << "JacobianPointMult failed\n";
     return false;
   }
-  if(!JacobianToAffine(c,  R)) {
+  if(!ProjectiveToAffine(c,  R)) {
     LOG(ERROR) << "JacobianToAffine failed\n";
     return false;
   }
@@ -882,20 +827,6 @@ bool EccMult(EccCurve& c, CurvePoint& P, BigNum& x, CurvePoint& R) {
   }
   return true;
 }
-
-/*
- *  Projective Addition
- *
- *    P != +- Q
- *    y^2z=x^3+axz^2+bz^3
- *  
- *    x[3]= vA, y[3]= u(v^2x[1]z[2]-A)-v^3y[1]z[2], z[3]= vz[1] z[2]
- *    A=u^2z[1]z[2]-v^3-2v^2x[1]z[2]
- *
- *    R= 2P
- *    x[3]=2hs, y[3]= w(4B-h) -8y[1]^2s^2, z[3]= 8s^3
- *    w=az[1]^2+3[x1]^2, s=y[1]z[1], B= x[1]y[1]s, h= w^2-8B
- */
 
 EccKey::EccKey() {
   bit_size_modulus_= 0;

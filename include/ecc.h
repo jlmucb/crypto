@@ -68,10 +68,10 @@ bool EccAdd(EccCurve& c, CurvePoint& P, CurvePoint& Q, CurvePoint& R);
 bool EccSub(EccCurve& c, CurvePoint& P, CurvePoint& Q, CurvePoint& R);
 bool EccDouble(EccCurve& c, CurvePoint& P, CurvePoint& R);
 bool EccMult(EccCurve& c, CurvePoint& P, BigNum& x, CurvePoint& R);
-bool JacobianToAffine(EccCurve& c, CurvePoint& P);
-bool JacobianAdd(EccCurve& c, CurvePoint& P, CurvePoint& Q, CurvePoint& R);
-bool JacobianDouble(EccCurve& c, CurvePoint& P, CurvePoint& R);
-bool JacobianPointMult(EccCurve& c, BigNum& x, CurvePoint& P, CurvePoint& R);
+bool ProjectiveToAffine(EccCurve& c, CurvePoint& P);
+bool ProjectiveAdd(EccCurve& c, CurvePoint& P, CurvePoint& Q, CurvePoint& R);
+bool ProjectiveDouble(EccCurve& c, CurvePoint& P, CurvePoint& R);
+bool ProjectivePointMult(EccCurve& c, BigNum& x, CurvePoint& P, CurvePoint& R);
 
 #endif
 

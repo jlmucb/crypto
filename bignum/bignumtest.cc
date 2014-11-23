@@ -3247,7 +3247,7 @@ bool simple_ecc_tests() {
   return true;
 }
 
-bool simple_jacobian_ecc_tests() {
+bool simple_projective_ecc_tests() {
   printf("\nSIMPLE_JACOBIAN_ECC_TESTS\n");
   BigNum      b(1,4ULL);
   BigNum      c(1,4ULL);
@@ -3261,8 +3261,10 @@ bool simple_jacobian_ecc_tests() {
   CurvePoint  P1(x1, y1);
   CurvePoint  P2(x2, y2);
   CurvePoint  R1(9);
+
   // For y^2= x^3+4x+4 (mod 5), (1,2)+(4,3)= (4,2)
-  if(!JacobianAdd(curve_1, P1, P2, R1)) {
+  printf("PrintCurve: "); curve_1.PrintCurve(); printf("\n");
+  if(!ProjectiveAdd(curve_1, P1, P2, R1)) {
     return false;
   }
   P1.PrintPoint();
@@ -3271,8 +3273,8 @@ bool simple_jacobian_ecc_tests() {
   printf(" = ");
   R1.PrintPoint();
   printf("\n");
-  if(!JacobianToAffine(curve_1, R1)) {
-    printf("JacobianToAffine failed\n");
+  if(!ProjectiveToAffine(curve_1, R1)) {
+    printf("ProjectiveToAffine failed\n");
     return false;
   }
   printf("Affine: ");
@@ -3291,25 +3293,8 @@ bool simple_jacobian_ecc_tests() {
   CurvePoint  R2(9);
   // For y^2= x^3+4x+4 (mod 2773), 2(1,3)= (1771, 705)
 
-  if(!JacobianAdd(curve_2, P3, P3, R2)) {
-    printf("cant Ecc Mult\n");
-    return false;
-  }
-  P3.PrintPoint();
-  printf(" + ");
-  P3.PrintPoint();
-  printf(" = ");
-  R2.PrintPoint();
-  printf("\n");
-  if(!JacobianToAffine(curve_2, R2)) {
-    printf("JacobianToAffine failed\n");
-    return false;
-  }
-  printf("Affine: ");
-  R2.PrintPoint();
-  printf("\n");
-
-  if(!JacobianDouble(curve_2, P3, R2)) {
+  printf("PrintCurve: "); curve_2.PrintCurve(); printf("\n");
+  if(!ProjectiveDouble(curve_2, P3, R2)) {
     printf("cant Ecc Mult\n");
     return false;
   }
@@ -3318,7 +3303,7 @@ bool simple_jacobian_ecc_tests() {
   printf(" = ");
   R2.PrintPoint();
   printf("\n");
-  if(!JacobianToAffine(curve_2, R2)) {
+  if(!ProjectiveToAffine(curve_2, R2)) {
     printf("JacobianToAffine failed\n");
     return false;
   }
@@ -3329,7 +3314,25 @@ bool simple_jacobian_ecc_tests() {
     return false;
   }
 
-  if(!JacobianPointMult(curve_2, t, P3, R2)) {
+#if 0
+  if(!ProjectiveAdd(curve_2, P3, P3, R2)) {
+    printf("cant Ecc Mult\n");
+    return false;
+  }
+  P3.PrintPoint();
+  printf(" + ");
+  P3.PrintPoint();
+  printf(" = ");
+  R2.PrintPoint();
+  printf("\n");
+  if(!ProjectiveToAffine(curve_2, R2)) {
+    printf("JacobianToAffine failed\n");
+  }
+  printf("Affine: ");
+  R2.PrintPoint();
+  printf("\n");
+
+  if(!ProjectivePointMult(curve_2, t, P3, R2)) {
     printf("cant Ecc Mult\n");
     return false;
   }
@@ -3339,7 +3342,7 @@ bool simple_jacobian_ecc_tests() {
   printf(" = ");
   R2.PrintPoint();
   printf("\n");
-  if(!JacobianToAffine(curve_2, R2)) {
+  if(!ProjectiveToAffine(curve_2, R2)) {
     printf("JacobianToAffine failed\n");
     return false;
   }
@@ -3355,7 +3358,7 @@ bool simple_jacobian_ecc_tests() {
   CurvePoint  z(1);
   CurvePoint  w(1);
   z.MakeZero();
-  if(!JacobianPointMult(curve_2, t, z, w)) {
+  if(!ProjectivePointMult(curve_2, t, z, w)) {
     printf("cant Ecc Mult\n");
     return false;
   }
@@ -3368,6 +3371,7 @@ bool simple_jacobian_ecc_tests() {
   printf("Affine: ");
   w.PrintPoint();
   printf("\n");
+#endif
   printf("END SIMPLE_JACOBIAN_ECC_TESTS\n");
   return true;
 }
@@ -3446,6 +3450,7 @@ bool RunTestSuite() {
 #define TESTBUFSIZE 2048
 
 TEST(FirstBigNumCase, FirstBigNumTest) {
+  /*
   EXPECT_TRUE(getrand_time_tests(100));
   EXPECT_TRUE(simpletest());
   EXPECT_TRUE(unsigned_arith_tests());
@@ -3462,8 +3467,10 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(key_store_tests());
   EXPECT_TRUE(rsa_tests());
   EXPECT_TRUE(mont_arith_tests());
+  */
   EXPECT_TRUE(simple_ecc_tests());
-  // EXPECT_TRUE(simple_jacobian_ecc_tests());
+  EXPECT_TRUE(simple_projective_ecc_tests());
+  /*
   EXPECT_TRUE(ecc_tests());
   EXPECT_TRUE(simple_mult_time_test("test_data", TESTBUFSIZE, 1000000));
   EXPECT_TRUE(simple_div_time_test("test_data", TESTBUFSIZE,  1000000));
@@ -3482,6 +3489,7 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(ecc_extract_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(rsa1024_gen_time_test("test_data", 20));
   EXPECT_TRUE(rsa2048_gen_time_test("test_data", 20));
+  */
 }
 
 TEST_F(BigNumTest, RunTestSuite) {
