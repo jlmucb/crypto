@@ -3248,7 +3248,7 @@ bool simple_ecc_tests() {
 }
 
 bool simple_projective_ecc_tests() {
-  printf("\nSIMPLE_JACOBIAN_ECC_TESTS\n");
+  printf("\nSIMPLE_PROJECTIVE_ECC_TESTS\n");
   BigNum      b(1,4ULL);
   BigNum      c(1,4ULL);
   BigNum      p(1,5ULL);
@@ -3314,7 +3314,6 @@ bool simple_projective_ecc_tests() {
     return false;
   }
 
-#if 0
   if(!ProjectiveAdd(curve_2, P3, P3, R2)) {
     printf("cant Ecc Mult\n");
     return false;
@@ -3371,8 +3370,7 @@ bool simple_projective_ecc_tests() {
   printf("Affine: ");
   w.PrintPoint();
   printf("\n");
-#endif
-  printf("END SIMPLE_JACOBIAN_ECC_TESTS\n");
+  printf("END SIMPLE_PROJECTIVE_ECC_TESTS\n");
   return true;
 }
 
@@ -3465,13 +3463,7 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(number_theory_tests());
   EXPECT_TRUE(key_format_tests());
   EXPECT_TRUE(key_store_tests());
-  EXPECT_TRUE(rsa_tests());
   EXPECT_TRUE(mont_arith_tests());
-  */
-  EXPECT_TRUE(simple_ecc_tests());
-  EXPECT_TRUE(simple_projective_ecc_tests());
-  /*
-  EXPECT_TRUE(ecc_tests());
   EXPECT_TRUE(simple_mult_time_test("test_data", TESTBUFSIZE, 1000000));
   EXPECT_TRUE(simple_div_time_test("test_data", TESTBUFSIZE,  1000000));
   EXPECT_TRUE(mult_div_stress("test_data", 32, 5000));
@@ -3480,13 +3472,19 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(div_time_test("test_data", 32, 5000));
   EXPECT_TRUE(exp_time_test("test_data", 16, 50));
   EXPECT_TRUE(mont_exp_time_test("test_data", 16, 50));
-  EXPECT_TRUE(rsa_speed_tests(NULL, NULL, "test_data", 0, 500));
-  EXPECT_TRUE(ecc_speed_tests(NULL, "test_data", 0, 200));
+  */
+  EXPECT_TRUE(simple_ecc_tests());
+  EXPECT_TRUE(simple_projective_ecc_tests());
+  EXPECT_TRUE(ecc_tests());
   EXPECT_TRUE(ecc_add_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_double_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_mult_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_embed_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_extract_time_test("test_data", ext_ecc_key, 200));
+  EXPECT_TRUE(ecc_speed_tests(NULL, "test_data", 0, 200));
+  /*
+  EXPECT_TRUE(rsa_tests());
+  EXPECT_TRUE(rsa_speed_tests(NULL, NULL, "test_data", 0, 500));
   EXPECT_TRUE(rsa1024_gen_time_test("test_data", 20));
   EXPECT_TRUE(rsa2048_gen_time_test("test_data", 20));
   */

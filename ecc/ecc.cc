@@ -22,7 +22,7 @@
 #include "intel64_arith.h"
 #include "conversions.h"
 
-// #define JACOBIANCOORDS
+// #define PROJECTIVECOORDS
 
 
 EccKey        P256_Key;
@@ -439,9 +439,8 @@ bool ProjectiveToAffine(EccCurve& c, CurvePoint& P) {
   BigNum  zinv(1+2*c.p_->size_);
 
   if(P.z_->IsZero()) {
-    LOG(ERROR) << "ProjectiveToAffine z is 0\n";
-    printf("x: "); PrintNumToConsole(*P.z_, 10ULL); printf("\n");
-    return false;
+    P.MakeZero();
+    return true;
   }
   if(P.z_->IsOne())
     return true;
@@ -449,9 +448,6 @@ bool ProjectiveToAffine(EccCurve& c, CurvePoint& P) {
     LOG(ERROR) << "ProjectiveToAffine can't BigModInv\n";
     return false;
   }
-printf("c.p: %lld\n", c.p_->value_[0]);
-printf("P.z: %lld\n", P.z_->value_[0]);
-printf("zinv: %lld\n", zinv.value_[0]);
   if(!BigModMult(*P.x_, zinv, *c.p_, x)) {
     LOG(ERROR) << "ProjectiveToAffine BigModMult(2) failed\n";
     return false;
@@ -478,14 +474,51 @@ bool ProjectiveAdd(EccCurve& c, CurvePoint& P, CurvePoint& Q, CurvePoint& R) {
   BigNum  t2(1+2*c.p_->size_);
   BigNum  t3(1+2*c.p_->size_);
   BigNum  t4(1+2*c.p_->size_);
-
-printf("c.p: %lld\n", c.p_->value_[0]);
-printf("P.z: %lld\n", P.z_->value_[0]);
+  BigNum  a1(1+2*c.p_->size_);
+  BigNum  a2(1+2*c.p_->size_);
+  BigNum  b1(1+2*c.p_->size_);
+  BigNum  b2(1+2*c.p_->size_);
 
   // If P=O, Q
+  if(P.z_->IsZero()) {
+    R.CopyFrom(Q);
+    return true;
+  } 
   // If Q=O, P
-  // If P= -Q, zero
+  if(Q.z_->IsZero()) {
+    R.CopyFrom(P);
+    return true;
+  } 
+  if(!BigModMult(*P.x_, *Q.z_, *c.p_, a1)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
+    return false;
+  }
+  if(!BigModMult(*P.y_, *Q.z_, *c.p_, a2)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
+    return false;
+  }
+  if(!BigModMult(*Q.x_, *P.z_, *c.p_, b1)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
+    return false;
+  }
+  if(!BigModMult(*Q.y_, *P.z_, *c.p_, b2)) {
+    LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
+    return false;
+  }
+
   // If P= Q, use doubling
+  if(BigCompare(a1,b1)==0) {
+    if(BigCompare(a2,b2)==0) 
+      return ProjectiveDouble(c, P, R);
+    if(!BigModAdd(a2, b2, *c.p_, t)) {
+      LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
+      return false;
+    }
+    if(t.IsZero()) {
+      R.MakeZero();
+      return true;
+    }
+  }
 
   // u= y2z1-y1z2 
   if(!BigModMult(*Q.y_, *P.z_, *c.p_, t)) {
@@ -500,7 +533,6 @@ printf("P.z: %lld\n", P.z_->value_[0]);
     LOG(ERROR) << "ProjectiveAdd BigModSub(x) failed\n";
     return false;
   }
-printf("u: %lld\n", u.value_[0]);
   // v=x2z1-x1z2
   if(!BigModMult(*Q.x_, *P.z_, *c.p_, t)) {
     LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
@@ -514,7 +546,6 @@ printf("u: %lld\n", u.value_[0]);
     LOG(ERROR) << "ProjectiveAdd BigModSub(x) failed\n";
     return false;
   }
-printf("v: %lld\n", v.value_[0]);
   // A= u^2z1z2-v^3-2v^2x1z2
   if(!BigModMult(u, u, *c.p_, u_squared)) {
     LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
@@ -558,13 +589,11 @@ printf("v: %lld\n", v.value_[0]);
     LOG(ERROR) << "ProjectiveAdd BigModSub(x) failed\n";
     return false;
   }
-printf("A: %lld\n", A.value_[0]);
   // x3= vA
   if(!BigModMult(v, A, *c.p_, *R.x_)) {
     LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
     return false;
   }
-printf("R.x: %lld\n", R.x_->value_[0]);
   // z3= v^3z1z2
   if(!BigModMult(*P.z_, *Q.z_, *c.p_, t)) {
     LOG(ERROR) << "ProjectiveAdd BigModMult(x) failed\n";
@@ -596,7 +625,6 @@ printf("R.x: %lld\n", R.x_->value_[0]);
     LOG(ERROR) << "ProjectiveAdd BigModSub(x) failed\n";
     return false;
   }
-printf("R.y: %lld\n", R.y_->value_[0]);
   return true;
 }
 
@@ -635,13 +663,11 @@ bool ProjectiveDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
     LOG(ERROR) << "ProjectiveDouble BigModAdd(x) failed\n";
     return false;
   }
-printf("w: %lld\n", w.value_[0]);
   // s=y1z1
   if(!BigModMult(*P.y_, *P.z_, *c.p_, s)) {
     LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
-printf("s: %lld\n", s.value_[0]);
   // B= x1y1s
   if(!BigModMult(*P.x_, *P.y_, *c.p_, t1)) {
     LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
@@ -651,7 +677,6 @@ printf("s: %lld\n", s.value_[0]);
     LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
-printf("B: %lld\n", B.value_[0]);
   // h= w^2-8B
   if(!BigModMult(w, w, *c.p_, w_squared)) {
     LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
@@ -667,7 +692,6 @@ printf("B: %lld\n", B.value_[0]);
     LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
-printf("h: %lld\n", h.value_[0]);
 
   // x3=2hs
   t1.ZeroNum();
@@ -680,7 +704,6 @@ printf("h: %lld\n", h.value_[0]);
     return false;
   }
   BigModNormalize(*R.x_, *c.p_);
-printf("R.x: %lld\n", R.x_->value_[0]);
 
   // z3= 8s^3
   if(!BigModMult(s, s, *c.p_, s_squared)) {
@@ -696,7 +719,6 @@ printf("R.x: %lld\n", R.x_->value_[0]);
     return false;
   }
   BigModNormalize(*R.z_, *c.p_);
-printf("R.z: %lld\n", R.z_->value_[0]);
 
   // y3= w(4B-h) -8y1^2s^2
   if(!BigModMult(*P.y_, *P.y_, *c.p_, y1_squared)) {
@@ -732,7 +754,6 @@ printf("R.z: %lld\n", R.z_->value_[0]);
     LOG(ERROR) << "ProjectiveDouble BigModMult(x) failed\n";
     return false;
   }
-printf("R.y: %lld\n", R.y_->value_[0]);
   return true;
 }
 
@@ -743,6 +764,10 @@ bool ProjectivePointMult(EccCurve& c, BigNum& x, CurvePoint& P, CurvePoint& R) {
   }
   if(x.IsOne()) {
     return R.CopyFrom(P);
+  }
+  if(P.z_->IsZero()) {
+    R.MakeZero();
+    return true;
   }
 
   int         k=  BigHighBit(x);
