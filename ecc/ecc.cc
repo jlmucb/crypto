@@ -413,7 +413,6 @@ bool EccDouble(EccCurve& c, CurvePoint& P, CurvePoint& R) {
 }
 
 
-
 //  For Jacobian projective coordinates, see hyperellitptic.org
 
 //  From Cohen, Miyaka, Ono
@@ -772,10 +771,11 @@ bool ProjectivePointMult(EccCurve& c, BigNum& x, CurvePoint& P, CurvePoint& R) {
 
   int         k=  BigHighBit(x);
   int         i;
-  CurvePoint  double_point(P);
-  CurvePoint  accum_point(2*c.p_->capacity_);
-  CurvePoint  t1(2*c.p_->capacity_);
+  CurvePoint  double_point(1+2*c.p_->capacity_);
+  CurvePoint  accum_point(1+2*c.p_->capacity_);
+  CurvePoint  t1(1+2*c.p_->capacity_);
 
+  double_point.CopyFrom(P);
   accum_point.MakeZero();
   for(i=1; i<k; i++) {
     if(BigBitPositionOn(x, i)) {
@@ -1272,25 +1272,10 @@ bool EccKey::Encrypt(int size, byte* plain, BigNum& k, CurvePoint& pt1, CurvePoi
     return false;
   }
 #ifdef FASTECCMULT
-  if(!EccMult(c_, g_, k, pt1)) {
+  if(!FasterEccMult(c_, g_, k, pt1)) {
     LOG(ERROR)<<"EccMult error in EccKey::Encrypt\n";
     return false;
   }
-// TODO: Find the bug!
-#if 0
-CurvePoint  pt3(16);
-  if(!FasterEccMult(c_, g_, k, pt3)) {
-    LOG(ERROR)<<"EccMult error in EccKey::Encrypt\n";
-    return false;
-  }
-if(BigCompare(*pt1.x_, *pt3.x_)!=0 || BigCompare(*pt1.y_, *pt3.y_)!=0) {
-  printf("\nFaster diff\n");
-  PrintNumToConsole(k, 10ULL); printf("\n");
-  g_.PrintPoint(); printf("\n");
-  pt1.PrintPoint(); printf("\n");
-  pt3.PrintPoint(); printf("\n");
-}
-#endif
   if(!FasterEccMult(c_, base_, k, R)) {
     LOG(ERROR)<<"EccMult error in EccKey::Encrypt\n";
     return false;

@@ -2272,6 +2272,17 @@ bool ecc_projective_compare_tests(EccKey* ecc_key, int n) {
       return false;
     }
   }
+
+  x.ZeroNum();
+  x.CopyFrom(Big_Two);
+  if(!CompareEccAdd(ecc_key->c_, ecc_key->g_, ecc_key->g_)) {
+    printf("FAILED on generator add 1\n");
+    return false;
+  }
+  if(!CompareEccMultiply(ecc_key->c_, x, ecc_key->g_)) {
+    printf("FAILED on generator mult\n");
+    return false;
+  }
   printf("\nEND ECC_PROJECTIVE_COMPARE_TEST %d\n", k);
   return true;
 }
@@ -2584,7 +2595,7 @@ bool ecc_speed_tests(EccKey* key, const char* filename, int size, int num_tests)
   if(key==NULL) {
     key= new EccKey();
     secret.ZeroNum();
-    if(!GetCryptoRand(4*NBITSINUINT64-12, (byte*)secret.value_)) {
+    if(!GetCryptoRand(4*NBITSINUINT64-64, (byte*)secret.value_)) {
       printf("Cant generate ecc key\n");
       return false;
     }
@@ -2609,7 +2620,7 @@ bool ecc_speed_tests(EccKey* key, const char* filename, int size, int num_tests)
   CurvePoint P2(16);
   BigNum ksecret(8);
   ksecret.ZeroNum();
-  if(!GetCryptoRand(248, (byte*)ksecret.value_)) {
+  if(!GetCryptoRand(192, (byte*)ksecret.value_)) {
     LOG(ERROR)<<"GetCryptoRandom error in EccKey::Encrypt\n";
     return false;
   }
@@ -3630,11 +3641,11 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(ecc_projective_mult_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_embed_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_extract_time_test("test_data", ext_ecc_key, 200));
-  EXPECT_TRUE(ecc_projective_compare_tests(ext_ecc_key, 400));
+  EXPECT_TRUE(ecc_projective_compare_tests(ext_ecc_key, 200));
   EXPECT_TRUE(ecc_speed_tests(NULL, "test_data", 0, 200));
-/*
   EXPECT_TRUE(rsa_tests());
   EXPECT_TRUE(rsa_speed_tests(NULL, NULL, "test_data", 0, 500));
+/*
   EXPECT_TRUE(rsa1024_gen_time_test("test_data", 20));
   EXPECT_TRUE(rsa2048_gen_time_test("test_data", 20));
 */
