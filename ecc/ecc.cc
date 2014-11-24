@@ -243,9 +243,7 @@ bool EccEmbed(EccCurve& c, BigNum& m, CurvePoint& P, int shift, int trys) {
       P.z_->ZeroNum();
       P.z_->value_[0]= 1ULL;
       break;
-    } else {
-      LOG(ERROR) << "not a square\n";
-    }
+    } 
     if(!BigUnsignedAddTo(m_x, Big_One)) {
       LOG(ERROR) << "BigUnsignedAddTo failed in EccEmbed\n";
       return false;
@@ -471,7 +469,7 @@ bool ProjectiveAdd(EccCurve& c, CurvePoint& P, CurvePoint& Q, CurvePoint& R) {
   BigNum  t1(1+2*c.p_->size_);
   BigNum  t2(1+2*c.p_->size_);
   BigNum  t3(1+2*c.p_->size_);
-  BigNum  t4(1+4*c.p_->size_);
+  BigNum  t4(1+2*c.p_->size_);
   BigNum  a1(1+2*c.p_->size_);
   BigNum  a2(1+2*c.p_->size_);
   BigNum  b1(1+2*c.p_->size_);

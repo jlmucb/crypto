@@ -2239,6 +2239,8 @@ bool ecc_projective_compare_tests(EccKey* ecc_key, int n) {
 
   m.value_[0]= 0x70707070ULL;
   m.value_[1]= 0x30303030ULL;
+  m.value_[2]= 0x30303030ULL;
+  m.value_[3]= 0xffffffffffULL;
   m.Normalize();
   x.value_[0]= 0x70707070ULL;
   x.Normalize();
@@ -2578,9 +2580,11 @@ bool ecc_speed_tests(EccKey* key, const char* filename, int size, int num_tests)
   }
 
   BigNum secret(8);
+  secret.ZeroNum();
   if(key==NULL) {
     key= new EccKey();
-    if(!GetCryptoRand(4*NBITSINUINT64-10, (byte*)secret.value_)) {
+    secret.ZeroNum();
+    if(!GetCryptoRand(4*NBITSINUINT64-12, (byte*)secret.value_)) {
       printf("Cant generate ecc key\n");
       return false;
     }
@@ -2604,7 +2608,8 @@ bool ecc_speed_tests(EccKey* key, const char* filename, int size, int num_tests)
   CurvePoint P1(16);
   CurvePoint P2(16);
   BigNum ksecret(8);
-  if(!GetCryptoRand(256, (byte*)ksecret.value_)) {
+  ksecret.ZeroNum();
+  if(!GetCryptoRand(248, (byte*)ksecret.value_)) {
     LOG(ERROR)<<"GetCryptoRandom error in EccKey::Encrypt\n";
     return false;
   }
@@ -3086,7 +3091,8 @@ bool key_format_tests() {
     return false;
   }
   BigNum  secret(256/NBITSINUINT64);
-  if(!GetCryptoRand(256, (byte*) secret.value_)) {
+  secret.ZeroNum();
+  if(!GetCryptoRand(248, (byte*) secret.value_)) {
     printf("cant get random bits\n");
     return false;
   }
@@ -3525,6 +3531,7 @@ bool ecc_tests() {
     return false;
   }
   BigNum secret(8);
+  secret.ZeroNum();
   if(!GetCryptoRand(252, (byte*)secret.value_)) {
     printf("Cant get random bits\n");
     return false;
@@ -3555,6 +3562,7 @@ bool ecc_tests() {
   int         size= 30;
   BigNum      ksecret(8);
 
+  ksecret.ZeroNum();
   if(!GetCryptoRand(252, (byte*)ksecret.value_)) {
     LOG(ERROR)<<"GetCryptoRandom error in EccKey::Encrypt\n";
     return false;
