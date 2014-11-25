@@ -2320,6 +2320,19 @@ bool ecc_mult_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
   printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
   printf("time per mult %le\n",
          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+
+  cycles_start_test= ReadRdtsc();
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    if(!FasterEccMult(ecc_key->c_, P, x, R)) {
+      return false;
+    }
+  }
+  cycles_end_test= ReadRdtsc();
+  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("ecc_mult__time_test number of successful fast tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per faster mult %le\n",
+         ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
   printf("END ECC_MULT_TIME_TEST\n");
   return true;
 }
