@@ -31,6 +31,7 @@ public:
         CurvePoint(int size);
         CurvePoint(BigNum& x, BigNum& y);
         CurvePoint(CurvePoint& P);
+        CurvePoint(CurvePoint& P, int capacity);
         ~CurvePoint();
   bool  IsZero();
   void  Clear();

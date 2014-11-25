@@ -35,6 +35,7 @@ public:
   
   BigNum(int size);
   BigNum(BigNum& n);
+  BigNum(BigNum& n, int capacity);
   BigNum(int size, uint64_t); // BigNum with one initialized digit
   ~BigNum();
 

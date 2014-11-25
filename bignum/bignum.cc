@@ -44,6 +44,13 @@ BigNum::BigNum(int size, uint64_t x) {
   sign_= false;
 }
 
+BigNum::BigNum(BigNum& n, int capacity) {
+  capacity_= capacity; 
+  size_= n.size_; 
+  sign_= n.sign_; 
+  value_= new uint64_t[capacity_];
+  CopyFrom(n);
+}
 
 BigNum::BigNum(BigNum& n) {
   capacity_= n.capacity_; 

@@ -102,6 +102,15 @@ CurvePoint::CurvePoint(CurvePoint& P) {
   z_->CopyFrom(*P.z_);
 }
 
+CurvePoint::CurvePoint(CurvePoint& P, int capacity) {
+  x_= new BigNum(capacity);
+  x_->CopyFrom(*P.x_);
+  y_= new BigNum(capacity);
+  y_->CopyFrom(*P.y_);
+  z_= new BigNum(capacity);
+  z_->CopyFrom(*P.z_);
+}
+
 void CurvePoint::Clear() {
   if(x_!=NULL)
     x_->ZeroNum();
@@ -771,11 +780,10 @@ bool ProjectivePointMult(EccCurve& c, BigNum& x, CurvePoint& P, CurvePoint& R) {
 
   int         k=  BigHighBit(x);
   int         i;
-  CurvePoint  double_point(1+2*c.p_->capacity_);
+  CurvePoint  double_point(P, 1+2*c.p_->capacity_);
   CurvePoint  accum_point(1+2*c.p_->capacity_);
   CurvePoint  t1(1+2*c.p_->capacity_);
 
-  double_point.CopyFrom(P);
   accum_point.MakeZero();
   for(i=1; i<k; i++) {
     if(BigBitPositionOn(x, i)) {
@@ -812,9 +820,9 @@ bool EccMult(EccCurve& c, CurvePoint& P, BigNum& x, CurvePoint& R) {
   }
   int         k=  BigHighBit(x);
   int         i;
-  CurvePoint  double_point(P);
-  CurvePoint  accum_point(2*c.p_->capacity_);
-  CurvePoint  t1(2*c.p_->capacity_);
+  CurvePoint  double_point(P, 1+2*c.p_->capacity_);
+  CurvePoint  accum_point(1+2*c.p_->capacity_);
+  CurvePoint  t1(1+2*c.p_->capacity_);
 
   accum_point.MakeZero();
   for(i=1; i<k; i++) {
