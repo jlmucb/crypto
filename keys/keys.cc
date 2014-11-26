@@ -209,7 +209,6 @@ bool CryptoKey::DeserializeKeyFromMessage(crypto_key_message& message) {
     LOG(ERROR) << "CryptoKey::DeserializeKeyFromMessage: no key type\n";
     return false;
   }
-  key_type_= new string(message.key_type().c_str());
   if(message.has_key_name()) {
     const char* p= message.key_name().c_str();
     key_name_= new string(p);
@@ -217,6 +216,8 @@ bool CryptoKey::DeserializeKeyFromMessage(crypto_key_message& message) {
 
   if(message.has_key_type()) {
     key_type_= new string(message.key_type().c_str());
+  } else {
+    return false;
   }
   if(message.has_key_owner()) {
     key_owner_= new string(message.key_owner().c_str());
@@ -514,14 +515,15 @@ bool KeyStore::FindKey(const char* keyname, string** the_key_type,
   if(num_keys_<0)
     return false;
 
+  CryptoKey* found_key= NULL;
   for (int i= 0; i<num_keys_; i++) {
-    const crypto_key_message& entry= store_.key_entry(i);
+    const crypto_key_message entry= store_.key_entry(i);
     if(entry.has_key_name()) {
       entry_name= entry.key_name().c_str();
       if(strcmp(entry_name, keyname)==0) {
         if(strcmp(entry.key_type().c_str(), "symmetric-cipher")==0) {
           *the_key_type= new string(entry.key_type().c_str());
-          CryptoKey* found_key= new CryptoKey();
+          found_key= (CryptoKey*)new SymmetricKey();
           if(!found_key->DeserializeKeyFromMessage(
                   *(crypto_key_message*)&entry)) {
             LOG(ERROR) << "cant deserialize key in FindKey\n";
@@ -529,8 +531,37 @@ bool KeyStore::FindKey(const char* keyname, string** the_key_type,
           }
           *p_key= found_key;
           return true;
-        }
-      }
+        } else if(strcmp(entry.key_type().c_str(),"rsa")==0 || 
+                  strcmp(entry.key_type().c_str(),"rsa-128")==0 ||
+                  strcmp(entry.key_type().c_str(),"rsa-256")==0 || 
+                  strcmp(entry.key_type().c_str(),"rsa-512")==0 ||
+                  strcmp(entry.key_type().c_str(),"rsa-1024")==0 || 
+                  strcmp(entry.key_type().c_str(),"rsa-2048")==0 ||
+                  strcmp(entry.key_type().c_str(),"rsa3072")==0) {
+          *the_key_type= new string(entry.key_type().c_str());
+          found_key= (CryptoKey*)new RsaKey();
+          if(!found_key->DeserializeKeyFromMessage(
+                  *(crypto_key_message*)&entry)) {
+            LOG(ERROR) << "cant deserialize key in FindKey\n";
+            return false;
+          }
+          *p_key= found_key;
+          return true;
+        } else if(strcmp(entry.key_type().c_str(),"ecc")==0 || 
+                  strcmp(entry.key_type().c_str(),"ecc-256")==0) {
+          *the_key_type= new string(entry.key_type().c_str());
+          found_key= (CryptoKey*)new EccKey();
+          if(!found_key->DeserializeKeyFromMessage(
+                  *(crypto_key_message*)&entry)) {
+            LOG(ERROR) << "cant deserialize key in FindKey\n";
+            return false;
+          }
+          *p_key= found_key;
+      } else {
+        LOG(ERROR) << "Unsupported key type in FindKey\n";
+        return false;
+      } 
+     }
     }
   }
   return false;

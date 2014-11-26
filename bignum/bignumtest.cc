@@ -3164,8 +3164,6 @@ bool key_store_tests() {
     return false;
   }
 
-  // There's a memory corruption problem somewhere in the following
-#if 0
   CryptoKey*    p_msg= NULL;
   string*       p_string= NULL;
   if(!key_store.FindKey("JohnsStoreKey1", &p_string, &p_msg)) {
@@ -3179,7 +3177,6 @@ bool key_store_tests() {
   ((CryptoKey*)new_key)->DeserializeKeyFromMessage(message);
   printf("\nSerialize and DeserializeKeyFromMessage:\n");
   ((CryptoKey*)new_key)->PrintKey();
-#endif
   printf("END KEY_STORE_TESTS\n\n");
   return true;
 }
