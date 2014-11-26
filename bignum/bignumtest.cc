@@ -2283,7 +2283,7 @@ bool ecc_projective_compare_tests(EccKey* ecc_key, int n) {
     printf("FAILED on generator mult\n");
     return false;
   }
-  printf("\nEND ECC_PROJECTIVE_COMPARE_TEST %d\n", k);
+  printf("END ECC_PROJECTIVE_COMPARE_TEST %d\n", k);
   return true;
 }
 
@@ -3140,7 +3140,7 @@ bool key_format_tests() {
   ((CryptoKey*)new_key)->PrintKey();
 
   // Check equality
-  printf("END_KEY_FORMAT_TESTS\n\n");
+  printf("END_KEY_FORMAT_TESTS\n");
   return true;
 }
 
@@ -3177,12 +3177,12 @@ bool key_store_tests() {
   ((CryptoKey*)new_key)->DeserializeKeyFromMessage(message);
   printf("\nSerialize and DeserializeKeyFromMessage:\n");
   ((CryptoKey*)new_key)->PrintKey();
-  printf("END KEY_STORE_TESTS\n\n");
+  printf("END KEY_STORE_TESTS\n");
   return true;
 }
 
 bool rsa_tests() {
-  printf("START RSA_TESTS\n");
+  printf("\nSTART RSA_TESTS\n");
   int bit_size= 256;
   BigNum  M(8);
   BigNum  N(8);
