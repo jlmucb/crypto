@@ -273,7 +273,7 @@ bool simpletest() {
   printf("\n");
   DigitArrayZeroNum(sizeof(test_c)/sizeof(uint64_t), test_c);
   k= DigitArrayMult(real_size_test_y, test_y, real_size_test_x1, test_x1, size_test_c, test_c);
-#if 1
+#if 0
   TempPrintNum(real_size_test_y, test_y); printf("\n * ");
   TempPrintNum(real_size_test_x1, test_x1);
   printf("\n");
@@ -289,7 +289,7 @@ bool simpletest() {
   printf("\n");
   DigitArrayZeroNum(sizeof(test_c)/sizeof(uint64_t), test_c);
   k= DigitArrayMult(real_size_test_y, test_y, real_size_test_x, test_x, size_test_c, test_c);
-#if 1
+#if 0
   TempPrintNum(real_size_test_y, test_y); printf("\n * ");
   TempPrintNum(real_size_test_x, test_x);
   printf("\n");
@@ -305,7 +305,7 @@ bool simpletest() {
   printf("\n");
   DigitArrayZeroNum(sizeof(test_c)/sizeof(uint64_t), test_c);
   k= DigitArrayMult(real_size_test_x, test_x, real_size_test_y, test_y, size_test_c, test_c);
-#if 1
+#if 0
   TempPrintNum(real_size_test_x, test_x); printf("\n * ");
   TempPrintNum(real_size_test_y, test_y);
   printf("\n");
@@ -321,7 +321,7 @@ bool simpletest() {
   DigitArrayZeroNum(sizeof(test_c)/sizeof(uint64_t), test_c);
   k= DigitArrayMult(real_size_test_x1, test_x1, real_size_test_x, test_x, 
                     size_test_c, test_c);
-#if 1
+#if 0
   TempPrintNum(real_size_test_x1, test_x1); printf("\n * ");
   TempPrintNum(real_size_test_x, test_x);
   printf("\n");
@@ -333,7 +333,7 @@ bool simpletest() {
   DigitArrayZeroNum(sizeof(test_c)/sizeof(uint64_t), test_c);
   k= DigitArrayMult(real_size_test_x, test_x, real_size_test_x, test_x, 
                     size_test_c, test_c);
-#if 1
+#if 0
   TempPrintNum(real_size_test_x, test_x); printf("\n * ");
   TempPrintNum(real_size_test_x, test_x);
   printf("\n");
@@ -1059,7 +1059,9 @@ bool  square_test() {
     printf("square test doesnt match\n");
     return false;
   } else {
+#if 0
     printf("square test matches\n");
+#endif
   }
 
   for(i=0; i<6; i++) {
@@ -1075,12 +1077,15 @@ bool  square_test() {
     if(k!=n || 0!=DigitArrayCompare(k, r, n, s)) {
       printf("square test doesnt match\n");
       return false;
-    } else {
+    } 
+#if 0
+    else {
       printf("square test matches\n");
     }
     printf("a: ");TempPrintNum(size_a, a); printf("\n");
     printf("r: ");TempPrintNum(k, r); printf("\n");
     printf("s: ");TempPrintNum(k, s); printf("\n");
+#endif
   }
   return true;
 }
@@ -1356,10 +1361,6 @@ bool signed_arith_tests() {
       printf("Should be 0\n");
       return false;
   }
-  /*
-    bool          BigMult(BigNum& a, BigNum& b, BigNum& r);
-    bool          BigDiv(BigNum& a, BigNum& b, BigNum& r);
-   */
   printf("END SIGNED_ARITH_TESTS\n");
   return true;
 }
@@ -2162,6 +2163,75 @@ done:
   return ret;
 }
 
+bool square_root_time_test(const char* filename, int size, BigNum& p, int num_tests) {
+  printf("\nSQUARE_ROOT_TIME_TESTS\n");
+  struct stat file_info;
+  int         k= stat(filename, &file_info);
+  byte*       buf= new byte[2048];
+  bool        ret= true;
+  uint64_t    cycles_start_test;
+  int	      i;
+  int	      num_tests_executed;
+
+  if(k<0) {
+    if(!makeTestData(filename, 2048)) {
+      printf("Cant make test data file\n");
+      delete buf;
+      return false;
+    }
+  }
+  if(!readTestData(filename, 2048, buf)) {
+    delete buf;
+    return false;
+  }
+
+  BigNum    b(size+1);
+  BigNum    r(size+1);
+  int       byte_size_copy= size*sizeof(uint64_t);
+  byte*     pbuf= buf;
+  byte*     pb= (byte*)b.value_;
+  uint64_t  cycles_end_test;
+  uint64_t  cycles_diff;
+
+  cycles_start_test= ReadRdtsc();
+  memcpy(pb, pbuf, byte_size_copy);
+  pbuf+= byte_size_copy;
+  b.value_[0]&= 0xf;
+  b.Normalize();
+
+  for(i=0; i<16; i++) {
+    b.value_[0]|= (uint64_t)i;
+    if(BigModIsSquare(b,p)) {
+      break;
+    }
+  }
+  if(i>=16) {
+    printf("square_root_time_test: Cant find square\n");
+    ret= false;
+    goto done;
+  }
+
+  cycles_start_test= ReadRdtsc();
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    if(!BigModSquareRoot(b,p,r)) {
+      printf("square_root_time_test: Cant find square\n");
+      ret= false;
+      break;
+    }
+  }
+
+  cycles_end_test= ReadRdtsc();
+  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("square_root_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per %d bit square root %le\n", size*NBITSINUINT64, 
+                          ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+done:
+  delete buf;
+  printf("END_SQUARE_ROOT_TIME_TESTS\n");
+  return ret;
+}
+
 uint64_t  T1= 0x6666666666666666;
 
 bool ecc_add_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
@@ -2225,6 +2295,7 @@ bool ecc_double_time_test(const char* filename, EccKey* ecc_key, int num_tests) 
   printf("END ECC_DOUBLE_TIME_TEST\n");
   return true;
 }
+
 bool ecc_projective_compare_tests(EccKey* ecc_key, int n) {
   CurvePoint  P(9);
   CurvePoint  Q(9);
@@ -3655,6 +3726,7 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(ecc_speed_tests(NULL, "test_data", 0, 200));
   EXPECT_TRUE(rsa_tests());
   EXPECT_TRUE(rsa_speed_tests(NULL, NULL, "test_data", 0, 500));
+  EXPECT_TRUE(square_root_time_test("test_data", 3, *(ext_ecc_key->c_.p_), 200));
 /*
   EXPECT_TRUE(rsa1024_gen_time_test("test_data", 20));
   EXPECT_TRUE(rsa2048_gen_time_test("test_data", 20));
