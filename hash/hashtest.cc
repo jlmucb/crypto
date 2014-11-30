@@ -32,6 +32,9 @@
 #include "pbkdf.h"
 #include <cmath>
 
+
+uint64_t  cycles_per_second= 10;
+
 class HashTest : public ::testing::Test {
  protected:
   virtual void SetUp();
@@ -416,6 +419,101 @@ bool pkcsTest() {
   return true;
 }
 
+#define HASH_DATA_SIZE 50000
+byte hash_data[HASH_DATA_SIZE];
+
+void InitHashData() {
+  int i;
+
+  for(i=0; i<HASH_DATA_SIZE; i++) {
+    hash_data[i]= (byte)i;
+  }
+}
+
+bool sha1_benchmark_tests(int num_tests) {
+printf("\nSHA1_TIME_TESTS\n");
+  byte      out[64];
+  int       num_tests_executed= 0;
+  Sha1      my_hash;
+
+  uint64_t  cycles_start_test;
+  cycles_start_test= ReadRdtsc();
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    if(!my_hash.Init()) {
+      return false;
+    }
+    my_hash.AddToHash(HASH_DATA_SIZE, hash_data);
+    my_hash.Final();
+    if(!my_hash.GetDigest(20, (byte*)out)) {
+      return false;
+    }
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("sha1_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per byte %le\n",
+                 ((double)cycles_diff)/((double)HASH_DATA_SIZE*(num_tests_executed*cycles_per_second)));
+  printf("END SHA1_TIME_TESTS\n\n");
+  return true;
+}
+
+bool sha256_benchmark_tests(int num_tests) {
+printf("\nSHA256_TIME_TESTS\n");
+  byte      out[64];
+  int       num_tests_executed= 0;
+  Sha256    my_hash;
+
+  uint64_t  cycles_start_test;
+  cycles_start_test= ReadRdtsc();
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    if(!my_hash.Init()) {
+      return false;
+    }
+    my_hash.AddToHash(HASH_DATA_SIZE, hash_data);
+    my_hash.Final();
+    if(!my_hash.GetDigest(32, (byte*)out)) {
+      return false;
+    }
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("sha256_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per byte %le\n",
+                 ((double)cycles_diff)/((double)HASH_DATA_SIZE*(num_tests_executed*cycles_per_second)));
+  printf("END SHA256_TIME_TESTS\n\n");
+  return true;
+}
+
+bool sha3_benchmark_tests(int num_tests) {
+printf("\nSHA3_TIME_TESTS\n");
+  byte      out[256];
+  int       num_tests_executed= 0;
+  Sha3      my_hash(1024);
+
+  uint64_t  cycles_start_test;
+  cycles_start_test= ReadRdtsc();
+  for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+    if(!my_hash.Init()) {
+      return false;
+    }
+    my_hash.AddToHash(HASH_DATA_SIZE, hash_data);
+    my_hash.Final();
+    if(!my_hash.GetDigest(128, (byte*)out)) {
+      return false;
+    }
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  printf("sha3_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per byte %le\n",
+                 ((double)cycles_diff)/((double)HASH_DATA_SIZE*(num_tests_executed*cycles_per_second)));
+  printf("END SHA3_TIME_TESTS\n\n");
+  return true;
+}
+
 bool pbkdfTest() {
   byte  out[256];
   int   salt_size= 24;
@@ -584,12 +682,15 @@ bool RunTestSuite() {
 
 TEST(FirstSha1Case, FirstSha1Test) {
   EXPECT_TRUE(SimpleSha1Test1());
+  EXPECT_TRUE(sha1_benchmark_tests(3000));
 }
 TEST(FirstSha256Case, FirstSha256Test) {
   EXPECT_TRUE(SimpleSha256Test1());
+  EXPECT_TRUE(sha256_benchmark_tests(3000));
 }
 TEST(FirstSha3Case, FirstSha3Test) {
   EXPECT_TRUE(SimpleSha3Test());
+  EXPECT_TRUE(sha3_benchmark_tests(3000));
 }
 TEST(FirstHmacSha256Case, FirstHmacSha256Test) {
   EXPECT_TRUE(SimpleHmacSha256Test1());
@@ -610,6 +711,9 @@ int main(int an, char** av) {
     printf("InitUtilities() failed\n");
     return 1;
   }
+  cycles_per_second= CalibrateRdtsc();
+  printf("Cycles per second on this machine: %lld\n\n", cycles_per_second);
+  InitHashData();
   int result= RUN_ALL_TESTS();
   CloseUtilities();
   return result;

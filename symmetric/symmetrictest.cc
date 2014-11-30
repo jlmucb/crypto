@@ -32,6 +32,9 @@
 #include <cmath>
 
 
+uint64_t  cycles_per_second= 10;
+
+
 class SymmetricTest : public ::testing::Test {
  protected:
   virtual void SetUp();
@@ -733,8 +736,8 @@ bool SimpleCtrEncryptionAlgorithmTest() {
   byte                                out[512];
   byte                                out2[512];
   bool                                use_aesni= HaveAesNi();
-  byte                                nonce[4];
-  byte                                iv[4];
+  // byte                                nonce[4];
+  // byte                                iv[4];
 
   printf("SimpleCtrEncryptionAlgorithmTest\n");
   encryption_algorithm.message_id_= new string("message-104");
@@ -830,9 +833,49 @@ bool RunTestSuite() {
   return true;
 }
 
-bool aes_benchmark_tests() {
-  /*
-   */
+bool aes_benchmark_tests(byte* key, int num_tests, bool use_aesni) {
+printf("\nAES_TIME_TESTS\n");
+  byte      in[64];
+  byte      out[64];
+  int       num_tests_executed= 0;
+  use_aesni&= HaveAesNi();
+  
+  uint64_t  cycles_start_test;
+  if(use_aesni) {
+    AesNi   aes;
+    if(!aes.Init(128, key, Aes::ENCRYPT)) {
+      cycles_start_test= 0;
+      printf("AesNi failed Init()\n");
+    } else {
+      cycles_start_test= ReadRdtsc();
+      for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+        aes.EncryptBlock(in, out);
+      }
+    }
+  } else {
+    Aes     aes;
+    if(!aes.Init(128, key, Aes::ENCRYPT)) {
+      cycles_start_test= 0;
+      printf("Aes failed Init()\n");
+    } else {
+      cycles_start_test= ReadRdtsc();
+      for(num_tests_executed=0; num_tests_executed<num_tests;num_tests_executed++) {
+        aes.EncryptBlock(in, out);
+      }
+    }
+  }
+  uint64_t  cycles_end_test= ReadRdtsc();
+  uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
+  if(use_aesni) {
+    printf("using aesni, ");
+  } else {
+    printf("not using aesni, ");
+  }
+  printf("aes_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n", ((double)cycles_diff)/((double)cycles_per_second));
+  printf("time per block %le\n", 
+                 ((double)cycles_diff)/((double)(num_tests_executed*cycles_per_second)));
+  printf("END AES_TIME_TESTS\n\n");
   return true;
 }
 
@@ -848,9 +891,18 @@ bool sha256_benchmark_tests() {
   return true;
 }
 
+byte test_key[]= {
+  0x01, 0x02, 0x03, 0x04, 
+  0x51, 0x52, 0x53, 0x54, 
+  0x91, 0x92, 0x93, 0x94, 
+  0xe1, 0xe2, 0xe3, 0xe4, 
+};
+
 TEST(FirstAesCase, FirstAesTest) {
   EXPECT_TRUE(SimpleAes128Test());
   EXPECT_TRUE(SimpleAes128NiTest());
+  EXPECT_TRUE(aes_benchmark_tests(test_key, 10000, true));
+  EXPECT_TRUE(aes_benchmark_tests(test_key, 10000, false));
 }
 TEST(FirstTwofishCase, FirstTwofishTest) {
   EXPECT_TRUE(SimpleTwofishTest());
@@ -877,6 +929,8 @@ int main(int an, char** av) {
     printf("InitUtilities() failed\n");
     return 1;
   }
+  cycles_per_second= CalibrateRdtsc();
+  printf("Cycles per second on this machine: %lld\n\n", cycles_per_second);
   int result= RUN_ALL_TESTS();
   CloseUtilities();
   return result;
