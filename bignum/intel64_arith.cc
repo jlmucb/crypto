@@ -129,7 +129,6 @@ int DigitArrayCompare(int size_a, uint64_t* a, int size_b, uint64_t* b) {
     return 1;
   if(real_size_a<real_size_b)
     return -1;
-
   for(i=(real_size_a-1); i>=0; i--) {
     if(a[i]>b[i])
       return 1;
@@ -708,8 +707,6 @@ bool DigitArrayShortDivisionAlgorithm(int size_a, uint64_t* a, uint64_t b,
   int64_t   len_a= (int64_t) size_a;
   uint64_t* a_high= a+size_a-1;
   uint64_t* q_high= q+size_a-1;
-// printf("DigitArrayShortDivisionAlgorithm %ld/%ld\n", 
-       // (long unsigned)a[0], (long unsigned)b);
 
   asm volatile (
     "\txorq   %%rdx, %%rdx\n"
@@ -763,7 +760,7 @@ bool DigitArrayDivisionAlgorithm(int size_a, uint64_t* a, int size_b, uint64_t* 
     return false;
   }
 
-  uint64_t*   y= new uint64_t [real_size_a+1];
+  uint64_t    y[real_size_a+1];
   int         size_y= real_size_a+1;
 
   real_size_r= real_size_a;
@@ -807,10 +804,6 @@ bool DigitArrayDivisionAlgorithm(int size_a, uint64_t* a, int size_b, uint64_t* 
     q[i]= x;
   }
 
-  if(y!=NULL) {
-    delete y;
-    y= NULL;
-  }
   // set quotient and remainder sizes
   int nq= DigitArrayComputedSize(*size_q, q);
   *size_q= nq;

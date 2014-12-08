@@ -172,53 +172,38 @@ bool BigModNormalize(BigNum& a, BigNum& m) {
 }
 
 bool BigModAdd(BigNum& a, BigNum& b, BigNum& m, BigNum& r) {
-  bool    ret= true;
-
   if(!BigModNormalize(a,m)) {
-    ret= false;
-    goto done;
+    return false;
   }
   if(!BigModNormalize(b,m)) {
-    ret= false;
-    goto done;
+    return false;
   }
-  ret= BigUnsignedAdd(a, b, r);
-  if(!ret)
-    goto done;
+  if(!BigUnsignedAdd(a, b, r)) {
+    return false;
+  }
   if(!BigModNormalize(r, m)) {
-    ret= false;
-    goto done;
+    return false;
   }
-
-done:
-  return ret;
+  return true;
 }
 
 bool BigModSub(BigNum& a, BigNum& b, BigNum& m, BigNum& r) {
-  bool    ret= true;
 
   if(!BigModNormalize(a,m)) {
-    ret= false;
-    goto done;
+    return false;
   }
   if(!BigModNormalize(b,m)) {
-    ret= false;
-    goto done;
+    return false;
   }
-
-  ret= BigSub(a, b, r);
-  if(!ret)
-    goto done;
-  ret= BigModNormalize(r, m);
-done:
-  return ret;
+  if(!BigSub(a, b, r))
+    return false;
+  return BigModNormalize(r, m);
 }
 
 bool checkBigModMult(BigNum& ab, BigNum& m, BigNum& r) {
   BigNum  q(4*m.capacity_+2);
   BigNum  nr(4*m.capacity_+2);
   BigNum  ru(4*m.capacity_+2);
-  bool    ret= true;
 
   if(!BigUnsignedEuclid(ab, m, q, nr)) {
     printf("checkBigModMult, BigUnsignedEuclid failed\n");
@@ -236,9 +221,9 @@ bool checkBigModMult(BigNum& ab, BigNum& m, BigNum& r) {
     printf("checkBigModMult failed\n");
     printf("ab: "); PrintNumToConsole(ab, 16ULL); printf("\n");
     printf("nr: "); PrintNumToConsole(nr, 16ULL); printf("\n");
-    ret= false;
+    return false;
   }
-  return ret;
+  return true;
 }
 
 bool BigModMult(BigNum& a, BigNum& b, BigNum& m, BigNum& r) {
@@ -420,24 +405,6 @@ bool FillRandom(int n, BigNum** random_array) {
   return true;
 }
 
-/*
- *  n-1= 2^sr, r odd
- *  for(i=0; i<trys, i++) {
- *    choose a random: 2<= a <=n-2
- *    compute y= a^r (mod n)
- *    if( y!= 1 && y!=n-1) {
- *      j=1
- *      while (j < s and y!= n-1) {
- *        y=y^2 (mod n)
- *        if(y==1) return false;
- *        j++
- *      }
- *      if (y!=n-1) return false;
- *    }
- *    return true;
- *        
- *  }
- */
 bool BigMillerRabin(BigNum& n, BigNum** random_a, int trys) {
   BigNum  n_minus_1(2*n.size_);
   BigNum  odd_part_n_minus_1(2*n.size_);
@@ -482,11 +449,8 @@ bool BigMillerRabin(BigNum& n, BigNum** random_a, int trys) {
 bool BigIsPrime(BigNum& n) {
   extern  uint64_t smallest_primes[];
   extern  int      num_smallest_primes;
-  int              i;
-  bool             ret= true;
-  int              k;
-  int              m;
-  uint64_t*        q= new uint64_t [n.size_];
+  int              i, k, m;
+  uint64_t         q[n.size_];
   uint64_t         r;
   BigNum**         random_a= new BigNum*[20];
 
@@ -498,24 +462,16 @@ bool BigIsPrime(BigNum& n) {
            (uint64_t)smallest_primes[i], &k, q, &r);
     if(m<0) {
       LOG(ERROR) << "DigitArrayShortDivisionAlgorithm failed in BigIsPrime\n";
-      ret= false;
-      goto done;
+      return false;
     }
     if(r==0ULL)
       return false;
   }
-  if(!ret)
-    goto done;
   if(!FillRandom(20, random_a)) {
     LOG(ERROR) << "Couldnt FillRandom in BigIsPrime\n";
     return false;
   }
-  ret= BigMillerRabin(n, random_a);
-
-done:
-  if(q!=NULL)
-    delete q;
-  return ret;
+  return BigMillerRabin(n, random_a);
 }
 
 bool BigModIsSquare(BigNum& n, BigNum& p) {
