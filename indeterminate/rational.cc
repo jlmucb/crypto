@@ -21,69 +21,68 @@
 #include <iostream>
 using namespace std;
 #include "bignum.h"
+#include "indeterminate.h"
 
 
-RationalPoly::RationalPoly() {
+RationalPoly::RationalPoly(int size_num, int num_c) {
   top_= NULL;
   bot_= NULL;
 }
 
-RationalPoly::RationalPoly(int size_num, num_c) {
-}
-
-RationalPoly::RationalPoly(int size_num, num_c, BigNum& c) {
+RationalPoly::RationalPoly(int size_num, int num_c, BigNum& c) {
 }
 
 RationalPoly::~RationalPoly() {
 }
 
 int RationalPoly::Degree() {
+  return 0;
 }
 
 bool RationalPoly::IsZero() {
-  retun false;
+  return false;
 }
 
 bool RationalPoly::IsOne() {
-  retun false;
+  return false;
 }
 
 bool RationalPoly::CopyTo(RationalPoly& a) {
-  retun false;
+  return false;
 }
 
 bool RationalPoly::CopyFrom(RationalPoly& a) {
-  retun false;
+  return false;
 }
 
-void RationalPoly::Print(bool small= false) {
+void RationalPoly::Print(bool small) {
 }
 
 bool RationalIsEqual(RationalPoly& a, RationalPoly& b) {
-  retun false;
+  return false;
 }
 
 bool RationaAdd(RationalPoly& a, RationalPoly& b) {
-  retun false;
+  return false;
 }
 
 bool RationaSub(RationalPoly& a, RationalPoly& b) {
-  retun false;
+  return false;
 }
 
 bool RationaMult(RationalPoly& a, RationalPoly& b) {
-  retun false;
+  return false;
 }
 
 bool RationaDiv(RationalPoly& a, RationalPoly& b) {
-  retun false;
+  return false;
 }
 
 bool ZeroRationa(RationalPoly& a) {
-  retun false;
+  return false;
 }
 
 bool OneRationa(RationalPoly& a) {
-  retun false;
+  return false;
 }
 

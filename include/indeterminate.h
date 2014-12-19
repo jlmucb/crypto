@@ -32,8 +32,8 @@ public:
   int           num_c_;
   BigNum**      c_;
 
-  Polynomial(int size_num, num_c);
-  Polynomial(int size_num, num_c, BigNum& c);
+  Polynomial(int size_num, int num_c);
+  Polynomial(int size_num, int num_c, BigNum& c);
   ~Polynomial();
 
   int           Degree();
@@ -51,8 +51,8 @@ public:
   Polynomial*   top_;
   Polynomial*   bot_;
 
-  RationalPoly(int size_num, num_c);
-  RationalPoly(int size_num, num_c, BigNum& c);
+  RationalPoly(int size_num, int num_c);
+  RationalPoly(int size_num, int num_c, BigNum& c);
   ~RationalPoly();
 
   int           Degree();

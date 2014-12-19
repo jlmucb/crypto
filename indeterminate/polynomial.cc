@@ -20,19 +20,17 @@
 #include <stdlib.h>
 #include <iostream>
 #include "bignum.h"
+#include "indeterminate.h"
 using namespace std;
 
-Polynomial::Polynomial(int size_num, num_c) {
+Polynomial::Polynomial(int size_num, int num_c) {
   size_num_= 0;
   m_= NULL;
   num_c_= 0;
   c_= NULL;
 }
 
-Polynomial::Polynomial(int size_num, num_c) {
-}
-
-Polynomial::Polynomial(int size_num, num_c, BigNum& c) {
+Polynomial::Polynomial(int size_num, int num_c, BigNum& c) {
 }
 
 Polynomial::~Polynomial() {
