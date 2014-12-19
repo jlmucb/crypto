@@ -120,8 +120,7 @@ int DigitArrayShiftDown(int size_a, uint64_t* a, int shift,
 // returns  0, if a==b
 // returns -1, if a<b
 int DigitArrayCompare(int size_a, uint64_t* a, int size_b, uint64_t* b) {
-  int   i;
-
+  int  i;
   int  real_size_a= DigitArrayComputedSize(size_a, a);
   int  real_size_b= DigitArrayComputedSize(size_b, b);
 
@@ -292,7 +291,6 @@ void Uint64SubWithBorrowStep(uint64_t a, uint64_t b, uint64_t borrow_in,
      [a]"g"(a),[b]"g"(b), [borrow_in]"g"(borrow_in)
   :"cc", "memory", "%rax", "%rbx", "%rcx");
 }
-
 
 //  carry_out:result= a*b+carry1+carry2
 void Uint64MultWithCarryStep(uint64_t a, uint64_t b, 
@@ -465,13 +463,6 @@ int DigitArraySquare(int size_a, uint64_t* a,
 #ifdef FASTSQUARE
   uint64_t  cur_in= 0ULL;
   uint64_t  cur_out= 0ULL;
-
-#if 0
-  printf("size_a: %d\n", size_a);
-  printf("a: %llx\n", a);
-  printf("size_result: %d\n", size_result);
-  printf("result: %llx\n", result);
-#endif
 
   asm volatile (
     "\tmovq   %[result], %%r15\n"         // %%r15 <-- address of output place
