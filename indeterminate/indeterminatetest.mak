@@ -38,7 +38,7 @@ INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(SRC_DIR)/keys -I/usr/local/include -I$(
 
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
 CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
-LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a  $(LOCAL_LIB)/libgflags.a -pthread
+LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a  $(LOCAL_LIB)/libgflags.a
 
 dobj=	$(O)/polynomial.o $(O)/rational.o $(O)/indeterminatetest.o $(O)/util.o
 
@@ -62,6 +62,10 @@ $(O)/indeterminatetest.o: $(S)/indeterminatetest.cc
 	@echo "compiling indeterminatetest.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/indeterminatetest.o $(S)/indeterminatetest.cc
 
+$(O)/util.o: $(SRC_DIR)/common/util.cc
+	@echo "compiling util.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/util.o $(SRC_DIR)/common/util.cc
+
 $(O)/polynomial.o: $(S)/polynomial.cc
 	@echo "compiling polynomial.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/polynomial.o $(S)/polynomial.cc
@@ -69,7 +73,6 @@ $(O)/polynomial.o: $(S)/polynomial.cc
 $(O)/rational.o: $(S)/rational.cc
 	@echo "compiling rational.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/rational.o $(S)/rational.cc
-
 
 $(O)/ecc.o: $(SRC_DIR)/ecc/ecc.cc
 	@echo "compiling ecc.cc"

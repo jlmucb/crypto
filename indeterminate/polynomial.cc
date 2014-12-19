@@ -24,28 +24,62 @@
 using namespace std;
 
 Polynomial::Polynomial(int size_num, int num_c) {
-  size_num_= 0;
-  m_= NULL;
-  num_c_= 0;
-  c_= NULL;
+  int i;
+
+  m_= new BigNum(size_num);
+
+  c_= new BigNum* [num_c];
+  for(i= 0; i<num_c; i++)
+    c_[i]= new BigNum(size_num);
+  num_c_= num_c;
+  size_num_= size_num;
+  num_c_= num_c;
 }
 
 Polynomial::Polynomial(int size_num, int num_c, BigNum& c) {
+  int i;
+
+  m_= new BigNum(c);
+  c_= new BigNum* [num_c];
+  for(i= 0; i<num_c; i++)
+    c_[i]= new BigNum(size_num);
+  num_c_= num_c;
+  size_num_= size_num;
+  num_c_= num_c;
 }
 
 Polynomial::~Polynomial() {
+  int i;
+  for(i=0; i<num_c_; i++) {
+    if(c_[i]!=NULL)
+      delete c_[i];
+    c_[i]= NULL;
+  }
+  if(m_!=NULL)
+    delete m_;
+  m_= NULL;
+  size_num_= 0;
+  num_c_= 0;
 }
 
 int Polynomial::Degree() {
-  return 0;
+  int i;
+
+  for(i=(num_c_-1); i>=0;i--) {
+    if(!c_[i]->IsZero())
+      return i;
+  }
+  return -1; 
 }
 
 bool Polynomial::IsZero() {
-  return false;
+  return Degree()==(-1);
 }
 
 bool Polynomial::IsOne() {
-  return false;
+  if(Degree()!=0)
+    return false;
+  return c_[0]->IsOne();
 }
 
 bool Polynomial::CopyTo(Polynomial& a) {
@@ -65,10 +99,31 @@ bool Polynomial::AddTo(BigNum& n) {
 }
 
 void Polynomial::Print(bool small) {
+  int i;
+
+  for(i=(num_c_-1); i>0;i--) {
+   if(small) {
+    if(!c_[i]->IsZero())
+      printf("%lld x**%d +", c_[i]);
+    } else {
+    }
+  }
+  if(small) {
+      printf("%lld", c_[0]);
+  } else {
+  }
 }
 
 bool PolyIsEqual(Polynomial& a, Polynomial& b) {
-  return false;
+  if(a.Degree()!=b.Degree())
+    return false;
+  int i;
+
+  for(i=(a.num_c_-1); i>=0;i--) {
+    if(BigCompare(*a.c_[i], *b.c_[i])!=0)
+      return false;
+  }
+  return true;  
 }
 
 bool PolyAdd(Polynomial& a, Polynomial& b) {
