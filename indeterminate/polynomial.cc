@@ -23,6 +23,12 @@
 #include "indeterminate.h"
 using namespace std;
 
+inline int max(int a, int b) {
+  if(a>b)
+    return a;
+  return b;
+}
+
 Polynomial::Polynomial(int size_num, int num_c) {
   int i;
 
@@ -90,11 +96,7 @@ bool Polynomial::CopyFrom(Polynomial& a) {
   return false;
 }
 
-bool Polynomial::MultiplyBy(BigNum& n) {
-  return false;
-}
-
-bool Polynomial::AddTo(BigNum& n) {
+bool Polynomial::MultiplyPolyBy(int d, BigNum& n) {
   return false;
 }
 
@@ -102,14 +104,15 @@ void Polynomial::Print(bool small) {
   int i;
 
   for(i=(num_c_-1); i>0;i--) {
-   if(small) {
-    if(!c_[i]->IsZero())
-      printf("%lld x**%d +", c_[i]);
+    if(small) {
+      if(c_[i]->value_[0]!=0ULL) {
+        printf("%lld x**%d +", c_[i]->value_[0], i);
+    }
     } else {
     }
   }
   if(small) {
-      printf("%lld", c_[0]);
+      printf("%lld (mod %lld)", c_[0]->value_[0], m_->value_[0]);
   } else {
   }
 }
@@ -126,32 +129,126 @@ bool PolyIsEqual(Polynomial& a, Polynomial& b) {
   return true;  
 }
 
-bool PolyAdd(Polynomial& a, Polynomial& b) {
-  return false;
+// caller ensures a, b and c are polynomials over the same field
+bool PolyAdd(Polynomial& a, Polynomial& b, Polynomial& c) {
+  if(max(a.Degree(), b.Degree())<=c.num_c_)
+    return false;
+  if(b.Degree()>a.Degree())
+    return PolyAdd(b,a,c);
+  int i;
+
+  ZeroPoly(c);
+  for(i=0;i<=b.Degree(); i++ ) {
+    if(!BigModAdd(*a.c_[i], *b.c_[i], *a.m_, *c.c_[i]))
+      return false;
+  }
+  for(;i<=a.Degree();i++) {
+    if(!c.c_[i]->CopyFrom(*a.c_[i]))
+      return false;
+  }
+  return true;
 }
 
-bool PolySub(Polynomial& a, Polynomial& b) {
-  return false;
+bool PolySub(Polynomial& a, Polynomial& b, Polynomial& c) {
+  if(max(a.Degree(), b.Degree())<=c.num_c_)
+    return false;
+
+  int i;
+
+  ZeroPoly(c);
+  if(b.Degree()<=a.Degree()) {
+    for(i=0;i<=b.Degree(); i++ ) {
+      if(!BigModSub(*a.c_[i], *b.c_[i], *a.m_, *c.c_[i]))
+        return false;
+    }
+    for(;i<=a.Degree(); i++ ) {
+        if(!c.c_[i]->CopyFrom(*a.c_[i]))
+          return false;
+    }
+  } else {
+    for(i=0;i<=a.Degree(); i++ ) {
+      if(!BigModSub(*a.c_[i], *b.c_[i], *a.m_, *c.c_[i]))
+        return false;
+    }
+    for(;i<=b.Degree(); i++ ) {
+      if(!BigModSub(Big_Zero, *b.c_[i], *a.m_, *c.c_[i]))
+          return false;
+    }
+  }
+  return true;
 }
 
-bool PolyMult(Polynomial& a, Polynomial& b) {
-  return false;
-}
+bool PolyMult(Polynomial& a, Polynomial& b, Polynomial& c) {
+  if((a.Degree()+b.Degree())<=c.num_c_)
+    return false;
 
-bool PolyDiv(Polynomial& a, Polynomial& b) {
-  return false;
+  int     i, j, k;
+  BigNum  t(2*a.m_->Size()+1);
+  BigNum  r(2*a.m_->Size()+1);
+
+  ZeroPoly(c);
+  for(i=0; i<=a.Degree(); i++) {
+    for(j=0; j<=b.Degree(); j++) {
+      k= i+j;
+      if(!BigModMult(*a.c_[i], *b.c_[j], *a.m_, t))
+        return false;
+      if(!BigModAdd(t, *c.c_[k], *a.m_, r))
+        return false;
+      r.CopyTo(*c.c_[k]);
+    }
+  }
+  return true;
 }
 
 bool ZeroPoly(Polynomial& a) {
-  return false;
+  int i;
+
+  for(i=0; i<a.num_c_; i++)
+    a.c_[i]->ZeroNum();
+  return true;
 }
 
 bool OnePoly(Polynomial& a) {
-  return false;
+  int i;
+
+  for(i=0; i<a.num_c_; i++)
+    a.c_[i]->ZeroNum();
+  a.c_[i]->value_[0]= 1ULL;
+  return true;
 }
 
+// a(x)= b(x)*q(x)+q(x)
+// deg a(x)>=deg b(x)
 bool PolyEuclid(Polynomial& a, Polynomial& b, Polynomial& q, Polynomial& r) {
-  return false;
+  if(q.num_c_<=(a.Degree()+b.Degree()))
+    return false;
+  if(r.num_c_<=b.Degree())
+    return false;
+  Polynomial  t(a.size_num_, a.num_c_, *a.m_);
+  Polynomial  s(a.size_num_, a.num_c_, *a.m_);
+
+  t.CopyFrom(a);
+  r.CopyFrom(a);
+  int     deg_t= t.Degree();
+  int     deg_b= b.Degree();
+  int     cur_q;
+  BigNum  leading_t(*t.c_[deg_t], a.size_num_);
+  BigNum  leading_b(*b.c_[deg_b], b.size_num_);
+  BigNum  tn(b.size_num_);
+
+  while(deg_t>deg_b) {
+    cur_q= deg_t-deg_b;
+    if(!BigModInv(*t.c_[deg_t], *a.m_, tn))
+      return false;
+    if(!t.MultiplyPolyBy(0, tn))
+      return false;
+    PolyMult(b, q, s);
+    PolySub(t, s, r);
+    t.CopyFrom(s);
+    ZeroPoly(r);
+    deg_t= t.Degree();
+  }
+  return true;
 }
 
 bool PolyExtendedGcd(Polynomial& a, Polynomial& b, Polynomial& x, Polynomial& y, 

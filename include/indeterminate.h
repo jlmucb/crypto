@@ -41,8 +41,7 @@ public:
   bool          IsOne();
   bool          CopyTo(Polynomial& a);
   bool          CopyFrom(Polynomial& a);
-  bool          MultiplyBy(BigNum& n);
-  bool          AddTo(BigNum& n);
+  bool          MultiplyPolyBy(int d, BigNum& n);
   void          Print(bool small= false);
 };
 
@@ -64,10 +63,9 @@ public:
 };
 
 bool PolyIsEqual(Polynomial& a, Polynomial& b);
-bool PolyAdd(Polynomial& a, Polynomial& b);
-bool PolySub(Polynomial& a, Polynomial& b);
-bool PolyMult(Polynomial& a, Polynomial& b);
-bool PolyDiv(Polynomial& a, Polynomial& b);
+bool PolyAdd(Polynomial& a, Polynomial& b, Polynomial& c);
+bool PolySub(Polynomial& a, Polynomial& b, Polynomial& c);
+bool PolyMult(Polynomial& a, Polynomial& b, Polynomial& c);
 bool ZeroPoly(Polynomial& a);
 bool OnePoly(Polynomial& a);
 bool PolyEuclid(Polynomial& a, Polynomial& b, Polynomial& q, Polynomial& r);
@@ -75,10 +73,10 @@ bool PolyExtendedGcd(Polynomial& a, Polynomial& b, Polynomial& x, Polynomial& y,
                      Polynomial& g);
 
 bool RationalIsEqual(RationalPoly& a, RationalPoly& b);
-bool RationaAdd(RationalPoly& a, RationalPoly& b);
-bool RationaSub(RationalPoly& a, RationalPoly& b);
-bool RationaMult(RationalPoly& a, RationalPoly& b);
-bool RationaDiv(RationalPoly& a, RationalPoly& b);
+bool RationaAdd(RationalPoly& a, RationalPoly& b, RationalPoly& c);
+bool RationaSub(RationalPoly& a, RationalPoly& b, RationalPoly& c);
+bool RationaMult(RationalPoly& a, RationalPoly& b, RationalPoly& c);
+bool RationaDiv(RationalPoly& a, RationalPoly& b, RationalPoly& c);
 bool ZeroRationa(RationalPoly& a);
 bool OneRationa(RationalPoly& a);
 
