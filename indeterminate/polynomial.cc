@@ -166,8 +166,9 @@ Polynomial* MakePoly(int size_num, int num_c, int n, monomial* m) {
 
 // caller ensures a, b and c are polynomials over the same field
 bool PolyAdd(Polynomial& a, Polynomial& b, Polynomial& c) {
-  if(max(a.Degree(), b.Degree())<=c.num_c_)
+  if(max(a.Degree(), b.Degree())>=c.num_c_) {
     return false;
+  }
   if(b.Degree()>a.Degree())
     return PolyAdd(b,a,c);
   int i;
@@ -185,7 +186,7 @@ bool PolyAdd(Polynomial& a, Polynomial& b, Polynomial& c) {
 }
 
 bool PolySub(Polynomial& a, Polynomial& b, Polynomial& c) {
-  if(max(a.Degree(), b.Degree())<=c.num_c_)
+  if(max(a.Degree(), b.Degree())>=c.num_c_)
     return false;
 
   int i;
@@ -214,7 +215,7 @@ bool PolySub(Polynomial& a, Polynomial& b, Polynomial& c) {
 }
 
 bool PolyMult(Polynomial& a, Polynomial& b, Polynomial& c) {
-  if((a.Degree()+b.Degree())<=c.num_c_)
+  if((a.Degree()+b.Degree())>=c.num_c_)
     return false;
 
   int     i, j, k;
@@ -296,7 +297,7 @@ bool PolyExtendedGcd(Polynomial& a, Polynomial& b, Polynomial& x, Polynomial& y,
 bool MultiplyPolyByMonomial(Polynomial& a, int d, BigNum& n, Polynomial& r) {
   int i;
 
-  if(r.Degree()<=(a.Degree()+d))
+  if(r.num_c_<=(a.Degree()+d))
     return false;
   ZeroPoly(r);
   for(i=a.Degree(); i>=0; i--) {

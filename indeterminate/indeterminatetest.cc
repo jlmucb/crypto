@@ -63,7 +63,7 @@ bool SimplePolyTest() {
   Polynomial sum(1, 3, *one_poly->m_);
   Polynomial diff(1, 3, *one_poly->m_);
   Polynomial prod(1, 4, *one_poly->m_);
-  Polynomial prod2(1, 4, *one_poly->m_);
+  Polynomial prod2(1, 5, *one_poly->m_);
 
   printf("Degree(x+1): %d\n", x_plus_one_poly->Degree());
 
@@ -81,11 +81,12 @@ bool SimplePolyTest() {
     printf("PolyMult fails\n");
     return false;
   }
-  printf("x(x+1)x: "); prod.Print(true);printf("\n");
+  printf("x(x+1): "); prod.Print(true);printf("\n");
   if(!MultiplyPolyByMonomial(*x_plus_one_poly, 1, Big_Two, prod2)) {
+    printf("MultiplyPolyByMonomial fails\n");
     return false;
   }
-  printf("x(x+1)x: "); prod2.Print(true);printf("\n");
+  printf("x(x+1): "); prod2.Print(true);printf("\n");
   return true;
 }
  
