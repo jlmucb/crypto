@@ -64,6 +64,8 @@ bool SimplePolyTest() {
   Polynomial diff(1, 3, *one_poly->m_);
   Polynomial prod(1, 4, *one_poly->m_);
   Polynomial prod2(1, 5, *one_poly->m_);
+  Polynomial q(1, 5, *one_poly->m_);
+  Polynomial r(1, 5, *one_poly->m_);
 
   printf("Degree(x+1): %d\n", x_plus_one_poly->Degree());
 
@@ -87,6 +89,26 @@ bool SimplePolyTest() {
     return false;
   }
   printf("x(x+1): "); prod2.Print(true);printf("\n");
+
+  if(!PolyEuclid(*x_plus_one_poly, *x_poly, q, r)) {
+    printf("PolyEuclid fails\n");
+    return false;
+  }
+  x_plus_one_poly->Print(true);printf(" = ");
+  x_poly->Print(true);printf(" * ");
+  q.Print(true);printf(" + ");
+  r.Print(true);printf("\n");
+
+  ZeroPoly(q);
+  ZeroPoly(r);
+  if(!PolyEuclid(*x_poly, *x_plus_one_poly, q, r)) {
+    printf("PolyEuclid fails\n");
+    return false;
+  }
+  x_poly->Print(true);printf(" = ");
+  x_plus_one_poly->Print(true);printf(" * ");
+  q.Print(true);printf(" + ");
+  r.Print(true);printf("\n");
   return true;
 }
  

@@ -56,7 +56,6 @@ Polynomial::Polynomial(int size_num, int num_c) {
   c_= new BigNum* [num_c];
   for(i= 0; i<num_c; i++)
     c_[i]= new BigNum(size_num);
-  num_c_= num_c;
   size_num_= size_num;
   num_c_= num_c;
 }
@@ -110,7 +109,7 @@ bool Polynomial::IsOne() {
 bool Polynomial::CopyTo(Polynomial& a) {
   int i;
 
-  if(a.Degree()<=num_c_)
+  if(a.num_c_<=Degree())
     return false;
   ZeroPoly(a);
   for(i=Degree(); i>=0; i--) {
@@ -129,7 +128,7 @@ void Polynomial::Print(bool small) {
   for(i=(num_c_-1); i>0;i--) {
     if(small) {
       if(c_[i]->value_[0]!=0ULL) {
-        printf("%lld x**%d +", c_[i]->value_[0], i);
+        printf("%lld x**%d + ", c_[i]->value_[0], i);
     }
     } else {
     }
@@ -263,8 +262,10 @@ bool PolyEuclid(Polynomial& a, Polynomial& b, Polynomial& q, Polynomial& r) {
   Polynomial  t(a.size_num_, a.num_c_, *a.m_);
   Polynomial  s(a.size_num_, a.num_c_, *a.m_);
 
-  t.CopyFrom(a);
-  r.CopyFrom(a);
+  if(!t.CopyFrom(a))
+    return false;
+  if(!r.CopyFrom(a))
+    return false;
   int     deg_t= t.Degree();
   int     deg_b= b.Degree();
   int     cur_q;
@@ -275,7 +276,6 @@ bool PolyEuclid(Polynomial& a, Polynomial& b, Polynomial& q, Polynomial& r) {
 
   if(!BigModInv(*b.c_[deg_b], *a.m_, leading_b_inv))
     return false;
-
   while(deg_t>=deg_b) {
     cur_q= deg_t-deg_b;
     if(!BigModMult(*t.c_[deg_t], leading_b_inv, *a.m_, tn))
