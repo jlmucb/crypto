@@ -29,6 +29,25 @@ inline int max(int a, int b) {
   return b;
 }
 
+monomial::monomial() {
+  d_= 0;
+  n_= NULL;
+}
+
+monomial::monomial(int d, int size, uint64_t v) {
+  d_= d;
+  n_= new BigNum(size);
+  n_->value_[0]= v;
+}
+
+monomial::~monomial() {
+  d_= 0;
+  if(n_!=NULL) {
+    delete n_;
+    n_= NULL;
+  }
+}
+
 Polynomial::Polynomial(int size_num, int num_c) {
   int i;
 
@@ -89,15 +108,19 @@ bool Polynomial::IsOne() {
 }
 
 bool Polynomial::CopyTo(Polynomial& a) {
-  return false;
+  int i;
+
+  if(a.Degree()<=num_c_)
+    return false;
+  ZeroPoly(a);
+  for(i=Degree(); i>=0; i--) {
+    c_[i]->CopyTo(*a.c_[i]);
+  }
+  return true;
 }
 
 bool Polynomial::CopyFrom(Polynomial& a) {
-  return false;
-}
-
-bool Polynomial::MultiplyPolyBy(int d, BigNum& n) {
-  return false;
+  return a.CopyTo(*this);
 }
 
 void Polynomial::Print(bool small) {
@@ -127,6 +150,18 @@ bool PolyIsEqual(Polynomial& a, Polynomial& b) {
       return false;
   }
   return true;  
+}
+
+Polynomial* MakePoly(int size_num, int num_c, int n, monomial* m) {
+  Polynomial* p= new Polynomial(size_num, num_c);
+  if(p==NULL)
+    return NULL;
+
+  int i;
+  for(i=0; i<n; i++) {
+    p->c_[m[i].d_]->CopyFrom(*m[i].n_);
+  }
+  return p;
 }
 
 // caller ensures a, b and c are polynomials over the same field
@@ -222,7 +257,7 @@ bool OnePoly(Polynomial& a) {
 bool PolyEuclid(Polynomial& a, Polynomial& b, Polynomial& q, Polynomial& r) {
   if(q.num_c_<=(a.Degree()+b.Degree()))
     return false;
-  if(r.num_c_<=b.Degree())
+  if(r.num_c_<=a.Degree())
     return false;
   Polynomial  t(a.size_num_, a.num_c_, *a.m_);
   Polynomial  s(a.size_num_, a.num_c_, *a.m_);
@@ -232,20 +267,22 @@ bool PolyEuclid(Polynomial& a, Polynomial& b, Polynomial& q, Polynomial& r) {
   int     deg_t= t.Degree();
   int     deg_b= b.Degree();
   int     cur_q;
+
   BigNum  leading_t(*t.c_[deg_t], a.size_num_);
-  BigNum  leading_b(*b.c_[deg_b], b.size_num_);
+  BigNum  leading_b_inv(b.size_num_);
   BigNum  tn(b.size_num_);
 
-  while(deg_t>deg_b) {
+  if(!BigModInv(*b.c_[deg_b], *a.m_, leading_b_inv))
+    return false;
+
+  while(deg_t>=deg_b) {
     cur_q= deg_t-deg_b;
-    if(!BigModInv(*t.c_[deg_t], *a.m_, tn))
-      return false;
-    if(!t.MultiplyPolyBy(0, tn))
-      return false;
-    PolyMult(b, q, s);
+    if(!BigModMult(*t.c_[deg_t], leading_b_inv, *a.m_, tn))
+      return false; 
+    q.c_[cur_q]->CopyFrom(tn);
+    MultiplyPolyByMonomial(b, deg_t-deg_b, tn, s);
     PolySub(t, s, r);
-    t.CopyFrom(s);
-    ZeroPoly(r);
+    t.CopyFrom(r);
     deg_t= t.Degree();
   }
   return true;
@@ -254,5 +291,18 @@ bool PolyEuclid(Polynomial& a, Polynomial& b, Polynomial& q, Polynomial& r) {
 bool PolyExtendedGcd(Polynomial& a, Polynomial& b, Polynomial& x, Polynomial& y, 
                      Polynomial& g) {
   return false;
+}
+
+bool MultiplyPolyByMonomial(Polynomial& a, int d, BigNum& n, Polynomial& r) {
+  int i;
+
+  if(r.Degree()<=(a.Degree()+d))
+    return false;
+  ZeroPoly(r);
+  for(i=a.Degree(); i>=0; i--) {
+    if(!BigModMult(*a.c_[i], n, *a.m_, *r.c_[i+d]))
+      return false;
+  }
+  return true;
 }
 

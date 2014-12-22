@@ -41,9 +41,20 @@ public:
   bool          IsOne();
   bool          CopyTo(Polynomial& a);
   bool          CopyFrom(Polynomial& a);
-  bool          MultiplyPolyBy(int d, BigNum& n);
   void          Print(bool small= false);
 };
+
+class monomial {
+public:
+  int           d_;
+  BigNum*       n_;
+
+  monomial();
+  monomial(int d, int size, uint64_t v);
+  ~monomial();
+};
+
+Polynomial* MakePoly(int size_num, int num_c, int n, monomial* m);
 
 class RationalPoly {
 public:
@@ -66,6 +77,7 @@ bool PolyIsEqual(Polynomial& a, Polynomial& b);
 bool PolyAdd(Polynomial& a, Polynomial& b, Polynomial& c);
 bool PolySub(Polynomial& a, Polynomial& b, Polynomial& c);
 bool PolyMult(Polynomial& a, Polynomial& b, Polynomial& c);
+bool MultiplyPolyByMonomial(Polynomial& a, int d, BigNum& n, Polynomial& r);
 bool ZeroPoly(Polynomial& a);
 bool OnePoly(Polynomial& a);
 bool PolyEuclid(Polynomial& a, Polynomial& b, Polynomial& q, Polynomial& r);

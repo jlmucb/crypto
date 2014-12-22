@@ -40,7 +40,9 @@ CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
 CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
 LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a  $(LOCAL_LIB)/libgflags.a
 
-dobj=	$(O)/polynomial.o $(O)/rational.o $(O)/indeterminatetest.o $(O)/util.o
+dobj=	$(O)/polynomial.o $(O)/rational.o $(O)/indeterminatetest.o $(O)/util.o \
+	$(O)/bignum.o $(O)/globals.o $(O)/basic_arith.o $(O)/number_theory.o \
+	$(O)/intel64_arith.o $(O)/smallprimes.o $(O)/conversions.o
 
 all:	indeterminatetest.exe
 clean:
@@ -65,6 +67,10 @@ $(O)/indeterminatetest.o: $(S)/indeterminatetest.cc
 $(O)/util.o: $(SRC_DIR)/common/util.cc
 	@echo "compiling util.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/util.o $(SRC_DIR)/common/util.cc
+
+$(O)/conversions.o: $(SRC_DIR)/common/conversions.cc
+	@echo "compiling conversions.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/conversions.o $(SRC_DIR)/common/conversions.cc
 
 $(O)/polynomial.o: $(S)/polynomial.cc
 	@echo "compiling polynomial.cc"
