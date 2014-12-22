@@ -66,6 +66,7 @@ public:
   ~RationalPoly();
 
   int           Degree();
+  bool          Reduce();
   bool          IsZero();
   bool          IsOne();
   bool          CopyTo(RationalPoly& a);
@@ -85,10 +86,10 @@ bool PolyExtendedGcd(Polynomial& a, Polynomial& b, Polynomial& x, Polynomial& y,
                      Polynomial& g);
 
 bool RationalIsEqual(RationalPoly& a, RationalPoly& b);
-bool RationaAdd(RationalPoly& a, RationalPoly& b, RationalPoly& c);
-bool RationaSub(RationalPoly& a, RationalPoly& b, RationalPoly& c);
-bool RationaMult(RationalPoly& a, RationalPoly& b, RationalPoly& c);
-bool RationaDiv(RationalPoly& a, RationalPoly& b, RationalPoly& c);
+bool RationalAdd(RationalPoly& a, RationalPoly& b, RationalPoly& c);
+bool RationalSub(RationalPoly& a, RationalPoly& b, RationalPoly& c);
+bool RationalMult(RationalPoly& a, RationalPoly& b, RationalPoly& c);
+bool RationalDiv(RationalPoly& a, RationalPoly& b, RationalPoly& c);
 bool ZeroRationa(RationalPoly& a);
 bool OneRationa(RationalPoly& a);
 

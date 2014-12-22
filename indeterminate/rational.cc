@@ -30,59 +30,121 @@ RationalPoly::RationalPoly(int size_num, int num_c) {
 }
 
 RationalPoly::RationalPoly(int size_num, int num_c, BigNum& c) {
+  top_= new Polynomial(size_num, num_c, c);
+  bot_= new Polynomial(size_num, num_c, c);
 }
 
 RationalPoly::~RationalPoly() {
+  if(top_!=NULL) {
+    delete top_;
+    top_= NULL;
+  }
+  if(bot_!=NULL) {
+    delete bot_;
+    bot_= NULL;
+  }
 }
 
 int RationalPoly::Degree() {
-  return 0;
+  int deg_num= top_->Degree();
+  int deg_den= top_->Degree();
+  if(deg_num>deg_den)
+    return deg_num;
+  return deg_den;
 }
 
 bool RationalPoly::IsZero() {
+  if(top_->IsZero() && !bot_->IsZero())
+    return true;
   return false;
 }
 
 bool RationalPoly::IsOne() {
+  if(top_->IsOne() && bot_->IsOne())
+    return true;
   return false;
 }
 
 bool RationalPoly::CopyTo(RationalPoly& a) {
-  return false;
+  if(!top_->CopyTo(*a.top_))
+    return false;
+  if(!bot_->CopyTo(*a.bot_))
+    return false;
+  return true;
 }
 
 bool RationalPoly::CopyFrom(RationalPoly& a) {
-  return false;
+  return a.CopyTo(*this);
 }
 
 void RationalPoly::Print(bool small) {
+  printf("[");
+  top_->Print(small);
+  printf("]/[");
+  bot_->Print(small);
+  printf("]");
 }
 
 bool RationalIsEqual(RationalPoly& a, RationalPoly& b) {
+  int n= a.Degree();
+  int m= b.Degree();
+  if(m>n)
+    n= m;
+  n= 2*n+2;
+  Polynomial  x(a.top_->size_num_, n, *a.top_->m_);
+  Polynomial  y(a.top_->size_num_, n, *a.top_->m_);
+  if(!a.Reduce())
+    return false;
+  if(!b.Reduce())
+    return false;
+  if(!PolyMult(*a.top_, *b.bot_, x))
+    return false;
+  if(!PolyMult(*b.top_, *a.bot_, y))
+    return false;
+  return PolyIsEqual(x,y);
+}
+
+bool RationalAdd(RationalPoly& a, RationalPoly& b, RationalPoly& c) {
   return false;
 }
 
-bool RationaAdd(RationalPoly& a, RationalPoly& b) {
+bool RationalSub(RationalPoly& a, RationalPoly& b, RationalPoly& c) {
   return false;
 }
 
-bool RationaSub(RationalPoly& a, RationalPoly& b) {
-  return false;
+bool RationalPoly::Reduce() {
+  return true;
 }
 
-bool RationaMult(RationalPoly& a, RationalPoly& b) {
-  return false;
+bool RationalMult(RationalPoly& a, RationalPoly& b, RationalPoly& c) {
+  if(!PolyMult(*a.top_, *b.top_, *c.top_))
+    return false;
+  if(!PolyMult(*a.bot_, *b.bot_, *c.bot_))
+    return false;
+  return c.Reduce();
 }
 
-bool RationaDiv(RationalPoly& a, RationalPoly& b) {
-  return false;
+bool RationalDiv(RationalPoly& a, RationalPoly& b, RationalPoly& c) {
+  if(!PolyMult(*a.top_, *b.bot_, *c.top_))
+    return false;
+  if(!PolyMult(*a.bot_, *b.top_, *c.bot_))
+    return false;
+  return c.Reduce();
 }
 
 bool ZeroRationa(RationalPoly& a) {
-  return false;
+  if(!ZeroPoly(*a.top_))
+    return false;
+  if(!OnePoly(*a.bot_))
+    return false;
+  return true;
 }
 
 bool OneRationa(RationalPoly& a) {
-  return false;
+  if(!OnePoly(*a.top_))
+    return false;
+  if(!OnePoly(*a.bot_))
+    return false;
+  return true;
 }
 
