@@ -248,7 +248,7 @@ bool OnePoly(Polynomial& a) {
 
   for(i=0; i<a.num_c_; i++)
     a.c_[i]->ZeroNum();
-  a.c_[i]->value_[0]= 1ULL;
+  a.c_[0]->value_[0]= 1ULL;
   return true;
 }
 
@@ -257,18 +257,20 @@ bool OnePoly(Polynomial& a) {
 bool PolyEuclid(Polynomial& a, Polynomial& b, Polynomial& q, Polynomial& r) {
   if(q.num_c_<=(a.Degree()+b.Degree()))
     return false;
-  if(r.num_c_<=a.Degree())
+  if(r.num_c_<=b.Degree())
     return false;
   Polynomial  t(a.size_num_, a.num_c_, *a.m_);
   Polynomial  s(a.size_num_, a.num_c_, *a.m_);
 
   if(!t.CopyFrom(a))
     return false;
-  if(!r.CopyFrom(a))
-    return false;
   int     deg_t= t.Degree();
   int     deg_b= b.Degree();
   int     cur_q;
+  if(deg_t<deg_b) {
+    if(!r.CopyFrom(a))
+      return true;
+  }
 
   BigNum  leading_t(*t.c_[deg_t], a.size_num_);
   BigNum  leading_b_inv(b.size_num_);
@@ -291,7 +293,73 @@ bool PolyEuclid(Polynomial& a, Polynomial& b, Polynomial& q, Polynomial& r) {
 
 bool PolyExtendedGcd(Polynomial& a, Polynomial& b, Polynomial& x, Polynomial& y, 
                      Polynomial& g) {
-  return false;
+  Polynomial*   a_coeff[3]= {NULL, NULL, NULL};
+  Polynomial*   b_coeff[3]= {NULL, NULL, NULL};
+  Polynomial*   c[3]= {NULL, NULL, NULL};
+
+  int           n= a.num_c_+b.num_c_+2;
+  Polynomial    q(a.size_num_, n, *a.m_);
+  Polynomial    r(a.size_num_, n, *a.m_);
+  Polynomial    t1(a.size_num_, n, *a.m_);
+  Polynomial    t2(a.size_num_, n, *a.m_);
+  int           old= 0;
+  int           current= 1;
+  int           next= 2;
+  bool          ret= true;
+  int           i;
+
+  for(i=0; i<3; i++) {
+    a_coeff[i]= new Polynomial(a.size_num_, n, *a.m_);
+    b_coeff[i]= new Polynomial(a.size_num_, n, *a.m_);
+    c[i]= new Polynomial(a.size_num_, n, *a.m_);
+  }
+
+  OnePoly(*a_coeff[0]);
+  ZeroPoly(*b_coeff[0]);
+  ZeroPoly(*a_coeff[1]);
+  OnePoly(*b_coeff[1]);
+  a.CopyTo(*c[0]);
+  b.CopyTo(*c[1]);
+
+  for(;;) {
+    ZeroPoly(r);
+    ZeroPoly(q);
+    ZeroPoly(t1);
+    ZeroPoly(t2);
+
+    // c[new]= q*c[old] +r;
+    ret= PolyEuclid(*c[old], *c[current], q, r);
+    if(!ret) {
+      goto done;
+    }
+    if(r.IsZero())
+      break;
+    r.CopyTo(*c[next]);
+    PolyMult(q, *a_coeff[current], t1);
+    PolyMult(q, *b_coeff[current], t2);
+    PolySub(*a_coeff[old], t1, *a_coeff[next]);
+    PolySub(*b_coeff[old], t2, *b_coeff[next]);
+    old= (old+1)%3;
+    current= (current+1)%3;
+    next= (next+1)%3;
+  }
+ a_coeff[current]->CopyTo(x);
+ b_coeff[current]->CopyTo(y);
+ c[current]->CopyTo(g);
+
+done:
+  for(i=0;i<3; i++) {
+    if(a_coeff[i]!=NULL)
+      delete a_coeff[i];
+    a_coeff[i]= NULL;
+    if(b_coeff[i]!=NULL)
+      delete b_coeff[i];
+    b_coeff[i]= NULL;
+    if(c[i]!=NULL)
+      delete c[i];
+    c[i]= NULL;
+  }
+  return ret;
 }
 
 bool MultiplyPolyByMonomial(Polynomial& a, int d, BigNum& n, Polynomial& r) {

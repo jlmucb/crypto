@@ -109,6 +109,19 @@ bool SimplePolyTest() {
   x_plus_one_poly->Print(true);printf(" * ");
   q.Print(true);printf(" + ");
   r.Print(true);printf("\n");
+
+  Polynomial x(1, 5, *one_poly->m_);
+  Polynomial y(1, 5, *one_poly->m_);
+  Polynomial g(1, 5, *one_poly->m_);
+  if(!PolyExtendedGcd(*x_poly, *x_plus_one_poly, x, y, g)) {
+    printf("PolyExtendedGcd fails\n");
+    return false;
+  }
+  x_poly->Print(true);printf(" * ");
+  x.Print(true);printf(" + ");
+  x_plus_one_poly->Print(true);printf(" * ");
+  y.Print(true);printf(" = ");
+  g.Print(true);printf("\n");
   return true;
 }
  
