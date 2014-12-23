@@ -105,14 +105,63 @@ bool RationalIsEqual(RationalPoly& a, RationalPoly& b) {
 }
 
 bool RationalAdd(RationalPoly& a, RationalPoly& b, RationalPoly& c) {
-  return false;
+  int n= a.Degree();
+  int m= b.Degree();
+  if(m>n)
+    n= m;
+  n= 2*n+2;
+  Polynomial  t1(a.top_->size_num_, n, *a.top_->m_);
+  Polynomial  t2(a.top_->size_num_, n, *a.top_->m_);
+  if(!PolyMult(*a.bot_, *b.bot_, *c.bot_))
+    return false;
+  if(!PolyMult(*a.top_, *b.bot_, t1))
+    return false;
+  if(!PolyMult(*b.top_, *a.bot_, t2))
+    return false;
+  if(!PolyAdd(t1, t2, *c.top_))
+    return false;
+  return c.Reduce();
 }
 
 bool RationalSub(RationalPoly& a, RationalPoly& b, RationalPoly& c) {
-  return false;
+  int n= a.Degree();
+  int m= b.Degree();
+  if(m>n)
+    n= m;
+  n= 2*n+2;
+  Polynomial  t1(a.top_->size_num_, n, *a.top_->m_);
+  Polynomial  t2(a.top_->size_num_, n, *a.top_->m_);
+  if(!PolyMult(*a.bot_, *b.bot_, *c.bot_))
+    return false;
+  if(!PolyMult(*a.top_, *b.bot_, t1))
+    return false;
+  if(!PolyMult(*b.top_, *a.bot_, t2))
+    return false;
+  if(!PolySub(t1, t2, *c.top_))
+    return false;
+  return c.Reduce();
 }
 
 bool RationalPoly::Reduce() {
+  int n= 2*Degree() +2;
+  Polynomial  x(top_->size_num_, n, *top_->m_);
+  Polynomial  y(top_->size_num_, n, *top_->m_);
+  Polynomial  g(top_->size_num_, n, *top_->m_);
+
+  if(!PolyExtendedGcd(*top_, *bot_, x, y, g)) 
+    return false;
+  if(g.Degree()==1)
+    return true;
+  ZeroPoly(x);
+  ZeroPoly(y);
+  if(!PolyEuclid(*top_, g, x, y))
+    return false;
+  top_->CopyFrom(x);
+  ZeroPoly(x);
+  ZeroPoly(y);
+  if(!PolyEuclid(*bot_, g, x, y))
+    return false;
+  bot_->CopyFrom(x);
   return true;
 }
 
