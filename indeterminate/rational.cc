@@ -34,6 +34,13 @@ RationalPoly::RationalPoly(int size_num, int num_c, BigNum& c) {
   bot_= new Polynomial(size_num, num_c, c);
 }
 
+RationalPoly::RationalPoly(int size_num, int num_c, BigNum& c, Polynomial& t, Polynomial& b) {
+  top_= new Polynomial(size_num, num_c, c);
+  bot_= new Polynomial(size_num, num_c, c);
+  top_->CopyFrom(t);
+  bot_->CopyFrom(b);
+}
+
 RationalPoly::~RationalPoly() {
   if(top_!=NULL) {
     delete top_;
@@ -150,7 +157,7 @@ bool RationalPoly::Reduce() {
 
   if(!PolyExtendedGcd(*top_, *bot_, x, y, g)) 
     return false;
-  if(g.Degree()==1)
+  if(g.Degree()==0)
     return true;
   ZeroPoly(x);
   ZeroPoly(y);

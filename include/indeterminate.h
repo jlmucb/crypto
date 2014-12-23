@@ -63,6 +63,7 @@ public:
 
   RationalPoly(int size_num, int num_c);
   RationalPoly(int size_num, int num_c, BigNum& c);
+  RationalPoly(int size_num, int num_c, BigNum& c, Polynomial& t, Polynomial& b);
   ~RationalPoly();
 
   int           Degree();
