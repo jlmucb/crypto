@@ -126,74 +126,38 @@ bool SimplePolyTest() {
 
 bool SimpleRationalTest() {
   RationalPoly  one_rational(1, 3, *one_poly->m_, *x_plus_one_poly, *x_plus_one_poly);
+  RationalPoly  x_rational(1, 3, *one_poly->m_, *x_poly, *one_poly);
+  RationalPoly  x_over_x_plus_one_rational(1, 3, *one_poly->m_, *x_poly, *x_plus_one_poly);
   one_rational.Print(true); printf("\n");
   one_rational.Reduce();
   one_rational.Print(true); printf("\n");
-/*
-  x_plus_one_poly->Print(true); printf("\n");
-  Polynomial sum(1, 3, *one_poly->m_);
-  Polynomial diff(1, 3, *one_poly->m_);
-  Polynomial prod(1, 4, *one_poly->m_);
-  Polynomial prod2(1, 5, *one_poly->m_);
-  Polynomial q(1, 5, *one_poly->m_);
-  Polynomial r(1, 5, *one_poly->m_);
+  printf("x: "); x_rational.Print(true); printf("\n");
+  printf("x/x+1: "); x_over_x_plus_one_rational.Print(true); printf("\n");
+  RationalPoly sum(1, 3, *one_poly->m_);
+  RationalPoly diff(1, 3, *one_poly->m_);
+  RationalPoly prod(1, 4, *one_poly->m_);
+  RationalPoly div(1, 5, *one_poly->m_);
 
-  printf("Degree(x+1): %d\n", x_plus_one_poly->Degree());
-
-  if(!PolyAdd(*one_poly, *x_poly, sum)) {
-    printf("PolyAdd fails\n");
+  if(!RationalAdd(x_rational, x_over_x_plus_one_rational, sum)) {
+    printf("RationalAdd fails\n");
     return false;
   }
-  printf("x+1: "); sum.Print(true);printf("\n");
-  if(!PolySub(*x_poly, *x_poly, diff)) {
-    printf("PolySub fails\n");
+  printf("x+x/x+1: "); sum.Print(true);printf("\n");
+  if(!RationalSub(x_rational, x_over_x_plus_one_rational, diff)) {
+    printf("RationalSub fails\n");
     return false;
   }
-  printf("x-x: "); diff.Print(true);printf("\n");
-  if(!PolyMult(*x_poly, *x_plus_one_poly, prod)) {
-    printf("PolyMult fails\n");
+  printf("x-x/x+1: "); diff.Print(true);printf("\n");
+  if(!RationalMult(x_rational, x_over_x_plus_one_rational, prod)) {
+    printf("RationalMult fails\n");
     return false;
   }
-  printf("x(x+1): "); prod.Print(true);printf("\n");
-  if(!MultiplyPolyByMonomial(*x_plus_one_poly, 1, Big_Two, prod2)) {
-    printf("MultiplyPolyByMonomial fails\n");
+  printf("x*x/(x+1): "); prod.Print(true);printf("\n");
+  if(!RationalDiv(x_rational, x_over_x_plus_one_rational, div)) {
+    printf("RationalMult fails\n");
     return false;
   }
-  printf("x(x+1): "); prod2.Print(true);printf("\n");
-
-  if(!PolyEuclid(*x_plus_one_poly, *x_poly, q, r)) {
-    printf("PolyEuclid fails\n");
-    return false;
-  }
-  x_plus_one_poly->Print(true);printf(" = ");
-  x_poly->Print(true);printf(" * ");
-  q.Print(true);printf(" + ");
-  r.Print(true);printf("\n");
-
-  ZeroPoly(q);
-  ZeroPoly(r);
-  if(!PolyEuclid(*x_poly, *x_plus_one_poly, q, r)) {
-    printf("PolyEuclid fails\n");
-    return false;
-  }
-  x_poly->Print(true);printf(" = ");
-  x_plus_one_poly->Print(true);printf(" * ");
-  q.Print(true);printf(" + ");
-  r.Print(true);printf("\n");
-
-  Polynomial x(1, 5, *one_poly->m_);
-  Polynomial y(1, 5, *one_poly->m_);
-  Polynomial g(1, 5, *one_poly->m_);
-  if(!PolyExtendedGcd(*x_poly, *x_plus_one_poly, x, y, g)) {
-    printf("PolyExtendedGcd fails\n");
-    return false;
-  }
-  x_poly->Print(true);printf(" * ");
-  x.Print(true);printf(" + ");
-  x_plus_one_poly->Print(true);printf(" * ");
-  y.Print(true);printf(" = ");
-  g.Print(true);printf("\n");
-*/
+  printf("x/x/(x+1): "); div.Print(true);printf("\n");
   return true;
 }
  
