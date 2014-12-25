@@ -85,14 +85,15 @@ bool OnePoly(Polynomial& a);
 bool PolyEuclid(Polynomial& a, Polynomial& b, Polynomial& q, Polynomial& r);
 bool PolyExtendedGcd(Polynomial& a, Polynomial& b, Polynomial& x, Polynomial& y, 
                      Polynomial& g);
+bool ReduceModPoly(Polynomial& a, Polynomial& m, Polynomial& r);
 
 bool RationalIsEqual(RationalPoly& a, RationalPoly& b);
 bool RationalAdd(RationalPoly& a, RationalPoly& b, RationalPoly& c);
 bool RationalSub(RationalPoly& a, RationalPoly& b, RationalPoly& c);
 bool RationalMult(RationalPoly& a, RationalPoly& b, RationalPoly& c);
 bool RationalDiv(RationalPoly& a, RationalPoly& b, RationalPoly& c);
-bool ZeroRationa(RationalPoly& a);
-bool OneRationa(RationalPoly& a);
+bool ZeroRational(RationalPoly& a);
+bool OneRational(RationalPoly& a);
 
 #endif
 

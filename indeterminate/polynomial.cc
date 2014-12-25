@@ -375,3 +375,8 @@ bool MultiplyPolyByMonomial(Polynomial& a, int d, BigNum& n, Polynomial& r) {
   return true;
 }
 
+bool ReduceModPoly(Polynomial& a, Polynomial& m, Polynomial& r) {
+  Polynomial  t(a.size_num_, a.num_c_, *a.m_);
+  return PolyEuclid(a, m, t, r);
+}
+
