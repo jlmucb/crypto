@@ -188,7 +188,7 @@ bool RationalDiv(RationalPoly& a, RationalPoly& b, RationalPoly& c) {
   return c.Reduce();
 }
 
-bool ZeroRationa(RationalPoly& a) {
+bool ZeroRational(RationalPoly& a) {
   if(!ZeroPoly(*a.top_))
     return false;
   if(!OnePoly(*a.bot_))

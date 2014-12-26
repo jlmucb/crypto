@@ -28,14 +28,14 @@ bool RationalPolyFromCurve(EccCurve& curve, RationalPoly** curve_rational);
 bool RationalPolyNegate(RationalPoly& a);
 bool MakeSymbolicIdentity(RationalPoly& x, RationalPoly& y);
 bool IsSymbolicIdentity(RationalPoly& x, RationalPoly& y);
-bool EccSymbolicAdd(RationalPoly& curve_poly, RationalPoly& in1_x, RationalPoly& in1_y, 
+bool EccSymbolicAdd(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& in1_y, 
                     RationalPoly& in2_x, RationalPoly& in2_y, 
                     RationalPoly& out_x, RationalPoly& out_y);
-bool EccSymbolicSub(RationalPoly& curve_poly, RationalPoly& in1_x, RationalPoly& in1_y,
+bool EccSymbolicSub(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& in1_y,
                     RationalPoly& in2_x, RationalPoly& in2_y,
                     RationalPoly& out_x, RationalPoly& out_y);
-bool EccSymbolicMultEndomorphism(RationalPoly& curve_poly, BigNum& m, 
+bool EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m, 
                                  RationalPoly& out_x, RationalPoly& out_y);
-bool EccSymbolicPowerEndomorphism(RationalPoly& curve_poly, BigNum& e, 
+bool EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e, 
                                   RationalPoly& out_x, RationalPoly& out_y);
 #endif
