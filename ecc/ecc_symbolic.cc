@@ -215,6 +215,12 @@ bool EccSymbolicMult(Polynomial& curve_poly, BigNum& m,
   return true;
 }
 
+bool RaisetoLargePower(RationalPoly& inx, RationalPoly& iny, BigNum& e,
+                       Polynomial& curve_poly, Polynomial& mod_poly,
+                       RationalPoly& outx, RationalPoly& outy) {
+  return true;
+}
+
 //  Since this is an endomorphism, the result is (r(x), yq(x)) and we return
 //  out_x= r[x] and out_y= q(x).  So out_y should be multiplied by y to give the answer
 bool EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m, 

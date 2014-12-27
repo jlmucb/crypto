@@ -113,11 +113,11 @@ bool PickPrimes(int* num_primes, uint64_t* prime_list, BigNum& p) {
   return true;
 }
 
-bool Compute_t_mod_2(Polynomial* curve_poly, uint64_t* result) {
+bool Compute_t_mod_2(Polynomial& curve_poly, uint64_t* result) {
   return true;
 }
 
-bool Compute_t_mod_l(Polynomial* curve_poly, uint64_t, uint64_t l, uint64_t* result) {
+bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t, uint64_t l, uint64_t* result) {
   return true;
 }
 
