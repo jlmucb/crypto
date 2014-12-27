@@ -215,7 +215,76 @@ bool EccSymbolicMult(Polynomial& curve_poly, BigNum& m,
   return true;
 }
 
-bool RaisetoLargePower(RationalPoly& inx, RationalPoly& iny, BigNum& e,
+//  Usual power of two reduction
+bool ReducedEccSymbolicMult(Polynomial& curve_poly, 
+                     Polynomial& mod_poly, BigNum& m, 
+                     RationalPoly& in_x, RationalPoly& in_y,
+                     RationalPoly& out_x, RationalPoly& out_y) {
+  int           k=  BigHighBit(m);
+  int           i;
+  RationalPoly  double_point_x(in_x.top_->size_num_, in_x.top_->num_c_, *in_x.top_->m_);
+  RationalPoly  double_point_y(in_x.top_->size_num_, in_x.top_->num_c_, *in_x.top_->m_);
+  RationalPoly  accum_point_x(in_x.top_->size_num_, in_x.top_->num_c_, *in_x.top_->m_);
+  RationalPoly  accum_point_y(in_x.top_->size_num_, in_x.top_->num_c_, *in_x.top_->m_);
+  RationalPoly  t1(in_x.top_->size_num_, in_x.top_->num_c_, *in_x.top_->m_);
+  RationalPoly  t2(in_x.top_->size_num_, in_x.top_->num_c_, *in_x.top_->m_);
+  RationalPoly  t_double_x(in_x.top_->size_num_, in_x.top_->num_c_, *in_x.top_->m_);
+  RationalPoly  t_double_y(in_x.top_->size_num_, in_x.top_->num_c_, *in_x.top_->m_);
+
+  if(!MakeSymbolicIdentity(accum_point_x, accum_point_y))
+    return false;
+  for(i=1; i<k; i++) {
+    if(BigBitPositionOn(m, i)) {
+      if(!EccSymbolicAdd(curve_poly, double_point_x, double_point_y, accum_point_x,
+                     accum_point_y, t1, t2))
+        return false;
+      if(!ReduceModPoly(*t1.top_, mod_poly, *accum_point_y.top_))
+        return false;
+      if(!ReduceModPoly(*t1.bot_, mod_poly, *accum_point_y.bot_))
+        return false;
+      if(!ReduceModPoly(*t2.top_, mod_poly, *accum_point_x.top_))
+        return false;
+      if(!ReduceModPoly(*t2.bot_, mod_poly, *accum_point_x.bot_))
+        return false;
+    }
+    if(!EccSymbolicAdd(curve_poly, double_point_x, double_point_y, 
+                       double_point_x, double_point_y, t_double_x, t_double_y))
+      return false;
+    if(!ReduceModPoly(*double_point_y.top_, mod_poly, *double_point_y.top_))
+      return false;
+    if(!ReduceModPoly(*double_point_y.bot_, mod_poly, *double_point_y.bot_))
+      return false;
+    if(!ReduceModPoly(*double_point_x.top_, mod_poly, *double_point_x.top_))
+      return false;
+    if(!ReduceModPoly(*double_point_x.bot_, mod_poly, *double_point_x.bot_))
+      return false;
+  }
+  if(BigBitPositionOn(m, i)) {
+    if(!EccSymbolicAdd(curve_poly, accum_point_x, accum_point_y, 
+                       double_point_x, double_point_y, t_double_x, t_double_y))
+      return false;
+      if(!ReduceModPoly(*t_double_y.top_, mod_poly, *out_y.top_))
+        return false;
+      if(!ReduceModPoly(*t_double_y.bot_, mod_poly, *out_y.bot_))
+        return false;
+      if(!ReduceModPoly(*t_double_x.top_, mod_poly, *out_x.top_))
+        return false;
+      if(!ReduceModPoly(*t_double_x.bot_, mod_poly, *out_x.bot_))
+        return false;
+    return true;
+  }
+  if(!ReduceModPoly(*double_point_y.top_, mod_poly, *out_y.top_))
+    return false;
+  if(!ReduceModPoly(*double_point_y.bot_, mod_poly, *out_y.bot_))
+    return false;
+  if(!ReduceModPoly(*double_point_x.top_, mod_poly, *out_x.top_))
+    return false;
+  if(!ReduceModPoly(*double_point_x.bot_, mod_poly, *out_x.bot_))
+    return false;
+  return true;
+}
+
+bool ReducedRaisetoLargePower(RationalPoly& inx, RationalPoly& iny, BigNum& e,
                        Polynomial& curve_poly, Polynomial& mod_poly,
                        RationalPoly& outx, RationalPoly& outy) {
   return true;

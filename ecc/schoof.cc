@@ -117,7 +117,7 @@ bool Compute_t_mod_2(Polynomial& curve_poly, uint64_t* result) {
   return true;
 }
 
-bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t, uint64_t l, uint64_t* result) {
+bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
   return true;
 }
 
@@ -130,22 +130,48 @@ bool schoof(EccCurve& curve, BigNum& order) {
   uint64_t  t_mod_prime[512];
   BigNum    composite_modulus(order.Capacity());
   BigNum    composite_solution(order.Capacity());
+  BigNum    s(order.Capacity());
+  Polynomial  curve_poly(curve.p_->Capacity(), 5, *curve.p_);
+  int       j;
 
   if(!PickPrimes(&num_primes, primes, *curve.p_))
     return false;
   if(!InitPhi())
     return false;
+  bool  ret= true;
 
   // compute answers modulo primes
+  if(!Compute_t_mod_2(curve_poly, &t_mod_prime[0])) {
+    ret= false;
+    goto done;
+  }
+  for(j=1;j<num_primes;j++) {
+    if(!Compute_t_mod_l(curve_poly, primes[j], &t_mod_prime[j])) {
+      ret= false;
+      goto done;
+    }
+  }
 
   // compute t using CRT
   if(!ComputeCompositeSolutionUsingCrt(num_primes, primes, t_mod_prime,
-                              composite_modulus, composite_solution))
-    return true;
+                              composite_modulus, composite_solution)) {
+    ret= false;
+    goto done;
+  }
 
-  // get #E from t
+  // get #E = p+1-t
+  order.ZeroNum();
+  if(!BigUnsignedAdd(*curve.p_, Big_One, s)) {
+    ret= false;
+    goto done;
+  }
+  if(!BigSub(s, composite_solution, order)) {
+    ret= false;
+    goto done;
+  }
 
+done:
   FreePhi();
-  return true;
+  return ret;
 }
 

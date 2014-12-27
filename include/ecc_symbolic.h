@@ -37,7 +37,11 @@ bool EccSymbolicSub(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& i
 bool EccSymbolicMult(Polynomial& curve_poly, BigNum& m,
                      RationalPoly& in_x, RationalPoly& in_y,
                      RationalPoly& out_x, RationalPoly& out_y);
-bool RaisetoLargePower(RationalPoly& inx, RationalPoly& iny, BigNum& e,
+bool ReducedEccSymbolicMult(Polynomial& curve_poly, 
+                     Polynomial& mod_poly, BigNum& m,
+                     RationalPoly& in_x, RationalPoly& in_y,
+                     RationalPoly& out_x, RationalPoly& out_y);
+bool ReducedRaisetoLargePower(RationalPoly& inx, RationalPoly& iny, BigNum& e,
                        Polynomial& curve_poly, Polynomial& mod_poly,
                        RationalPoly& outx, RationalPoly& outy);
 bool EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e, 
