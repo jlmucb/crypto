@@ -61,7 +61,7 @@
 //  phi[0]= 0
 //  phi[1]= 1
 //  phi[2]= 2y
-//  phi[3]=  3x^4+6ax^2+12bx-a^2
+//  phi[3]= 3x^4+6ax^2+12bx-a^2
 //  phi[4]= 4y(x^6+5ax^4+20bx^3-5a^2x^2-4abx-8b^2-a^3
 //  phi[2m+1]= phi[m+2]phi^3[m]-phi[m-1]phi^3[m+1]
 //  phi[2m]= phi[m]/phi[2](phi[m+2]phi^2[m-1]-phi[m-2]phi^2[m+1])
@@ -76,15 +76,38 @@ bool FreePhi() {
   return true;
 }
 
-//  computemodulo2
-//  computemodulop
+bool PickPrimes(int* num_primes, uint64_t* prime_list, BigNum& p) {
+  // prod_i prime_list[i]> 4p^(1/4)
+  return true;
+}
 
-//  compute order given value mod p[i], i=1,2,...,n
+bool Compute_t_mod_2(Polynomial* curve_poly, uint64_t* result) {
+  return true;
+}
+
+bool Compute_t_mod_l(Polynomial* curve_poly, uint64_t, uint64_t l, uint64_t* result) {
+  return true;
+}
 
 //  schoof
-//   Takes coefficients of short Weierstrauss curves and compute
+//   Given short Weierstrauss curves, compute
 //   the order of the elliptic curve group.
 bool schoof(EccCurve& curve, BigNum& order) {
+  int       num_primes= 0;
+  uint64_t  primes[512];
+
+  if(!PickPrimes(&num_primes, primes, *curve.p_))
+    return false;
+  if(!InitPhi())
+    return false;
+
+  // compute answers modulo primes
+
+  // compute t using CRT
+
+  // get #E from t
+
+  FreePhi();
   return true;
 }
 
