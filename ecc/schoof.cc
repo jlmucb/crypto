@@ -68,6 +68,38 @@
 //  theta[m]= x phi^2[m]-phi[m+1]phi[m-1]
 //  omega[m]= (phi[m]/(2 phi[2]) (phi[m+2] phi[m-1]-phi[m-2] phi^2[m+1])
 
+
+bool ComputeCompositeSolutionUsingCrt(int n, uint64_t* moduli, uint64_t* solutions, 
+                              BigNum& composite_modulus, BigNum& composite_solution) {
+  int     i;
+  BigNum  current_modulus(2);
+  BigNum  current_solution(2);
+  BigNum  new_composite_modulus(composite_solution.Capacity());
+  BigNum  new_composite_solution(composite_solution.Capacity());
+
+  if(n<=0)
+    return false;
+  composite_modulus.value_[0]= moduli[0];
+  composite_solution.value_[0]= solutions[0];
+  composite_modulus.Normalize();
+  composite_solution.Normalize();
+
+  for(i=1;i<n;i++) {
+    current_modulus.value_[0]= moduli[i];
+    current_solution.value_[0]= solutions[i];
+    current_modulus.Normalize();
+    current_solution.Normalize();
+    if(!BigCRT(composite_solution, current_solution,  composite_modulus, current_modulus, 
+               new_composite_solution))
+      return false;
+    if(!BigUnsignedMult(composite_modulus, current_modulus, new_composite_modulus))
+      return false;
+    new_composite_solution.CopyTo(composite_modulus);
+    new_composite_modulus.CopyTo(composite_solution);
+  }
+  return true;
+}
+
 bool InitPhi() {
   return true;
 }
@@ -95,6 +127,9 @@ bool Compute_t_mod_l(Polynomial* curve_poly, uint64_t, uint64_t l, uint64_t* res
 bool schoof(EccCurve& curve, BigNum& order) {
   int       num_primes= 0;
   uint64_t  primes[512];
+  uint64_t  t_mod_prime[512];
+  BigNum    composite_modulus(order.Capacity());
+  BigNum    composite_solution(order.Capacity());
 
   if(!PickPrimes(&num_primes, primes, *curve.p_))
     return false;
@@ -104,6 +139,9 @@ bool schoof(EccCurve& curve, BigNum& order) {
   // compute answers modulo primes
 
   // compute t using CRT
+  if(!ComputeCompositeSolutionUsingCrt(num_primes, primes, t_mod_prime,
+                              composite_modulus, composite_solution))
+    return true;
 
   // get #E from t
 
