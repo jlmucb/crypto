@@ -23,7 +23,7 @@
 #include "ecc.h"
 #include "indeterminate.h"
 
-bool PolyFromCurve(EccCurve& curve, Polynomial** curve_poly);
+bool PolyFromCurve(EccCurve& curve, Polynomial& curve_poly);
 bool RationalPolyFromCurve(EccCurve& curve, RationalPoly** curve_rational);
 bool RationalPolyNegate(RationalPoly& a);
 bool MakeSymbolicIdentity(RationalPoly& x, RationalPoly& y);

@@ -18,6 +18,7 @@
 #include "bignum.h"
 #include "ecc.h"
 #include "indeterminate.h"
+#include "ecc_symbolic.h"
 
 // note that the real division polynomial, g_phi, is
 //  g_phi[m]= g_phi2[m], if m is odd, and
@@ -28,25 +29,25 @@
 
 
 //  0. Precompute division polynomials
-//  1. Pick S= {p[1], ..., p[k]: p[1]*p[2}*...*p[k]>4(q^(1/4)), q not in S
-//  2. for p[1]=2, t=0 (2) iff (x^3+ax+b, x^q-x)= 1
+//  1. Pick S= {p[1], ..., p[k]: p[1]*p[2}*...*p[k]>4(p^(1/4)), p not in S
+//  2. for p[1]=2, t=0 (2) iff (x^3+ax+b, x^p-x)= 1
 //  3. for each odd l in S
 //    3a.
-//      q[l]= q (mod l), |q[l]|<l/2
+//      p[l]= p (mod l), |p[l]|<l/2
 //    3b.
-//      Compute (x', y')= (x^(q^2), y^(q^2)) + q[l] (x,y)
+//      Compute (x', y')= (x^(p^2), y^(p^2)) + p[l] (x,y)
 //    3c. for j= 1,2,...(l-1)/2
 //      3c(i).  Compute x[j], (x[j], y[j])= j(x,y)
-//      3c(ii). If (x'-x[j]^q)= 0 (mod phi[l](x)), goto iii
+//      3c(ii). If (x'-x[j]^p)= 0 (mod phi[l](x)), goto iii
 //              If not, try next j; if all tried, goto 3d
 //      3c(iii). Compute y' and y[j].  If (y'-y[j])/y= 0 (mod (phi[l](x))
 //                                  then t= j (mod l), if not
 //                                       t= -j (mod l)
-//    3d. Let w^2= q (mod l).  If no such w, t=0 (mod l)
-//    3e. If (gcd(numerator(x^q-x[w]), phi[l](x))= 1, t= 0 (mod l)
-//          otherwise, compute (gcd(numerator(y^q-y[w]), phi[l](x))
+//    3d. Let w^2= p (mod l).  If no such w, t=0 (mod l)
+//    3e. If (gcd(numerator(x^p-x[w]), phi[l](x))= 1, t= 0 (mod l)
+//          otherwise, compute (gcd(numerator(y^p-y[w]), phi[l](x))
 //           if this is 1, t= 2w (mod l), otherwise, t= -2w (mod l)
-//  4. User CRT to compute t, #E(q)= q+1-t, with t in right range for Hasse
+//  4. User CRT to compute t, #E(p)= p+1-t, with t in right range for Hasse
 
 //  In the symbolic computations, we assume P=(r(x), yq(x)) but that the
 //  y is surpressed in the representation of the point as a polynomial
@@ -100,24 +101,139 @@ bool ComputeCompositeSolutionUsingCrt(int n, uint64_t* moduli, uint64_t* solutio
   return true;
 }
 
-bool InitPhi() {
+int            Max_phi= -1;
+Polynomial**   Phi_array= NULL;
+
+bool InitPhi(int n) {
   return true;
 }
 
-bool FreePhi() {
-  return true;
+void FreePhi() {
+  int   j;
+
+  if(Phi_array==NULL)
+    return;
+  for(j=0; j<Max_phi; j++) {
+    if(Phi_array[j]!=NULL) {
+      free(Phi_array[j]);
+      Phi_array[j]= NULL;
+    }
+  }
+}
+
+// int BigCompare(BigNum& l, BigNum& r)
+//   returns  1, if l>r
+//   returns  0, if l==r
+//   returns -1, if l<r
+
+// floor(sqrt num) <= result < ceiling(sqrt num)
+bool SquareRoot(BigNum& n, BigNum& r) {
+  BigNum    top(r.Capacity());
+  BigNum    bot(r.Capacity());
+  BigNum    s(r.Capacity());
+  BigNum    guess(r.Capacity());
+  int       cmp;
+
+  if(!BigUnsignedMult(n,n,s))
+    return false;
+  if(BigCompare(s, n)==0) {
+    n.CopyTo(r);
+    return true;
+  }
+  top.CopyFrom(n);
+  if(BigCompare(Big_One, n)==0) {
+    Big_One.CopyTo(r);
+    return true;
+  }
+  bot.CopyFrom(Big_One);
+  for(;;) {
+    if(!BigUnsignedAdd(top, bot, s))
+      return false;
+    if(!BigShift(s, (int64_t)-1, guess))
+      return false;
+    if(!BigUnsignedMult(guess, guess, s))
+      return false;
+    cmp= BigCompare(s,n);
+    if(cmp==0) {
+      guess.CopyTo(r);
+      return true;
+    }
+    if(cmp<0) {
+      guess.CopyTo(bot);
+    } else {
+      guess.CopyTo(top);
+    }
+    if(!BigUnsignedAdd(Big_One, bot, s))
+      return false;
+    if(BigCompare(s, top)>=0) {
+      bot.CopyTo(r);
+      return true;
+    }
+  }
+  return false;
 }
 
 bool PickPrimes(int* num_primes, uint64_t* prime_list, BigNum& p) {
+  BigNum            composite_modulus(p.Capacity());
+  BigNum            temp(p.Capacity());
+  BigNum            current(1);
+  BigNum            sqrt_sqrt_p(p.Capacity());
+  BigNum            bound(p.Capacity());
+  extern uint64_t*  smallest_primes;
+
+  prime_list[(*num_primes)++]= 2ULL;
+  composite_modulus.value_[0]= 1ULL;
+  composite_modulus.Normalize();
+  if(!SquareRoot(p, temp))
+    return false;
+  if(!SquareRoot(temp, sqrt_sqrt_p))
+    return false;
+  if(!BigUnsignedMult(sqrt_sqrt_p, Big_Four, bound))
+    return false;
+  
   // prod_i prime_list[i]> 4p^(1/4)
+  for(;;) {
+    if(BigCompare(composite_modulus, bound)>1)
+      break;
+    prime_list[*num_primes]= smallest_primes[*num_primes];
+    current.value_[0]= smallest_primes[*num_primes];
+    current.Normalize();
+    if(!BigUnsignedMult(composite_modulus, current, temp))
+      return false;
+    (*num_primes)++;
+    temp.CopyTo(composite_modulus);
+  }
   return true;
 }
 
 bool Compute_t_mod_2(Polynomial& curve_poly, uint64_t* result) {
+  //  t=0 iff (x^3+ax+b, x^p-x)= 1
   return true;
 }
 
 bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
+//  p_reduced[l]= p (mod l), |p_reduced[l]|<l/2
+//  Compute (x', y')= (x^(p^2), y^(p^2)) + p_reduced(x,y)
+//  for j= 1,2,...(l-1)/2
+//      Compute x[j], (x[j], y[j])= j(x,y)
+//      if (x'-x[j]^p)!= 0 (mod phi[l](x))
+//        continue;
+//      Compute y' and y[j].  
+//      if (y'-y[j])/y== 0 (mod (phi[l](x)) 
+//         t= j (mod l)
+//      else
+//         t= -j (mod l)
+//  
+//  if p is not a residue mod l
+//      t=0 (mod l); return;
+//  w^2= p (mod l).  
+//  if(gcd(numerator(x^p-x[w]), phi[l](x))==1
+//    t= 0 (mod l); return
+//  test=(gcd(numerator(y^p-y[w]), phi[l](x))
+//  if(test==1)
+//    t= 2w (mod l); return;
+//  else
+//    t= -2w (mod l) return;
   return true;
 }
 
@@ -136,7 +252,9 @@ bool schoof(EccCurve& curve, BigNum& order) {
 
   if(!PickPrimes(&num_primes, primes, *curve.p_))
     return false;
-  if(!InitPhi())
+  if(!PolyFromCurve(curve, curve_poly))
+    return false;
+  if(!InitPhi((int) primes[num_primes-1]))
     return false;
   bool  ret= true;
 

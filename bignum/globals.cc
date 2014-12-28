@@ -26,4 +26,5 @@ BigNum	Big_Zero(1, 0ULL);
 BigNum	Big_One(1, 1ULL);
 BigNum	Big_Two(1, 2ULL);
 BigNum	Big_Three(1, 3ULL);
+BigNum	Big_Four(1, 4ULL);
 BigNum	Big_Five(1, 5ULL);

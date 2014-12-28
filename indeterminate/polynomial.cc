@@ -129,13 +129,18 @@ void Polynomial::Print(bool small) {
     if(small) {
       if(c_[i]->value_[0]!=0ULL) {
         printf("%lld x**%d + ", c_[i]->value_[0], i);
-    }
+      }
     } else {
+      if(!c_[i]->IsZero()) {
+        PrintNumToConsole(*c_[i], 10ULL);
+        printf("**%d +\n", i);
+      }
     }
   }
   if(small) {
       printf("%lld (mod %lld)", c_[0]->value_[0], m_->value_[0]);
   } else {
+      PrintNumToConsole(*c_[0], 10ULL); printf("\n");
   }
 }
 

@@ -127,6 +127,7 @@ extern BigNum	Big_Zero;
 extern BigNum	Big_One;
 extern BigNum	Big_Two;
 extern BigNum	Big_Three;
+extern BigNum	Big_Four;
 extern BigNum	Big_Five;
 
 #endif

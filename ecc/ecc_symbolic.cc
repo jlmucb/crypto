@@ -18,17 +18,12 @@
 #include "bignum.h"
 #include "ecc.h"
 #include "indeterminate.h"
+#include "ecc_symbolic.h"
 
-bool PolyFromCurve(EccCurve& curve, Polynomial** curve_poly) {
-  int size_num= curve.a_->Capacity();
-  int n= curve.a_->Capacity();
-
-  if(n>size_num)
-    size_num= n;
-  *curve_poly= new Polynomial(size_num, 5, *curve.p_);
-  Big_One.CopyTo(*((*curve_poly)->c_[3]));
-  curve.a_->CopyTo(*((*curve_poly)->c_[1]));
-  curve.b_->CopyTo(*((*curve_poly)->c_[0]));
+bool PolyFromCurve(EccCurve& curve, Polynomial& curve_poly) {
+  Big_One.CopyTo(*curve_poly.c_[3]);
+  curve.a_->CopyTo(*curve_poly.c_[1]);
+  curve.b_->CopyTo(*curve_poly.c_[0]);
   return true;
 }
 
@@ -287,6 +282,7 @@ bool ReducedEccSymbolicMult(Polynomial& curve_poly,
 bool ReducedRaisetoLargePower(RationalPoly& inx, RationalPoly& iny, BigNum& e,
                        Polynomial& curve_poly, Polynomial& mod_poly,
                        RationalPoly& outx, RationalPoly& outy) {
+  // out_x= inx^e, out_y= iny^e curve_poly^(e-1)/2
   return true;
 }
 
@@ -301,6 +297,7 @@ bool EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m,
 //  out_x= r[x] and out_y= q(x).  So out_y should be multiplied by y to give the answer
 bool EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e, 
                                   RationalPoly& out_x, RationalPoly& out_y) {
+  // out_x= inx^e, out_y= iny^e curve_poly^(e-1)/2
   return true;
 }
 
