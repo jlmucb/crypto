@@ -58,10 +58,18 @@ bool InitPolys(BigNum* c) {
 }
 
 bool SimpleSymbolicTest() {
-  BigNum  m(5);
-  BigNum  n(5);
-  BigNum  r(5);
-  extern  bool SquareRoot(BigNum&, BigNum&);
+  BigNum      m(5);
+  BigNum      n(5);
+  BigNum      r(5);
+  extern      bool SquareRoot(BigNum&, BigNum&);
+  int         k= 7;
+  int         j;
+  uint64_t    primes[7]= {2ULL, 5ULL, 11ULL, 13ULL, 17ULL, 19ULL, 23ULL};
+  uint64_t    sols[7]= {1ULL,0ULL,1ULL,1ULL,0ULL,0ULL,1ULL};
+  BigNum      composite_modulus(8);
+  BigNum      composite_solution(8);
+  extern      bool ComputeCompositeSolutionUsingCrt(int, uint64_t*, uint64_t*,
+                              BigNum&, BigNum&);
 
   m.value_[0]= 1ULL;
   m.Normalize();
@@ -79,8 +87,16 @@ bool SimpleSymbolicTest() {
   printf(", squared again is ");
   PrintNumToConsole(m, 10ULL);
   printf("\n");
-  // ComputeCompositeSolutionUsingCrt(int n, uint64_t* moduli, uint64_t* solutions,
-  //                            BigNum& composite_modulus, BigNum& composite_solution)
+  for(j=0; j<k; j++) {
+    printf("x= %lld (mod %lld)\n", sols[j], primes[j]);
+  }
+  if(!ComputeCompositeSolutionUsingCrt(k, primes, sols, composite_modulus, composite_solution))
+    return false;
+  printf("composite modulus is ");
+  PrintNumToConsole(composite_modulus, 10ULL);
+  printf(", composite solution is ");
+  PrintNumToConsole(composite_solution, 10ULL);
+  printf("\n");
   // PickPrimes(int* num_primes, uint64_t* prime_list, BigNum& p)
   // PolyFromCurve(EccCurve& curve, Polynomial& curve_poly)
   // RationalPolyFromCurve(EccCurve& curve, RationalPoly** curve_rational)

@@ -68,6 +68,7 @@ bool ComputeCompositeSolutionUsingCrt(int n, uint64_t* moduli, uint64_t* solutio
 
   if(n<=0)
     return false;
+
   composite_modulus.value_[0]= moduli[0];
   composite_solution.value_[0]= solutions[0];
   composite_modulus.Normalize();
@@ -78,13 +79,17 @@ bool ComputeCompositeSolutionUsingCrt(int n, uint64_t* moduli, uint64_t* solutio
     current_solution.value_[0]= solutions[i];
     current_modulus.Normalize();
     current_solution.Normalize();
-    if(!BigCRT(composite_solution, current_solution,  composite_modulus, current_modulus, 
-               new_composite_solution))
+    if(!BigCRT(composite_solution, current_solution, composite_modulus, current_modulus, 
+               new_composite_solution)) {
+      printf("ComputeCompositeSolutionUsingCrt: BigCRT returns false\n");
       return false;
-    if(!BigUnsignedMult(composite_modulus, current_modulus, new_composite_modulus))
+    }
+    if(!BigUnsignedMult(composite_modulus, current_modulus, new_composite_modulus)) {
+      printf("ComputeCompositeSolutionUsingCrt: BigUnsignedMult returns false\n");
       return false;
-    new_composite_solution.CopyTo(composite_modulus);
-    new_composite_modulus.CopyTo(composite_solution);
+    }
+    new_composite_solution.CopyTo(composite_solution);
+    new_composite_modulus.CopyTo(composite_modulus);
   }
   return true;
 }
