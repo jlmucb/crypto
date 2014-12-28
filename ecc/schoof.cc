@@ -58,18 +58,6 @@
 //  We have to be careful, however, in the calculations to
 //  remember the implicit y.
 
-// Division Polynomials
-//  phi[0]= 0
-//  phi[1]= 1
-//  phi[2]= 2y
-//  phi[3]= 3x^4+6ax^2+12bx-a^2
-//  phi[4]= 4y(x^6+5ax^4+20bx^3-5a^2x^2-4abx-8b^2-a^3
-//  phi[2m+1]= phi[m+2]phi^3[m]-phi[m-1]phi^3[m+1]
-//  phi[2m]= phi[m]/phi[2](phi[m+2]phi^2[m-1]-phi[m-2]phi^2[m+1])
-//  theta[m]= x phi^2[m]-phi[m+1]phi[m-1]
-//  omega[m]= (phi[m]/(2 phi[2]) (phi[m+2] phi[m-1]-phi[m-2] phi^2[m+1])
-
-
 bool ComputeCompositeSolutionUsingCrt(int n, uint64_t* moduli, uint64_t* solutions, 
                               BigNum& composite_modulus, BigNum& composite_solution) {
   int     i;
@@ -101,6 +89,16 @@ bool ComputeCompositeSolutionUsingCrt(int n, uint64_t* moduli, uint64_t* solutio
   return true;
 }
 
+// Division Polynomials
+//  phi[0]= 0
+//  phi[1]= 1
+//  phi[2]= 2y
+//  phi[3]= 3x^4+6ax^2+12bx-a^2
+//  phi[4]= 4y(x^6+5ax^4+20bx^3-5a^2x^2-4abx-8b^2-a^3
+//  phi[2m+1]= phi[m+2]phi^3[m]-phi[m-1]phi^3[m+1]
+//  phi[2m]= phi[m]/phi[2](phi[m+2]phi^2[m-1]-phi[m-2]phi^2[m+1])
+//  theta[m]= x phi^2[m]-phi[m+1]phi[m-1]
+//  omega[m]= (phi[m]/(2 phi[2]) (phi[m+2] phi[m-1]-phi[m-2] phi^2[m+1])
 int            Max_phi= -1;
 Polynomial**   Phi_array= NULL;
 
@@ -234,6 +232,11 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
 //    t= 2w (mod l); return;
 //  else
 //    t= -2w (mod l) return;
+  int   n= (l-1)/2;
+  int   j;
+
+  for(j=1; j<=n; j++) {
+  }
   return true;
 }
 
@@ -269,14 +272,12 @@ bool schoof(EccCurve& curve, BigNum& order) {
       goto done;
     }
   }
-
   // compute t using CRT
   if(!ComputeCompositeSolutionUsingCrt(num_primes, primes, t_mod_prime,
                               composite_modulus, composite_solution)) {
     ret= false;
     goto done;
   }
-
   // get #E = p+1-t
   order.ZeroNum();
   if(!BigUnsignedAdd(*curve.p_, Big_One, s)) {
@@ -287,7 +288,6 @@ bool schoof(EccCurve& curve, BigNum& order) {
     ret= false;
     goto done;
   }
-
 done:
   FreePhi();
   return ret;
