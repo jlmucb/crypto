@@ -58,10 +58,65 @@ bool InitPolys(BigNum* c) {
 }
 
 bool SimpleSymbolicTest() {
+  BigNum  m(5);
+  BigNum  n(5);
+  BigNum  r(5);
+  extern  bool SquareRoot(BigNum&, BigNum&);
+
+  m.value_[0]= 1ULL;
+  m.Normalize();
+  if(!BigShift(m, 39, n))
+    return false;
+  if(!SquareRoot(n, r))
+    return false;
+  m.ZeroNum();
+  if(!BigUnsignedMult(r, r, m))
+    return false;
+  printf("The square root of ");
+  PrintNumToConsole(n, 10ULL);
+  printf(" is ");
+  PrintNumToConsole(r, 10ULL);
+  printf(", squared again is ");
+  PrintNumToConsole(m, 10ULL);
+  printf("\n");
+  // ComputeCompositeSolutionUsingCrt(int n, uint64_t* moduli, uint64_t* solutions,
+  //                            BigNum& composite_modulus, BigNum& composite_solution)
+  // PickPrimes(int* num_primes, uint64_t* prime_list, BigNum& p)
+  // PolyFromCurve(EccCurve& curve, Polynomial& curve_poly)
+  // RationalPolyFromCurve(EccCurve& curve, RationalPoly** curve_rational)
+  // RationalPolyNegate(RationalPoly& a)
+  // MakeSymbolicIdentity(RationalPoly& x, RationalPoly& y)
+  // IsSymbolicIdentity(RationalPoly& x, RationalPoly& y)
+  // EccSymbolicAdd(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& in1_y,
+  //                RationalPoly& in2_x, RationalPoly& in2_y,
+  //                RationalPoly& out_x, RationalPoly& out_y)
+  // EccSymbolicSub(Polynomial& curve_poly,
+  //                   RationalPoly& in1_x, RationalPoly& in1_y,
+  //                   RationalPoly& in2_x, RationalPoly& in2_y,
+  //                   RationalPoly& out_x, RationalPoly& out_y)
+  // EccSymbolicMult(Polynomial& curve_poly, BigNum& m,
+  //                    RationalPoly& in_x, RationalPoly& in_y,
+  //                    RationalPoly& out_x, RationalPoly& out_y)
+  //  ReducedEccSymbolicMult(Polynomial& curve_poly,
+  //                    Polynomial& mod_poly, BigNum& m,
+  //                    RationalPoly& in_x, RationalPoly& in_y,
+  //                    RationalPoly& out_x, RationalPoly& out_y)
+  // ReducedRaisetoLargePower(RationalPoly& inx, RationalPoly& iny, BigNum& e,
+  //                      Polynomial& curve_poly, Polynomial& mod_poly,
+  //                      RationalPoly& outx, RationalPoly& outy)
+  // EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m,
+  //                                RationalPoly& out_x, RationalPoly& out_y)
+  // EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e,
+  //                                RationalPoly& out_x, RationalPoly& out_y)
   return true;
 }
 
 bool SimpleSchoofTest() {
+  // InitPhi(int n)
+  // Compute_t_mod_2(Polynomial& curve_poly, uint64_t* result)
+  // Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result)
+  // schoof(EccCurve& curve, BigNum& order)
+
   return true;
 }
  
