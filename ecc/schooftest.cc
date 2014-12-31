@@ -195,8 +195,6 @@ bool SimpleSymbolicTest() {
   printf(", "); r2_y.Print();
   printf("] = ["); r3_x.Print();
   printf(", "); r3_y.Print(); printf("]\n");
-  
-  
 
   // EccSymbolicAdd(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& in1_y,
   //                RationalPoly& in2_x, RationalPoly& in2_y,
@@ -205,6 +203,20 @@ bool SimpleSymbolicTest() {
   //                   RationalPoly& in1_x, RationalPoly& in1_y,
   //                   RationalPoly& in2_x, RationalPoly& in2_y,
   //                   RationalPoly& out_x, RationalPoly& out_y)
+
+  printf("\n");
+  ZeroRational(r3_x);
+  ZeroRational(r3_y);
+  if(!EccSymbolicSub(curve_poly, r2_x, r2_y, r2_x, r2_y, r3_x, r3_y)) {
+    printf("EccSymbolicSub 1 failed\n");
+    return false;
+  }
+  printf("["); r2_x.Print();
+  printf(", "); r2_y.Print();
+  printf("] - ["); r2_x.Print();
+  printf(", "); r2_y.Print();
+  printf("] = ["); r3_x.Print();
+  printf(", "); r3_y.Print(); printf("]\n");
   // EccSymbolicMult(Polynomial& curve_poly, BigNum& m,
   //                    RationalPoly& in_x, RationalPoly& in_y,
   //                    RationalPoly& out_x, RationalPoly& out_y)

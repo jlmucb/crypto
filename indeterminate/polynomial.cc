@@ -133,7 +133,7 @@ void Polynomial::Print(bool small) {
     } else {
       if(!c_[i]->IsZero()) {
         PrintNumToConsole(*c_[i], 10ULL);
-        printf("**%d +\n", i);
+        printf(" x**%d +\n", i);
       }
     }
   }

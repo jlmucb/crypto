@@ -102,25 +102,31 @@ bool EccSymbolicAdd(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& i
   //    slope= y (3in1_x^2+a)/(2(in1_y)(curve_poly))
   //  otherwise
   //    slope= y ((in2_y-in1_y)/(in2_x-in1_x)
-  if(RationalIsEqual(in1_x,in2_x) && RationalIsEqual(in1_y, in2_y)) {
-    ZeroRational(a);
-    a.top_->c_[0]->CopyFrom(*curve_poly.c_[1]);
-    if(!RationalMult(in1_x, in1_x, t1))
-      return false;
-    if(!MultiplyPolyByMonomial(*t1.top_, 0, Big_Three, r1))
-      return false;
-    if(!r1.CopyTo(*t1.top_))
-      return false;
-    if(!RationalAdd(t1, a, t2))
-      return false;
-    if(!in1_y.CopyTo(t2))
-      return false;
-    if(!MultiplyPolyByMonomial(*t2.top_, 0, Big_Two, r1))
-      return false;
-    if(!PolyMult(r1, curve_poly, *t2.top_))
-      return false;
-    if(!RationalDiv(t1, t2, slope))
-      return false;
+  if(RationalIsEqual(in1_x,in2_x)) {
+    if(RationalIsEqual(in1_y, in2_y)) {
+      ZeroRational(a);
+      a.top_->c_[0]->CopyFrom(*curve_poly.c_[1]);
+      if(!RationalMult(in1_x, in1_x, t1))
+        return false;
+      if(!MultiplyPolyByMonomial(*t1.top_, 0, Big_Three, r1))
+        return false;
+      if(!r1.CopyTo(*t1.top_))
+        return false;
+      if(!RationalAdd(t1, a, t2))
+        return false;
+      if(!in1_y.CopyTo(t2))
+        return false;
+      if(!MultiplyPolyByMonomial(*t2.top_, 0, Big_Two, r1))
+        return false;
+      if(!PolyMult(r1, curve_poly, *t2.top_))
+        return false;
+      if(!RationalDiv(t1, t2, slope))
+        return false;
+    } else {
+      if(!MakeSymbolicIdentity(out_x, out_y))
+        return false;
+      return true;
+    }
   } else {
     if(!RationalSub(in1_y, in1_y, t1))
       return false;

@@ -93,10 +93,6 @@ $(O)/rational.o: $(SRC_DIR)/indeterminate/rational.cc
 	@echo "compiling rational.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/rational.o $(SRC_DIR)/indeterminate/rational.cc
 
-$(O)/ecc.o: $(SRC_DIR)/ecc/ecc.cc
-	@echo "compiling ecc.cc"
-	$(CC) $(CFLAGS) -c -o $(O)/ecc.o $(SRC_DIR)/ecc/ecc.cc
-
 $(O)/globals.o: $(SRC_DIR)/bignum/globals.cc
 	@echo "compiling globals.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/globals.o $(SRC_DIR)/bignum/globals.cc
