@@ -155,7 +155,7 @@ bool SimpleSymbolicTest() {
 
   OneRational(r2_y);
   ZeroRational(r2_x);
-  r2_x.top_->c_[1]->value_[1]= 1ULL;
+  r2_x.top_->c_[1]->value_[0]= 1ULL;
   r2_x.top_->c_[1]->Normalize();
   if(!EccSymbolicAdd(curve_poly, r1_x, r1_y, r2_x, r2_y, r3_x, r3_y)) {
     printf("EccSymbolicAdd 1 failed\n");
