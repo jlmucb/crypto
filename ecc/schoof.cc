@@ -182,7 +182,8 @@ bool PickPrimes(int* num_primes, uint64_t* prime_list, BigNum& p) {
   BigNum            current(1);
   BigNum            sqrt_sqrt_p(p.Capacity());
   BigNum            bound(p.Capacity());
-  extern uint64_t*  smallest_primes;
+  extern uint64_t   smallest_primes[];
+  extern int        num_smallest_primes;
 
   prime_list[(*num_primes)++]= 2ULL;
   composite_modulus.value_[0]= 1ULL;
@@ -196,7 +197,7 @@ bool PickPrimes(int* num_primes, uint64_t* prime_list, BigNum& p) {
   
   // prod_i prime_list[i]> 4p^(1/4)
   for(;;) {
-    if(BigCompare(composite_modulus, bound)>1)
+    if(BigCompare(composite_modulus, bound)>0)
       break;
     prime_list[*num_primes]= smallest_primes[*num_primes];
     current.value_[0]= smallest_primes[*num_primes];

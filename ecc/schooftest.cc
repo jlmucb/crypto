@@ -70,6 +70,10 @@ bool SimpleSymbolicTest() {
   BigNum      composite_solution(8);
   extern      bool ComputeCompositeSolutionUsingCrt(int, uint64_t*, uint64_t*,
                               BigNum&, BigNum&);
+  extern      bool PickPrimes(int*, uint64_t*, BigNum&);
+  int         num_primes= 0;
+  uint64_t    prime_list[100];
+  BigNum      p(12);
 
   m.value_[0]= 1ULL;
   m.Normalize();
@@ -97,7 +101,20 @@ bool SimpleSymbolicTest() {
   printf(", composite solution is ");
   PrintNumToConsole(composite_solution, 10ULL);
   printf("\n");
-  // PickPrimes(int* num_primes, uint64_t* prime_list, BigNum& p)
+
+  BigShift(Big_One, 80, p);
+  if(!PickPrimes(&num_primes, prime_list, p)) {
+    printf("PickPrimes failed\n");
+    return false;
+  }
+  printf("\nbound: "); PrintNumToConsole(p, 10ULL); printf("\n");
+  printf("num_primes: %d\n", num_primes);
+  for(j=0; j<num_primes; j++) {
+    printf("%lld, ", prime_list[j]);
+    if((j%20)==19)
+      printf("\n");
+  }
+  printf("\n");
   // PolyFromCurve(EccCurve& curve, Polynomial& curve_poly)
   // RationalPolyFromCurve(EccCurve& curve, RationalPoly** curve_rational)
   // RationalPolyNegate(RationalPoly& a)
