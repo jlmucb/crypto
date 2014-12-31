@@ -24,6 +24,7 @@ bool PolyFromCurve(EccCurve& curve, Polynomial& curve_poly) {
   Big_One.CopyTo(*curve_poly.c_[3]);
   curve.a_->CopyTo(*curve_poly.c_[1]);
   curve.b_->CopyTo(*curve_poly.c_[0]);
+  curve.p_->CopyTo(*curve_poly.m_);
   return true;
 }
 

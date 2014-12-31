@@ -196,7 +196,7 @@ bool ZeroRational(RationalPoly& a) {
   return true;
 }
 
-bool OneRationa(RationalPoly& a) {
+bool OneRational(RationalPoly& a) {
   if(!OnePoly(*a.top_))
     return false;
   if(!OnePoly(*a.bot_))

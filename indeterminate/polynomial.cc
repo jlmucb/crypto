@@ -140,7 +140,9 @@ void Polynomial::Print(bool small) {
   if(small) {
       printf("%lld (mod %lld)", c_[0]->value_[0], m_->value_[0]);
   } else {
-      PrintNumToConsole(*c_[0], 10ULL); printf("\n");
+      PrintNumToConsole(*c_[0], 10ULL); 
+      printf(" (mod ");
+      PrintNumToConsole(*m_, 10ULL); printf(" )\n");
   }
 }
 
