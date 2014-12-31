@@ -148,10 +148,10 @@ bool SimpleSymbolicTest() {
   }
   printf("IsSymbolicIdentity succeeded\n");
 
-  RationalPoly  r2_x(8, 4, *P256_Key.c_.p_);
-  RationalPoly  r2_y(8, 4, *P256_Key.c_.p_);
-  RationalPoly  r3_x(8, 4, *P256_Key.c_.p_);
-  RationalPoly  r3_y(8, 4, *P256_Key.c_.p_);
+  RationalPoly  r2_x(8, 20, *P256_Key.c_.p_);
+  RationalPoly  r2_y(8, 20, *P256_Key.c_.p_);
+  RationalPoly  r3_x(8, 20, *P256_Key.c_.p_);
+  RationalPoly  r3_y(8, 20, *P256_Key.c_.p_);
 
   OneRational(r2_y);
   ZeroRational(r2_x);
@@ -167,6 +167,35 @@ bool SimpleSymbolicTest() {
   printf(", "); r2_y.Print();
   printf("] = ["); r3_x.Print();
   printf(", "); r3_y.Print(); printf("]\n");
+
+  printf("\n");
+  ZeroRational(r3_x);
+  ZeroRational(r3_y);
+  if(!EccSymbolicAdd(curve_poly, r2_x, r2_y, r1_x, r1_y, r3_x, r3_y)) {
+    printf("EccSymbolicAdd 2 failed\n");
+    return false;
+  }
+  printf("["); r2_x.Print();
+  printf(", "); r2_y.Print();
+  printf("] + ["); r1_x.Print();
+  printf(", "); r1_y.Print();
+  printf("] = ["); r3_x.Print();
+  printf(", "); r3_y.Print(); printf("]\n");
+
+  printf("\n");
+  ZeroRational(r3_x);
+  ZeroRational(r3_y);
+  if(!EccSymbolicAdd(curve_poly, r2_x, r2_y, r2_x, r2_y, r3_x, r3_y)) {
+    printf("EccSymbolicAdd 3 failed\n");
+    return false;
+  }
+  printf("["); r2_x.Print();
+  printf(", "); r2_y.Print();
+  printf("] + ["); r2_x.Print();
+  printf(", "); r2_y.Print();
+  printf("] = ["); r3_x.Print();
+  printf(", "); r3_y.Print(); printf("]\n");
+  
   
 
   // EccSymbolicAdd(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& in1_y,

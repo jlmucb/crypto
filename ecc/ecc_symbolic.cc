@@ -132,12 +132,22 @@ bool EccSymbolicAdd(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& i
 
   //  Compute slope^2
   //    slope_squared= slope*slope*curve_x_poly
-  if(!RationalMult(slope, slope, t2))
+#if 1
+printf("***slope:\n");
+slope.Print();
+printf("\n***\n");
+#endif
+  if(!RationalMult(slope, slope, slope_squared))
     return false;
-  if(!PolyMult(*t2.top_, curve_poly, r1))
+  if(!PolyMult(*slope_squared.top_, curve_poly, r1))
     return false;
-  if(!r1.CopyTo(*t2.top_))
+  if(!r1.CopyTo(*slope_squared.top_))
     return false;
+#if 1
+printf("***slope**2:\n");
+slope_squared.Print();
+printf("\n***\n");
+#endif
 
   //  P+Q= (out_x, y out_y), where
   //    out_x= slope^2-in1_x-in2_x,  and
