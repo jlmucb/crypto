@@ -21,8 +21,10 @@
 #include <string.h>
 #include <string>
 #include "util.h"
+#include "ecc.h"
 #include "indeterminate.h"
 #include "ecc_symbolic.h"
+#include "keys.h"
 
 uint64_t  cycles_per_second= 10;
 
@@ -115,11 +117,36 @@ bool SimpleSymbolicTest() {
       printf("\n");
   }
   printf("\n");
-  // PolyFromCurve(EccCurve& curve, Polynomial& curve_poly)
-  // RationalPolyFromCurve(EccCurve& curve, RationalPoly** curve_rational)
-  // RationalPolyNegate(RationalPoly& a)
-  // MakeSymbolicIdentity(RationalPoly& x, RationalPoly& y)
-  // IsSymbolicIdentity(RationalPoly& x, RationalPoly& y)
+
+  printf("\n");
+  if(!InitEccCurves()) {
+    printf("InitEccCurves failed\n");
+    return false;
+  }
+  extern EccKey   P256_Key;
+  Polynomial curve_poly(8,5);
+  if(!PolyFromCurve(P256_Key.c_, curve_poly)) {
+    printf("PolyFromCurve failed\n");
+    return false;
+  }
+  curve_poly.Print();
+  printf("\nNeutral element: ");
+  RationalPoly  r_x(8, 4);
+  RationalPoly  r_y(8, 4);
+  if(!MakeSymbolicIdentity(r_x, r_y)) {
+    printf("MakeSymbolicIdentity failed\n");
+    return false;
+  }
+  r_x.Print(); 
+  printf(",\n");
+  r_y.Print(); 
+  printf("\n");
+  if(!IsSymbolicIdentity(r_x, r_y)) {
+    printf("IsSymbolicIdentity failed\n");
+    return false;
+  }
+  printf("IsSymbolicIdentity succeeded\n");
+
   // EccSymbolicAdd(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& in1_y,
   //                RationalPoly& in2_x, RationalPoly& in2_y,
   //                RationalPoly& out_x, RationalPoly& out_y)
@@ -130,7 +157,7 @@ bool SimpleSymbolicTest() {
   // EccSymbolicMult(Polynomial& curve_poly, BigNum& m,
   //                    RationalPoly& in_x, RationalPoly& in_y,
   //                    RationalPoly& out_x, RationalPoly& out_y)
-  //  ReducedEccSymbolicMult(Polynomial& curve_poly,
+  // ReducedEccSymbolicMult(Polynomial& curve_poly,
   //                    Polynomial& mod_poly, BigNum& m,
   //                    RationalPoly& in_x, RationalPoly& in_y,
   //                    RationalPoly& out_x, RationalPoly& out_y)
@@ -141,6 +168,7 @@ bool SimpleSymbolicTest() {
   //                                RationalPoly& out_x, RationalPoly& out_y)
   // EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e,
   //                                RationalPoly& out_x, RationalPoly& out_y)
+  // RationalPolyNegate(RationalPoly& a)
   return true;
 }
 

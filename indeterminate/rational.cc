@@ -25,8 +25,8 @@ using namespace std;
 
 
 RationalPoly::RationalPoly(int size_num, int num_c) {
-  top_= NULL;
-  bot_= NULL;
+  top_= new Polynomial(size_num, num_c);
+  bot_= new Polynomial(size_num, num_c);
 }
 
 RationalPoly::RationalPoly(int size_num, int num_c, BigNum& c) {

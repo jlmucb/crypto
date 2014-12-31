@@ -43,7 +43,7 @@ LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a  $(LOCAL_LIB)/libgf
 dobj=	$(O)/polynomial.o $(O)/rational.o $(O)/schooftest.o $(O)/util.o \
 	$(O)/bignum.o $(O)/globals.o $(O)/basic_arith.o $(O)/number_theory.o \
 	$(O)/intel64_arith.o $(O)/smallprimes.o $(O)/conversions.o $(O)/ecc_symbolic.o \
-	$(O)/schoof.o
+	$(O)/rsa.o $(O)/keys.o $(O)/keys.pb.o $(O)/ecc.o $(O)/schoof.o
 
 all:	schooftest.exe
 clean:
@@ -68,6 +68,10 @@ $(O)/schooftest.o: $(S)/schooftest.cc
 $(O)/schoof.o: $(S)/schoof.cc
 	@echo "compiling schoof.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/schoof.o $(S)/schoof.cc
+
+$(O)/ecc.o: $(SRC_DIR)/ecc/ecc.cc
+	@echo "compiling ecc.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/ecc.o $(SRC_DIR)/ecc/ecc.cc
 
 $(O)/ecc_symbolic.o: $(SRC_DIR)/ecc/ecc_symbolic.cc
 	@echo "compiling ecc_symbolic.cc"
@@ -116,4 +120,17 @@ $(O)/number_theory.o: $(SRC_DIR)/bignum/number_theory.cc
 $(O)/intel64_arith.o: $(SRC_DIR)/bignum/intel64_arith.cc
 	@echo "compiling intel64_arith.cc"
 	$(CC) $(CFLAGS1) -c -o $(O)/intel64_arith.o $(SRC_DIR)/bignum/intel64_arith.cc
+
+$(O)/keys.o: $(SRC_DIR)/keys/keys.cc $(SRC_DIR)/keys/keys.pb.h
+	@echo "compiling keys.cc"
+	$(CC) $(CFLAGS) -I$(SRC_DIR)/keys -c -o $(O)/keys.o $(SRC_DIR)/keys/keys.cc
+
+$(O)/keys.pb.o: $(SRC_DIR)/keys/keys.pb.cc
+	@echo "compiling keys.pb.cc"
+	$(CC) $(CFLAGS) -I$(SRC_DIR)/keys -c -o $(O)/keys.pb.o $(SRC_DIR)/keys/keys.pb.cc
+
+$(O)/rsa.o: $(SRC_DIR)/rsa/rsa.cc
+	@echo "compiling rsa.cc"
+	$(CC) $(CFLAGS) -I$(SRC_DIR)/keys -c -o $(O)/rsa.o $(SRC_DIR)/rsa/rsa.cc
+
 
