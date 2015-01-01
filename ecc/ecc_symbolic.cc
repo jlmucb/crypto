@@ -296,10 +296,12 @@ bool ReducedEccSymbolicAdd(Polynomial& curve_poly, Polynomial& mod_poly,
     return false;
   if(!ReduceModPoly(*slope_squared.top_, mod_poly, r1))
     return false;
-  r1.CopyTo(*slope_squared.top_);
+  if(!r1.CopyTo(*slope_squared.top_))
+    return false;
   if(!ReduceModPoly(*slope_squared.bot_, mod_poly, r1))
     return false;
-  r1.CopyTo(*slope_squared.bot_);
+  if(!r1.CopyTo(*slope_squared.bot_))
+    return false;
 
   //  P+Q= (out_x, y out_y), where
   //    out_x= slope^2-in1_x-in2_x,  and
@@ -432,7 +434,15 @@ bool ReducedRaisetoLargePower(Polynomial& in, BigNum& e,
 //  out_x= r[x] and out_y= q(x).  So out_y should be multiplied by y to give the answer
 bool EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m, 
                                  RationalPoly& out_x, RationalPoly& out_y) {
-  // TODO
+  // m(x/1, 1/1) --> (out_x, out_y)
+  RationalPoly x_rational(curve_poly.m_->Capacity(), 4, *curve_poly.m_);
+  RationalPoly y_rational(curve_poly.m_->Capacity(), 4, *curve_poly.m_);
+  ZeroRational(x_rational);
+  OneRational(y_rational);
+  x_rational.top_->c_[1]->value_[0]= 1ULL;
+  x_rational.top_->c_[1]->Normalize();
+  if(!EccSymbolicMult(curve_poly, m, x_rational, y_rational, out_x, out_y))
+    return false;
   return true;
 }
 
@@ -440,8 +450,28 @@ bool EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m,
 //  out_x= r[x] and out_y= q(x).  So out_y should be multiplied by y to give the answer
 bool EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e, 
                                   RationalPoly& out_x, RationalPoly& out_y) {
-  // out_x= inx^e, out_y= iny^e curve_poly^(e-1)/2
-  // TODO
+  // out_x= x^e, out_y= curve_poly^(e-1)/2  reduced by curve_poly
+  // set in RationalPolys with denominator 1
+  Polynomial  x_poly(curve_poly.m_->Capacity(), 4, *curve_poly.m_);
+  Polynomial  y_poly(curve_poly.m_->Capacity(), 4, *curve_poly.m_);
+  BigNum      e1(e.Capacity());
+  BigNum      t(e.Capacity());
+
+  ZeroPoly(x_poly);
+  OnePoly(y_poly);
+  x_poly.c_[1]->value_[0]= 1ULL;
+  x_poly.c_[1]->Normalize();
+
+  if(!BigUnsignedSub(e, Big_One, t))
+    return false;
+  if(!BigShift(t, -1, e1))
+    return false;
+  if(!ReducedRaisetoLargePower(x_poly, e, curve_poly, *out_x.top_))
+    return false;
+  if(!ReducedRaisetoLargePower(x_poly, e1, curve_poly, *out_y.top_))
+    return false;
+  OnePoly(*out_x.bot_);
+  OnePoly(*out_y.bot_);
   return true;
 }
 
