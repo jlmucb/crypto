@@ -211,7 +211,27 @@ bool PickPrimes(int* num_primes, uint64_t* prime_list, BigNum& p) {
 }
 
 bool Compute_t_mod_2(Polynomial& curve_poly, uint64_t* result) {
+  Polynomial  x(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
+  Polynomial  t1(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
+  Polynomial  t2(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
+  Polynomial  a(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
+  Polynomial  b(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
+  Polynomial  g(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
+  ZeroPoly(x);
+  ZeroPoly(t1);
+  ZeroPoly(t2);
+  x.c_[1]->value_[0]= 1ULL;
+  x.c_[1]->Normalize();
   //  t=0 iff (x^3+ax+b, x^p-x)= 1
+  if(!ReducedRaisetoLargePower(x, *curve_poly.m_, curve_poly, t1))
+    return false;
+  if(!PolySub(t1,x,t2))
+    return false;
+  if(!PolyExtendedGcd(t2, curve_poly, a, b, g))
+    return false;
+  *result= 1ULL;
+  if(g.Degree()==0)
+    *result= 0ULL;
   return true;
 }
 
@@ -243,6 +263,7 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
 
   for(j=1; j<=n; j++) {
   }
+  // TOODO
   return true;
 }
 

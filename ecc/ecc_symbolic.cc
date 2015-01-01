@@ -29,6 +29,7 @@ bool PolyFromCurve(EccCurve& curve, Polynomial& curve_poly) {
 }
 
 bool RationalPolyFromCurve(EccCurve& curve, RationalPoly** curve_rational) {
+  // TODO
   return true;
 }
 
@@ -138,22 +139,12 @@ bool EccSymbolicAdd(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& i
 
   //  Compute slope^2
   //    slope_squared= slope*slope*curve_x_poly
-#if 1
-printf("***slope:\n");
-slope.Print();
-printf("\n***\n");
-#endif
   if(!RationalMult(slope, slope, slope_squared))
     return false;
   if(!PolyMult(*slope_squared.top_, curve_poly, r1))
     return false;
   if(!r1.CopyTo(*slope_squared.top_))
     return false;
-#if 1
-printf("***slope**2:\n");
-slope_squared.Print();
-printf("\n***\n");
-#endif
 
   //  P+Q= (out_x, y out_y), where
   //    out_x= slope^2-in1_x-in2_x,  and
@@ -227,6 +218,114 @@ bool EccSymbolicMult(Polynomial& curve_poly, BigNum& m,
   return true;
 }
 
+bool ReducedEccSymbolicAdd(Polynomial& curve_poly, Polynomial& mod_poly,
+                     RationalPoly& in1_x, RationalPoly& in1_y,
+                     RationalPoly& in2_x, RationalPoly& in2_y,
+                     RationalPoly& out_x, RationalPoly& out_y) {
+
+  if(IsSymbolicIdentity(in1_x, in1_y)) {
+    out_x.CopyFrom(in2_x);
+    out_y.CopyFrom(in2_y);
+    return true;
+  }
+  if(IsSymbolicIdentity(in2_x, in2_y)) {
+    out_x.CopyFrom(in1_x);
+    out_y.CopyFrom(in1_y);
+    return true;
+  }
+  RationalPoly  slope(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
+  RationalPoly  slope_squared(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
+  RationalPoly  t1(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
+  RationalPoly  t2(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
+  RationalPoly  a(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
+  Polynomial    r1(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
+
+  //  if P==Q
+  //    slope= y (3in1_x^2+a)/(2(in1_y)(curve_poly))
+  //  otherwise
+  //    slope= y ((in2_y-in1_y)/(in2_x-in1_x)
+  if(RationalIsEqual(in1_x,in2_x)) {
+    if(RationalIsEqual(in1_y, in2_y)) {
+      ZeroRational(a);
+      a.top_->c_[0]->CopyFrom(*curve_poly.c_[1]);
+      if(!RationalMult(in1_x, in1_x, t1))
+        return false;
+      if(!MultiplyPolyByMonomial(*t1.top_, 0, Big_Three, r1))
+        return false;
+      if(!r1.CopyTo(*t1.top_))
+        return false;
+      if(!RationalAdd(t1, a, t2))
+        return false;
+      if(!in1_y.CopyTo(t2))
+        return false;
+      if(!MultiplyPolyByMonomial(*t2.top_, 0, Big_Two, r1))
+        return false;
+      if(!PolyMult(r1, curve_poly, *t2.top_))
+        return false;
+      if(!RationalDiv(t1, t2, slope))
+        return false;
+    } else {
+      if(!MakeSymbolicIdentity(out_x, out_y))
+        return false;
+      return true;
+    }
+  } else {
+    if(!RationalSub(in1_y, in1_y, t1))
+      return false;
+    if(!RationalSub(in1_x, in1_x, t2))
+      return false;
+    if(!RationalDiv(t1, t2, slope))
+      return false;
+  }
+  if(!ReduceModPoly(*slope.top_, mod_poly, r1))
+    return false;
+  if(!r1.CopyTo(*slope.top_))
+    return false;
+  if(!ReduceModPoly(*slope.bot_, mod_poly, r1))
+    return false;
+  if(!r1.CopyTo(*slope.bot_))
+    return false;
+
+  //  Compute slope^2
+  //    slope_squared= slope*slope*curve_x_poly
+  if(!RationalMult(slope, slope, slope_squared))
+    return false;
+  if(!PolyMult(*slope_squared.top_, curve_poly, r1))
+    return false;
+  if(!r1.CopyTo(*slope_squared.top_))
+    return false;
+  if(!ReduceModPoly(*slope_squared.top_, mod_poly, r1))
+    return false;
+  r1.CopyTo(*slope_squared.top_);
+  if(!ReduceModPoly(*slope_squared.bot_, mod_poly, r1))
+    return false;
+  r1.CopyTo(*slope_squared.bot_);
+
+  //  P+Q= (out_x, y out_y), where
+  //    out_x= slope^2-in1_x-in2_x,  and
+  //    out_y= slope (in1_x-out_x) - in1_y.
+  if(!RationalSub(slope_squared, in1_x, t2))
+    return false;
+  if(!RationalSub(t2, in2_x, t1))
+    return false;
+  if(!ReduceModPoly(*t1.top_, mod_poly, *out_x.top_))
+    return false;
+  if(!ReduceModPoly(*t1.bot_, mod_poly, *out_x.bot_))
+    return false;
+  if(!RationalSub(in1_x, out_x, t2))
+    return false;
+  if(!RationalMult(t2, slope, t1))
+    return false;
+  ZeroRational(t2);
+  if(!RationalSub(t1, in1_y, t2))
+    return false;
+  if(!ReduceModPoly(*t2.top_, mod_poly, *out_y.top_))
+    return false;
+  if(!ReduceModPoly(*t2.bot_, mod_poly, *out_y.bot_))
+    return false;
+  return true;
+}
+
 //  Usual power of two reduction
 bool ReducedEccSymbolicMult(Polynomial& curve_poly, 
                      Polynomial& mod_poly, BigNum& m, 
@@ -296,10 +395,36 @@ bool ReducedEccSymbolicMult(Polynomial& curve_poly,
   return true;
 }
 
-bool ReducedRaisetoLargePower(RationalPoly& inx, RationalPoly& iny, BigNum& e,
-                       Polynomial& curve_poly, Polynomial& mod_poly,
-                       RationalPoly& outx, RationalPoly& outy) {
-  // out_x= inx^e, out_y= iny^e curve_poly^(e-1)/2
+bool ReducedRaisetoLargePower(Polynomial& in, BigNum& e,
+                       Polynomial& mod_poly, Polynomial& out) {
+  Polynomial  double_point(in.size_num_, in.num_c_, *in.m_);
+  Polynomial  accum_point(in.size_num_, in.num_c_, *in.m_);
+  Polynomial  t1(in.size_num_, in.num_c_, *in.m_);
+  Polynomial  t2(in.size_num_, in.num_c_, *in.m_);
+  int         i;
+  int         k=  BigHighBit(e);
+
+  double_point.CopyFrom(in);
+  OnePoly(accum_point);
+  for(i=1; i<k; i++) {
+    if(BigBitPositionOn(e, i)) {
+      if(PolyMult(double_point, accum_point, t1)) 
+        return false;
+      if(!ReduceModPoly(t1, mod_poly, accum_point))
+        return false;
+    }
+    if(!PolyMult(double_point, double_point, t1))
+      return false;
+    if(!ReduceModPoly(t1, mod_poly, double_point))
+      return false;
+  }
+  if(BigBitPositionOn(e, i)) {
+    if(PolyMult(double_point, accum_point, t1)) 
+      return false;
+    if(!ReduceModPoly(t1, mod_poly, accum_point))
+      return false;
+  }
+  accum_point.CopyTo(out);
   return true;
 }
 
@@ -307,6 +432,7 @@ bool ReducedRaisetoLargePower(RationalPoly& inx, RationalPoly& iny, BigNum& e,
 //  out_x= r[x] and out_y= q(x).  So out_y should be multiplied by y to give the answer
 bool EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m, 
                                  RationalPoly& out_x, RationalPoly& out_y) {
+  // TODO
   return true;
 }
 
@@ -315,6 +441,7 @@ bool EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m,
 bool EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e, 
                                   RationalPoly& out_x, RationalPoly& out_y) {
   // out_x= inx^e, out_y= iny^e curve_poly^(e-1)/2
+  // TODO
   return true;
 }
 
