@@ -399,10 +399,10 @@ bool ReducedEccSymbolicMult(Polynomial& curve_poly,
 
 bool ReducedRaisetoLargePower(Polynomial& in, BigNum& e,
                        Polynomial& mod_poly, Polynomial& out) {
-  Polynomial  double_point(in.size_num_, in.num_c_, *in.m_);
-  Polynomial  accum_point(in.size_num_, in.num_c_, *in.m_);
-  Polynomial  t1(in.size_num_, in.num_c_, *in.m_);
-  Polynomial  t2(in.size_num_, in.num_c_, *in.m_);
+  Polynomial  double_point(out.size_num_, 2*out.num_c_, *out.m_);
+  Polynomial  accum_point(out.size_num_, 2*out.num_c_, *out.m_);
+  Polynomial  t1(out.size_num_, 2*out.num_c_, *out.m_);
+  Polynomial  t2(out.size_num_, 2*out.num_c_, *out.m_);
   int         i;
   int         k=  BigHighBit(e);
 
@@ -410,7 +410,7 @@ bool ReducedRaisetoLargePower(Polynomial& in, BigNum& e,
   OnePoly(accum_point);
   for(i=1; i<k; i++) {
     if(BigBitPositionOn(e, i)) {
-      if(PolyMult(double_point, accum_point, t1)) 
+      if(!PolyMult(double_point, accum_point, t1)) 
         return false;
       if(!ReduceModPoly(t1, mod_poly, accum_point))
         return false;
@@ -421,7 +421,7 @@ bool ReducedRaisetoLargePower(Polynomial& in, BigNum& e,
       return false;
   }
   if(BigBitPositionOn(e, i)) {
-    if(PolyMult(double_point, accum_point, t1)) 
+    if(!PolyMult(double_point, accum_point, t1)) 
       return false;
     if(!ReduceModPoly(t1, mod_poly, accum_point))
       return false;

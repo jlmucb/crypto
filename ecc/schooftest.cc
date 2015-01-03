@@ -60,6 +60,7 @@ bool InitPolys(BigNum* c) {
 }
 
 bool SimpleSymbolicTest() {
+  printf("SimpleSymbolicTest()\n");
   BigNum      m(5);
   BigNum      n(5);
   BigNum      r(5);
@@ -221,18 +222,33 @@ bool SimpleSymbolicTest() {
   // ReducedRaisetoLargePower(RationalPoly& inx, RationalPoly& iny, BigNum& e,
   //                      Polynomial& curve_poly, Polynomial& mod_poly,
   //                      RationalPoly& outx, RationalPoly& outy)
-#if 0
   // x^19= x^2+13x+14 (mod x^3 +2x +1)
   // (x^19-x, x^3+2x+1)=1
-  Polynomial p1(8, 5, *P256_Key.c_.p_);
-  Polynomial p2(8, 5, *P256_Key.c_.p_);
-  Polynomial p3(8, 5, *P256_Key.c_.p_);
-  Polynomial mod_poly(8, 5, *P256_Key.c_.p_);
-  if(!ReducedRaisetoLargePower(p1, *P256_Key.c_.p_, mod_poly, p2)) {
+  BigNum  small_p(2, 19ULL);
+  small_p.Normalize();
+  Polynomial p1(8, 8, small_p);
+  Polynomial p2(8, 8, small_p);
+  Polynomial p3(8, 8, small_p);
+  Polynomial mod_poly(8, 5, small_p);
+
+  // mod_poly= x^3+2x+1 (mod 19)
+  mod_poly.c_[0]->value_[0]= 1ULL;
+  mod_poly.c_[1]->value_[0]= 2ULL;
+  mod_poly.c_[3]->value_[0]= 1ULL;
+  mod_poly.c_[0]->Normalize();
+  mod_poly.c_[1]->Normalize();
+  mod_poly.c_[3]->Normalize();
+  //p1= x
+  p1.c_[1]->value_[0]= 1ULL;
+  p1.c_[1]->Normalize();
+  if(!ReducedRaisetoLargePower(p1, small_p, mod_poly, p2)) {
     printf("ReducedRaisetoLargePower failed\n");
     return false;
   }
-#endif
+  printf("["); p1.Print(true); printf("]^%d= ", (int) small_p.value_[0]); 
+  p2.Print(true);
+  printf(" (mod  "); mod_poly.Print(true);
+  printf(")\n");
 
   /*
    *  y^2= x^3+2x+1 (mod 19)
@@ -242,7 +258,8 @@ bool SimpleSymbolicTest() {
    *  l=2, a=1 (2)
    *  l=3, a=2 (3)
    *    (x^361-x, phi_3)= x-8 !=1
-   *  l=5, a=-2 (5)
+   *  l=5, a=3 (5)
+   *  a= -7.  So #E=27
    */
 
   // EccSymbolicMult(Polynomial& curve_poly, BigNum& m,
@@ -265,7 +282,51 @@ bool SimpleSymbolicTest() {
 }
 
 bool SimpleSchoofTest() {
-  // InitPhi(int n)
+  printf("SimpleSchoofTest()\n");
+
+  BigNum  small_p(2, 19ULL);
+  small_p.Normalize();
+  Polynomial p1(8, 8, small_p);
+  Polynomial p2(8, 8, small_p);
+  Polynomial p3(8, 8, small_p);
+  Polynomial mod_poly(8, 5, small_p);
+
+  // mod_poly= x^3+2x+1 (mod 19)
+  mod_poly.c_[0]->value_[0]= 1ULL;
+  mod_poly.c_[1]->value_[0]= 2ULL;
+  mod_poly.c_[3]->value_[0]= 1ULL;
+  mod_poly.c_[0]->Normalize();
+  mod_poly.c_[1]->Normalize();
+  mod_poly.c_[3]->Normalize();
+  //p1= x
+  p1.c_[1]->value_[0]= 1ULL;
+  p1.c_[1]->Normalize();
+  if(!ReducedRaisetoLargePower(p1, small_p, mod_poly, p2)) {
+    printf("ReducedRaisetoLargePower failed\n");
+    return false;
+  }
+  printf("["); p1.Print(true); printf("]^%d= ", (int) small_p.value_[0]); 
+  p2.Print(true);
+  printf(" (mod  "); mod_poly.Print(true);
+  printf(")\n");
+
+  /*
+   *  y^2= x^3+2x+1 (mod 19)
+   *  #E(F_19)= 20-a
+   *  phi_3= 3x^4+12x^2+12x-4
+   *  phi_5= 5x^12+ 10x^10 + 7x^8 + 5x^7 + x^6 + 9x^5 + 12x^4 + 2x^3 + 5x^2 + 8x + 8
+   *  (x^19-x, x^3+2x+1)=1
+   *  l=2, a=1 (2)
+   *  l=3, a=2 (3)
+   *    (x^361-x, phi_3)= x-8 !=1
+   *  l=5, a=3 (5)
+   *  a= -7.  So #E=27
+   */
+  extern bool InitPhi(int);
+  if(!InitPhi(7)) {
+    printf("InitPhi failed\n");
+    return false;
+  }
   // Compute_t_mod_2(Polynomial& curve_poly, uint64_t* result)
   // Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result)
   // schoof(EccCurve& curve, BigNum& order)

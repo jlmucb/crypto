@@ -221,7 +221,7 @@ bool PolySub(Polynomial& a, Polynomial& b, Polynomial& c) {
 }
 
 bool PolyMult(Polynomial& a, Polynomial& b, Polynomial& c) {
-  if((a.Degree()+b.Degree())>=c.num_c_)
+  if((a.Degree()+b.Degree())>=c.num_c_) 
     return false;
 
   int     i, j, k;
