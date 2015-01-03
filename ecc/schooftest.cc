@@ -148,6 +148,14 @@ bool SimpleSymbolicTest() {
   }
   printf("IsSymbolicIdentity succeeded\n");
 
+  // EccSymbolicAdd(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& in1_y,
+  //                RationalPoly& in2_x, RationalPoly& in2_y,
+  //                RationalPoly& out_x, RationalPoly& out_y)
+  // EccSymbolicSub(Polynomial& curve_poly,
+  //                   RationalPoly& in1_x, RationalPoly& in1_y,
+  //                   RationalPoly& in2_x, RationalPoly& in2_y,
+  //                   RationalPoly& out_x, RationalPoly& out_y)
+
   RationalPoly  r2_x(8, 20, *P256_Key.c_.p_);
   RationalPoly  r2_y(8, 20, *P256_Key.c_.p_);
   RationalPoly  r3_x(8, 20, *P256_Key.c_.p_);
@@ -196,14 +204,6 @@ bool SimpleSymbolicTest() {
   printf("] = ["); r3_x.Print();
   printf(", "); r3_y.Print(); printf("]\n");
 
-  // EccSymbolicAdd(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& in1_y,
-  //                RationalPoly& in2_x, RationalPoly& in2_y,
-  //                RationalPoly& out_x, RationalPoly& out_y)
-  // EccSymbolicSub(Polynomial& curve_poly,
-  //                   RationalPoly& in1_x, RationalPoly& in1_y,
-  //                   RationalPoly& in2_x, RationalPoly& in2_y,
-  //                   RationalPoly& out_x, RationalPoly& out_y)
-
   printf("\n");
   ZeroRational(r3_x);
   ZeroRational(r3_y);
@@ -217,20 +217,49 @@ bool SimpleSymbolicTest() {
   printf(", "); r2_y.Print();
   printf("] = ["); r3_x.Print();
   printf(", "); r3_y.Print(); printf("]\n");
+
+  // ReducedRaisetoLargePower(RationalPoly& inx, RationalPoly& iny, BigNum& e,
+  //                      Polynomial& curve_poly, Polynomial& mod_poly,
+  //                      RationalPoly& outx, RationalPoly& outy)
+#if 0
+  // x^19= x^2+13x+14 (mod x^3 +2x +1)
+  // (x^19-x, x^3+2x+1)=1
+  Polynomial p1(8, 5, *P256_Key.c_.p_);
+  Polynomial p2(8, 5, *P256_Key.c_.p_);
+  Polynomial p3(8, 5, *P256_Key.c_.p_);
+  Polynomial mod_poly(8, 5, *P256_Key.c_.p_);
+  if(!ReducedRaisetoLargePower(p1, *P256_Key.c_.p_, mod_poly, p2)) {
+    printf("ReducedRaisetoLargePower failed\n");
+    return false;
+  }
+#endif
+
+  /*
+   *  y^2= x^3+2x+1 (mod 19)
+   *  #E(F_19)= 20-a
+   *  phi_3= 3x^4+12x^2+12x-4
+   *  phi_5= 5x^12+ 10x^10 + 7x^8 + 5x^7 + x^6 + 9x^5 + 12x^4 + 2x^3 + 5x^2 + 8x + 8
+   *  l=2, a=1 (2)
+   *  l=3, a=2 (3)
+   *    (x^361-x, phi_3)= x-8 !=1
+   *  l=5, a=-2 (5)
+   */
+
   // EccSymbolicMult(Polynomial& curve_poly, BigNum& m,
   //                    RationalPoly& in_x, RationalPoly& in_y,
   //                    RationalPoly& out_x, RationalPoly& out_y)
+
   // ReducedEccSymbolicMult(Polynomial& curve_poly,
   //                    Polynomial& mod_poly, BigNum& m,
   //                    RationalPoly& in_x, RationalPoly& in_y,
   //                    RationalPoly& out_x, RationalPoly& out_y)
-  // ReducedRaisetoLargePower(RationalPoly& inx, RationalPoly& iny, BigNum& e,
-  //                      Polynomial& curve_poly, Polynomial& mod_poly,
-  //                      RationalPoly& outx, RationalPoly& outy)
+
   // EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m,
   //                                RationalPoly& out_x, RationalPoly& out_y)
+
   // EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e,
   //                                RationalPoly& out_x, RationalPoly& out_y)
+
   // RationalPolyNegate(RationalPoly& a)
   return true;
 }
