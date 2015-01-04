@@ -109,24 +109,24 @@ Polynomial**   Phi_array= NULL;
 
 int nextoddrecurrencedegree(int n, int deg_phi_m, int deg_phi_m_plus_2, int deg_m_plus_1, 
                             int deg_phi_m_minus_1, int deg_m_minus_2) {
-  int d1= 3*(deg_phi_m+1)+deg_phi_m_plus_2+1;
-  int d2= 3*(deg_m_plus_1+1)+deg_phi_m_minus_1+1;
+  int d1= 3*(deg_phi_m)+deg_phi_m_plus_2;
+  int d2= 3*(deg_m_plus_1)+deg_phi_m_minus_1;
   //  phi_out= phi[m+2]phi^3[m]-phi[m-1]phi^3[m+1]
   if(d1>=d2)
-    return d1+2;
+    return d1;
   else
-    return d2+2;
+    return d2;
 }
 
 int nextevenrecurrencedegree(int n, int deg_phi_m, int deg_phi_m_plus_2, int deg_m_plus_1, 
                              int deg_phi_m_minus_1, int deg_m_minus_2) {
-  int d1= 2*(deg_phi_m_minus_1+1)+deg_phi_m_plus_2+1+deg_phi_m+4;
-  int d2= 2*(deg_m_plus_1+1)+deg_m_minus_2+deg_phi_m+4;
+  int d1= 2*(deg_phi_m_minus_1)+deg_phi_m_plus_2+deg_phi_m;
+  int d2= 2*(deg_m_plus_1)+deg_m_minus_2+deg_phi_m;
   //  phi_out= phi[m]/phi[2](phi[m+2]phi^2[m-1]-phi[m-2]phi^2[m+1])
   if(d1>=d2)
-    return d1+2;
+    return d1;
   else
-    return d2+2;
+    return d2;
 }
 
 bool oddrecurrence(int n, Polynomial& curve_poly, Polynomial& phi_m, Polynomial& phi_m_plus_2, 
@@ -143,9 +143,7 @@ bool oddrecurrence(int n, Polynomial& curve_poly, Polynomial& phi_m, Polynomial&
     return false;
   if(!PolyMult(t1, phi_m, t2))
     return false;
-  if(!PolyMult(t2, phi_m, t1))
-    return false;
-  if(!PolyMult(t1, phi_m_plus_2, t3))
+  if(!PolyMult(t2, phi_m_plus_2, t3))
     return false;
   if((m&1)==0) {
     if(!PolyMult(t3, curve_poly, t4))
@@ -153,7 +151,6 @@ bool oddrecurrence(int n, Polynomial& curve_poly, Polynomial& phi_m, Polynomial&
     if(!PolyMult(t4, curve_poly, t3))
       return false;
   }
-
   if(!PolyMult(phi_m_plus_1, phi_m_plus_1, t1))
     return false;
   if(!PolyMult(t1, phi_m_plus_1, t2))
@@ -168,7 +165,6 @@ bool oddrecurrence(int n, Polynomial& curve_poly, Polynomial& phi_m, Polynomial&
   }
   if(!PolySub(t3, t1, phi_out))
     return false;
-
   return true;
 }
 
@@ -177,36 +173,39 @@ bool evenrecurrence(int n, Polynomial& curve_poly, Polynomial& phi_m, Polynomial
                    Polynomial& phi_m_minus_2, Polynomial& phi_out) {
   //  phi_out= phi[m]/phi[2](phi[m+2]phi^2[m-1]-phi[m-2]phi^2[m+1])
   int m= n>>1; 
-  Polynomial t1(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
-  Polynomial t2(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
-  Polynomial t3(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
-  Polynomial t4(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
+  Polynomial  t1(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
+  Polynomial  t2(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
+  Polynomial  t3(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
+  Polynomial  t4(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
+  BigNum      two_inv(phi_out.m_->Capacity());
+
+printf("evenrecurrence n=%d, m=%d\n", n, m);
+printf("phi_m: "); phi_m.Print(true); printf("\n");
+printf("phi_m_plus_2: "); phi_m_plus_2.Print(true); printf("\n");
+printf("phi_m_plus_1: "); phi_m_plus_1.Print(true); printf("\n");
+printf("phi_m_minus_1: "); phi_m_minus_1.Print(true); printf("\n");
+printf("phi_m_minus_2: "); phi_m_minus_2.Print(true); printf("\n");
 
   if(!PolyMult(phi_m_minus_1, phi_m_minus_1, t1))
     return false;
+printf("phi_m_minus_1^2: "); phi_m_minus_1.Print(true); printf("\n");
   if(!PolyMult(t1, phi_m_plus_2, t3))
     return false;
-  if((m&1)==1) {
-    if(!PolyMult(t3, curve_poly, t4))
-      return false;
-    t4.CopyTo(t3);
-  }
-
+printf("phi_m_plus_2*phi_m_minus_1^2: "); t3.Print(true); printf("\n");
   if(!PolyMult(phi_m_plus_1, phi_m_plus_1, t1))
     return false;
+printf("phi_m_plus_1^2: "); t1.Print(true); printf("\n");
   if(!PolyMult(t1, phi_m_minus_1, t2))
     return false;
-  if((m&1)==0) {
-    if(!PolyMult(t2, curve_poly, t4))
-      return false;
-    t4.CopyTo(t2);
-  }
-  if(!PolySub(t1, t2, t4))
+printf("phi_m_minus_1*phi_m_plus_1^2: "); t2.Print(true); printf("\n");
+  if(!PolySub(t3, t2, t4))
     return false;
-  if(!PolyMult(t4, phi_m, phi_out))
+  if(!PolyMult(t4, phi_m, t1))
     return false;
-  // divide by 2
-
+  if(!BigModInv(Big_Two, *phi_out.m_, two_inv))
+    return false;
+  if(!MultiplyPolyByMonomial(t1, 0, two_inv, phi_out))
+    return false;
   return true;
 }
 
