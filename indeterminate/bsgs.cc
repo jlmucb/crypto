@@ -22,6 +22,7 @@
 
 // ----------------------------------------------------------------------------
 
+/*
  * 1. Q= (q+1)P
  * 2. Choose m>q^(1/4)
  * 3. Compute Q+jP, j= 0, 1, ..., m and store
@@ -29,11 +30,23 @@
  *      until Q+k(2mP)= Q+jP or Q-jP
  * 5. (q+1+2mk+j)P= O or (q+1+2mk-j)P= O.  Let M be coefficient of P
  * 6. Factor M into p[0]^e[0] ... p[l]^e[l]
- * 7. Repeat until failure if (M/p[i]]P=0, replace M with /p[i] 
+ * 7. Repeat until failure if (M/p[i])P=0, replace M with /p[i] 
  * 8. Conclude |P|= M
  * If we're looking for the order of the group, do the above with
  *    random points until LCM divides one N with q+1-2(q^1/2)<=N<=q+1+2(q^1/2).
  *    Conclude N is the order
+ *
+ * Example
+ *  E: y^2= x^3-10x+21 (mod 557)
+ *  P= (2,3)
+ *  Q= 558P= (418, 33)
+ *  m=5>(557)^(1/4)
+ *  jP= O, (2,3), (58, 164), (44, 294), (56, 339), (132, 364)
+ *  k=1, Q= kP+(2m)P= (2,3)
+ *  (q+1+2m-j)P= 567P= O
+ *  567= 3^4 x 7
+ *  (567/3)P= 189P= O
+ *  |P|=189
  */
 
 bool eccbsgspointorder(EccCurve& curve, CurvePoint& P, BigNum& order)

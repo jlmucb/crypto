@@ -314,7 +314,7 @@ bool SimplePhiTest() {
    *  a= -7.  So #E=27
    */
   extern bool InitPhi(int, Polynomial&);
-  if(!InitPhi(6, curve_poly)) {
+  if(!InitPhi(7, curve_poly)) {
     printf("InitPhi failed\n");
     return false;
   }

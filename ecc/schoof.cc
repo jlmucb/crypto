@@ -180,24 +180,26 @@ bool evenrecurrence(int n, Polynomial& curve_poly, Polynomial& phi_m, Polynomial
   BigNum      two_inv(phi_out.m_->Capacity());
 
 printf("evenrecurrence n=%d, m=%d\n", n, m);
+#if 0
 printf("phi_m: "); phi_m.Print(true); printf("\n");
 printf("phi_m_plus_2: "); phi_m_plus_2.Print(true); printf("\n");
 printf("phi_m_plus_1: "); phi_m_plus_1.Print(true); printf("\n");
 printf("phi_m_minus_1: "); phi_m_minus_1.Print(true); printf("\n");
 printf("phi_m_minus_2: "); phi_m_minus_2.Print(true); printf("\n");
+#endif
 
   if(!PolyMult(phi_m_minus_1, phi_m_minus_1, t1))
     return false;
-printf("phi_m_minus_1^2: "); phi_m_minus_1.Print(true); printf("\n");
+//printf("phi_m_minus_1^2: "); phi_m_minus_1.Print(true); printf("\n");
   if(!PolyMult(t1, phi_m_plus_2, t3))
     return false;
-printf("phi_m_plus_2*phi_m_minus_1^2: "); t3.Print(true); printf("\n");
+//printf("phi_m_plus_2*phi_m_minus_1^2: "); t3.Print(true); printf("\n");
   if(!PolyMult(phi_m_plus_1, phi_m_plus_1, t1))
     return false;
-printf("phi_m_plus_1^2: "); t1.Print(true); printf("\n");
+//printf("phi_m_plus_1^2: "); t1.Print(true); printf("\n");
   if(!PolyMult(t1, phi_m_minus_1, t2))
     return false;
-printf("phi_m_minus_1*phi_m_plus_1^2: "); t2.Print(true); printf("\n");
+//printf("phi_m_minus_1*phi_m_plus_1^2: "); t2.Print(true); printf("\n");
   if(!PolySub(t3, t2, t4))
     return false;
   if(!PolyMult(t4, phi_m, t1))
