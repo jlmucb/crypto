@@ -107,7 +107,108 @@ bool ComputeCompositeSolutionUsingCrt(int n, uint64_t* moduli, uint64_t* solutio
 int            Max_phi= -1;
 Polynomial**   Phi_array= NULL;
 
-bool InitPhi(int n) {
+bool oddrecurrence(Polynomial& phi_m, Polynomial& phi_m_plus_2, Polynomial& phi_m_minus_1, 
+                   Polynomial& phi_m_plus_1, Polynomial& phi_out) {
+  //  phi[2m+1]= phi[m+2]phi^3[m]-phi[m-1]phi^3[m+1]
+  return true;
+}
+
+bool evenrecurrence(Polynomial& phi_m, Polynomial& phi_m_plus_2, Polynomial& phi_m_minus_1, 
+                   Polynomial& phi_m_plus_1, Polynomial& phi_out) {
+  //  phi[2m]= phi[m]/phi[2](phi[m+2]phi^2[m-1]-phi[m-2]phi^2[m+1])
+  return true;
+}
+
+bool InitPhi(int n, Polynomial& curve_poly) {
+  Phi_array= new Polynomial*[0];
+  BigNum  five(1, 5ULL);
+  BigNum  six(1, 6ULL);
+  BigNum  eight(1, 8ULL);
+  BigNum  twelve(1, 12ULL);
+  BigNum  twenty(1, 20ULL);
+  
+  Phi_array[0]= new Polynomial(1, 1, *curve_poly.m_);
+
+  Phi_array[1]= new Polynomial(1, 1, *curve_poly.m_);
+  Phi_array[1]->c_[0]->value_[0]= 1ULL;
+  Phi_array[1]->c_[0]->Normalize();
+
+  Phi_array[2]= new Polynomial(1, 1, *curve_poly.m_);
+  Phi_array[2]->c_[0]->value_[0]= 2ULL;
+  Phi_array[2]->c_[0]->Normalize();
+
+  //  phi[3]= 3x^4+6ax^2+12bx-a^2
+  Phi_array[3]= new Polynomial(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
+  BigNum  a_squared(curve_poly.m_->Capacity());
+  BigNum  t1(curve_poly.m_->Capacity());
+  BigNum  t2(curve_poly.m_->Capacity());
+  Phi_array[3]->c_[4]->value_[0]= 3ULL;
+  Phi_array[3]->c_[4]->Normalize();
+  if(!BigModMult(*curve_poly.c_[1], *curve_poly.c_[1], *curve_poly.m_, a_squared))
+    return false;
+  if(!BigModNeg(a_squared, *curve_poly.m_, *Phi_array[3]->c_[0]))
+    return false;
+  if(!BigModMult(twelve, *curve_poly.c_[0], *curve_poly.m_, *Phi_array[3]->c_[1]))
+    return false;
+  if(!BigModMult(six, *curve_poly.c_[1], *curve_poly.m_, *Phi_array[3]->c_[2]))
+    return false;
+
+  //  phi[4]= 4y(x^6+5ax^4+20bx^3-5a^2x^2-4abx-8b^2-a^3
+  Phi_array[4]= new Polynomial(curve_poly.m_->Capacity(), 7, *curve_poly.m_);
+  Polynomial  temp_phi4(curve_poly.m_->Capacity(), 7, *curve_poly.m_);
+  BigNum      b_squared(curve_poly.m_->Capacity());
+  BigNum      a_cubed(curve_poly.m_->Capacity());
+  BigNum      a_times_b(curve_poly.m_->Capacity());
+  if(!BigModMult(a_squared, *curve_poly.c_[1], *curve_poly.m_, a_cubed))
+    return false;
+  if(!BigModMult(*curve_poly.c_[0], *curve_poly.c_[0], *curve_poly.m_, b_squared))
+    return false;
+  if(!BigModMult(*curve_poly.c_[0], *curve_poly.c_[1], *curve_poly.m_, a_times_b))
+    return false;
+  if(!BigModMult(eight, b_squared, *curve_poly.m_, t1))
+    return false;
+  if(!BigModAdd(t1, a_cubed, *curve_poly.m_, t2))
+    return false;
+  if(!BigModNeg(t2, *curve_poly.m_, *temp_phi4.c_[0]))
+    return false;
+  if(!BigModMult(Big_Four, a_times_b, *curve_poly.m_, t1))
+    return false;
+  if(!BigModNeg(t1, *curve_poly.m_, *temp_phi4.c_[1]))
+    return false;
+  if(!BigModMult(five, a_squared, *curve_poly.m_, t1))
+    return false;
+  if(!BigModNeg(t1, *curve_poly.m_, *temp_phi4.c_[2]))
+    return false;
+  if(!BigModMult(twenty, *curve_poly.c_[0], *curve_poly.m_, *temp_phi4.c_[3]))
+    return false;
+  if(!BigModMult(five, *curve_poly.c_[1], *curve_poly.m_, *temp_phi4.c_[4]))
+    return false;
+  temp_phi4.c_[6]->value_[0]= 1ULL;
+  temp_phi4.c_[6]->Normalize();
+  if(!MultiplyPolyByMonomial(temp_phi4, 0, Big_Four, *Phi_array[4]))
+    return false;
+
+#if 0
+  int     i;
+  int     k;
+  for(i=5; i<n; i++) {
+    Phi_array[i]= new Polynomial(1, 1, *curve_poly.m_);
+    if((i&1)!=0) {
+      k= i>>1;
+      if(!oddrecurrence(*Phi_array[k], *Phi_array[k+2], *Phi_array[k-1], 
+                   *Phi_array[k+1], *Phi_array[i]))
+        return false;
+    } else {
+      k= i>>1;
+      if(!evenrecurrence(*Phi_array[k], *Phi_array[k+2], *Phi_array[k-1], 
+                   *Phi_array[k+1], *Phi_array[i]))
+        return false;
+    }
+  }
+  Max_phi= n;
+#else
+  Max_phi= 4;
+#endif
   return true;
 }
 
@@ -284,7 +385,7 @@ bool schoof(EccCurve& curve, BigNum& order) {
     return false;
   if(!PolyFromCurve(curve, curve_poly))
     return false;
-  if(!InitPhi((int) primes[num_primes-1]))
+  if(!InitPhi((int) primes[num_primes-1], curve_poly))
     return false;
   bool  ret= true;
 

@@ -187,6 +187,15 @@ bool BigModAdd(BigNum& a, BigNum& b, BigNum& m, BigNum& r) {
   return true;
 }
 
+bool BigModNeg(BigNum& a, BigNum& m, BigNum& r) {
+  if(!a.CopyTo(r))
+    return false;
+  r.ToggleSign();
+  if(!BigModNormalize(r, m))
+    return false;
+  return true;
+}
+
 bool BigModSub(BigNum& a, BigNum& b, BigNum& m, BigNum& r) {
 
   if(!BigModNormalize(a,m)) {

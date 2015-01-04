@@ -281,34 +281,25 @@ bool SimpleSymbolicTest() {
   return true;
 }
 
-bool SimpleSchoofTest() {
-  printf("SimpleSchoofTest()\n");
+bool SimplePhiTest() {
+  printf("SimplePhiTest()\n");
 
   BigNum  small_p(2, 19ULL);
   small_p.Normalize();
   Polynomial p1(8, 8, small_p);
   Polynomial p2(8, 8, small_p);
   Polynomial p3(8, 8, small_p);
-  Polynomial mod_poly(8, 5, small_p);
+  Polynomial curve_poly(8, 5, small_p);
 
-  // mod_poly= x^3+2x+1 (mod 19)
-  mod_poly.c_[0]->value_[0]= 1ULL;
-  mod_poly.c_[1]->value_[0]= 2ULL;
-  mod_poly.c_[3]->value_[0]= 1ULL;
-  mod_poly.c_[0]->Normalize();
-  mod_poly.c_[1]->Normalize();
-  mod_poly.c_[3]->Normalize();
-  //p1= x
-  p1.c_[1]->value_[0]= 1ULL;
-  p1.c_[1]->Normalize();
-  if(!ReducedRaisetoLargePower(p1, small_p, mod_poly, p2)) {
-    printf("ReducedRaisetoLargePower failed\n");
-    return false;
-  }
-  printf("["); p1.Print(true); printf("]^%d= ", (int) small_p.value_[0]); 
-  p2.Print(true);
-  printf(" (mod  "); mod_poly.Print(true);
-  printf(")\n");
+  // curve_poly= x^3+2x+1 (mod 19)
+  curve_poly.c_[0]->value_[0]= 1ULL;
+  curve_poly.c_[1]->value_[0]= 2ULL;
+  curve_poly.c_[3]->value_[0]= 1ULL;
+  curve_poly.c_[0]->Normalize();
+  curve_poly.c_[1]->Normalize();
+  curve_poly.c_[3]->Normalize();
+  printf("curve poly: ");
+  curve_poly.Print(true); printf("\n");
 
   /*
    *  y^2= x^3+2x+1 (mod 19)
@@ -322,20 +313,45 @@ bool SimpleSchoofTest() {
    *  l=5, a=3 (5)
    *  a= -7.  So #E=27
    */
-  extern bool InitPhi(int);
-  if(!InitPhi(7)) {
+  extern bool InitPhi(int, Polynomial&);
+  if(!InitPhi(7, curve_poly)) {
     printf("InitPhi failed\n");
     return false;
   }
+
+  int                   i;
+  extern  int           Max_phi;
+  extern Polynomial**   Phi_array;
+  for(i=0; i<=Max_phi;i++) {
+    printf("phi[%d]: ", i);
+    Phi_array[i]->Print(true);
+    printf("\n");
+  }
+  return true;
+}
+
+bool SimpleSchoofTest() {
+  printf("SimpleSchoofTest()\n");
+
+/*
+  extern EccKey   P256_Key;
+  Polynomial curve_poly(8, 5, *P256_Key.c_.p_);
+  if(!PolyFromCurve(P256_Key.c_, curve_poly)) {
+    printf("PolyFromCurve failed\n");
+    return false;
+  }
+  printf("curve prime: "); PrintNumToConsole(*P256_Key.c_.p_, 10ULL); printf("\n");
+  curve_poly.Print();
+ */
   // Compute_t_mod_2(Polynomial& curve_poly, uint64_t* result)
   // Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result)
   // schoof(EccCurve& curve, BigNum& order)
-
   return true;
 }
  
 TEST(SimpleTest, SimpleTest) {
   EXPECT_TRUE(SimpleSymbolicTest());
+  EXPECT_TRUE(SimplePhiTest());
   EXPECT_TRUE(SimpleSchoofTest());
 }
 

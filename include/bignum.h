@@ -99,6 +99,7 @@ bool          BigMod(BigNum& a, BigNum& m, BigNum& r);
 bool          BigModNormalize(BigNum& a, BigNum& m);
 bool          BigModAdd(BigNum& a, BigNum& b, BigNum& m, BigNum& r);
 bool          BigModSub(BigNum& a, BigNum& b, BigNum& m, BigNum& r);
+bool          BigModNeg(BigNum& a, BigNum& m, BigNum& r);
 bool          BigModMult(BigNum& a, BigNum& b, BigNum& m, BigNum& r);
 bool          BigModSquare(BigNum& a, BigNum& m, BigNum& r);
 bool          BigModInv(BigNum& a, BigNum& m, BigNum& r);
