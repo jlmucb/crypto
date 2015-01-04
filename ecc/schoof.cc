@@ -107,20 +107,85 @@ bool ComputeCompositeSolutionUsingCrt(int n, uint64_t* moduli, uint64_t* solutio
 int            Max_phi= -1;
 Polynomial**   Phi_array= NULL;
 
-bool oddrecurrence(Polynomial& phi_m, Polynomial& phi_m_plus_2, Polynomial& phi_m_minus_1, 
-                   Polynomial& phi_m_plus_1, Polynomial& phi_out) {
-  //  phi[2m+1]= phi[m+2]phi^3[m]-phi[m-1]phi^3[m+1]
+int nextoddrecurrencedegree(int n, int deg_phi_m, int deg_phi_m_plus_2, int deg_m_plus_1, 
+                            int deg_phi_m_minus_1, int deg_m_minus_2) {
+  int d1= 3*(deg_phi_m+1)+deg_phi_m_plus_2+1;
+  int d2= 3*(deg_m_plus_1+1)+deg_phi_m_minus_1+1;
+  //  phi_out= phi[m+2]phi^3[m]-phi[m-1]phi^3[m+1]
+  if(d1>=d2)
+    return d1+2;
+  else
+    return d2+2;
+}
+
+int nextevenrecurrencedegree(int n, int deg_phi_m, int deg_phi_m_plus_2, int deg_m_plus_1, 
+                             int deg_phi_m_minus_1, int deg_m_minus_2) {
+  int d1= 2*(deg_phi_m_minus_1+1)+deg_phi_m_plus_2+1+deg_phi_m+4;
+  int d2= 2*(deg_m_plus_1+1)+deg_m_minus_2+deg_phi_m+4;
+  //  phi_out= phi[m]/phi[2](phi[m+2]phi^2[m-1]-phi[m-2]phi^2[m+1])
+  if(d1>=d2)
+    return d1+2;
+  else
+    return d2+2;
+}
+
+bool oddrecurrence(int n, Polynomial& curve_poly, Polynomial& phi_m, Polynomial& phi_m_plus_2, 
+                   Polynomial& phi_m_plus_1, Polynomial& phi_m_minus_1, 
+                   Polynomial& phi_m_minus_2, Polynomial& phi_out) {
+  //  phi_out= phi[m+2]phi^3[m]-phi[m-1]phi^3[m+1]
+  Polynomial t1(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
+  Polynomial t2(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
+  Polynomial t3(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
+
+  if(!PolyMult(phi_m, phi_m, t1))
+    return false;
+  if(!PolyMult(t1, phi_m, t2))
+    return false;
+  if(!PolyMult(t2, phi_m, t1))
+    return false;
+  if(!PolyMult(t1, phi_m_plus_2, t3))
+    return false;
+
+  if(!PolyMult(phi_m_plus_1, phi_m_plus_1, t1))
+    return false;
+  if(!PolyMult(t1, phi_m_plus_1, t2))
+    return false;
+  if(!PolyMult(t2,  phi_m_minus_1, t1))
+    return false;
+  if(!PolySub(t3, t1, phi_out))
+    return false;
+
   return true;
 }
 
-bool evenrecurrence(Polynomial& phi_m, Polynomial& phi_m_plus_2, Polynomial& phi_m_minus_1, 
-                   Polynomial& phi_m_plus_1, Polynomial& phi_out) {
-  //  phi[2m]= phi[m]/phi[2](phi[m+2]phi^2[m-1]-phi[m-2]phi^2[m+1])
+bool evenrecurrence(int n, Polynomial& curve_poly, Polynomial& phi_m, Polynomial& phi_m_plus_2, 
+                    Polynomial& phi_m_plus_1, Polynomial& phi_m_minus_1, 
+                   Polynomial& phi_m_minus_2, Polynomial& phi_out) {
+  //  phi_out= phi[m]/phi[2](phi[m+2]phi^2[m-1]-phi[m-2]phi^2[m+1])
+  Polynomial t1(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
+  Polynomial t2(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
+  Polynomial t3(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
+  Polynomial t4(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
+
+  if(!PolyMult(phi_m_minus_1, phi_m_minus_1, t1))
+    return false;
+  if(!PolyMult(t1, phi_m_plus_2, t3))
+    return false;
+
+  if(!PolyMult(phi_m_plus_1, phi_m_plus_1, t1))
+    return false;
+  if(!PolyMult(t1, phi_m_minus_1, t2))
+    return false;
+  if(!PolySub(t1,  t2, t4))
+    return false;
+  if(!PolyMult(t4, phi_m, phi_out))
+    return false;
+
   return true;
 }
 
 bool InitPhi(int n, Polynomial& curve_poly) {
-  Phi_array= new Polynomial*[0];
+  Phi_array= new Polynomial*[n+1];
   BigNum  five(1, 5ULL);
   BigNum  six(1, 6ULL);
   BigNum  eight(1, 8ULL);
@@ -188,27 +253,36 @@ bool InitPhi(int n, Polynomial& curve_poly) {
   if(!MultiplyPolyByMonomial(temp_phi4, 0, Big_Four, *Phi_array[4]))
     return false;
 
-#if 0
   int     i;
   int     k;
-  for(i=5; i<n; i++) {
-    Phi_array[i]= new Polynomial(1, 1, *curve_poly.m_);
+  int     d;
+
+  for(i=5; i<=n; i++) {
     if((i&1)!=0) {
       k= i>>1;
-      if(!oddrecurrence(*Phi_array[k], *Phi_array[k+2], *Phi_array[k-1], 
-                   *Phi_array[k+1], *Phi_array[i]))
+      d= nextoddrecurrencedegree(i, Phi_array[k]->Degree(), Phi_array[k+2]->Degree(),
+                                 Phi_array[k+1]->Degree(), Phi_array[k-1]->Degree(),
+                                 Phi_array[k-2]->Degree());
+      Phi_array[i]= new Polynomial(curve_poly.m_->Capacity(), d+1, *curve_poly.m_);
+      if(!oddrecurrence(i, curve_poly, *Phi_array[k], *Phi_array[k+2], *Phi_array[k+1], 
+                        *Phi_array[k-1], *Phi_array[k-2], *Phi_array[i])) {
+printf("odd recurrence %d returns false\n", i);
         return false;
+      }
     } else {
       k= i>>1;
-      if(!evenrecurrence(*Phi_array[k], *Phi_array[k+2], *Phi_array[k-1], 
-                   *Phi_array[k+1], *Phi_array[i]))
+      d= nextevenrecurrencedegree(i, Phi_array[k]->Degree(), Phi_array[k+2]->Degree(),
+                                  Phi_array[k+1]->Degree(), Phi_array[k-1]->Degree(),
+                                  Phi_array[k-2]->Degree());
+      Phi_array[i]= new Polynomial(curve_poly.m_->Capacity(), d+1, *curve_poly.m_);
+      if(!evenrecurrence(i, curve_poly, *Phi_array[k], *Phi_array[k+2], *Phi_array[k+1], 
+                   *Phi_array[k-1], *Phi_array[k-2], *Phi_array[i])) {
+printf("even recurrence %d returns false\n", i);
         return false;
+      }
     }
   }
   Max_phi= n;
-#else
-  Max_phi= 4;
-#endif
   return true;
 }
 
