@@ -21,8 +21,8 @@
 #include "ecc_symbolic.h"
 
 // note that the real division polynomial, g_phi, is
-//  g_phi[m]= g_phi2[m], if m is odd, and
-//  g_phi[m]= (2y)g_phi2[m], if m is even.
+//  phi[m]= Phi_array[m], if m is odd, and
+//  phi[m]= (2y)Phi_array[m], if m is even.
 //  From now on, the 2y is implicit during the calculation for even m
 //  elsewhere, we assume a coefficient of y (not 2y) on
 //  these so, at the end, we multiply through by 2
@@ -132,10 +132,12 @@ int nextevenrecurrencedegree(int n, int deg_phi_m, int deg_phi_m_plus_2, int deg
 bool oddrecurrence(int n, Polynomial& curve_poly, Polynomial& phi_m, Polynomial& phi_m_plus_2, 
                    Polynomial& phi_m_plus_1, Polynomial& phi_m_minus_1, 
                    Polynomial& phi_m_minus_2, Polynomial& phi_out) {
+  int m= n>>1; 
   //  phi_out= phi[m+2]phi^3[m]-phi[m-1]phi^3[m+1]
   Polynomial t1(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
   Polynomial t2(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
   Polynomial t3(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
+  Polynomial t4(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
 
   if(!PolyMult(phi_m, phi_m, t1))
     return false;
@@ -145,6 +147,12 @@ bool oddrecurrence(int n, Polynomial& curve_poly, Polynomial& phi_m, Polynomial&
     return false;
   if(!PolyMult(t1, phi_m_plus_2, t3))
     return false;
+  if((m&1)==0) {
+    if(!PolyMult(t3, curve_poly, t4))
+      return false;
+    if(!PolyMult(t4, curve_poly, t3))
+      return false;
+  }
 
   if(!PolyMult(phi_m_plus_1, phi_m_plus_1, t1))
     return false;
@@ -152,6 +160,12 @@ bool oddrecurrence(int n, Polynomial& curve_poly, Polynomial& phi_m, Polynomial&
     return false;
   if(!PolyMult(t2,  phi_m_minus_1, t1))
     return false;
+  if((m&1)==1) {
+    if(!PolyMult(t1, curve_poly, t4))
+      return false;
+    if(!PolyMult(t4, curve_poly, t1))
+      return false;
+  }
   if(!PolySub(t3, t1, phi_out))
     return false;
 
@@ -162,6 +176,7 @@ bool evenrecurrence(int n, Polynomial& curve_poly, Polynomial& phi_m, Polynomial
                     Polynomial& phi_m_plus_1, Polynomial& phi_m_minus_1, 
                    Polynomial& phi_m_minus_2, Polynomial& phi_out) {
   //  phi_out= phi[m]/phi[2](phi[m+2]phi^2[m-1]-phi[m-2]phi^2[m+1])
+  int m= n>>1; 
   Polynomial t1(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
   Polynomial t2(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
   Polynomial t3(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
@@ -171,15 +186,26 @@ bool evenrecurrence(int n, Polynomial& curve_poly, Polynomial& phi_m, Polynomial
     return false;
   if(!PolyMult(t1, phi_m_plus_2, t3))
     return false;
+  if((m&1)==1) {
+    if(!PolyMult(t3, curve_poly, t4))
+      return false;
+    t4.CopyTo(t3);
+  }
 
   if(!PolyMult(phi_m_plus_1, phi_m_plus_1, t1))
     return false;
   if(!PolyMult(t1, phi_m_minus_1, t2))
     return false;
-  if(!PolySub(t1,  t2, t4))
+  if((m&1)==0) {
+    if(!PolyMult(t2, curve_poly, t4))
+      return false;
+    t4.CopyTo(t2);
+  }
+  if(!PolySub(t1, t2, t4))
     return false;
   if(!PolyMult(t4, phi_m, phi_out))
     return false;
+  // divide by 2
 
   return true;
 }
