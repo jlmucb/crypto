@@ -293,7 +293,6 @@ bool InitPhi(int n, Polynomial& curve_poly) {
       Phi_array[i]= new Polynomial(curve_poly.m_->Capacity(), d+1, *curve_poly.m_);
       if(!oddrecurrence(i, curve_poly, *Phi_array[k], *Phi_array[k+2], *Phi_array[k+1], 
                         *Phi_array[k-1], *Phi_array[k-2], *Phi_array[i])) {
-printf("odd recurrence %d returns false\n", i);
         return false;
       }
     } else {
@@ -304,7 +303,6 @@ printf("odd recurrence %d returns false\n", i);
       Phi_array[i]= new Polynomial(curve_poly.m_->Capacity(), d+1, *curve_poly.m_);
       if(!evenrecurrence(i, curve_poly, *Phi_array[k], *Phi_array[k+2], *Phi_array[k+1], 
                    *Phi_array[k-1], *Phi_array[k-2], *Phi_array[i])) {
-printf("even recurrence %d returns false\n", i);
         return false;
       }
     }
@@ -380,22 +378,26 @@ bool SquareRoot(BigNum& n, BigNum& r) {
 
 bool PickPrimes(int* num_primes, uint64_t* prime_list, BigNum& p) {
   BigNum            composite_modulus(p.Capacity());
-  BigNum            temp(p.Capacity());
+  BigNum            temp(p.Capacity()+1);
   BigNum            current(1);
-  BigNum            sqrt_sqrt_p(p.Capacity());
-  BigNum            bound(p.Capacity());
+  BigNum            sqrt_sqrt_p(p.Capacity()+1);
+  BigNum            bound(p.Capacity()+1);
   extern uint64_t   smallest_primes[];
   extern int        num_smallest_primes;
 
   prime_list[(*num_primes)++]= 2ULL;
   composite_modulus.value_[0]= 1ULL;
   composite_modulus.Normalize();
+printf("SquareRoot of "); PrintNumToConsole(p, 10ULL); printf("\n");
   if(!SquareRoot(p, temp))
     return false;
+printf(" is "); PrintNumToConsole(temp, 10ULL); printf("\n");
   if(!SquareRoot(temp, sqrt_sqrt_p))
     return false;
+printf("Square root of that is "); PrintNumToConsole(sqrt_sqrt_p, 10ULL); printf("\n");
   if(!BigUnsignedMult(sqrt_sqrt_p, Big_Four, bound))
     return false;
+printf("PickPrimes bound: "); PrintNumToConsole(bound, 10ULL); printf("\n");
   
   // prod_i prime_list[i]> 4p^(1/4)
   for(;;) {
@@ -427,13 +429,13 @@ bool Compute_t_mod_2(Polynomial& curve_poly, uint64_t* result) {
   //  t=0 iff (x^3+ax+b, x^p-x)= 1
   if(!ReducedRaisetoLargePower(x, *curve_poly.m_, curve_poly, t1))
     return false;
-  if(!PolySub(t1,x,t2))
+  if(!PolySub(t1, x, t2))
     return false;
   if(!PolyExtendedGcd(t2, curve_poly, a, b, g))
     return false;
-  *result= 1ULL;
+  *result= 0ULL;
   if(g.Degree()==0)
-    *result= 0ULL;
+    *result= 1ULL;
   return true;
 }
 
@@ -460,6 +462,18 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
 //    t= 2w (mod l); return;
 //  else
 //    t= -2w (mod l) return;
+
+if(l==3ULL) {
+  *result= 2ULL;
+  return true;
+}
+if(l==5ULL) {
+  *result= 3ULL;
+  return true;
+}
+return false;
+
+#if 0 
   int   n= (l-1)/2;
   int   j;
 
@@ -467,21 +481,31 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
   }
   // TOODO
   return true;
+#endif
 }
 
 //  schoof
 //   Given short Weierstrauss curves, compute
 //   the order of the elliptic curve group.
 bool schoof(EccCurve& curve, BigNum& order) {
-  int       num_primes= 0;
-  uint64_t  primes[512];
-  uint64_t  t_mod_prime[512];
-  BigNum    composite_modulus(order.Capacity());
-  BigNum    composite_solution(order.Capacity());
-  BigNum    s(order.Capacity());
-  Polynomial  curve_poly(curve.p_->Capacity(), 5, *curve.p_);
-  int       j;
+  int           num_primes= 0;
+  uint64_t      primes[512];
+  uint64_t      t_mod_prime[512];
+  BigNum        sqrt_p(order.Capacity());
+  BigNum        hasse_bound(order.Capacity());
+  BigNum        composite_modulus(order.Capacity());
+  BigNum        composite_solution(order.Capacity());
+  BigNum        s(order.Capacity());
+  BigNum        t(order.Capacity());
+  Polynomial    curve_poly(curve.p_->Capacity(), 5, *curve.p_);
+  int           j;
 
+  if(!SquareRoot(*curve.p_, sqrt_p)) {
+    return false;
+  }
+  if(!BigUnsignedMult(sqrt_p, Big_Two, hasse_bound)) {
+    return false;
+  }
   if(!PickPrimes(&num_primes, primes, *curve.p_))
     return false;
   if(!PolyFromCurve(curve, curve_poly))
@@ -513,7 +537,15 @@ bool schoof(EccCurve& curve, BigNum& order) {
     ret= false;
     goto done;
   }
-  if(!BigSub(s, composite_solution, order)) {
+  if(BigCompare(composite_solution, hasse_bound)>0) {
+    if(!BigSub(composite_solution, composite_modulus, t)) {
+    ret= false;
+    goto done;
+    }
+  } else {
+    t.CopyFrom(composite_solution);
+  }
+  if(!BigSub(s, t, order)) {
     ret= false;
     goto done;
   }

@@ -313,27 +313,127 @@ bool SimplePhiTest() {
    *  l=5, a=3 (5)
    *  a= -7.  So #E=27
    */
-  extern bool InitPhi(int, Polynomial&);
-  if(!InitPhi(7, curve_poly)) {
+  extern Polynomial**   Phi_array;
+  extern bool		PickPrimes(int*, uint64_t*, BigNum&);
+  extern bool		InitPhi(int, Polynomial&);
+  extern bool		Compute_t_mod_2(Polynomial&, uint64_t*);
+  extern bool		Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result);
+  extern bool		ComputeCompositeSolutionUsingCrt(int n, uint64_t* moduli, uint64_t* solutions,
+                              BigNum& composite_modulus, BigNum& composite_solution);
+  extern bool		SquareRoot(BigNum&, BigNum&);
+  int                   i;
+  extern  int           Max_phi;
+  int			num_primes= 0;
+  uint64_t		primes[50];
+  uint64_t		solutions[50];
+  BigNum		order(4);
+  BigNum		s(4);
+  BigNum		t(4);
+  BigNum		composite_modulus(4);
+  BigNum		composite_solution(4);
+  BigNum		sqrt_p(4);
+  BigNum		hasse_bound(4);
+
+  if(!SquareRoot(small_p, sqrt_p)) {
+    printf("SquareRoot failed\n");
+    return false;
+  }
+  if(!BigUnsignedMult(sqrt_p, Big_Two, hasse_bound)) {
+    printf("BigUnsignedMultfailed\n");
+    return false;
+  }
+printf("hasse_bound: ");
+PrintNumToConsole(hasse_bound, 10ULL);
+printf("\n");
+
+  if(!PickPrimes(&num_primes, primes, small_p)) {
+    printf("PickPrimes failed\n");
+    return false;
+  }
+  printf("selected primes\n");
+  for(i=0; i<num_primes; i++) {
+    printf("%lld, \n", primes[i]);
+  }
+  printf("\n");
+
+  if(!InitPhi(primes[num_primes-1], curve_poly)) {
     printf("InitPhi failed\n");
     return false;
   }
-
-  int                   i;
-  extern  int           Max_phi;
-  extern Polynomial**   Phi_array;
   for(i=0; i<=Max_phi;i++) {
     printf("phi[%d], alloc %d: ", i, Phi_array[i]->num_c_);
     Phi_array[i]->Print(true);
     printf("\n");
   }
-  return true;
+
+  bool  ret= true;
+  if(!Compute_t_mod_2(curve_poly, &solutions[0])) {
+    printf("Compute_t_mod_2 failed\n");
+    ret= false;
+    goto done;
+  }
+  printf("Solution mod %lld is %lld\n", primes[0], solutions[0]);
+  for(i=1; i<num_primes;i++) {
+    if(!Compute_t_mod_l(curve_poly, primes[i], &solutions[i])) {
+      printf("Compute_t_mod_l failed\n");
+      return false;
+    }
+  }
+  for(i=1; i<num_primes;i++) {
+    printf("Solution mod %lld is %lld\n", primes[i], solutions[i]);
+  }
+  // compute t using CRT
+  if(!ComputeCompositeSolutionUsingCrt(num_primes, primes, solutions,
+                              composite_modulus, composite_solution)) {
+    ret= false;
+    goto done;
+  }
+  printf("composite_modulus: ");
+  PrintNumToConsole(composite_modulus, 10ULL);
+  printf("\n");
+  printf("composite_solution: ");
+  PrintNumToConsole(composite_solution, 10ULL);
+  printf("\n");
+  // get #E = p+1-t
+  order.ZeroNum();
+  if(!BigUnsignedAdd(*curve_poly.m_, Big_One, s)) {
+    ret= false;
+    goto done;
+  }
+  if(BigCompare(composite_solution, hasse_bound)>0) {
+    if(!BigSub(composite_solution, composite_modulus, t)) {
+    ret= false;
+    goto done;
+    }
+  } else {
+    t.CopyFrom(composite_solution);
+  }
+  printf("s: "); PrintNumToConsole(s, 10ULL); printf("\n");
+  printf("t: "); PrintNumToConsole(t, 10ULL); printf("\n");
+  if(!BigSub(s, t, order)) {
+    ret= false;
+    goto done;
+  }
+  printf("order: "); PrintNumToConsole(order, 10ULL); printf("\n");
+done:
+  return ret;
 }
 
 bool SimpleSchoofTest() {
   printf("SimpleSchoofTest()\n");
-
+  return true;
 /*
+  BigNum    small_order(2);
+  BigNum    small_p(2, 19ULL);
+  EccCurve  curve;
+
+  // curve_poly= x^3+2x+1 (mod 19)
+  if(!schoof(curve, small_order)) {
+    printf("schoof failed\n");
+    return false;
+  }
+
+  return true;
   extern EccKey   P256_Key;
   Polynomial curve_poly(8, 5, *P256_Key.c_.p_);
   if(!PolyFromCurve(P256_Key.c_, curve_poly)) {
@@ -342,11 +442,11 @@ bool SimpleSchoofTest() {
   }
   printf("curve prime: "); PrintNumToConsole(*P256_Key.c_.p_, 10ULL); printf("\n");
   curve_poly.Print();
- */
-  // Compute_t_mod_2(Polynomial& curve_poly, uint64_t* result)
-  // Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result)
-  // schoof(EccCurve& curve, BigNum& order)
+  Compute_t_mod_2(Polynomial& curve_poly, uint64_t* result)
+  Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result)
+  schoof(EccCurve& curve, BigNum& order)
   return true;
+ */
 }
  
 TEST(SimpleTest, SimpleTest) {
