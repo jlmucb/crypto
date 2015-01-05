@@ -473,15 +473,77 @@ if(l==5ULL) {
 }
 return false;
 
-#if 0 
-  int   n= (l-1)/2;
-  int   j;
+  int           n= (l-1)/2;
+  int           j;
+  Polynomial    x_poly(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
+  Polynomial    x_p_squared(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
+  Polynomial    y_p_squared(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
+  BigNum        l_bignum(curve_poly.m_->Capacity());
+  BigNum        j_bignum(curve_poly.m_->Capacity());
+  BigNum        p_reduced(2);
+  BigNum        p_squared(2*curve_poly.m_->Capacity()+1);
+  BigNum        s(2*curve_poly.m_->Capacity()+1);
+  BigNum        p_squared_minus1_halved(2*curve_poly.m_->Capacity()+1);
+  RationalPoly  mult_p_reduced_x(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
+  RationalPoly  mult_p_reduced_y(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
+  RationalPoly  power_p_reduced_x(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
+  RationalPoly  power_p_reduced_y(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
+  RationalPoly  mult_j_x(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
+  RationalPoly  mult_j_y(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
+  RationalPoly  x_prime(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
+  RationalPoly  y_prime(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
+  Polynomial    mod_poly(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
 
+  l_bignum.value_[0]= l;
+  l_bignum.Normalize();
+  if(!OnePoly(x_poly))
+    return false;
+
+  if(!BigMod(*curve_poly.m_, l_bignum, p_reduced))
+    return false;
+  // p_reduced <l/2
+  if(!BigUnsignedMult(*curve_poly.m_, *curve_poly.m_, p_squared))
+    return false;
+  if(!BigUnsignedSub(p_squared, Big_One, s))
+    return false;
+  if(!BigShift(s, -1, p_squared_minus1_halved))
+    return false;
+  // (x', y')= (x^(p^2), y^(p^2)) + p_reduced(x,y)
+  if(!EccSymbolicPowerEndomorphism(curve_poly, p_squared, power_p_reduced_x,
+                                   power_p_reduced_y))
+    return false;
+  if(!EccSymbolicMultEndomorphism(curve_poly, p_reduced, mult_p_reduced_x, 
+                                  mult_p_reduced_y))
+    return false;
+  if(!ReducedEccSymbolicAdd(curve_poly, mod_poly,power_p_reduced_x,
+                                   power_p_reduced_y, mult_p_reduced_x,
+                                  mult_p_reduced_y, x_prime, y_prime))
+    return false;
+  
   for(j=1; j<=n; j++) {
+    j_bignum.value_[0]= (uint64_t)j;
+    j_bignum.Normalize();
+    if(!EccSymbolicMultEndomorphism(curve_poly, j_bignum, mult_j_x, mult_j_y))
+      return false;
+    //      if (x'-x[j]^p)!= 0 (mod phi[l](x))
+    //        continue;
+    //      Compute y' and y[j].  
+    //      if (y'-y[j])/y== 0 (mod (phi[l](x)) 
+    //         t= j (mod l)
+    //      else
+    //         t= -j (mod l)
   }
-  // TOODO
+  //  if p is not a residue mod l
+  //      t=0 (mod l); return;
+  //  w^2= p (mod l).  
+  //  if(gcd(numerator(x^p-x[w]), phi[l](x))==1
+  //    t= 0 (mod l); return
+  //  test=(gcd(numerator(y^p-y[w]), phi[l](x))
+  //  if(test==1)
+  //    t= 2w (mod l); return;
+  //  else
+  //    t= -2w (mod l) return;
   return true;
-#endif
 }
 
 //  schoof
