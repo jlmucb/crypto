@@ -172,15 +172,15 @@ bool evenrecurrence(int n, Polynomial& curve_poly, Polynomial& phi_m, Polynomial
                     Polynomial& phi_m_plus_1, Polynomial& phi_m_minus_1, 
                    Polynomial& phi_m_minus_2, Polynomial& phi_out) {
   //  phi_out= phi[m]/phi[2](phi[m+2]phi^2[m-1]-phi[m-2]phi^2[m+1])
-  int m= n>>1; 
   Polynomial  t1(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
   Polynomial  t2(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
   Polynomial  t3(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
   Polynomial  t4(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
   BigNum      two_inv(phi_out.m_->Capacity());
 
-printf("evenrecurrence n=%d, m=%d\n", n, m);
 #if 0
+int m= n>>1; 
+printf("evenrecurrence n=%d, m=%d\n", n, m);
 printf("phi_m: "); phi_m.Print(true); printf("\n");
 printf("phi_m_plus_2: "); phi_m_plus_2.Print(true); printf("\n");
 printf("phi_m_plus_1: "); phi_m_plus_1.Print(true); printf("\n");
@@ -388,16 +388,12 @@ bool PickPrimes(int* num_primes, uint64_t* prime_list, BigNum& p) {
   prime_list[(*num_primes)++]= 2ULL;
   composite_modulus.value_[0]= 1ULL;
   composite_modulus.Normalize();
-printf("SquareRoot of "); PrintNumToConsole(p, 10ULL); printf("\n");
   if(!SquareRoot(p, temp))
     return false;
-printf(" is "); PrintNumToConsole(temp, 10ULL); printf("\n");
   if(!SquareRoot(temp, sqrt_sqrt_p))
     return false;
-printf("Square root of that is "); PrintNumToConsole(sqrt_sqrt_p, 10ULL); printf("\n");
   if(!BigUnsignedMult(sqrt_sqrt_p, Big_Four, bound))
     return false;
-printf("PickPrimes bound: "); PrintNumToConsole(bound, 10ULL); printf("\n");
   
   // prod_i prime_list[i]> 4p^(1/4)
   for(;;) {
@@ -478,8 +474,9 @@ return false;
   Polynomial    x_poly(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
   Polynomial    x_p_squared(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
   Polynomial    y_p_squared(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
-  BigNum        l_bignum(curve_poly.m_->Capacity());
+  BigNum        l_bignum(2);
   BigNum        j_bignum(curve_poly.m_->Capacity());
+  BigNum        w_bignum(2);
   BigNum        p_reduced(2);
   BigNum        p_squared(2*curve_poly.m_->Capacity()+1);
   BigNum        s(2*curve_poly.m_->Capacity()+1);
@@ -492,7 +489,12 @@ return false;
   RationalPoly  mult_j_y(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
   RationalPoly  x_prime(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
   RationalPoly  y_prime(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
-  Polynomial    mod_poly(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
+  RationalPoly  t1(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
+  RationalPoly  t2(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
+  Polynomial    p1(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
+  Polynomial    p2(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
+  RationalPoly  x_w(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
+  RationalPoly  y_w(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
 
   l_bignum.value_[0]= l;
   l_bignum.Normalize();
@@ -509,40 +511,79 @@ return false;
   if(!BigShift(s, -1, p_squared_minus1_halved))
     return false;
   // (x', y')= (x^(p^2), y^(p^2)) + p_reduced(x,y)
-  if(!EccSymbolicPowerEndomorphism(curve_poly, p_squared, power_p_reduced_x,
-                                   power_p_reduced_y))
+  if(!EccSymbolicPowerEndomorphism(curve_poly, p_squared, *Phi_array[l],
+                        power_p_reduced_x, power_p_reduced_y))
     return false;
-  if(!EccSymbolicMultEndomorphism(curve_poly, p_reduced, mult_p_reduced_x, 
-                                  mult_p_reduced_y))
+  if(!EccSymbolicMultEndomorphism(curve_poly, p_reduced, *Phi_array[l], 
+                                  mult_p_reduced_x, mult_p_reduced_y))
     return false;
-  if(!ReducedEccSymbolicAdd(curve_poly, mod_poly,power_p_reduced_x,
-                                   power_p_reduced_y, mult_p_reduced_x,
+  if(!ReducedEccSymbolicAdd(curve_poly, *Phi_array[l], power_p_reduced_x,
+                                  power_p_reduced_y, mult_p_reduced_x,
                                   mult_p_reduced_y, x_prime, y_prime))
     return false;
   
   for(j=1; j<=n; j++) {
     j_bignum.value_[0]= (uint64_t)j;
     j_bignum.Normalize();
-    if(!EccSymbolicMultEndomorphism(curve_poly, j_bignum, mult_j_x, mult_j_y))
+    if(!EccSymbolicMultEndomorphism(curve_poly, j_bignum, *Phi_array[l], mult_j_x, mult_j_y))
       return false;
-    //      if (x'-x[j]^p)!= 0 (mod phi[l](x))
-    //        continue;
-    //      Compute y' and y[j].  
-    //      if (y'-y[j])/y== 0 (mod (phi[l](x)) 
-    //         t= j (mod l)
-    //      else
-    //         t= -j (mod l)
+    if(!ReducedRaisetoLargePower(*mult_j_x.top_, *curve_poly.m_, *Phi_array[l], *t1.top_))
+      return false;
+    OnePoly(*t1.bot_);
+    // FIX: should be sub
+    if(!PolySub(*x_prime.top_, *t1.top_, p1))
+      return false;
+    if(!ReduceModPoly(p1, *Phi_array[l], p2))
+      return false;
+    if(!p2.IsZero())
+      continue;
+    // Compute y' and y[j].  
+    if(!ReducedRaisetoLargePower(*mult_j_y.top_, *curve_poly.m_, *Phi_array[l], *t1.top_))
+      return false;
+    if(!PolySub(*y_prime.top_, *t1.top_, p1))
+      return false;
+    if(!ReduceModPoly(p1, *Phi_array[l], p2))
+      return false;
+    if(p2.IsZero()) {
+      *result= (uint64_t)j;
+    } else {
+      *result= l-(uint64_t)j;
+    }
+    return true;
   }
-  //  if p is not a residue mod l
-  //      t=0 (mod l); return;
-  //  w^2= p (mod l).  
-  //  if(gcd(numerator(x^p-x[w]), phi[l](x))==1
-  //    t= 0 (mod l); return
-  //  test=(gcd(numerator(y^p-y[w]), phi[l](x))
-  //  if(test==1)
-  //    t= 2w (mod l); return;
-  //  else
+  if(!BigModIsSquare(*curve_poly.m_, l_bignum)) {
+    *result= 0ULL;
+    return true;
+  }
+  if(!BigModSquareRoot(*curve_poly.m_, l_bignum, w_bignum))
+    return false;
+  if(!ReducedRaisetoLargePower(x_poly, *curve_poly.m_, *Phi_array[l], p1))
+    return false;
+  if(!ReduceModPoly(p1, *Phi_array[l], p2))
+    return false;
+  if(!EccSymbolicPowerEndomorphism(curve_poly, *curve_poly.m_, *Phi_array[l],
+                        x_w, y_w))
+    return false;
+  if(!PolySub(p2, *x_w.top_, p1))
+    return false;
+  if(!ReduceModPoly(p1, *Phi_array[l], p2))
+    return false;
+  if(p2.Degree()==0) {
+    *result= 0ULL;
+    return true;
+  }
+  if(!ReducedRaisetoLargePower(curve_poly, *curve_poly.m_, *Phi_array[l], p1))
+    return false;
+  if(!PolySub(p1, *y_w.top_, p2))
+    return false;
+  if(!ReduceModPoly(p2, *Phi_array[l], p1))
+    return false;
+  if(p2.Degree()==0) {
+    *result= (2ULL*l_bignum.value_[0])%l;
+  } else {
   //    t= -2w (mod l) return;
+    *result= (l-(2ULL*l_bignum.value_[0]))%l;
+  }
   return true;
 }
 

@@ -43,7 +43,7 @@ LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a  $(LOCAL_LIB)/libgf
 dobj=	$(O)/polynomial.o $(O)/rational.o $(O)/schooftest.o $(O)/util.o \
 	$(O)/bignum.o $(O)/globals.o $(O)/basic_arith.o $(O)/number_theory.o \
 	$(O)/intel64_arith.o $(O)/smallprimes.o $(O)/conversions.o $(O)/ecc_symbolic.o \
-	$(O)/rsa.o $(O)/keys.o $(O)/keys.pb.o $(O)/ecc.o $(O)/schoof.o
+	$(O)/rsa.o $(O)/keys.o $(O)/keys.pb.o $(O)/ecc.o $(O)/schoof.o $(O)/bsgs.o
 
 all:	schooftest.exe
 clean:
@@ -84,6 +84,10 @@ $(O)/util.o: $(SRC_DIR)/common/util.cc
 $(O)/conversions.o: $(SRC_DIR)/common/conversions.cc
 	@echo "compiling conversions.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/conversions.o $(SRC_DIR)/common/conversions.cc
+
+$(O)/bsgs.o: $(SRC_DIR)/indeterminate/bsgs.cc
+	@echo "compiling bsgs.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/bsgs.o $(SRC_DIR)/indeterminate/bsgs.cc
 
 $(O)/polynomial.o: $(SRC_DIR)/indeterminate/polynomial.cc
 	@echo "compiling polynomial.cc"

@@ -432,7 +432,7 @@ bool ReducedRaisetoLargePower(Polynomial& in, BigNum& e,
 
 //  Since this is an endomorphism, the result is (r(x), yq(x)) and we return
 //  out_x= r[x] and out_y= q(x).  So out_y should be multiplied by y to give the answer
-bool EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m, 
+bool EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m, Polynomial& mod_poly,
                                  RationalPoly& out_x, RationalPoly& out_y) {
   // m(x/1, 1/1) --> (out_x, out_y)
   RationalPoly x_rational(curve_poly.m_->Capacity(), 4, *curve_poly.m_);
@@ -441,14 +441,14 @@ bool EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m,
   OneRational(y_rational);
   x_rational.top_->c_[1]->value_[0]= 1ULL;
   x_rational.top_->c_[1]->Normalize();
-  if(!EccSymbolicMult(curve_poly, m, x_rational, y_rational, out_x, out_y))
+  if(!ReducedEccSymbolicMult(curve_poly, mod_poly, m, x_rational, y_rational, out_x, out_y))
     return false;
   return true;
 }
 
 //  Since this is an endomorphism, the result is (r(x), yq(x)) and we return
 //  out_x= r[x] and out_y= q(x).  So out_y should be multiplied by y to give the answer
-bool EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e, 
+bool EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e, Polynomial& mod_poly,
                                   RationalPoly& out_x, RationalPoly& out_y) {
   // out_x= x^e, out_y= curve_poly^(e-1)/2  reduced by curve_poly
   // set in RationalPolys with denominator 1
@@ -466,9 +466,9 @@ bool EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e,
     return false;
   if(!BigShift(t, -1, e1))
     return false;
-  if(!ReducedRaisetoLargePower(x_poly, e, curve_poly, *out_x.top_))
+  if(!ReducedRaisetoLargePower(x_poly, e, mod_poly, *out_x.top_))
     return false;
-  if(!ReducedRaisetoLargePower(x_poly, e1, curve_poly, *out_y.top_))
+  if(!ReducedRaisetoLargePower(curve_poly, e1, mod_poly, *out_y.top_))
     return false;
   OnePoly(*out_x.bot_);
   OnePoly(*out_y.bot_);

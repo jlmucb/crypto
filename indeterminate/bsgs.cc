@@ -19,15 +19,20 @@
 
 #include "bignum.h"
 #include "stdio.h"
+#include "cryptotypes.h"
+#include "bignum.h"
+#include "ecc.h"
+
+extern bool SquareRoot(BigNum& n, BigNum& r);
 
 // ----------------------------------------------------------------------------
 
 /*
  * 1. Q= (q+1)P
  * 2. Choose m>q^(1/4)
- * 3. Compute Q+jP, j= 0, 1, ..., m and store
+ * 3. Compute jP, j= 0, 1, ..., m and store
  * 4. Compute Q+k(2mP), k= -m, -m+1, ... 0, 1, ..., m
- *      until Q+k(2mP)= Q+jP or Q-jP
+ *      until Q+k(2mP)= jP or -jP
  * 5. (q+1+2mk+j)P= O or (q+1+2mk-j)P= O.  Let M be coefficient of P
  * 6. Factor M into p[0]^e[0] ... p[l]^e[l]
  * 7. Repeat until failure if (M/p[i])P=0, replace M with /p[i] 
@@ -35,25 +40,155 @@
  * If we're looking for the order of the group, do the above with
  *    random points until LCM divides one N with q+1-2(q^1/2)<=N<=q+1+2(q^1/2).
  *    Conclude N is the order
- *
- * Example
- *  E: y^2= x^3-10x+21 (mod 557)
- *  P= (2,3)
- *  Q= 558P= (418, 33)
- *  m=5>(557)^(1/4)
- *  jP= O, (2,3), (58, 164), (44, 294), (56, 339), (132, 364)
- *  k=1, Q= kP+(2m)P= (2,3)
- *  (q+1+2m-j)P= 567P= O
- *  567= 3^4 x 7
- *  (567/3)P= 189P= O
- *  |P|=189
  */
+
+
+int64_t       Num_points_in_table= -1;
+CurvePoint**  Points_table= NULL;
+
+
+int64_t Index_point_in_table(CurvePoint& P) {
+  int64_t   j;
+
+  for(j=0;j<Num_points_in_table;j++) {
+    if(BigCompare(*Points_table[j]->x_, *P.x_)!=0)
+     continue;
+    if(BigCompare(*Points_table[j]->y_, *P.y_)==0)
+     return j;
+  }
+  return -1LL;
+}
+
+bool Populate_table(EccCurve& curve, int64_t m, CurvePoint& P) {
+  int64_t   j;
+  BigNum    j_bignum(2);
+
+  Points_table= new CurvePoint*[m];
+  for(j=0; j<=m; j++) {
+    j_bignum.value_[0]= (uint64_t)j;
+    j_bignum.Normalize();
+    Points_table[j]= new CurvePoint(curve.p_->Capacity());
+    if(!FasterEccMult(curve, P, j_bignum, *Points_table[j]))
+      return false;
+  }
+  Num_points_in_table= m+1;
+  return true;
+}
+
+void Free_table() {
+  int64_t   j;
+
+  if(Num_points_in_table<=0)
+    return;
+  for(j=0; j<Num_points_in_table;j++) {
+    if(Points_table[j]!=NULL)
+      free(Points_table[j]);
+    Points_table[j]= NULL;
+  }
+}
+
+bool Reduce_annihilator(EccCurve& curve, CurvePoint& P, uint64_t n, BigNum& order) {
+  order.value_[0]= n;
+  order.Normalize();
+  return true;
+}
 
 bool eccbsgspointorder(EccCurve& curve, CurvePoint& P, BigNum& order)
 {
-#ifdef JLMDEBUG
-  printf("eccbsgspointorder\n");
-#endif
+  BigNum        sqrt_p(curve.p_->Capacity());
+  BigNum        sqrt_sqrt_p(curve.p_->Capacity());
+  BigNum        p_plus_1(curve.p_->Capacity());
+  BigNum        two_m(curve.p_->Capacity()+1);
+  BigNum        k_bignum(curve.p_->Capacity()+1);
+  BigNum        j_bignum(curve.p_->Capacity()+1);
+  BigNum        n_bignum(curve.p_->Capacity()+1);
+  BigNum        n1(curve.p_->Capacity()+1);
+  BigNum        n2(curve.p_->Capacity()+1);
+  BigNum        n3(curve.p_->Capacity()+1);
+  CurvePoint    two_m_P(P);
+  CurvePoint    Q(P);
+  CurvePoint    R(P);
+  CurvePoint    T(P);
+  int64_t       m;
+  int64_t       j, k;
+  uint64_t      n= 0ULL;
+  bool          ret= false;
+  
+  if(!SquareRoot(*curve.p_, sqrt_p))
+    return false;
+  if(!SquareRoot(sqrt_p, sqrt_sqrt_p))
+    return false;
+  if(!BigUnsignedAdd(*curve.p_, Big_One, p_plus_1))
+    return false;
+  if(!FasterEccMult(curve, P, p_plus_1, Q))
+    return false;
+  if(sqrt_sqrt_p.Size()>1) {
+    printf("BSGS limited to p^(1/4)<2^64\n");
+    return false;
+  }
+  m= sqrt_sqrt_p.value_[0]+1ULL;
+  if(!Populate_table(curve, m, P)) {
+    printf("Can't Populate_table\n");
+    return false;
+  }
+  BigNum m_bignum((uint64_t)m);
+  if(!BigUnsignedMult(m_bignum, Big_Two, two_m))
+    goto done;
+
+  if(!FasterEccMult(curve, P, two_m, two_m_P)) {
+    goto done;
+  }
+
+  for(k=-m; k<=m; k++) {
+    // Compute R= Q+k(2mP)
+    k_bignum.value_[0]= (uint64_t)k;
+    k_bignum.Normalize();
+    if(!FasterEccMult(curve, two_m_P, k_bignum, T))
+      goto done;
+    if(!EccAdd(curve, Q, T, R))
+      goto done;
+
+    // In table?
+    j= Index_point_in_table(R);
+    if(j<0)
+      continue;
+
+    // Compute n= (p+1+2mk+-j)
+    j_bignum.value_[0]= (uint64_t)j;
+    j_bignum.Normalize();
+    if(!BigUnsignedMult(m_bignum, Big_Two, n2))
+      goto done;
+    if(!BigUnsignedMult(k_bignum, n2, n3))
+      goto done;
+    if(!BigAdd(n3, j_bignum, n_bignum))
+      goto done;
+    if(!FasterEccMult(curve, P, n_bignum, T))
+      goto done;
+    if(T.IsZero()) {
+      n= n_bignum.value_[0];
+      if(Reduce_annihilator(curve, P, n, order)) {
+        ret= true;
+        goto done;
+      }
+    }
+    j_bignum.ToggleSign();
+    if(!BigAdd(n3, j_bignum, n_bignum))
+      goto done;
+    if(!FasterEccMult(curve, P, n_bignum, T))
+      goto done;
+    if(T.IsZero()) {
+      n= n_bignum.value_[0];
+      if(Reduce_annihilator(curve, P, n, order)) {
+        ret= true;
+        goto done;
+      }
+    }
+    goto done;
+  }
+
+done:
+  Free_table();
+  return ret;
 }
 
 // ----------------------------------------------------------------------------

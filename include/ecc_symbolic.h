@@ -47,8 +47,8 @@ bool ReducedEccSymbolicMult(Polynomial& curve_poly,
                      RationalPoly& out_x, RationalPoly& out_y);
 bool ReducedRaisetoLargePower(Polynomial& in, BigNum& e,
                        Polynomial& mod_poly, Polynomial& out);
-bool EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e, 
+bool EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e, Polynomial& mod_poly,
                                   RationalPoly& out_x, RationalPoly& out_y);
-bool EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m, 
+bool EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m, Polynomial& mod_poly,
                                  RationalPoly& out_x, RationalPoly& out_y);
 #endif

@@ -59,6 +59,25 @@ bool InitPolys(BigNum* c) {
   return true;
 }
 
+bool BsgsTest() {
+  printf("BsgsTest()\n");
+
+/*
+ * Example
+ *  E: y^2= x^3-10x+21 (mod 557)
+ *  P= (2,3)
+ *  Q= 558P= (418, 33)
+ *  m=5>(557)^(1/4)
+ *  jP= O, (2,3), (58, 164), (44, 294), (56, 339), (132, 364)
+ *  k=1, Q= kP+(2m)P= (2,3)
+ *  (q+1+2m-j)P= 567P= O
+ *  567= 3^4 x 7
+ *  (567/3)P= 189P= O
+ *  |P|=189
+ */
+  return true;
+}
+
 bool SimpleSymbolicTest() {
   printf("SimpleSymbolicTest()\n");
   BigNum      m(5);
@@ -314,25 +333,25 @@ bool SimplePhiTest() {
    *  a= -7.  So #E=27
    */
   extern Polynomial**   Phi_array;
-  extern bool		PickPrimes(int*, uint64_t*, BigNum&);
-  extern bool		InitPhi(int, Polynomial&);
-  extern bool		Compute_t_mod_2(Polynomial&, uint64_t*);
-  extern bool		Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result);
-  extern bool		ComputeCompositeSolutionUsingCrt(int n, uint64_t* moduli, uint64_t* solutions,
+  extern bool           PickPrimes(int*, uint64_t*, BigNum&);
+  extern bool           InitPhi(int, Polynomial&);
+  extern bool           Compute_t_mod_2(Polynomial&, uint64_t*);
+  extern bool           Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result);
+  extern bool           ComputeCompositeSolutionUsingCrt(int n, uint64_t* moduli, uint64_t* solutions,
                               BigNum& composite_modulus, BigNum& composite_solution);
-  extern bool		SquareRoot(BigNum&, BigNum&);
+  extern bool           SquareRoot(BigNum&, BigNum&);
   int                   i;
   extern  int           Max_phi;
-  int			num_primes= 0;
-  uint64_t		primes[50];
-  uint64_t		solutions[50];
-  BigNum		order(4);
-  BigNum		s(4);
-  BigNum		t(4);
-  BigNum		composite_modulus(4);
-  BigNum		composite_solution(4);
-  BigNum		sqrt_p(4);
-  BigNum		hasse_bound(4);
+  int                   num_primes= 0;
+  uint64_t              primes[50];
+  uint64_t              solutions[50];
+  BigNum                order(4);
+  BigNum                s(4);
+  BigNum                t(4);
+  BigNum                composite_modulus(4);
+  BigNum                composite_solution(4);
+  BigNum                sqrt_p(4);
+  BigNum                hasse_bound(4);
 
   if(!SquareRoot(small_p, sqrt_p)) {
     printf("SquareRoot failed\n");
@@ -450,6 +469,7 @@ bool SimpleSchoofTest() {
 }
  
 TEST(SimpleTest, SimpleTest) {
+  EXPECT_TRUE(BsgsTest());
   EXPECT_TRUE(SimpleSymbolicTest());
   EXPECT_TRUE(SimplePhiTest());
   EXPECT_TRUE(SimpleSchoofTest());
