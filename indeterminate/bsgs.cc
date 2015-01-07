@@ -101,6 +101,23 @@ void Free_table() {
 }
 
 bool Reduce_annihilator(EccCurve& curve, CurvePoint& P, uint64_t n, BigNum& order) {
+  extern uint64_t smallest_primes[];
+  extern int      num_smallest_primes;
+  int             j;
+  BigNum          t_bignum(2);
+  CurvePoint      Q(2);
+
+  for(j=0; j<num_smallest_primes && n>=smallest_primes[j]; j++) {
+    while((n%smallest_primes[j])==0 && n>1ULL) {
+      t_bignum.value_[0]= n/smallest_primes[j];
+      t_bignum.Normalize();
+      if(!EccMult(curve, P, t_bignum, Q))
+        return false;
+      if(!Q.IsZero())
+        break;
+      n/= smallest_primes[j];
+    }
+  }
   order.value_[0]= n;
   order.Normalize();
   return true;
