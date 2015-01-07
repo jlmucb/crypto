@@ -62,19 +62,34 @@ bool InitPolys(BigNum* c) {
 bool BsgsTest() {
   printf("BsgsTest()\n");
 
-/*
- * Example
- *  E: y^2= x^3-10x+21 (mod 557)
- *  P= (2,3)
- *  Q= 558P= (418, 33)
- *  m=5>(557)^(1/4)
- *  jP= O, (2,3), (58, 164), (44, 294), (56, 339), (132, 364)
- *  k=1, Q= kP+(2m)P= (2,3)
- *  (q+1+2m-j)P= 567P= O
- *  567= 3^4 x 7
- *  (567/3)P= 189P= O
- *  |P|=189
- */
+ /*
+  * Example
+  *  E: y^2= x^3-10x+21 (mod 557)
+  *  P= (2,3)
+  *  Q= 558P= (418, 33)
+  *  m=5>(557)^(1/4)
+  *  jP= O, (2,3), (58, 164), (44, 294), (56, 339), (132, 364)
+  *  k=1, Q= kP+(2m)P= (2,3)
+  *  (q+1+2m-j)P= 567P= O
+  *  567= 3^4 x 7
+  *  (567/3)P= 189P= O
+  *  |P|=189
+  */
+  BigNum  test_a(2, 547ULL);
+  BigNum  test_b(2, 21ULL);
+  BigNum  test_p(2, 557ULL);
+  BigNum  test_P_x(2, 557ULL);
+  BigNum  test_P_y(2, 557ULL);
+  BigNum  test_order(2);
+  CurvePoint  test_P(test_P_x, test_P_y);
+  EccCurve  test_curve(test_a, test_b, test_p);
+  if(!eccbsgspointorder(test_curve, test_P, test_order)) {
+    printf("eccbsgspointorder failed\n")
+    return false;
+  }
+  printf("Curve: "); test_curve.PrintCurve(); printf("\n");
+  printf("P: "); test_P.PrintPoint(); printf("\n");
+  printf("order: "); test_order.Print(true); printf("\n");
   return true;
 }
 
