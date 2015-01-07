@@ -68,11 +68,24 @@ bool Populate_table(EccCurve& curve, int64_t m, CurvePoint& P) {
     j_bignum.value_[0]= (uint64_t)j;
     j_bignum.Normalize();
     Points_table[j]= new CurvePoint(curve.p_->Capacity());
-    if(!FasterEccMult(curve, P, j_bignum, *Points_table[j]))
+    if(!EccMult(curve, P, j_bignum, *Points_table[j]))
       return false;
   }
   Num_points_in_table= m+1;
   return true;
+}
+
+void Print_table() {
+  int64_t   j;
+
+  printf("%lld points in point table\n", Num_points_in_table);
+  if(Num_points_in_table<=0)
+    return;
+  for(j=0; j<Num_points_in_table;j++) {
+    if(Points_table[j]!=NULL) {
+      printf("%lld: ", j); Points_table[j]->PrintPoint();printf("\n");
+    }
+  }
 }
 
 void Free_table() {
@@ -95,8 +108,8 @@ bool Reduce_annihilator(EccCurve& curve, CurvePoint& P, uint64_t n, BigNum& orde
 
 bool eccbsgspointorder(EccCurve& curve, CurvePoint& P, BigNum& order)
 {
-  BigNum        sqrt_p(curve.p_->Capacity());
-  BigNum        sqrt_sqrt_p(curve.p_->Capacity());
+  BigNum        sqrt_p(curve.p_->Capacity()+1);
+  BigNum        sqrt_sqrt_p(curve.p_->Capacity()+1);
   BigNum        p_plus_1(curve.p_->Capacity());
   BigNum        two_m(curve.p_->Capacity()+1);
   BigNum        k_bignum(curve.p_->Capacity()+1);
@@ -105,51 +118,64 @@ bool eccbsgspointorder(EccCurve& curve, CurvePoint& P, BigNum& order)
   BigNum        n1(curve.p_->Capacity()+1);
   BigNum        n2(curve.p_->Capacity()+1);
   BigNum        n3(curve.p_->Capacity()+1);
-  CurvePoint    two_m_P(P);
-  CurvePoint    Q(P);
-  CurvePoint    R(P);
-  CurvePoint    T(P);
+  CurvePoint    two_m_P(curve.p_->Capacity()+1);
+  CurvePoint    Q(curve.p_->Capacity()+1);
+  CurvePoint    R(curve.p_->Capacity()+1);
+  CurvePoint    T(curve.p_->Capacity()+1);
   int64_t       m;
   int64_t       j, k;
   uint64_t      n= 0ULL;
   bool          ret= false;
-  
+ 
   if(!SquareRoot(*curve.p_, sqrt_p))
     return false;
   if(!SquareRoot(sqrt_p, sqrt_sqrt_p))
     return false;
   if(!BigUnsignedAdd(*curve.p_, Big_One, p_plus_1))
     return false;
-  if(!FasterEccMult(curve, P, p_plus_1, Q))
+  if(!EccMult(curve, P, p_plus_1, Q))
     return false;
   if(sqrt_sqrt_p.Size()>1) {
     printf("BSGS limited to p^(1/4)<2^64\n");
     return false;
   }
   m= sqrt_sqrt_p.value_[0]+1ULL;
+printf("p_plus_1: "); PrintNumToConsole(p_plus_1, 10ULL);printf("\n");
+printf("Q: "); Q.PrintPoint();printf("\n");
+printf("m: %lld\n", m);
   if(!Populate_table(curve, m, P)) {
     printf("Can't Populate_table\n");
     return false;
   }
-  BigNum m_bignum((uint64_t)m);
+Print_table();
+  BigNum m_bignum(2, (uint64_t)m);
   if(!BigUnsignedMult(m_bignum, Big_Two, two_m))
     goto done;
 
-  if(!FasterEccMult(curve, P, two_m, two_m_P)) {
+  if(!EccMult(curve, P, two_m, two_m_P)) {
     goto done;
   }
+printf("two_m: "); PrintNumToConsole(two_m, 10ULL);printf("\n");
+printf("two_m_P: "); two_m_P.PrintPoint();printf("\n");
 
   for(k=-m; k<=m; k++) {
     // Compute R= Q+k(2mP)
-    k_bignum.value_[0]= (uint64_t)k;
+    if(k<0) {
+      k_bignum.value_[0]= (uint64_t)-k;
+      k_bignum.ToggleSign();
+    } else {
+      k_bignum.value_[0]= (uint64_t)k;
+    }
     k_bignum.Normalize();
-    if(!FasterEccMult(curve, two_m_P, k_bignum, T))
+    if(!EccMult(curve, two_m_P, k_bignum, T))
       goto done;
     if(!EccAdd(curve, Q, T, R))
       goto done;
 
     // In table?
+printf("R: "); R.PrintPoint();printf("\n");
     j= Index_point_in_table(R);
+printf("search j: %lld\n", j);
     if(j<0)
       continue;
 
@@ -158,13 +184,20 @@ bool eccbsgspointorder(EccCurve& curve, CurvePoint& P, BigNum& order)
     j_bignum.Normalize();
     if(!BigUnsignedMult(m_bignum, Big_Two, n2))
       goto done;
+printf("k_bignum: "); PrintNumToConsole(k_bignum, 10ULL);printf("\n");
+printf("j_bignum: "); PrintNumToConsole(j_bignum, 10ULL);printf("\n");
+printf("n2: "); PrintNumToConsole(n2, 10ULL);printf("\n");
     if(!BigUnsignedMult(k_bignum, n2, n3))
       goto done;
+printf("n3: "); PrintNumToConsole(n3, 10ULL);printf("\n");
     if(!BigAdd(n3, j_bignum, n_bignum))
       goto done;
-    if(!FasterEccMult(curve, P, n_bignum, T))
+printf("n_bignum: "); PrintNumToConsole(n_bignum, 10ULL);printf("\n");
+    if(!EccMult(curve, P, n_bignum, T))
       goto done;
+printf("T: "); T.PrintPoint();printf("\n");
     if(T.IsZero()) {
+printf("found solution\n");
       n= n_bignum.value_[0];
       if(Reduce_annihilator(curve, P, n, order)) {
         ret= true;
@@ -174,9 +207,12 @@ bool eccbsgspointorder(EccCurve& curve, CurvePoint& P, BigNum& order)
     j_bignum.ToggleSign();
     if(!BigAdd(n3, j_bignum, n_bignum))
       goto done;
-    if(!FasterEccMult(curve, P, n_bignum, T))
+printf("n_bignum: "); PrintNumToConsole(n_bignum, 10ULL);printf("\n");
+    if(!EccMult(curve, P, n_bignum, T))
       goto done;
+printf("T: "); T.PrintPoint();printf("\n");
     if(T.IsZero()) {
+printf("found solution\n");
       n= n_bignum.value_[0];
       if(Reduce_annihilator(curve, P, n, order)) {
         ret= true;

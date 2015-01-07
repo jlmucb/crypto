@@ -78,19 +78,19 @@ bool BsgsTest() {
   BigNum      test_a(2, 547ULL);
   BigNum      test_b(2, 21ULL);
   BigNum      test_p(2, 557ULL);
-  BigNum      test_P_x(2, 557ULL);
-  BigNum      test_P_y(2, 557ULL);
+  BigNum      test_P_x(2, 2ULL);
+  BigNum      test_P_y(2, 3ULL);
   BigNum      test_order(2);
   CurvePoint  test_P(test_P_x, test_P_y);
   EccCurve    test_curve(test_a, test_b, test_p);
   extern bool eccbsgspointorder(EccCurve&, CurvePoint&, BigNum&);
 
+  printf("Curve: "); test_curve.PrintCurve();
+  printf("P: "); test_P.PrintPoint(); printf("\n");
   if(!eccbsgspointorder(test_curve, test_P, test_order)) {
     printf("eccbsgspointorder failed\n");
     return false;
   }
-  printf("Curve: "); test_curve.PrintCurve(); printf("\n");
-  printf("P: "); test_P.PrintPoint(); printf("\n");
   printf("order: "); PrintNumToConsole(test_order, 10ULL); printf("\n");
   return true;
 }
@@ -486,10 +486,10 @@ bool SimpleSchoofTest() {
 }
  
 TEST(SimpleTest, SimpleTest) {
-  EXPECT_TRUE(BsgsTest());
   EXPECT_TRUE(SimpleSymbolicTest());
   EXPECT_TRUE(SimplePhiTest());
   EXPECT_TRUE(SimpleSchoofTest());
+  EXPECT_TRUE(BsgsTest());
 }
 
 DEFINE_string(log_file, "schooftest.log", "schooftest file name");
