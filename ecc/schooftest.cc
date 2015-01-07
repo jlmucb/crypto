@@ -75,21 +75,23 @@ bool BsgsTest() {
   *  (567/3)P= 189P= O
   *  |P|=189
   */
-  BigNum  test_a(2, 547ULL);
-  BigNum  test_b(2, 21ULL);
-  BigNum  test_p(2, 557ULL);
-  BigNum  test_P_x(2, 557ULL);
-  BigNum  test_P_y(2, 557ULL);
-  BigNum  test_order(2);
+  BigNum      test_a(2, 547ULL);
+  BigNum      test_b(2, 21ULL);
+  BigNum      test_p(2, 557ULL);
+  BigNum      test_P_x(2, 557ULL);
+  BigNum      test_P_y(2, 557ULL);
+  BigNum      test_order(2);
   CurvePoint  test_P(test_P_x, test_P_y);
-  EccCurve  test_curve(test_a, test_b, test_p);
+  EccCurve    test_curve(test_a, test_b, test_p);
+  extern bool eccbsgspointorder(EccCurve&, CurvePoint&, BigNum&);
+
   if(!eccbsgspointorder(test_curve, test_P, test_order)) {
-    printf("eccbsgspointorder failed\n")
+    printf("eccbsgspointorder failed\n");
     return false;
   }
   printf("Curve: "); test_curve.PrintCurve(); printf("\n");
   printf("P: "); test_P.PrintPoint(); printf("\n");
-  printf("order: "); test_order.Print(true); printf("\n");
+  printf("order: "); PrintNumToConsole(test_order, 10ULL); printf("\n");
   return true;
 }
 
