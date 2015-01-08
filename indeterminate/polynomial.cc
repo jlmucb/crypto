@@ -262,7 +262,7 @@ bool OnePoly(Polynomial& a) {
 // a(x)= b(x)*q(x)+q(x)
 // deg a(x)>=deg b(x)
 bool PolyEuclid(Polynomial& a, Polynomial& b, Polynomial& q, Polynomial& r) {
-  if(q.num_c_<=(a.Degree()+b.Degree()))
+  if(q.num_c_<=(a.Degree()-b.Degree()))
     return false;
   if(r.num_c_<=b.Degree())
     return false;
@@ -276,6 +276,7 @@ bool PolyEuclid(Polynomial& a, Polynomial& b, Polynomial& q, Polynomial& r) {
   int     cur_q;
   if(deg_t<deg_b) {
     if(!r.CopyFrom(a))
+printf("COPYFROM\n");
       return true;
   }
 

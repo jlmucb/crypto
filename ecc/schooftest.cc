@@ -388,7 +388,7 @@ printf("\n");
   }
   printf("selected primes\n");
   for(i=0; i<num_primes; i++) {
-    printf("%lld, \n", primes[i]);
+    printf("%lld, ", primes[i]);
   }
   printf("\n");
 

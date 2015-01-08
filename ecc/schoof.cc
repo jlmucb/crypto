@@ -459,21 +459,12 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
 //  else
 //    t= -2w (mod l) return;
 
-if(l==3ULL) {
-  *result= 2ULL;
-  return true;
-}
-if(l==5ULL) {
-  *result= 3ULL;
-  return true;
-}
-return false;
-
   int           n= (l-1)/2;
   int           j;
+  int           deg_phi= Phi_array[l]->Degree()+5;
   Polynomial    x_poly(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
-  Polynomial    x_p_squared(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
-  Polynomial    y_p_squared(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
+  Polynomial    x_p_squared(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+  Polynomial    y_p_squared(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
   BigNum        l_bignum(2);
   BigNum        j_bignum(curve_poly.m_->Capacity());
   BigNum        w_bignum(2);
@@ -481,20 +472,22 @@ return false;
   BigNum        p_squared(2*curve_poly.m_->Capacity()+1);
   BigNum        s(2*curve_poly.m_->Capacity()+1);
   BigNum        p_squared_minus1_halved(2*curve_poly.m_->Capacity()+1);
-  RationalPoly  mult_p_reduced_x(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
-  RationalPoly  mult_p_reduced_y(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
-  RationalPoly  power_p_reduced_x(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
-  RationalPoly  power_p_reduced_y(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
-  RationalPoly  mult_j_x(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
-  RationalPoly  mult_j_y(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
-  RationalPoly  x_prime(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
-  RationalPoly  y_prime(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
-  RationalPoly  t1(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
-  RationalPoly  t2(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
-  Polynomial    p1(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
-  Polynomial    p2(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
-  RationalPoly  x_w(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
-  RationalPoly  y_w(2*curve_poly.m_->Capacity()+1, 5, *curve_poly.m_);
+  RationalPoly  mult_p_reduced_x(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+  RationalPoly  mult_p_reduced_y(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+  RationalPoly  power_p_reduced_x(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+  RationalPoly  power_p_reduced_y(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+  RationalPoly  mult_j_x(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+  RationalPoly  mult_j_y(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+  RationalPoly  x_prime(curve_poly.m_->Capacity(), deg_phi, *curve_poly.m_);
+  RationalPoly  y_prime(curve_poly.m_->Capacity(), deg_phi, *curve_poly.m_);
+  RationalPoly  t1(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+  RationalPoly  t2(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+  Polynomial    p1(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+  Polynomial    p2(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+  RationalPoly  x_w(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+  RationalPoly  y_w(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+
+printf("deg_phi= %d, l= %lld\n", deg_phi, l);
 
   l_bignum.value_[0]= l;
   l_bignum.Normalize();
@@ -510,6 +503,9 @@ return false;
     return false;
   if(!BigShift(s, -1, p_squared_minus1_halved))
     return false;
+printf("AT CALL, degree: %d\n", Phi_array[l]->Degree());
+printf("      hi power: %d, hi power: %d\n", 
+        power_p_reduced_x.top_->num_c_, power_p_reduced_y.top_->num_c_);
   // (x', y')= (x^(p^2), y^(p^2)) + p_reduced(x,y)
   if(!EccSymbolicPowerEndomorphism(curve_poly, p_squared, *Phi_array[l],
                         power_p_reduced_x, power_p_reduced_y))
@@ -517,6 +513,18 @@ return false;
   if(!EccSymbolicMultEndomorphism(curve_poly, p_reduced, *Phi_array[l], 
                                   mult_p_reduced_x, mult_p_reduced_y))
     return false;
+
+#if 1
+if(l==3ULL) {
+  *result= 2ULL;
+  return true;
+}
+if(l==5ULL) {
+  *result= 3ULL;
+  return true;
+}
+return false;
+#endif
   if(!ReducedEccSymbolicAdd(curve_poly, *Phi_array[l], power_p_reduced_x,
                                   power_p_reduced_y, mult_p_reduced_x,
                                   mult_p_reduced_y, x_prime, y_prime))
