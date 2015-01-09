@@ -185,13 +185,8 @@ bool SimpleSymbolicTest() {
   }
   printf("IsSymbolicIdentity succeeded\n");
 
-  // EccSymbolicAdd(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& in1_y,
-  //                RationalPoly& in2_x, RationalPoly& in2_y,
-  //                RationalPoly& out_x, RationalPoly& out_y)
-  // EccSymbolicSub(Polynomial& curve_poly,
-  //                   RationalPoly& in1_x, RationalPoly& in1_y,
-  //                   RationalPoly& in2_x, RationalPoly& in2_y,
-  //                   RationalPoly& out_x, RationalPoly& out_y)
+  // EccSymbolicSub(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& in1_y,
+  //    RationalPoly& in2_x, RationalPoly& in2_y, RationalPoly& out_x, RationalPoly& out_y)
 
   RationalPoly  r2_x(8, 20, *P256_Key.c_.p_);
   RationalPoly  r2_y(8, 20, *P256_Key.c_.p_);
@@ -255,9 +250,6 @@ bool SimpleSymbolicTest() {
   printf("] = ["); r3_x.Print();
   printf(", "); r3_y.Print(); printf("]\n");
 
-  // ReducedRaisetoLargePower(RationalPoly& inx, RationalPoly& iny, BigNum& e,
-  //                      Polynomial& curve_poly, Polynomial& mod_poly,
-  //                      RationalPoly& outx, RationalPoly& outy)
   // x^19= x^2+13x+14 (mod x^3 +2x +1)
   // (x^19-x, x^3+2x+1)=1
   BigNum  small_p(2, 19ULL);
@@ -298,20 +290,49 @@ bool SimpleSymbolicTest() {
    *  a= -7.  So #E=27
    */
 
-  // EccSymbolicMult(Polynomial& curve_poly, BigNum& m,
-  //                    RationalPoly& in_x, RationalPoly& in_y,
-  //                    RationalPoly& out_x, RationalPoly& out_y)
+  RationalPoly  in_x(8, 50, small_p);
+  RationalPoly  in_y(8, 50, small_p);
+  RationalPoly  out_x(8, 50, small_p);
+  RationalPoly  out_y(8, 50, small_p);
+  ZeroRational(in_x);
+  OneRational(in_y);
+  ZeroRational(out_x);
+  ZeroRational(out_y);
+  if(!PolyFromCurve(P256_Key.c_, curve_poly)) {
+  }
+  in_x.top_->c_[1]->value_[0]= 1ULL;
 
-  // ReducedEccSymbolicMult(Polynomial& curve_poly,
-  //                    Polynomial& mod_poly, BigNum& m,
-  //                    RationalPoly& in_x, RationalPoly& in_y,
-  //                    RationalPoly& out_x, RationalPoly& out_y)
+  m.value_[0]= 5;
+  m.Normalize();
+  printf("EccSymbolicMult\n");
+  if(!EccSymbolicMult(mod_poly, m, in_x, in_y, out_x, out_y)) {
+    printf("EccSymbolicMult fails\n");
+    return false;
+  }
+  PrintNumToConsole(m, 10ULL); printf("["); in_x.Print(true);
+  printf(", "); in_y.Print(true);
+  printf("] = [");
+  out_x.Print(true);
+  printf(", "); out_y.Print(true); printf("]\n");
 
-  // EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m,
-  //                                RationalPoly& out_x, RationalPoly& out_y)
+#if 0
+  if(!ReducedEccSymbolicMult(curve_poly, mod_poly, m, in_x,  in_y,
+                      out_x, out_y)) {
+    printf("ReducedEccSymbolicMult fails\n");
+    return false;
+  }
 
-  // EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e,
-  //                                RationalPoly& out_x, RationalPoly& out_y)
+  if(!EccSymbolicMultEndomorphism(curve_poly, m, mod_poly,
+                out_x, out_y)) {
+    printf("EccSymbolicMultEndomorphism fails\n");
+    return false;
+  }
+
+  if(!EccSymbolicPowerEndomorphism(curve_poly, m, mod_poly, out_x, out_y)) {
+    printf("EccSymbolicPowerEndomorphism fails\n");
+    return false;
+  }
+#endif
 
   // RationalPolyNegate(RationalPoly& a)
   return true;

@@ -54,7 +54,7 @@ RationalPoly::~RationalPoly() {
 
 int RationalPoly::Degree() {
   int deg_num= top_->Degree();
-  int deg_den= top_->Degree();
+  int deg_den= bot_->Degree();
   if(deg_num>deg_den)
     return deg_num;
   return deg_den;
@@ -93,11 +93,7 @@ void RationalPoly::Print(bool small) {
 }
 
 bool RationalIsEqual(RationalPoly& a, RationalPoly& b) {
-  int n= a.Degree();
-  int m= b.Degree();
-  if(m>n)
-    n= m;
-  n= 2*n+2;
+  int n= a.Degree()+b.Degree()+2;
   Polynomial  x(a.top_->size_num_, n, *a.top_->m_);
   Polynomial  y(a.top_->size_num_, n, *a.top_->m_);
   if(!a.Reduce())
@@ -150,11 +146,13 @@ bool RationalSub(RationalPoly& a, RationalPoly& b, RationalPoly& c) {
 }
 
 bool RationalPoly::Reduce() {
-  int n= 2*Degree() +2;
+  int n= 2*Degree()+2;
   Polynomial  x(top_->size_num_, n, *top_->m_);
   Polynomial  y(top_->size_num_, n, *top_->m_);
   Polynomial  g(top_->size_num_, n, *top_->m_);
 
+  if(bot_->IsZero() || top_->IsZero())
+    return true;
   if(!PolyExtendedGcd(*top_, *bot_, x, y, g)) 
     return false;
   if(g.Degree()==0)

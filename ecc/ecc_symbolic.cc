@@ -189,32 +189,62 @@ bool EccSymbolicMult(Polynomial& curve_poly, BigNum& m,
   RationalPoly  t_double_x(in_x.top_->size_num_, in_x.top_->num_c_, *in_x.top_->m_);
   RationalPoly  t_double_y(in_x.top_->size_num_, in_x.top_->num_c_, *in_x.top_->m_);
 
-  if(!MakeSymbolicIdentity(accum_point_x, accum_point_y))
+printf("EccSymbolicMult\n");
+PrintNumToConsole(m, 10ULL); printf("[");
+in_x.Print(true); printf(", "); in_y.Print(true);
+printf("]\n");
+printf("Curve_poly: "); curve_poly.Print(true); printf("\n");
+
+  if(!MakeSymbolicIdentity(accum_point_x, accum_point_y)) {
     return false;
+  }
+  in_x.CopyTo(double_point_x);
+  in_y.CopyTo(double_point_y);
   for(i=1; i<k; i++) {
     if(BigBitPositionOn(m, i)) {
       if(!EccSymbolicAdd(curve_poly, double_point_x, double_point_y, accum_point_x,
-                     accum_point_y, t1, t2))
+                     accum_point_y, t1, t2)) {
+printf("EccSymbolicAdd 1 fails\n");
         return false;
+      }
       t1.CopyTo(accum_point_x);
       t2.CopyTo(accum_point_y);
     }
+
+printf("double_point: "); printf("[");
+double_point_x.Print(true); printf(", "); double_point_y.Print(true);
+printf("]\n");
+printf("accum_point: "); printf("[");
+accum_point_x.Print(true); printf(", "); accum_point_y.Print(true);
+printf("]\n");
+
     if(!EccSymbolicAdd(curve_poly, double_point_x, double_point_y, 
-                       double_point_x, double_point_y, t_double_x, t_double_y))
+                       double_point_x, double_point_y, t_double_x, t_double_y)) {
+printf("EccSymbolicAdd 2 fails\n");
       return false;
+    }
     double_point_x.CopyFrom(t_double_x);
     double_point_y.CopyFrom(t_double_y);
   }
   if(BigBitPositionOn(m, i)) {
+printf("double_point 2: "); printf("[");
+double_point_x.Print(true); printf(", "); double_point_y.Print(true);
+printf("]\n");
+printf("accum_point 2: "); printf("[");
+accum_point_x.Print(true); printf(", "); accum_point_y.Print(true);
+printf("]\n");
     if(!EccSymbolicAdd(curve_poly, accum_point_x, accum_point_y, 
                        double_point_x, double_point_y, t_double_x, t_double_y))
       return false;
     out_x.CopyFrom(t_double_x);
     out_y.CopyFrom(t_double_y);
+printf("t_double_x: "); printf("[");
+t_double_x.Print(true); printf(", "); t_double_y.Print(true);
+printf("]\n");
     return true;
   }
-  out_x.CopyFrom(double_point_x);
-  out_y.CopyFrom(double_point_y);
+  out_x.CopyFrom(accum_point_x);
+  out_y.CopyFrom(accum_point_y);
   return true;
 }
 
