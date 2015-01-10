@@ -281,11 +281,12 @@ bool ReducedEccSymbolicAdd(Polynomial& curve_poly, Polynomial& mod_poly,
                      RationalPoly& in2_x, RationalPoly& in2_y,
                      RationalPoly& out_x, RationalPoly& out_y) {
 
-#if 0
+#if 1
   printf("ReducedEccSymbolicAdd\nin1: "); printf("[");
   in1_x.Print(true); printf(", "); in1_y.Print(true);
   printf("]\n"); printf("in2: "); printf("[");
   in2_x.Print(true); printf(", "); in2_y.Print(true); printf("]\n");
+  printf("(mod "); mod_poly.Print(true); printf(")\n");
 #endif
 
   if(mod_poly.IsZero())
@@ -300,12 +301,12 @@ bool ReducedEccSymbolicAdd(Polynomial& curve_poly, Polynomial& mod_poly,
     out_y.CopyFrom(in1_y);
     return true;
   }
-  RationalPoly  slope(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
-  RationalPoly  slope_squared(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
-  RationalPoly  t1(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
-  RationalPoly  t2(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
-  RationalPoly  a(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
-  Polynomial    r1(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
+  RationalPoly  slope(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
+  RationalPoly  slope_squared(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
+  RationalPoly  t1(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
+  RationalPoly  t2(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
+  RationalPoly  a(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
+  Polynomial    r1(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
 
   //  if P==Q
   //    slope= y (3in1_x^2+a)/(2(in1_y)(curve_poly))
@@ -353,7 +354,7 @@ bool ReducedEccSymbolicAdd(Polynomial& curve_poly, Polynomial& mod_poly,
   if(!r1.CopyTo(*slope.bot_))
     return false;
 
-#if 0
+#if 1
   printf("ReducedEccSymbolicAdd slope: "); slope.Print(true); printf("\n"); 
 #endif
 
