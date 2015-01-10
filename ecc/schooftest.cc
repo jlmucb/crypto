@@ -309,7 +309,6 @@ bool SimpleSymbolicTest() {
     printf("EccSymbolicMult fails\n");
     return false;
   }
-  printf("EccSymbolicMult\n");
   PrintNumToConsole(m, 10ULL); printf("["); in_x.Print(true);
   printf(", "); in_y.Print(true);
   printf("] = [");
@@ -321,7 +320,6 @@ bool SimpleSymbolicTest() {
     printf("ReducedEccSymbolicMult fails\n");
     return false;
   }
-  printf("ReducedEccSymbolicMult out\n");
   PrintNumToConsole(m, 10ULL); printf("["); in_x.Print(true);
   printf(", "); in_y.Print(true);
   printf("] = [");
@@ -334,7 +332,6 @@ bool SimpleSymbolicTest() {
     printf("EccSymbolicMultEndomorphism fails\n");
     return false;
   }
-  printf("EccSymbolicMultEndomorphism out\n");
   PrintNumToConsole(m, 10ULL); printf("["); in_x.Print(true);
   printf(", "); in_y.Print(true);
   printf("] = [");
@@ -346,7 +343,6 @@ bool SimpleSymbolicTest() {
     printf("EccSymbolicPowerEndomorphism fails\n");
     return false;
   }
-  printf("EccSymbolicPowerEndomorphism out\n");
   PrintNumToConsole(m, 10ULL); printf("["); in_x.Print(true);
   printf(", "); in_y.Print(true);
   printf("] = [");

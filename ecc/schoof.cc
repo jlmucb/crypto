@@ -516,22 +516,47 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
   if(!EccSymbolicPowerEndomorphism(curve_poly, p_squared, *Phi_array[l],
                         power_p_reduced_x, power_p_reduced_y))
     return false;
+#if 1
+  printf("\nEccSymbolicPowerEndomorphism(%lld): ", p_squared.value_[0]);
+  power_p_reduced_x.Print(true); printf(", ");
+  power_p_reduced_y.Print(true);
+  printf("\n\n");
+#endif
   if(!EccSymbolicMultEndomorphism(curve_poly, p_reduced, *Phi_array[l], 
                                   mult_p_reduced_x, mult_p_reduced_y)) {
     return false;
   }
+#if 1
+  printf("\nEccSymbolicMultEndomorphism(%lld): ", p_reduced.value_[0]);
+  power_p_reduced_x.Print(true); printf(", ");
+  power_p_reduced_y.Print(true);
+  printf("\n\n");
+#endif
   if(!ReducedEccSymbolicAdd(curve_poly, *Phi_array[l], power_p_reduced_x,
                                   power_p_reduced_y, mult_p_reduced_x,
                                   mult_p_reduced_y, x_prime, y_prime)) {
     printf("ReducedEccSymbolicAdd failed\n"); 
     return false;
   }
+#if 1
+  printf("\nx_prime: ");
+  x_prime.Print(true); printf("\n\n");
+  printf("\ny_prime: ");
+  y_prime.Print(true);
+  printf("\n\n");
+#endif
  
   for(j=1; j<=n; j++) {
     j_bignum.value_[0]= (uint64_t)j;
     j_bignum.Normalize();
     if(!EccSymbolicMultEndomorphism(curve_poly, j_bignum, *Phi_array[l], mult_j_x, mult_j_y))
       return false;
+#if 1
+  printf("\nEccSymbolicMultEndomorphism in loop for %d: ", j);
+  mult_j_x.Print(true); printf(", ");
+  mult_j_y.Print(true);
+  printf("\n\n");
+#endif
     if(!ReducedRaisetoLargePower(*mult_j_x.top_, *curve_poly.m_, *Phi_array[l], *t1.top_))
       return false;
     OnePoly(*t1.bot_);
@@ -549,7 +574,7 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
     if(!ReduceModPoly(p1, *Phi_array[l], p2))
       return false;
     if(p2.IsZero()) {
-      *result= (uint64_t)j;
+      *result= (uint64_t)j; 
     } else {
       *result= l-(uint64_t)j;
     }

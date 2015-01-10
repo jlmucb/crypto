@@ -281,7 +281,7 @@ bool ReducedEccSymbolicAdd(Polynomial& curve_poly, Polynomial& mod_poly,
                      RationalPoly& in2_x, RationalPoly& in2_y,
                      RationalPoly& out_x, RationalPoly& out_y) {
 
-#if 1
+#if 0
   printf("ReducedEccSymbolicAdd\nin1: "); printf("[");
   in1_x.Print(true); printf(", "); in1_y.Print(true);
   printf("]\n"); printf("in2: "); printf("[");
@@ -354,7 +354,7 @@ bool ReducedEccSymbolicAdd(Polynomial& curve_poly, Polynomial& mod_poly,
   if(!r1.CopyTo(*slope.bot_))
     return false;
 
-#if 1
+#if 0
   printf("ReducedEccSymbolicAdd slope: "); slope.Print(true); printf("\n"); 
 #endif
 
