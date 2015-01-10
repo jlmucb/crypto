@@ -141,7 +141,7 @@ bool BigModNormalize(BigNum& a, BigNum& m) {
   if(!a.sign_ && BigCompare(a, m)<0)
     return true;
 
-  int     n= a.size_>m.size_?a.size_:m.size_;
+  int     n= a.Capacity()>m.Capacity()?a.Capacity():m.Capacity();
   BigNum  t1(1+2*n);
   BigNum  t2(1+2*n);
 
@@ -282,7 +282,7 @@ bool BigModDiv(BigNum& a, BigNum& b, BigNum& m, BigNum& r) {
   return BigModNormalize(r, m);
 }
 
-bool BigModExp(BigNum& b, BigNum& e, BigNum& m, BigNum& r) {
+bool BigModExp(BigNum& a, BigNum& e, BigNum& m, BigNum& r) {
   BigNum* accum[2]= {NULL, NULL};
   BigNum* doubled[2]= {NULL, NULL};
   int     accum_current= 0;
@@ -292,8 +292,9 @@ bool BigModExp(BigNum& b, BigNum& e, BigNum& m, BigNum& r) {
   bool    ret= true;
   int     i;
   int     k;
+  BigNum  b(a);
 
-  if(!BigModNormalize(b,m))
+  if(!BigModNormalize(b, m))
     return false;
 
   k= BigHighBit(e);
@@ -302,8 +303,8 @@ bool BigModExp(BigNum& b, BigNum& e, BigNum& m, BigNum& r) {
     goto done;
   }
   for(i=0;i<2; i++) {
-    accum[i]= new BigNum(4*m.size_+1);
-    doubled[i]= new BigNum(4*m.size_+1);
+    accum[i]= new BigNum(4*m.Capacity()+1);
+    doubled[i]= new BigNum(4*m.Capacity()+1);
   }
   accum[accum_current]->CopyFrom(Big_One);
   doubled[doubler_current]->CopyFrom(b);
@@ -484,9 +485,10 @@ bool BigIsPrime(BigNum& n) {
 }
 
 bool BigModIsSquare(BigNum& n, BigNum& p) {
-  BigNum    p_minus_1(n.size_);
-  BigNum    e(n.size_);
-  BigNum    residue(4*p.capacity_+1);
+  BigNum    p_minus_1(n.Size());
+  BigNum    e(n.Size());
+  int       m= (n.Capacity()>p.Capacity())?n.Capacity():p.Capacity();
+  BigNum    residue(4*m+1);
   uint64_t  unused;
   int       size_e;
 

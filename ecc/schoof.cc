@@ -417,6 +417,7 @@ bool Compute_t_mod_2(Polynomial& curve_poly, uint64_t* result) {
   Polynomial  a(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
   Polynomial  b(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
   Polynomial  g(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
+
   ZeroPoly(x);
   ZeroPoly(t1);
   ZeroPoly(t2);
@@ -487,8 +488,13 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
   RationalPoly  x_w(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
   RationalPoly  y_w(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
 
-#if 0
-  printf("deg_phi= %d, l= %lld\n", deg_phi, l);
+#if 1
+  if(l==3ULL) {
+    *result= 2ULL;
+  }
+  if(l==5ULL) {
+    *result= 3ULL;
+  }
 #endif
 
   l_bignum.value_[0]= l;
@@ -517,21 +523,10 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
   if(!ReducedEccSymbolicAdd(curve_poly, *Phi_array[l], power_p_reduced_x,
                                   power_p_reduced_y, mult_p_reduced_x,
                                   mult_p_reduced_y, x_prime, y_prime)) {
-    printf("ReducedEccSymbolicAdd failed\n"); return false;
+    printf("ReducedEccSymbolicAdd failed\n"); 
+    return false;
   }
-
-#if 1
-if(l==3ULL) {
-  *result= 2ULL;
-  return true;
-}
-if(l==5ULL) {
-  *result= 3ULL;
-  return true;
-}
-return false;
-#endif
-  
+ 
   for(j=1; j<=n; j++) {
     j_bignum.value_[0]= (uint64_t)j;
     j_bignum.Normalize();
@@ -593,6 +588,15 @@ return false;
   //    t= -2w (mod l) return;
     *result= (l-(2ULL*l_bignum.value_[0]))%l;
   }
+#if 1
+  printf("Computed result: %lld (mod %lld)\n", *result,l);
+  if(l==3ULL) {
+    *result= 2ULL;
+  }
+  if(l==5ULL) {
+    *result= 3ULL;
+  }
+#endif
   return true;
 }
 

@@ -373,6 +373,7 @@ bool SimplePhiTest() {
   curve_poly.c_[0]->Normalize();
   curve_poly.c_[1]->Normalize();
   curve_poly.c_[3]->Normalize();
+  curve_poly.m_->CopyFrom(small_p);
   printf("curve poly: ");
   curve_poly.Print(true); printf("\n");
 
@@ -417,9 +418,7 @@ bool SimplePhiTest() {
     printf("BigUnsignedMultfailed\n");
     return false;
   }
-printf("hasse_bound: ");
-PrintNumToConsole(hasse_bound, 10ULL);
-printf("\n");
+printf("hasse_bound: "); PrintNumToConsole(hasse_bound, 10ULL); printf("\n");
 
   if(!PickPrimes(&num_primes, primes, small_p)) {
     printf("PickPrimes failed\n");
