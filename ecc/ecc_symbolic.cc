@@ -85,13 +85,11 @@ bool EccSymbolicAdd(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& i
   if(IsSymbolicIdentity(in1_x, in1_y)) {
     out_x.CopyFrom(in2_x);
     out_y.CopyFrom(in2_y);
-printf("EccSymbolicAdd identity 1\n");
     return true;
   }
   if(IsSymbolicIdentity(in2_x, in2_y)) {
     out_x.CopyFrom(in1_x);
     out_y.CopyFrom(in1_y);
-printf("EccSymbolicAdd identity 2\n");
     return true;
   }
   RationalPoly  slope(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
@@ -102,10 +100,10 @@ printf("EccSymbolicAdd identity 2\n");
   Polynomial    r1(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
 
 #if 0
-printf("EccSymbolicAdd\nin1: "); printf("[");
-in1_x.Print(true); printf(", "); in1_y.Print(true);
-printf("]\n"); printf("in2: "); printf("[");
-in2_x.Print(true); printf(", "); in2_y.Print(true); printf("]\n");
+  printf("EccSymbolicAdd\nin1: "); printf("[");
+  in1_x.Print(true); printf(", "); in1_y.Print(true);
+  printf("]\n"); printf("in2: "); printf("[");
+  in2_x.Print(true); printf(", "); in2_y.Print(true); printf("]\n");
 #endif
 
   //  if P==Q
@@ -150,9 +148,7 @@ in2_x.Print(true); printf(", "); in2_y.Print(true); printf("]\n");
   }
 
 #if 0
-printf("slope: "); 
-slope.Print(true); 
-printf("\n"); 
+  printf("slope: "); slope.Print(true); printf("\n"); 
 #endif
 
   //  Compute slope^2
@@ -165,9 +161,7 @@ printf("\n");
     return false;
 
 #if 0
-printf("slope_squared: "); 
-slope_squared.Print(true); 
-printf("\n"); 
+  printf("slope_squared: "); slope_squared.Print(true); printf("\n"); 
 #endif
 
   //  P+Q= (out_x, y out_y), where
@@ -185,9 +179,9 @@ printf("\n");
     return false;
 
 #if 0
-printf("EccSymbolicAdd, returning: "); printf("[");
-out_x.Print(true); printf(", "); out_y.Print(true);
-printf("]\n"); 
+  printf("EccSymbolicAdd, returning: "); printf("[");
+  out_x.Print(true); printf(", "); out_y.Print(true);
+  printf("]\n"); 
 #endif
 
   return true;
@@ -221,11 +215,10 @@ bool EccSymbolicMult(Polynomial& curve_poly, BigNum& m,
   RationalPoly  t_double_y(in_x.top_->size_num_, in_x.top_->num_c_, *in_x.top_->m_);
 
 #if 0
-printf("EccSymbolicMult\n");
-PrintNumToConsole(m, 10ULL); printf("[");
-in_x.Print(true); printf(", "); in_y.Print(true);
-printf("]\n");
-printf("Curve_poly: "); curve_poly.Print(true); printf("\n");
+  printf("EccSymbolicMult\n");
+  PrintNumToConsole(m, 10ULL); printf("[");
+  in_x.Print(true); printf(", "); in_y.Print(true); printf("]\n");
+  printf("Curve_poly: "); curve_poly.Print(true); printf("\n");
 #endif
 
   if(!MakeSymbolicIdentity(accum_point_x, accum_point_y)) {
@@ -245,12 +238,11 @@ printf("Curve_poly: "); curve_poly.Print(true); printf("\n");
     }
 
 #if 0
-printf("double_point: "); printf("[");
-double_point_x.Print(true); printf(", "); double_point_y.Print(true);
-printf("]\n");
-printf("accum_point: "); printf("[");
-accum_point_x.Print(true); printf(", "); accum_point_y.Print(true);
-printf("]\n");
+  printf("double_point: "); printf("[");
+  double_point_x.Print(true); printf(", "); double_point_y.Print(true);
+  printf("]\n"); printf("accum_point: "); printf("[");
+  accum_point_x.Print(true); printf(", "); accum_point_y.Print(true);
+  printf("]\n");
 #endif
 
     if(!EccSymbolicAdd(curve_poly, double_point_x, double_point_y, 
@@ -263,10 +255,10 @@ printf("]\n");
   }
   if(BigBitPositionOn(m, i)) {
 #if 0
-printf("double_point 2: "); printf("[");
-double_point_x.Print(true); printf(", "); double_point_y.Print(true);
-printf("]\n"); printf("accum_point 2: "); printf("[");
-accum_point_x.Print(true); printf(", "); accum_point_y.Print(true); printf("]\n");
+  printf("double_point 2: "); printf("[");
+  double_point_x.Print(true); printf(", "); double_point_y.Print(true);
+  printf("]\n"); printf("accum_point 2: "); printf("[");
+  accum_point_x.Print(true); printf(", "); accum_point_y.Print(true); printf("]\n");
 #endif
     if(!EccSymbolicAdd(curve_poly, accum_point_x, accum_point_y, 
                        double_point_x, double_point_y, t_double_x, t_double_y))
@@ -274,8 +266,8 @@ accum_point_x.Print(true); printf(", "); accum_point_y.Print(true); printf("]\n"
     out_x.CopyFrom(t_double_x);
     out_y.CopyFrom(t_double_y);
 #if 0
-printf("t_double_x: "); printf("[");
-t_double_x.Print(true); printf(", "); t_double_y.Print(true); printf("]\n");
+  printf("t_double_x: "); printf("[");
+  t_double_x.Print(true); printf(", "); t_double_y.Print(true); printf("]\n");
 #endif
     return true;
   }
@@ -289,13 +281,15 @@ bool ReducedEccSymbolicAdd(Polynomial& curve_poly, Polynomial& mod_poly,
                      RationalPoly& in2_x, RationalPoly& in2_y,
                      RationalPoly& out_x, RationalPoly& out_y) {
 
-#if 1
-printf("ReducedEccSymbolicAdd\nin1: "); printf("[");
-in1_x.Print(true); printf(", "); in1_y.Print(true);
-printf("]\n"); printf("in2: "); printf("[");
-in2_x.Print(true); printf(", "); in2_y.Print(true); printf("]\n");
+#if 0
+  printf("ReducedEccSymbolicAdd\nin1: "); printf("[");
+  in1_x.Print(true); printf(", "); in1_y.Print(true);
+  printf("]\n"); printf("in2: "); printf("[");
+  in2_x.Print(true); printf(", "); in2_y.Print(true); printf("]\n");
 #endif
 
+  if(mod_poly.IsZero())
+    return false;
   if(IsSymbolicIdentity(in1_x, in1_y)) {
     out_x.CopyFrom(in2_x);
     out_y.CopyFrom(in2_y);
@@ -359,10 +353,8 @@ in2_x.Print(true); printf(", "); in2_y.Print(true); printf("]\n");
   if(!r1.CopyTo(*slope.bot_))
     return false;
 
-#if 1
-printf("ReducedEccSymbolicAdd slope: "); 
-slope.Print(true); 
-printf("\n"); 
+#if 0
+  printf("ReducedEccSymbolicAdd slope: "); slope.Print(true); printf("\n"); 
 #endif
 
   //  Compute slope^2
@@ -422,12 +414,14 @@ bool ReducedEccSymbolicMult(Polynomial& curve_poly, Polynomial& mod_poly, BigNum
   RationalPoly  t_double_x(in_x.top_->size_num_, out_x.top_->num_c_, *in_x.top_->m_);
   RationalPoly  t_double_y(in_x.top_->size_num_, out_y.top_->num_c_, *in_x.top_->m_);
 
-#if 1
-printf("ReducedEccSymbolicMult\nin: "); PrintNumToConsole(m, 10ULL); printf("[");
-in_x.Print(true); printf(", "); in_y.Print(true); printf("]\n"); 
-printf("(mod  "); mod_poly.Print(true); printf(")\n");
+#if 0
+  printf("ReducedEccSymbolicMult\nin: "); PrintNumToConsole(m, 10ULL); printf("[");
+  in_x.Print(true); printf(", "); in_y.Print(true); printf("]\n"); 
+  printf("(mod  "); mod_poly.Print(true); printf(")\n");
 #endif
 
+  if(mod_poly.IsZero())
+    return false;
   if(!MakeSymbolicIdentity(accum_point_x, accum_point_y))
     return false;
   in_x.CopyTo(double_point_x);
@@ -435,17 +429,14 @@ printf("(mod  "); mod_poly.Print(true); printf(")\n");
 
   for(i=1; i<k; i++) {
 
-#if 1
-printf("double_point (1): ["); double_point_x.Print(true); printf(", "); 
-double_point_y.Print(true); printf("]\n"); 
-printf("accum_point (1): ["); accum_point_x.Print(true); printf(", "); 
-accum_point_y.Print(true); printf("]\n"); 
+#if 0
+  printf("double_point (1): ["); double_point_x.Print(true); printf(", "); 
+  double_point_y.Print(true); printf("]\n"); 
+  printf("accum_point (1): ["); accum_point_x.Print(true); printf(", "); 
+  accum_point_y.Print(true); printf("]\n"); 
 #endif
 
     if(BigBitPositionOn(m, i)) {
-#if 1
-printf("i: %d is on\n", i);
-#endif
       if(!EccSymbolicAdd(curve_poly, double_point_x, double_point_y, accum_point_x,
                      accum_point_y, t1, t2))
         return false;
@@ -470,16 +461,13 @@ printf("i: %d is on\n", i);
     if(!ReduceModPoly(*t_double_x.bot_, mod_poly, *double_point_x.bot_))
       return false;
   }
-#if 1
-printf("double_point (2): ["); double_point_x.Print(true); printf(", "); 
-double_point_y.Print(true); printf("]\n"); 
-printf("accum_point (2): ["); accum_point_x.Print(true); printf(", "); 
-accum_point_y.Print(true); printf("]\n"); 
+#if 0
+  printf("double_point (2): ["); double_point_x.Print(true); printf(", "); 
+  double_point_y.Print(true); printf("]\n"); 
+  printf("accum_point (2): ["); accum_point_x.Print(true); printf(", "); 
+  accum_point_y.Print(true); printf("]\n"); 
 #endif
   if(BigBitPositionOn(m, i)) {
-#if 1
-printf("i: %d is on\n", i);
-#endif
     if(!EccSymbolicAdd(curve_poly, accum_point_x, accum_point_y, 
                        double_point_x, double_point_y, t_double_x, t_double_y))
       return false;
@@ -513,9 +501,8 @@ bool ReducedRaisetoLargePower(Polynomial& in, BigNum& e,
   int         i;
   int         k=  BigHighBit(e);
 
-printf("degree mod_poly: %d\n", mod_poly.Degree());
-printf("--- out size: %d\n", out.num_c_);
-
+  if(mod_poly.IsZero())
+    return false;
   double_point.CopyFrom(in);
   OnePoly(accum_point);
   for(i=1; i<k; i++) {
@@ -553,7 +540,6 @@ printf("--- out size: %d\n", out.num_c_);
     }
   }
   accum_point.CopyTo(out);
-  printf("ReducedRaisetoLargePower returns true\n");
   return true;
 }
 
@@ -568,7 +554,9 @@ bool EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m, Polynomial& 
   OneRational(y_rational);
   x_rational.top_->c_[1]->value_[0]= 1ULL;
   x_rational.top_->c_[1]->Normalize();
-printf("EccSymbolicMultEndomorphism calling ReducedEccSymbolicMult\n");
+#if 0
+  printf("EccSymbolicMultEndomorphism calling ReducedEccSymbolicMult\n");
+#endif
   if(!ReducedEccSymbolicMult(curve_poly, mod_poly, m, x_rational, y_rational, out_x, out_y))
     return false;
   return true;
@@ -585,8 +573,10 @@ bool EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e, Polynomial&
   BigNum      e1(e.Capacity());
   BigNum      t(e.Capacity());
 
-printf("EccSymbolicPowerEndomorphism, deg(curve_poly)= %d, deg(mod_poly)= %d\n", 
+#if 0
+  printf("EccSymbolicPowerEndomorphism, deg(curve_poly)= %d, deg(mod_poly)= %d\n", 
         curve_poly.Degree(), mod_poly.Degree());
+#endif
 
   ZeroPoly(x_poly);
   OnePoly(y_poly);
