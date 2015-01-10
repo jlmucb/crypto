@@ -334,7 +334,6 @@ bool SimpleSymbolicTest() {
     printf("EccSymbolicMultEndomorphism fails\n");
     return false;
   }
-
   printf("EccSymbolicMultEndomorphism out\n");
   PrintNumToConsole(m, 10ULL); printf("["); in_x.Print(true);
   printf(", "); in_y.Print(true);
@@ -343,14 +342,17 @@ bool SimpleSymbolicTest() {
   printf(", "); out_y.Print(true); printf("]\n");
   printf("mod_poly: "); Phi_array[3]->Print(true); printf("\n");
 
-
-#if 0
-  if(!EccSymbolicPowerEndomorphism(curve_poly, m, mod_poly, out_x, out_y)) {
+  if(!EccSymbolicPowerEndomorphism(curve_poly, m, *Phi_array[3], out_x, out_y)) {
     printf("EccSymbolicPowerEndomorphism fails\n");
     return false;
   }
-  RationalPolyNegate(RationalPoly& a)
-#endif
+  printf("EccSymbolicPowerEndomorphism out\n");
+  PrintNumToConsole(m, 10ULL); printf("["); in_x.Print(true);
+  printf(", "); in_y.Print(true);
+  printf("] = [");
+  out_x.Print(true);
+  printf(", "); out_y.Print(true); printf("]\n");
+  printf("mod_poly: "); Phi_array[3]->Print(true); printf("\n");
   return true;
 }
 
