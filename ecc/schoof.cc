@@ -503,16 +503,6 @@ printf("deg_phi= %d, l= %lld\n", deg_phi, l);
     return false;
   if(!BigShift(s, -1, p_squared_minus1_halved))
     return false;
-printf("AT CALL, degree: %d\n", Phi_array[l]->Degree());
-printf("      hi power: %d, hi power: %d\n", 
-        power_p_reduced_x.top_->num_c_, power_p_reduced_y.top_->num_c_);
-  // (x', y')= (x^(p^2), y^(p^2)) + p_reduced(x,y)
-  if(!EccSymbolicPowerEndomorphism(curve_poly, p_squared, *Phi_array[l],
-                        power_p_reduced_x, power_p_reduced_y))
-    return false;
-  if(!EccSymbolicMultEndomorphism(curve_poly, p_reduced, *Phi_array[l], 
-                                  mult_p_reduced_x, mult_p_reduced_y))
-    return false;
 
 #if 1
 if(l==3ULL) {
@@ -525,6 +515,13 @@ if(l==5ULL) {
 }
 return false;
 #endif
+  // (x', y')= (x^(p^2), y^(p^2)) + p_reduced(x,y)
+  if(!EccSymbolicPowerEndomorphism(curve_poly, p_squared, *Phi_array[l],
+                        power_p_reduced_x, power_p_reduced_y))
+    return false;
+  if(!EccSymbolicMultEndomorphism(curve_poly, p_reduced, *Phi_array[l], 
+                                  mult_p_reduced_x, mult_p_reduced_y))
+    return false;
   if(!ReducedEccSymbolicAdd(curve_poly, *Phi_array[l], power_p_reduced_x,
                                   power_p_reduced_y, mult_p_reduced_x,
                                   mult_p_reduced_y, x_prime, y_prime))

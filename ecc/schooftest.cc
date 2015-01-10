@@ -259,23 +259,25 @@ bool SimpleSymbolicTest() {
   Polynomial p3(8, 8, small_p);
   Polynomial mod_poly(8, 5, small_p);
 
+  ZeroPoly(curve_poly);
   // mod_poly= x^3+2x+1 (mod 19)
-  mod_poly.c_[0]->value_[0]= 1ULL;
-  mod_poly.c_[1]->value_[0]= 2ULL;
-  mod_poly.c_[3]->value_[0]= 1ULL;
-  mod_poly.c_[0]->Normalize();
-  mod_poly.c_[1]->Normalize();
-  mod_poly.c_[3]->Normalize();
+  curve_poly.c_[0]->value_[0]= 1ULL;
+  curve_poly.c_[1]->value_[0]= 2ULL;
+  curve_poly.c_[3]->value_[0]= 1ULL;
+  curve_poly.c_[0]->Normalize();
+  curve_poly.c_[1]->Normalize();
+  curve_poly.c_[3]->Normalize();
+  curve_poly.m_->CopyFrom(small_p);
   //p1= x
   p1.c_[1]->value_[0]= 1ULL;
   p1.c_[1]->Normalize();
-  if(!ReducedRaisetoLargePower(p1, small_p, mod_poly, p2)) {
+  if(!ReducedRaisetoLargePower(p1, small_p, curve_poly, p2)) {
     printf("ReducedRaisetoLargePower failed\n");
     return false;
   }
   printf("["); p1.Print(true); printf("]^%d= ", (int) small_p.value_[0]); 
   p2.Print(true);
-  printf(" (mod  "); mod_poly.Print(true);
+  printf(" (mod  "); curve_poly.Print(true);
   printf(")\n");
 
   /*
@@ -290,38 +292,44 @@ bool SimpleSymbolicTest() {
    *  a= -7.  So #E=27
    */
 
-  RationalPoly  in_x(8, 50, small_p);
-  RationalPoly  in_y(8, 50, small_p);
-  RationalPoly  out_x(8, 50, small_p);
-  RationalPoly  out_y(8, 50, small_p);
+  RationalPoly  in_x(8, 100, small_p);
+  RationalPoly  in_y(8, 100, small_p);
+  RationalPoly  out_x(8, 100, small_p);
+  RationalPoly  out_y(8, 100, small_p);
+  extern Polynomial**   Phi_array;
   ZeroRational(in_x);
   OneRational(in_y);
   ZeroRational(out_x);
   ZeroRational(out_y);
-  if(!PolyFromCurve(P256_Key.c_, curve_poly)) {
-  }
   in_x.top_->c_[1]->value_[0]= 1ULL;
 
   m.value_[0]= 5;
   m.Normalize();
-  printf("EccSymbolicMult\n");
-  if(!EccSymbolicMult(mod_poly, m, in_x, in_y, out_x, out_y)) {
+  if(!EccSymbolicMult(curve_poly, m, in_x, in_y, out_x, out_y)) {
     printf("EccSymbolicMult fails\n");
     return false;
   }
+  printf("EccSymbolicMult\n");
   PrintNumToConsole(m, 10ULL); printf("["); in_x.Print(true);
   printf(", "); in_y.Print(true);
   printf("] = [");
   out_x.Print(true);
   printf(", "); out_y.Print(true); printf("]\n");
 
-#if 0
-  if(!ReducedEccSymbolicMult(curve_poly, mod_poly, m, in_x,  in_y,
+  if(!ReducedEccSymbolicMult(curve_poly, *Phi_array[3], m, in_x,  in_y,
                       out_x, out_y)) {
     printf("ReducedEccSymbolicMult fails\n");
     return false;
   }
+  printf("ReducedEccSymbolicMult out\n");
+  PrintNumToConsole(m, 10ULL); printf("["); in_x.Print(true);
+  printf(", "); in_y.Print(true);
+  printf("] = [");
+  out_x.Print(true);
+  printf(", "); out_y.Print(true); printf("]\n");
+  printf("mod_poly: "); Phi_array[3]->Print(true); printf("\n");
 
+#if 0
   if(!EccSymbolicMultEndomorphism(curve_poly, m, mod_poly,
                 out_x, out_y)) {
     printf("EccSymbolicMultEndomorphism fails\n");
@@ -332,9 +340,8 @@ bool SimpleSymbolicTest() {
     printf("EccSymbolicPowerEndomorphism fails\n");
     return false;
   }
+  RationalPolyNegate(RationalPoly& a)
 #endif
-
-  // RationalPolyNegate(RationalPoly& a)
   return true;
 }
 
@@ -507,10 +514,10 @@ bool SimpleSchoofTest() {
 }
  
 TEST(SimpleTest, SimpleTest) {
-  EXPECT_TRUE(SimpleSymbolicTest());
-  EXPECT_TRUE(SimplePhiTest());
   EXPECT_TRUE(SimpleSchoofTest());
   EXPECT_TRUE(BsgsTest());
+  EXPECT_TRUE(SimplePhiTest());
+  EXPECT_TRUE(SimpleSymbolicTest());
 }
 
 DEFINE_string(log_file, "schooftest.log", "schooftest file name");
