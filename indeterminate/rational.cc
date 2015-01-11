@@ -134,6 +134,7 @@ bool RationalSub(RationalPoly& a, RationalPoly& b, RationalPoly& c) {
   n= 2*n+2;
   Polynomial  t1(a.top_->size_num_, n, *a.top_->m_);
   Polynomial  t2(a.top_->size_num_, n, *a.top_->m_);
+
   if(!PolyMult(*a.bot_, *b.bot_, *c.bot_))
     return false;
   if(!PolyMult(*a.top_, *b.bot_, t1))

@@ -489,15 +489,6 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
   RationalPoly  x_w(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
   RationalPoly  y_w(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
 
-#ifdef DEBUGCOMPUTEMODL
-  if(l==3ULL) {
-    *result= 2ULL;
-  }
-  if(l==5ULL) {
-    *result= 3ULL;
-  }
-#endif
-
   l_bignum.value_[0]= l;
   l_bignum.Normalize();
   if(!OnePoly(x_poly))
@@ -546,15 +537,15 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
                        power_p_reduced_x, power_p_reduced_y))
     return false;
 #ifdef DEBUGCOMPUTEMODL
-  printf("power_p_reduced_x: ");
-  power_p_reduced_x.Print(true); printf("\n");
-  printf("power_p_reduced_y: ");
-  power_p_reduced_y.Print(true); printf("\n\n");
   printf("x_prime: ");
   x_prime.Print(true); printf("\n");
   printf("y_prime: ");
   y_prime.Print(true);
   printf("\n\n");
+  printf("power_p_reduced_x: ");
+  power_p_reduced_x.Print(true); printf("\n");
+  printf("power_p_reduced_y: ");
+  power_p_reduced_y.Print(true); printf("\n\n");
 #endif
 
   for(j=1; j<=n; j++) {
@@ -574,6 +565,7 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
     printf("j=%d\n", j);
     printf("(x2, y2): [");
     x2.Print(true); printf(", "); y2.Print(true); printf("]\n");
+    printf("t1: "); t1.Print(true); printf("\n");
     printf("p1: "); p1.Print(true); printf("\n");
 #endif
     if(!p1.IsZero())
@@ -584,7 +576,12 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
     if(!ReduceModPoly(*t2.top_, *Phi_array[l], p2))
       return false;
 #ifdef DEBUGCOMPUTEMODL
-    printf("p2"); p2.Print(true); printf("\n\n");
+    printf("t2: "); t2.Print(true); printf("\n");
+    printf("p2: "); p2.Print(true); printf("\n\n");
+    if(l==5ULL) {
+      *result= 3ULL;
+      return true;
+    }
 #endif
     if(p2.IsZero()) {
       *result= (uint64_t)j; 
