@@ -528,8 +528,8 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
   }
 #if 1
   printf("\nEccSymbolicMultEndomorphism(%lld): ", p_reduced.value_[0]);
-  power_p_reduced_x.Print(true); printf(", ");
-  power_p_reduced_y.Print(true);
+  mult_p_reduced_x.Print(true); printf(", ");
+  mult_p_reduced_y.Print(true);
   printf("\n\n");
 #endif
   if(!ReducedEccSymbolicAdd(curve_poly, *Phi_array[l], power_p_reduced_x,
@@ -564,8 +564,14 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
       return false;
     if(!ReduceModPoly(p1, *Phi_array[l], p2))
       return false;
+#if 1
+  printf("p2, %d: ",j ); p2.Print(true); printf("\n");
+#endif
     if(!p2.IsZero())
       continue;
+#if 1
+  printf("POST p2 solution\n");
+#endif
     // Compute y' and y[j].  
     if(!ReducedRaisetoLargePower(*mult_j_y.top_, *curve_poly.m_, *Phi_array[l], *t1.top_))
       return false;
