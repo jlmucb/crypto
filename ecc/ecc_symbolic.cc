@@ -110,11 +110,11 @@ bool EccSymbolicAdd(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& i
   Polynomial    r2(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
 
   //  if P==Q
-  //    slope= y (3in1_x^2+a)/(2(in1_y)(curve_poly))
+  //    slope= (3in1_x^2+a)/(2(in1_y)y)
   //  otherwise
   //    slope= y ((in2_y-in1_y)/(in2_x-in1_x)
   bool  mult_bot= false;
-  if(RationalIsEqual(in1_x,in2_x)) {
+  if(RationalIsEqual(in1_x, in2_x)) {
     mult_bot= true;
     if(RationalIsEqual(in1_y, in2_y)) {
       if(!RationalMult(in1_x, in1_x, t1))
@@ -587,7 +587,7 @@ bool EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e, Polynomial&
   BigNum      e1(e.Capacity());
   BigNum      t(e.Capacity());
 
-#if 0
+#ifdef DEBUGSYMBOLICPOWERENDO
   printf("EccSymbolicPowerEndomorphism, deg(curve_poly)= %d, deg(mod_poly)= %d\n", 
         curve_poly.Degree(), mod_poly.Degree());
 #endif

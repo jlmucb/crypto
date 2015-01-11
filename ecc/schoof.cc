@@ -556,6 +556,7 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
     if(!ReducedEccSymbolicMult(curve_poly, *Phi_array[l], j_bignum,
                      power_p_reduced_x, power_p_reduced_x,
                      x2, y2))
+      return false;
     if(!RationalSub(x_prime, x2, t1))
       return false;
     // p1= numerator(x_prime-x2)
