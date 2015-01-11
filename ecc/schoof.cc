@@ -495,7 +495,6 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
   if(l==5ULL) {
     *result= 3ULL;
   }
-return true;
 #endif
 
   l_bignum.value_[0]= l;

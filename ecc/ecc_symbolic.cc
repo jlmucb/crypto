@@ -425,8 +425,8 @@ bool ReducedEccSymbolicMult(Polynomial& curve_poly, Polynomial& mod_poly, BigNum
   RationalPoly  accum_point_y(in_x.top_->size_num_, out_x.top_->num_c_, *in_x.top_->m_);
   RationalPoly  t1(in_x.top_->size_num_, out_x.top_->num_c_, *in_x.top_->m_);
   RationalPoly  t2(in_x.top_->size_num_, out_x.top_->num_c_, *in_x.top_->m_);
-  RationalPoly  t_double_x(in_x.top_->size_num_, out_x.top_->num_c_, *in_x.top_->m_);
-  RationalPoly  t_double_y(in_x.top_->size_num_, out_y.top_->num_c_, *in_x.top_->m_);
+  RationalPoly  t_double_x(in_x.top_->size_num_, 4*out_x.top_->num_c_, *in_x.top_->m_);
+  RationalPoly  t_double_y(in_x.top_->size_num_, 4*out_y.top_->num_c_, *in_x.top_->m_);
 
 #if 0
   printf("ReducedEccSymbolicMult\nin: "); PrintNumToConsole(m, 10ULL); printf("[");
@@ -448,12 +448,15 @@ bool ReducedEccSymbolicMult(Polynomial& curve_poly, Polynomial& mod_poly, BigNum
   double_point_y.Print(true); printf("]\n"); 
   printf("accum_point (1): ["); accum_point_x.Print(true); printf(", "); 
   accum_point_y.Print(true); printf("]\n"); 
+  printf("i %d, k: %d\n", i, k);
 #endif
 
     if(BigBitPositionOn(m, i)) {
       if(!EccSymbolicAdd(curve_poly, double_point_x, double_point_y, accum_point_x,
-                     accum_point_y, t1, t2))
+                     accum_point_y, t1, t2)) {
+        printf("EccSymbolicAdd 1 failed\n");
         return false;
+      }
       if(!ReduceModPoly(*t1.top_, mod_poly, *accum_point_y.top_))
         return false;
       if(!ReduceModPoly(*t1.bot_, mod_poly, *accum_point_y.bot_))
@@ -464,8 +467,10 @@ bool ReducedEccSymbolicMult(Polynomial& curve_poly, Polynomial& mod_poly, BigNum
         return false;
     }
     if(!EccSymbolicAdd(curve_poly, double_point_x, double_point_y, 
-                       double_point_x, double_point_y, t_double_x, t_double_y))
+                       double_point_x, double_point_y, t_double_x, t_double_y)) {
+      printf("EccSymbolicAdd 2 failed\n");
       return false;
+    }
     if(!ReduceModPoly(*t_double_y.top_, mod_poly, *double_point_y.top_))
       return false;
     if(!ReduceModPoly(*t_double_y.bot_, mod_poly, *double_point_y.bot_))
@@ -476,6 +481,7 @@ bool ReducedEccSymbolicMult(Polynomial& curve_poly, Polynomial& mod_poly, BigNum
       return false;
   }
 #if 0
+  printf("i %d, k: %d\n", i, k);
   printf("double_point (2): ["); double_point_x.Print(true); printf(", "); 
   double_point_y.Print(true); printf("]\n"); 
   printf("accum_point (2): ["); accum_point_x.Print(true); printf(", "); 
@@ -562,17 +568,16 @@ bool ReducedRaisetoLargePower(Polynomial& in, BigNum& e,
 bool EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m, Polynomial& mod_poly,
                                  RationalPoly& out_x, RationalPoly& out_y) {
   // m(x/1, 1/1) --> (out_x, out_y)
-  RationalPoly x_rational(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
-  RationalPoly y_rational(curve_poly.m_->Capacity(), 5, *curve_poly.m_);
+  RationalPoly x_rational(curve_poly.m_->Capacity(), mod_poly.num_c_+2, *curve_poly.m_);
+  RationalPoly y_rational(curve_poly.m_->Capacity(), mod_poly.num_c_+2, *curve_poly.m_);
   ZeroRational(x_rational);
   OneRational(y_rational);
   x_rational.top_->c_[1]->value_[0]= 1ULL;
   x_rational.top_->c_[1]->Normalize();
-#if 0
-  printf("EccSymbolicMultEndomorphism calling ReducedEccSymbolicMult\n");
-#endif
-  if(!ReducedEccSymbolicMult(curve_poly, mod_poly, m, x_rational, y_rational, out_x, out_y))
+  if(!ReducedEccSymbolicMult(curve_poly, mod_poly, m, x_rational, y_rational, out_x, out_y)) {
+    printf("ReducedEccSymbolicMult failed\n");
     return false;
+  }
   return true;
 }
 
