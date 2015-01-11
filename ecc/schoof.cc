@@ -578,10 +578,6 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
 #ifdef DEBUGCOMPUTEMODL
     printf("t2: "); t2.Print(true); printf("\n");
     printf("p2: "); p2.Print(true); printf("\n\n");
-    if(l==5ULL) {
-      *result= 3ULL;
-      return true;
-    }
 #endif
     if(p2.IsZero()) {
       *result= (uint64_t)j; 
@@ -623,8 +619,7 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
   //    t= -2w (mod l) return;
     *result= (l-(2ULL*l_bignum.value_[0]))%l;
   }
-#ifdef DEBUGCOMPUTEMODL
-  printf("Computed result: %lld (mod %lld)\n", *result,l);
+#ifdef DEBUGCOMPUTEMODL1
   if(l==3ULL) {
     *result= 2ULL;
   }
