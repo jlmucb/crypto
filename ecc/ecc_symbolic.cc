@@ -92,42 +92,42 @@ bool EccSymbolicAdd(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& i
     out_y.CopyFrom(in1_y);
     return true;
   }
-  RationalPoly  slope(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
-  RationalPoly  slope_squared(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
-  RationalPoly  t1(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
-  RationalPoly  t2(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
-  RationalPoly  a(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
-  Polynomial    r1(in1_x.top_->size_num_, in1_x.top_->num_c_, *in1_x.top_->m_);
+  RationalPoly  slope(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
+  RationalPoly  slope_squared(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
+  RationalPoly  t1(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
+  RationalPoly  t2(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
+  Polynomial    a(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
+  Polynomial    r1(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
+  Polynomial    r2(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
 
 #if 0
   printf("EccSymbolicAdd\nin1: "); printf("[");
   in1_x.Print(true); printf(", "); in1_y.Print(true);
   printf("]\n"); printf("in2: "); printf("[");
   in2_x.Print(true); printf(", "); in2_y.Print(true); printf("]\n");
+  printf("curve_poly: "); curve_poly.Print(true); printf("\n");
 #endif
 
   //  if P==Q
   //    slope= y (3in1_x^2+a)/(2(in1_y)(curve_poly))
   //  otherwise
   //    slope= y ((in2_y-in1_y)/(in2_x-in1_x)
+  bool  mult_bot= false;
   if(RationalIsEqual(in1_x,in2_x)) {
+    mult_bot= true;
     if(RationalIsEqual(in1_y, in2_y)) {
-      ZeroRational(a);
-      a.top_->c_[0]->CopyFrom(*curve_poly.c_[1]);
       if(!RationalMult(in1_x, in1_x, t1))
         return false;
       if(!MultiplyPolyByMonomial(*t1.top_, 0, Big_Three, r1))
         return false;
-      if(!r1.CopyTo(*t1.top_))
-        return false;
-      if(!RationalAdd(t1, a, t2))
+      a.c_[0]->CopyFrom(*curve_poly.c_[1]);
+      if(!PolyAdd(r1, a, *t1.top_))
         return false;
       if(!in1_y.CopyTo(t2))
         return false;
       if(!MultiplyPolyByMonomial(*t2.top_, 0, Big_Two, r1))
         return false;
-      if(!PolyMult(r1, curve_poly, *t2.top_))
-        return false;
+      r1.CopyTo(*t2.top_);
       if(!RationalDiv(t1, t2, slope))
         return false;
     } else {
@@ -155,10 +155,17 @@ bool EccSymbolicAdd(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& i
   //    slope_squared= slope*slope*curve_x_poly
   if(!RationalMult(slope, slope, slope_squared))
     return false;
-  if(!PolyMult(*slope_squared.top_, curve_poly, r1))
-    return false;
-  if(!r1.CopyTo(*slope_squared.top_))
-    return false;
+  if(mult_bot) {
+    if(!PolyMult(*slope_squared.bot_, curve_poly, r1))
+      return false;
+    if(!r1.CopyTo(*slope_squared.bot_))
+      return false;
+  } else {
+    if(!PolyMult(*slope_squared.top_, curve_poly, r1))
+      return false;
+    if(!r1.CopyTo(*slope_squared.top_))
+      return false;
+  }
 
 #if 0
   printf("slope_squared: "); slope_squared.Print(true); printf("\n"); 
@@ -305,31 +312,30 @@ bool ReducedEccSymbolicAdd(Polynomial& curve_poly, Polynomial& mod_poly,
   RationalPoly  slope_squared(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
   RationalPoly  t1(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
   RationalPoly  t2(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
-  RationalPoly  a(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
+  Polynomial    a(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
   Polynomial    r1(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
+  Polynomial    r2(in1_x.top_->size_num_, out_x.top_->num_c_, *in1_x.top_->m_);
 
   //  if P==Q
   //    slope= y (3in1_x^2+a)/(2(in1_y)(curve_poly))
   //  otherwise
   //    slope= y ((in2_y-in1_y)/(in2_x-in1_x)
+  bool mult_bot= false;
   if(RationalIsEqual(in1_x,in2_x)) {
+    mult_bot= true;
     if(RationalIsEqual(in1_y, in2_y)) {
-      ZeroRational(a);
-      a.top_->c_[0]->CopyFrom(*curve_poly.c_[1]);
       if(!RationalMult(in1_x, in1_x, t1))
         return false;
       if(!MultiplyPolyByMonomial(*t1.top_, 0, Big_Three, r1))
         return false;
-      if(!r1.CopyTo(*t1.top_))
-        return false;
-      if(!RationalAdd(t1, a, t2))
+      a.c_[0]->CopyFrom(*curve_poly.c_[1]);
+      if(!PolyAdd(r1, a, *t1.top_))
         return false;
       if(!in1_y.CopyTo(t2))
         return false;
       if(!MultiplyPolyByMonomial(*t2.top_, 0, Big_Two, r1))
         return false;
-      if(!PolyMult(r1, curve_poly, *t2.top_))
-        return false;
+      r1.CopyTo(*t2.top_);
       if(!RationalDiv(t1, t2, slope))
         return false;
     } else {
@@ -362,10 +368,17 @@ bool ReducedEccSymbolicAdd(Polynomial& curve_poly, Polynomial& mod_poly,
   //    slope_squared= slope*slope*curve_x_poly
   if(!RationalMult(slope, slope, slope_squared))
     return false;
-  if(!PolyMult(*slope_squared.top_, curve_poly, r1))
-    return false;
-  if(!r1.CopyTo(*slope_squared.top_))
-    return false;
+  if(mult_bot) {
+    if(!PolyMult(*slope_squared.bot_, curve_poly, r1))
+      return false;
+    if(!r1.CopyTo(*slope_squared.bot_))
+      return false;
+  } else {
+    if(!PolyMult(*slope_squared.top_, curve_poly, r1))
+      return false;
+    if(!r1.CopyTo(*slope_squared.top_))
+      return false;
+  }
   if(!ReduceModPoly(*slope_squared.top_, mod_poly, r1))
     return false;
   if(!r1.CopyTo(*slope_squared.top_))

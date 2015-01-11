@@ -303,7 +303,8 @@ bool SimpleSymbolicTest() {
   ZeroRational(out_y);
   in_x.top_->c_[1]->value_[0]= 1ULL;
 
-  m.value_[0]= 5;
+  // m.value_[0]= 5ULL;
+  m.value_[0]= 2ULL;
   m.Normalize();
   if(!EccSymbolicMult(curve_poly, m, in_x, in_y, out_x, out_y)) {
     printf("EccSymbolicMult fails\n");
