@@ -302,6 +302,8 @@ bool SimpleSymbolicTest() {
   ZeroRational(out_x);
   ZeroRational(out_y);
   in_x.top_->c_[1]->value_[0]= 1ULL;
+  RationalPoly  in2_x(8, 100, small_p);
+  OneRational(in2_x);
 
   // m.value_[0]= 5ULL;
   m.value_[0]= 2ULL;
@@ -350,6 +352,19 @@ bool SimpleSymbolicTest() {
   out_x.Print(true);
   printf(", "); out_y.Print(true); printf("]\n");
   printf("mod_poly: "); Phi_array[3]->Print(true); printf("\n");
+
+  if(!EccSymbolicAdd(curve_poly, in_x, in_y, in2_x, in_y, out_x, out_y)) {
+    printf("EccSymbolicMult fails\n");
+    return false;
+  }
+  printf("["); in_x.Print(true);
+  printf(", "); in_y.Print(true);
+  printf("  + [");
+  printf("["); in2_x.Print(true);
+  printf(", "); in_y.Print(true);
+  printf("] = [");
+  out_x.Print(true);
+  printf(", "); out_y.Print(true); printf("]\n");
   return true;
 }
 
