@@ -178,28 +178,24 @@ bool evenrecurrence(int n, Polynomial& curve_poly, Polynomial& phi_m, Polynomial
   Polynomial  t4(phi_out.m_->Capacity(), phi_out.num_c_, *phi_out.m_);
   BigNum      two_inv(phi_out.m_->Capacity());
 
-#if 0
-int m= n>>1; 
-printf("evenrecurrence n=%d, m=%d\n", n, m);
-printf("phi_m: "); phi_m.Print(true); printf("\n");
-printf("phi_m_plus_2: "); phi_m_plus_2.Print(true); printf("\n");
-printf("phi_m_plus_1: "); phi_m_plus_1.Print(true); printf("\n");
-printf("phi_m_minus_1: "); phi_m_minus_1.Print(true); printf("\n");
-printf("phi_m_minus_2: "); phi_m_minus_2.Print(true); printf("\n");
+#ifdef DEBUGEVENRECURRENCE
+  int m= n>>1; 
+  printf("evenrecurrence n=%d, m=%d\n", n, m);
+  printf("phi_m: "); phi_m.Print(true); printf("\n");
+  printf("phi_m_plus_2: "); phi_m_plus_2.Print(true); printf("\n");
+  printf("phi_m_plus_1: "); phi_m_plus_1.Print(true); printf("\n");
+  printf("phi_m_minus_1: "); phi_m_minus_1.Print(true); printf("\n");
+  printf("phi_m_minus_2: "); phi_m_minus_2.Print(true); printf("\n");
 #endif
 
   if(!PolyMult(phi_m_minus_1, phi_m_minus_1, t1))
     return false;
-//printf("phi_m_minus_1^2: "); phi_m_minus_1.Print(true); printf("\n");
   if(!PolyMult(t1, phi_m_plus_2, t3))
     return false;
-//printf("phi_m_plus_2*phi_m_minus_1^2: "); t3.Print(true); printf("\n");
   if(!PolyMult(phi_m_plus_1, phi_m_plus_1, t1))
     return false;
-//printf("phi_m_plus_1^2: "); t1.Print(true); printf("\n");
   if(!PolyMult(t1, phi_m_minus_1, t2))
     return false;
-//printf("phi_m_minus_1*phi_m_plus_1^2: "); t2.Print(true); printf("\n");
   if(!PolySub(t3, t2, t4))
     return false;
   if(!PolyMult(t4, phi_m, t1))
@@ -436,6 +432,7 @@ bool Compute_t_mod_2(Polynomial& curve_poly, uint64_t* result) {
   return true;
 }
 
+#define DEBUGCOMPUTEMODL
 bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
 //  p_reduced[l]= p (mod l), |p_reduced[l]|<l/2
 //  Compute (x', y')= (x^(p^2), y^(p^2)) + p_reduced(x,y)
@@ -475,12 +472,16 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
   BigNum        p_squared_minus1_halved(2*curve_poly.m_->Capacity()+1);
   RationalPoly  mult_p_reduced_x(2*curve_poly.m_->Capacity()+1, 2*deg_phi, *curve_poly.m_);
   RationalPoly  mult_p_reduced_y(2*curve_poly.m_->Capacity()+1, 2*deg_phi, *curve_poly.m_);
-  RationalPoly  power_p_reduced_x(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
-  RationalPoly  power_p_reduced_y(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
-  RationalPoly  mult_j_x(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
-  RationalPoly  mult_j_y(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+  RationalPoly  power_p_squared_reduced_x(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+  RationalPoly  power_p_squared_reduced_y(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
   RationalPoly  x_prime(curve_poly.m_->Capacity(), 2*deg_phi, *curve_poly.m_);
   RationalPoly  y_prime(curve_poly.m_->Capacity(), 2*deg_phi, *curve_poly.m_);
+
+  RationalPoly  power_p_reduced_x(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+  RationalPoly  power_p_reduced_y(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+  RationalPoly  x2(2*curve_poly.m_->Capacity()+1, 2*deg_phi, *curve_poly.m_);
+  RationalPoly  y2(2*curve_poly.m_->Capacity()+1, 2*deg_phi, *curve_poly.m_);
+
   RationalPoly  t1(2*curve_poly.m_->Capacity()+1, 2*deg_phi, *curve_poly.m_);
   RationalPoly  t2(2*curve_poly.m_->Capacity()+1, 2*deg_phi, *curve_poly.m_);
   Polynomial    p1(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
@@ -488,7 +489,7 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
   RationalPoly  x_w(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
   RationalPoly  y_w(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
 
-#if 1
+#ifdef DEBUGCOMPUTEMODL
   if(l==3ULL) {
     *result= 2ULL;
   }
@@ -514,71 +515,77 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
 
   // (x', y')= (x^(p^2), y^(p^2)) + p_reduced(x,y)
   if(!EccSymbolicPowerEndomorphism(curve_poly, p_squared, *Phi_array[l],
-                        power_p_reduced_x, power_p_reduced_y))
+                        power_p_squared_reduced_x, power_p_squared_reduced_y))
     return false;
-#if 1
-  printf("\nEccSymbolicPowerEndomorphism(%lld): ", p_squared.value_[0]);
-  power_p_reduced_x.Print(true); printf(", ");
-  power_p_reduced_y.Print(true);
-  printf("\n\n");
+#ifdef DEBUGCOMPUTEMODL
+  printf("\nl= %lld\n", l);
+  printf("EccSymbolicPowerEndomorphism(%lld): ", p_squared.value_[0]);
+  power_p_squared_reduced_x.Print(true); printf(", ");
+  power_p_squared_reduced_y.Print(true);
+  printf("\n");
 #endif
   if(!EccSymbolicMultEndomorphism(curve_poly, p_reduced, *Phi_array[l], 
                                   mult_p_reduced_x, mult_p_reduced_y)) {
     return false;
   }
-#if 1
+#ifdef DEBUGCOMPUTEMODL
   printf("\nEccSymbolicMultEndomorphism(%lld): ", p_reduced.value_[0]);
   mult_p_reduced_x.Print(true); printf(", ");
   mult_p_reduced_y.Print(true);
   printf("\n\n");
 #endif
-  if(!ReducedEccSymbolicAdd(curve_poly, *Phi_array[l], power_p_reduced_x,
-                                  power_p_reduced_y, mult_p_reduced_x,
+  if(!ReducedEccSymbolicAdd(curve_poly, *Phi_array[l], power_p_squared_reduced_x,
+                                  power_p_squared_reduced_y, mult_p_reduced_x,
                                   mult_p_reduced_y, x_prime, y_prime)) {
     printf("ReducedEccSymbolicAdd failed\n"); 
     return false;
   }
-#if 1
-  printf("\nx_prime: ");
-  x_prime.Print(true); printf("\n\n");
-  printf("\ny_prime: ");
+  ZeroRational(power_p_reduced_x);
+  ZeroRational(power_p_reduced_y);
+  if(!EccSymbolicPowerEndomorphism(curve_poly,  *curve_poly.m_, *Phi_array[l],
+                       power_p_reduced_x, power_p_reduced_y))
+    return false;
+#ifdef DEBUGCOMPUTEMODL
+  printf("power_p_reduced_x: ");
+  power_p_reduced_x.Print(true); printf("\n");
+  printf("power_p_reduced_y: ");
+  power_p_reduced_y.Print(true); printf("\n\n");
+  printf("x_prime: ");
+  x_prime.Print(true); printf("\n");
+  printf("y_prime: ");
   y_prime.Print(true);
   printf("\n\n");
 #endif
- 
+
   for(j=1; j<=n; j++) {
     j_bignum.value_[0]= (uint64_t)j;
     j_bignum.Normalize();
-    if(!EccSymbolicMultEndomorphism(curve_poly, j_bignum, *Phi_array[l], mult_j_x, mult_j_y))
+    ZeroRational(x2);
+    ZeroRational(y2);
+    if(!ReducedEccSymbolicMult(curve_poly, *Phi_array[l], j_bignum,
+                     power_p_reduced_x, power_p_reduced_x,
+                     x2, y2))
+    if(!RationalSub(x_prime, x2, t1))
       return false;
-#if 1
-  printf("\nEccSymbolicMultEndomorphism in loop for %d: ", j);
-  mult_j_x.Print(true); printf(", ");
-  mult_j_y.Print(true);
-  printf("\n\n");
+    // p1= numerator(x_prime-x2)
+    if(!ReduceModPoly(*t1.top_, *Phi_array[l], p1))
+      return false;
+#ifdef DEBUGCOMPUTEMODL
+    printf("j=%d\n", j);
+    printf("(x2, y2): [");
+    x2.Print(true); printf(", "); y2.Print(true); printf("]\n");
+    printf("p1: "); p1.Print(true); printf("\n");
 #endif
-    if(!ReducedRaisetoLargePower(*mult_j_x.top_, *curve_poly.m_, *Phi_array[l], *t1.top_))
-      return false;
-    OnePoly(*t1.bot_);
-    if(!PolySub(*x_prime.top_, *t1.top_, p1))
-      return false;
-    if(!ReduceModPoly(p1, *Phi_array[l], p2))
-      return false;
-#if 1
-  printf("p2, %d: ",j ); p2.Print(true); printf("\n");
-#endif
-    if(!p2.IsZero())
+    if(!p1.IsZero())
       continue;
-#if 1
-  printf("POST p2 solution\n");
+    if(!RationalSub(y_prime, y2, t2))
+      return false;
+    // p2= numerator((y_prime-y2)/y)
+    if(!ReduceModPoly(*t2.top_, *Phi_array[l], p2))
+      return false;
+#ifdef DEBUGCOMPUTEMODL
+    printf("p2"); p2.Print(true); printf("\n\n");
 #endif
-    // Compute y' and y[j].  
-    if(!ReducedRaisetoLargePower(*mult_j_y.top_, *curve_poly.m_, *Phi_array[l], *t1.top_))
-      return false;
-    if(!PolySub(*y_prime.top_, *t1.top_, p1))
-      return false;
-    if(!ReduceModPoly(p1, *Phi_array[l], p2))
-      return false;
     if(p2.IsZero()) {
       *result= (uint64_t)j; 
     } else {
@@ -619,7 +626,7 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
   //    t= -2w (mod l) return;
     *result= (l-(2ULL*l_bignum.value_[0]))%l;
   }
-#if 1
+#ifdef DEBUGCOMPUTEMODL
   printf("Computed result: %lld (mod %lld)\n", *result,l);
   if(l==3ULL) {
     *result= 2ULL;
