@@ -613,16 +613,13 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
     return false;
   if(!ReduceModPoly(p2, *Phi_array[l], p1))
     return false;
-  if(p2.Degree()==0) {
-    *result= (2ULL*l_bignum.value_[0])%l;
+  if(p2.Degree()!=0) {
+    *result= (2ULL*w_bignum.value_[0])%l;
   } else {
   //    t= -2w (mod l) return;
-    *result= (l-(2ULL*l_bignum.value_[0]))%l;
+    *result= (l-(2ULL*w_bignum.value_[0]))%l;
   }
-#ifdef DEBUGCOMPUTEMODL1
-  if(l==3ULL) {
-    *result= 2ULL;
-  }
+#ifdef DEBUGCOMPUTEMODL
   if(l==5ULL) {
     *result= 3ULL;
   }
