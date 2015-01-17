@@ -484,8 +484,8 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
 
   RationalPoly  t1(2*curve_poly.m_->Capacity()+1, 2*deg_phi, *curve_poly.m_);
   RationalPoly  t2(2*curve_poly.m_->Capacity()+1, 2*deg_phi, *curve_poly.m_);
-  Polynomial    p1(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
-  Polynomial    p2(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
+  Polynomial    p1(2*curve_poly.m_->Capacity()+1, 2*deg_phi+1, *curve_poly.m_);
+  Polynomial    p2(2*curve_poly.m_->Capacity()+1, 2*deg_phi+1, *curve_poly.m_);
   RationalPoly  x_w(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
   RationalPoly  y_w(2*curve_poly.m_->Capacity()+1, deg_phi, *curve_poly.m_);
 
@@ -554,7 +554,7 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
     ZeroRational(x2);
     ZeroRational(y2);
     if(!ReducedEccSymbolicMult(curve_poly, *Phi_array[l], j_bignum,
-                     power_p_reduced_x, power_p_reduced_x, x2, y2))
+                     power_p_reduced_x, power_p_reduced_y, x2, y2))
       return false;
     if(!RationalSub(x_prime, x2, t1))
       return false;
@@ -566,6 +566,7 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
     printf("(x2, y2): [");
     x2.Print(true); printf(", "); y2.Print(true); printf("]\n");
     printf("t1: "); t1.Print(true); printf("\n");
+    printf("t1.top_: "); t1.top_->Print(true); printf("\n");
     printf("p1: "); p1.Print(true); printf("\n");
 #endif
     if(!p1.IsZero())

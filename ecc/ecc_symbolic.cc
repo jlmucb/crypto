@@ -435,22 +435,23 @@ bool ReducedEccSymbolicMult(Polynomial& curve_poly, Polynomial& mod_poly, BigNum
 #endif
 
     if(BigBitPositionOn(m, i)) {
-      if(!EccSymbolicAdd(curve_poly, double_point_x, double_point_y, accum_point_x,
-                     accum_point_y, t1, t2)) {
+      if(!EccSymbolicAdd(curve_poly, double_point_x, double_point_y,
+                                     accum_point_x, accum_point_y, t1, t2)) {
         printf("EccSymbolicAdd 1 failed\n");
         return false;
       }
-      if(!ReduceModPoly(*t1.top_, mod_poly, *accum_point_y.top_))
+      if(!ReduceModPoly(*t1.top_, mod_poly, *accum_point_x.top_))
         return false;
-      if(!ReduceModPoly(*t1.bot_, mod_poly, *accum_point_y.bot_))
+      if(!ReduceModPoly(*t1.bot_, mod_poly, *accum_point_x.bot_))
         return false;
-      if(!ReduceModPoly(*t2.top_, mod_poly, *accum_point_x.top_))
+      if(!ReduceModPoly(*t2.top_, mod_poly, *accum_point_y.top_))
         return false;
-      if(!ReduceModPoly(*t2.bot_, mod_poly, *accum_point_x.bot_))
+      if(!ReduceModPoly(*t2.bot_, mod_poly, *accum_point_y.bot_))
         return false;
     }
-    if(!EccSymbolicAdd(curve_poly, double_point_x, double_point_y, 
-                       double_point_x, double_point_y, t_double_x, t_double_y)) {
+    if(!EccSymbolicAdd(curve_poly, double_point_x, double_point_y,
+                                   double_point_x, double_point_y,
+                                   t_double_x, t_double_y)) {
       printf("EccSymbolicAdd 2 failed\n");
       return false;
     }
@@ -471,8 +472,9 @@ bool ReducedEccSymbolicMult(Polynomial& curve_poly, Polynomial& mod_poly, BigNum
   accum_point_y.Print(true); printf("]\n"); 
 #endif
   if(BigBitPositionOn(m, i)) {
-    if(!EccSymbolicAdd(curve_poly, accum_point_x, accum_point_y, 
-                       double_point_x, double_point_y, t_double_x, t_double_y))
+    if(!EccSymbolicAdd(curve_poly, accum_point_x, accum_point_y,
+                                   double_point_x, double_point_y,
+                                   t_double_x, t_double_y))
       return false;
     if(!ReduceModPoly(*t_double_y.top_, mod_poly, *out_y.top_))
       return false;
