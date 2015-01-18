@@ -276,7 +276,6 @@ bool PolyEuclid(Polynomial& a, Polynomial& b, Polynomial& q, Polynomial& r) {
   int     cur_q;
   if(deg_t<deg_b) {
     if(!r.CopyFrom(a))
-printf("COPYFROM\n");
       return true;
   }
 
