@@ -632,11 +632,6 @@ bool Compute_t_mod_l(Polynomial& curve_poly, uint64_t l, uint64_t* result) {
   //    t= -2w (mod l) return;
     *result= (l-(2ULL*w_bignum.value_[0]))%l;
   }
-#ifdef DEBUGCOMPUTEMODL1
-  if(l==5ULL) {
-    *result= 3ULL;
-  }
-#endif
   return true;
 }
 
