@@ -43,6 +43,9 @@ public:
  
 class Twofish : public SymmetricCipher {
     public:
+      enum {
+	  BLOCKBYTESIZE= 16,
+      };
     byte	q_table[2][256];   
     uint32_t	MDS_table[4][256];
     TwofishKey  round_data;

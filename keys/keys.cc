@@ -30,7 +30,7 @@
 
 using namespace std;
 
-const int num_cryptoalgs= 7;
+const int num_cryptoalgs= 9;
 string cryptoalgs[]= {
   "undefined",
   "aes128",
@@ -38,7 +38,9 @@ string cryptoalgs[]= {
   "aesni128",
   "aesni256",
   "rsa1024",
-  "rsa2048"
+  "rsa2048",
+  "twofish128",
+  "twofish256",
 };
 
 const int num_cryptoschemes= 5;
@@ -434,7 +436,7 @@ bool SymmetricKey::MakeTwofishKey(const char* name, const char* usage,
   symmetric_key_bytes_= new byte[32];
   char  tmp_name[32];
   sprintf(tmp_name,"twofish-%d", num_bits);
-  symmetric_algorithm_type_= new string(name);
+  symmetric_algorithm_type_= new string(tmp_name);
   memcpy(symmetric_key_bytes_, key, num_bits/NBITSINBYTE);
   key_valid_= true;
   return true;

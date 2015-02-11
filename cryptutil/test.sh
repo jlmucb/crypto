@@ -10,6 +10,8 @@
 ./cryptutil.exe --operation=FromHex --direction=left-right --input_file=hex.out --output_file=hex.out2
 ./cryptutil.exe --operation=ToBase64 --direction=left-right --input_file=randFile --output_file=base64.out
 ./cryptutil.exe --operation=FromBase64 --direction=left-right --input_file=base64.out --output_file=base64.out2
+./cryptutil.exe --operation=GenerateKey --algorithm=twofish-128 --key_name=johntwofishkey1 --duration=1Y \
+--output_file=johnstwofishkey1 --owner=JLM --purpose=bulk-encryption
 ./cryptutil.exe --operation=GenerateKey --algorithm=aes-128 --key_name=johnkey1 --duration=1Y \
 --output_file=johnsaeskey1 --owner=JLM --purpose=bulk-encryption
 ./cryptutil.exe --operation=ReadKey --algorithm=aes-128 --input_file=johnsaeskey1
@@ -17,6 +19,10 @@
 --output_file=johnsrsakey1 --owner=JLM --purpose=bulk-encryption
 ./cryptutil.exe --operation=SymEncryptWithKey --key_file=johnsaeskey1 --algorithm=aes-128 --input_file=randFile --output_file=randFile.out
 ./cryptutil.exe --operation=SymDecryptWithKey --key_file=johnsaeskey1 --algorithm=aes-128 --input_file=randFile.out --output_file=randFile.out2
+./cryptutil.exe --operation=SymEncryptWithKey --key_file=johnstwofishkey1 --algorithm=twofish-128 --input_file=randFile --output_file=randFile.out
+./cryptutil.exe --operation=SymDecryptWithKey --key_file=johnstwofishkey1 --algorithm=twofish-128 --input_file=randFile.out --output_file=randFile.out2
+./cryptutil.exe --operation=SymEncryptWithKey --key_file=johnstwofishkey1 --algorithm=twofish-256 --input_file=randFile --output_file=randFile.out
+./cryptutil.exe --operation=SymDecryptWithKey --key_file=johnstwofishkey1 --algorithm=twofish-256 --input_file=randFile.out --output_file=randFile.out2
 ./cryptutil.exe --operation=GenerateScheme --algorithm=aes128-cbc-hmacsha256-sympad --key_name=johnscbcscheme1 --duration=1Y --output_file=cbcschemefile1
 ./cryptutil.exe --operation=ReadScheme --algorithm=aes128-cbc-hmacsha256-sympad --input_file=cbcschemefile1
 ./cryptutil.exe --operation=SymEncryptWithScheme --key_file=cbcschemefile1 --algorithm=aes128-cbc-hmacsha256-sympad --input_file=jlmTestSave1 --output_file=jlmTestSave1.enc

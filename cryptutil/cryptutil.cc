@@ -34,6 +34,7 @@
 #include "keys.pb.h"
 #include "hmac_sha256.h"
 #include "aes.h"
+#include "twofish.h"
 #include "encryption_algorithm.h"
 #include "aescbchmac256sympad.h"
 #include "aesctrhmac256sympad.h"
@@ -630,6 +631,166 @@ bool AesDecrypt(SymmetricKey* key, const char* inFile, const char* outFile) {
   return true;
 }
 
+SymmetricKey* GetTwofishKey(int size, byte* in) {
+  crypto_key_message* message= new crypto_key_message;
+  SymmetricKey*  new_key= new SymmetricKey();
+  string data(reinterpret_cast<char const*>(in), size);
+
+  if(!message->ParseFromString(data)) {
+    return NULL;
+  }
+  if(!((CryptoKey*)new_key)->DeserializeKeyFromMessage(*message)) {
+    return NULL;
+  }
+  return new_key;
+}
+
+SymmetricKey* GenTwofishKey(int num_bits, const char* durationStr, const char* keyName, 
+                  const char* ownerStr, const char* purposeStr, int* size, byte** out) {
+  double duration= convertDuration(durationStr);
+  SymmetricKey*  new_key= new SymmetricKey();
+  if(!new_key->GenerateTwofishKey(keyName, purposeStr, ownerStr, num_bits, duration)) {
+    return NULL;
+  }
+  crypto_key_message* message= new crypto_key_message;
+  if(!((CryptoKey*)new_key)->SerializeKeyToMessage(*message)) {
+    return NULL;
+  }
+  string* outstr= new string();
+  if(!message->SerializeToString(outstr)) {
+    return NULL;
+  }
+  *size= outstr->size();
+  *out= (byte*)outstr->data();
+  return new_key;
+}
+
+bool TwoFishEncrypt(SymmetricKey* key, const char* inFile, const char* outFile) {
+  Aes the_cipher;
+
+  printf("TwofishEncrypt bit size is %d\n", key->symmetric_key_bit_size_);
+  PrintBytes(key->symmetric_key_bit_size_/NBITSINBYTE, key->symmetric_key_bytes_); printf("\n");
+  if(!the_cipher.Init(key->symmetric_key_bit_size_, 
+                      key->symmetric_key_bytes_, 
+                      Twofish::ENCRYPT)) {
+    printf("TwofishEncrypt cipher init: failed\n");
+    return false;
+  }
+  ReadFile  reader;
+  WriteFile writer;
+
+  if(!reader.Init(inFile)) {
+    printf("TwofishEncrypt: can't open %s\n", inFile);
+    return false;
+  }
+  if(!writer.Init(outFile)) {
+    printf("AesEncrypt: can't open %s\n", outFile);
+    return false;
+  }
+
+  int   n;
+  int   k;
+  byte  in_buf[BUFSIZE];
+  byte  out_buf[BUFSIZE];
+  bool  final= false;
+
+  for(;;) {
+    n= reader.Read(BUFSIZE, in_buf);
+    if(n<0) {
+      printf("AesEncrypt: error reading file\n");
+      break;
+    }
+    if(n<BUFSIZE) {
+      memset(&in_buf[n], 0, BUFSIZE-n);
+      in_buf[n++]= 0x80;
+      final= true;
+    }
+    k= (n+the_cipher.BLOCKBYTESIZE-1)/the_cipher.BLOCKBYTESIZE;
+    k*= the_cipher.BLOCKBYTESIZE;
+    the_cipher.Encrypt(k, in_buf, out_buf);
+    writer.Write(k, out_buf);
+    if(final)
+      break;
+  }
+  reader.Close();
+  writer.Close();
+  return true;
+}
+
+bool TwoFishDecrypt(SymmetricKey* key, const char* inFile, const char* outFile) {
+    Aes the_cipher;
+
+    if(!the_cipher.Init(key->symmetric_key_bit_size_,
+                        key->symmetric_key_bytes_, 
+                        the_cipher.DECRYPT)) {
+      printf("AesDecrypt: failed\n");
+      return false;
+    }
+    ReadFile  reader;
+    WriteFile writer;
+
+    if(!reader.Init(inFile)) {
+      printf("AesDecrypt: can't open %s\n", inFile);
+      return false;
+    }
+    if(!writer.Init(outFile)) {
+      printf("AesDecrypt: can't open %s\n", outFile);
+      return false;
+    }
+
+    int   m;
+    int   n;
+    int   k;
+    byte  in_buf[BUFSIZE];
+    byte  out_buf[BUFSIZE];
+    bool  final= false;
+
+    for(;;) {
+      k= reader.BytesLeftInFile()-the_cipher.BLOCKBYTESIZE;
+      if(k<=0) {
+        m=reader.BytesLeftInFile();
+        n= reader.Read(m, in_buf);
+        if(n<0) {
+          printf("AesDecrypt: error reading file\n");
+          break;
+        }
+        k= (n+the_cipher.BLOCKBYTESIZE-1)/the_cipher.BLOCKBYTESIZE;
+        k*= the_cipher.BLOCKBYTESIZE;
+        the_cipher.Decrypt(k, in_buf, out_buf);
+        for(m=(k-1); m>=0; m--) {
+          if(out_buf[m]!=0) {
+            if(out_buf[--m]!=0x80) {
+            }
+          }
+        }
+        if(m>0)
+          writer.Write(m, out_buf);
+        final= true;
+      } else {
+        if(k>BUFSIZE) {
+          m= BUFSIZE;
+        } else {
+          m= k;
+        }
+
+        n= reader.Read(m, in_buf);
+        if(n<0) {
+          printf("TwofishDecrypt: error reading file\n");
+          break;
+        }
+        k= (n+the_cipher.BLOCKBYTESIZE-1)/the_cipher.BLOCKBYTESIZE;
+        k*= the_cipher.BLOCKBYTESIZE;
+        the_cipher.Decrypt(k, in_buf, out_buf);
+        writer.Write(k, out_buf);
+      }
+      if(final)
+        break;
+    }
+  reader.Close();
+  writer.Close();
+  return true;
+}
+
 bool CbcEncrypt(AesCbcHmac256Sympad* scheme, 
                 const char* inFile, const char* outFile,
                 bool aes_ni) {
@@ -1085,10 +1246,27 @@ int main(int an, char** av) {
         CloseUtilities();
         return 1;
       } else {
-      printf("Encryption succeeded\n");
+        printf("Encryption succeeded\n");
         return 0;
       } 
+    } else if(strcmp(FLAGS_algorithm.c_str(), "twofish-128")==0 || 
+              strcmp(FLAGS_algorithm.c_str(), "twofish-256")==0) {
+      new_key= GetTwofishKey(size, out);
+      if(new_key==NULL) {
+        printf("SymEncrypt/DecryptWithKey: cant get key\n");
+        return 1;
+      }
+      if(!TwoFishEncrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
+        printf("Encryption failed\n");
+        return 1;
+      } else {
+        printf("Encryption succeeded\n");
+        return 0;
+      }
+    } else {
+        printf("unknown encryption alg %s\n", FLAGS_algorithm.c_str());
     }
+       
   } else if(strcmp("SymDecryptWithKey", FLAGS_operation.c_str())==0) {
     int           size= 0;
     byte*         out= NULL;
@@ -1113,9 +1291,23 @@ int main(int an, char** av) {
       } else {
       printf("Decryption succeeded\n");
         return 0;
-      } 
+      }
+    } else if(strcmp(FLAGS_algorithm.c_str(), "twofish-128")==0 || 
+              strcmp(FLAGS_algorithm.c_str(), "twofish-256")==0) {
+      new_key= GetTwofishKey(size, out);
+      if(new_key==NULL) {
+        printf("SymEncrypt/DecryptWithKey: cant get key\n");
+        return 1;
+      }
+      if(!TwoFishDecrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
+        printf("Decryption failed\n");
+        return 1;
+      } else {
+        printf("Decryption succeeded\n");
+        return 0;
+      }
     } else {
-        printf("SymDecrypt With Key: unsupported algorithm\n");
+        printf("SymDecrypt With Key: unsupported algorithm %s\n", FLAGS_algorithm.c_str());
         return 1;
     }
   } else if(strcmp("SymDecryptWithScheme", FLAGS_operation.c_str())==0) {
@@ -1229,6 +1421,22 @@ int main(int an, char** av) {
     printf("GenerateKey\n");
     if(strcmp(FLAGS_algorithm.c_str(), "aes-128")==0) {
       SymmetricKey* new_key= GenAesKey(128, FLAGS_duration.c_str(), FLAGS_key_name.c_str(), 
+                                  FLAGS_owner.c_str(), FLAGS_purpose.c_str(), &size, &out);
+      if(new_key==NULL) {
+        return 1;
+      }
+      ((CryptoKey*)new_key)->PrintKey();
+      WriteaFile(FLAGS_output_file.c_str(), size, out);
+    } else if(strcmp(FLAGS_algorithm.c_str(), "twofish-128")==0) {
+      SymmetricKey* new_key= GenTwofishKey(128, FLAGS_duration.c_str(), FLAGS_key_name.c_str(), 
+                                  FLAGS_owner.c_str(), FLAGS_purpose.c_str(), &size, &out);
+      if(new_key==NULL) {
+        return 1;
+      }
+      ((CryptoKey*)new_key)->PrintKey();
+      WriteaFile(FLAGS_output_file.c_str(), size, out);
+    } else if(strcmp(FLAGS_algorithm.c_str(), "twofish-256")==0) {
+      SymmetricKey* new_key= GenTwofishKey(256, FLAGS_duration.c_str(), FLAGS_key_name.c_str(), 
                                   FLAGS_owner.c_str(), FLAGS_purpose.c_str(), &size, &out);
       if(new_key==NULL) {
         return 1;
