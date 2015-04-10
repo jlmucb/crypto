@@ -52,18 +52,19 @@ class Twofish : public SymmetricCipher {
 
     Twofish();
     ~Twofish();
-    bool      Init(int, byte*, int);
+    bool        Init(int, byte*, int);
 
-    void      initialise_q_boxes();
-    void      initialise_mds_tables();
-    uint32_t  h(int k, byte L[], int kCycles);
-    void      fill_keyed_sboxes(byte S[], int kCycles, TwofishKey* xkey);   
+    void        initialise_q_boxes();
+    void        initialise_mds_tables();
+    uint32_t    h(int k, byte L[], int kCycles);
+    void        fill_keyed_sboxes(byte S[], int kCycles, TwofishKey* xkey);   
 
-    void      InitKey(const byte aKeyBytes[], int aKeyLength, TwofishKey* aKey);
-    void      Encrypt(int size, byte* aPlainText, byte* aCipherText); 
-    void      Decrypt(int size, byte* aCipherText, byte* aPlainText); 
-    void      EncryptBlock(byte* in, byte* out); 
-    void      DecryptBlock(byte* in, byte* out); 
+    void        InitKey(const byte aKeyBytes[], int aKeyLength,
+                        TwofishKey* aKey);
+    void        Encrypt(int size, byte* aPlainText, byte* aCipherText); 
+    void        Decrypt(int size, byte* aCipherText, byte* aPlainText); 
+    void        EncryptBlock(byte* in, byte* out); 
+    void        DecryptBlock(byte* in, byte* out); 
 };
 #endif
  

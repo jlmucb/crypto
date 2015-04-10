@@ -38,14 +38,14 @@ public:
   TimePoint*  not_before_;
   TimePoint*  not_after_;
 
- CryptoKey();
+  CryptoKey();
   virtual ~CryptoKey();
 
-  bool     ReadKey(string& filename);
-  bool     SaveKey(string& filename);
-  bool     SerializeKeyToMessage(crypto_key_message&);
-  bool     DeserializeKeyFromMessage(crypto_key_message&);
-  void     PrintKey();
+  bool        ReadKey(string& filename);
+  bool        SaveKey(string& filename);
+  bool        SerializeKeyToMessage(crypto_key_message&);
+  bool        DeserializeKeyFromMessage(crypto_key_message&);
+  void        PrintKey();
 };
 
 class SymmetricKey : public CryptoKey {
@@ -53,6 +53,7 @@ public:
   string*  symmetric_algorithm_type_;
   int32_t  symmetric_key_bit_size_;
   byte*    symmetric_key_bytes_;
+
   SymmetricKey();
   ~SymmetricKey();
 
@@ -63,11 +64,11 @@ public:
                      const char* owner, int num_bits, double secondstolive,
                      byte* key);
   bool    GenerateTwofishKey(const char* name, const char* usage,
-                         const char* owner, int num_bits,
-                         double seconds_to_live);
+                             const char* owner, int num_bits,
+                             double seconds_to_live);
   bool    MakeTwofishKey(const char* name, const char* usage,
-                     const char* owner, int num_bits, double secondstolive,
-                     byte* key);
+                         const char* owner, int num_bits, double secondstolive,
+                         byte* key);
   bool    ReadKey(string& filename);
   bool    SaveKey(string& filename);
 
@@ -124,19 +125,22 @@ public:
 
   EccKey();
   ~EccKey();
-  bool    MakeEccKey(const char* name, const char* usage, 
-                     const char* owner, int num_bits, double secondstolive,
-                      EccCurve* c, CurvePoint* g, CurvePoint* base, BigNum* order,
-                      BigNum* secret);
-  bool    ReadKey(string& filename);
-  bool    SaveKey(string& filename);
 
-  bool    SerializeKeyToMessage(crypto_ecc_key_message&);
-  bool    DeserializeKeyFromMessage(crypto_ecc_key_message&);
-  void    PrintKey();
+  bool        MakeEccKey(const char* name, const char* usage, 
+                         const char* owner, int num_bits, double secondstolive,
+                         EccCurve* c, CurvePoint* g, CurvePoint* base,
+                         BigNum* order, BigNum* secret);
+  bool        ReadKey(string& filename);
+  bool        SaveKey(string& filename);
 
-  bool    Encrypt(int size, byte* plain, BigNum& k, CurvePoint& pt1, CurvePoint& pt2);
-  bool    Decrypt(CurvePoint& pt1, CurvePoint& pt2, int* size, byte* plain);
+  bool        SerializeKeyToMessage(crypto_ecc_key_message&);
+  bool        DeserializeKeyFromMessage(crypto_ecc_key_message&);
+  void        PrintKey();
+
+  bool        Encrypt(int size, byte* plain, BigNum& k,
+                      CurvePoint& pt1, CurvePoint& pt2);
+  bool        Decrypt(CurvePoint& pt1, CurvePoint& pt2,
+                      int* size, byte* plain);
 };
 
 class KeyStore {

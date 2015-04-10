@@ -34,12 +34,12 @@ public:
     ENCRYPT= 1,
     DECRYPT= 2
   };
-  string*   alg_name_;
-  string*   message_id_;
-  bool      initialized_;
-  int       direction_;
-  int       input_bytes_processed_;
-  int       output_bytes_produced_;
+  string*       alg_name_;
+  string*       message_id_;
+  bool          initialized_;
+  int           direction_;
+  int           input_bytes_processed_;
+  int           output_bytes_produced_;
 
   EncryptionAlgorithm();
   virtual ~EncryptionAlgorithm();

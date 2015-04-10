@@ -26,8 +26,6 @@
 #define _CRYPTO_AES_H__
 using namespace std;
 
-#define AESMAXNR 14
-
 class Aes : public SymmetricCipher {
 public:
   enum {
@@ -41,16 +39,16 @@ public:
   uint32_t* decrypt_round_key_;
   int32_t   num_rounds_;
 
-  Aes();
-  virtual ~Aes();
+            Aes();
+  virtual   ~Aes();
 
-  bool InitEnc();
-  bool InitDec();
-  bool Init(int key_bit_size, byte* key_buf, int directionflag);
-  void EncryptBlock(const byte* in, byte* out);
-  void DecryptBlock(const byte* in, byte* out);
-  void Encrypt(int byte_size, byte* in, byte* out);
-  void Decrypt(int byte_size, byte* in, byte* out);
+  bool      InitEnc();
+  bool      InitDec();
+  bool      Init(int key_bit_size, byte* key_buf, int directionflag);
+  void      EncryptBlock(const byte* in, byte* out);
+  void      DecryptBlock(const byte* in, byte* out);
+  void      Encrypt(int byte_size, byte* in, byte* out);
+  void      Decrypt(int byte_size, byte* in, byte* out);
 };
 
 class AesNi : public SymmetricCipher {
@@ -66,16 +64,16 @@ public:
   uint32_t* decrypt_round_key_;
   int32_t   num_rounds_;
 
-  AesNi();
-  virtual ~AesNi();
+            AesNi();
+  virtual   ~AesNi();
 
-  bool InitEnc();
-  bool InitDec();
-  bool Init(int key_bit_size, byte* key_buf, int directionflag);
-  void EncryptBlock(const byte* in, byte* out);
-  void DecryptBlock(const byte* in, byte* out);
-  void Encrypt(int byte_size, byte* in, byte* out);
-  void Decrypt(int byte_size, byte* in, byte* out);
+  bool      InitEnc();
+  bool      InitDec();
+  bool      Init(int key_bit_size, byte* key_buf, int directionflag);
+  void      EncryptBlock(const byte* in, byte* out);
+  void      DecryptBlock(const byte* in, byte* out);
+  void      Encrypt(int byte_size, byte* in, byte* out);
+  void      Decrypt(int byte_size, byte* in, byte* out);
 };
 
 #endif

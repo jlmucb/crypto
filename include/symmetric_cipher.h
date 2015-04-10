@@ -34,12 +34,12 @@ public:
     DECRYPT= 2,
     BOTH= 3
   };
-  int       direction_;
-  bool      initialized_;
+  int           direction_;
+  bool          initialized_;
 
-  string*   cipher_name_;
-  int       num_key_bits_;
-  byte*     key_;
+  string*       cipher_name_;
+  int           num_key_bits_;
+  byte*         key_;
 
   SymmetricCipher();
   virtual ~SymmetricCipher();

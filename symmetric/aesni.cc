@@ -49,7 +49,7 @@ AesNi::~AesNi() {
 
 // compute key schedule in encrypt direction
 bool AesNi::InitEnc() {
-  encrypt_round_key_= new uint32_t[4*(AESMAXNR+1)+1];
+  encrypt_round_key_= new uint32_t[4*(AesNi::MAXNR+1)+1];
   if(encrypt_round_key_==NULL) {
     return false;
   }
@@ -124,7 +124,7 @@ void FixAes128DecRoundKeys(byte* ks) {
 }
 
 bool AesNi::InitDec() {
-  decrypt_round_key_= new uint32_t[4*(AESMAXNR+1)+1];
+  decrypt_round_key_= new uint32_t[4*(AesNi::MAXNR+1)+1];
   if(decrypt_round_key_==NULL) {
     return false;
   }           
@@ -134,7 +134,7 @@ bool AesNi::InitDec() {
     }
   }
   memcpy((byte*)decrypt_round_key_, (byte*)encrypt_round_key_,
-         (4*(AESMAXNR+1)+1)*sizeof(uint32_t));
+         (4*(AesNi::MAXNR+1)+1)*sizeof(uint32_t));
   for(int i = 1; i < 10; i++) 
     FixAes128DecRoundKeys((byte*)&decrypt_round_key_[4*i]);
   return true;

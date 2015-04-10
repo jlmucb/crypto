@@ -39,10 +39,10 @@ public:
   HmacSha256();
   ~HmacSha256();
 
-  bool Init(int size, byte* key);
-  void AddToInnerHash(int size, const byte* in);
-  bool GetHmac(int size, byte* out);
-  void Final();
+  bool    Init(int size, byte* key);
+  void    AddToInnerHash(int size, const byte* in);
+  bool    GetHmac(int size, byte* out);
+  void    Final();
 };
 #endif
 

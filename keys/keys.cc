@@ -182,24 +182,19 @@ bool CryptoKey::SerializeKeyToMessage(crypto_key_message& message) {
     message.set_not_after(*s);
   }
   if(strcmp(key_type_->c_str(),"symmetric-cipher")==0) {
-    crypto_symmetric_key_message* symmetric_key_message= 
-                           new crypto_symmetric_key_message();
-    message.set_allocated_symkey(symmetric_key_message);
+    crypto_symmetric_key_message* symmetric_key_message=
+      message.mutable_symkey();
     ((SymmetricKey*)this)->SerializeKeyToMessage(*symmetric_key_message);
   }
   else if(strcmp(key_type_->c_str(),"rsa")==0 || strcmp(key_type_->c_str(),"rsa-128")==0 ||
      strcmp(key_type_->c_str(),"rsa-256")==0 || strcmp(key_type_->c_str(),"rsa-512")==0 ||
      strcmp(key_type_->c_str(),"rsa-1024")==0 || strcmp(key_type_->c_str(),"rsa-2048")==0 ||
      strcmp(key_type_->c_str(),"rsa3072")==0) {
-    crypto_rsa_key_message* rsa_key_message= 
-                           new crypto_rsa_key_message();
-    message.set_allocated_rsakey(rsa_key_message);
+    crypto_rsa_key_message* rsa_key_message= message.mutable_rsakey();
     ((RsaKey*)this)->SerializeKeyToMessage(*rsa_key_message);
   }
   else if(strcmp(key_type_->c_str(),"ecc")==0 || strcmp(key_type_->c_str(),"ecc-256")==0) {
-    crypto_ecc_key_message* ecc_key_message= 
-                           new crypto_ecc_key_message();
-    message.set_allocated_ecckey(ecc_key_message);
+    crypto_ecc_key_message* ecc_key_message= message.mutable_ecckey();
     ((EccKey*)this)->SerializeKeyToMessage(*ecc_key_message);
   }
   message.set_crypto_context("jlm-crypto-key-message");

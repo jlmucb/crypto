@@ -27,12 +27,13 @@ public:
   BigNum* y_;
   BigNum* z_;
 
-        CurvePoint();
-        CurvePoint(int size);
-        CurvePoint(BigNum& x, BigNum& y);
-        CurvePoint(CurvePoint& P);
-        CurvePoint(CurvePoint& P, int capacity);
-        ~CurvePoint();
+  CurvePoint();
+  CurvePoint(int size);
+  CurvePoint(BigNum& x, BigNum& y);
+  CurvePoint(CurvePoint& P);
+  CurvePoint(CurvePoint& P, int capacity);
+  ~CurvePoint();
+
   bool  IsZero();
   void  Clear();
   void  MakeZero();
@@ -50,10 +51,11 @@ public:
   BigNum* b_;
   BigNum* p_;
 
-        EccCurve();
-        EccCurve(int size);
-        EccCurve(BigNum& a, BigNum& b, BigNum& p);
-        ~EccCurve();
+  EccCurve();
+  EccCurve(int size);
+  EccCurve(BigNum& a, BigNum& b, BigNum& p);
+  ~EccCurve();
+
   void  Clear();
   bool  SerializeCurveToMessage(crypto_ecc_curve_message&);
   bool  DeserializeCurveFromMessage(crypto_ecc_curve_message&);

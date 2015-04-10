@@ -723,7 +723,7 @@ static const uint32_t rcon[] = {
 
 // compute key schedule in encrypt direction
 bool Aes::InitEnc() {
-  encrypt_round_key_= new uint32_t[4*(AESMAXNR+1)+1];
+  encrypt_round_key_= new uint32_t[4*(Aes::MAXNR+1)+1];
   if(encrypt_round_key_==NULL) {
     LOG(ERROR)<<"InitEnc cant new key sched\n";
     return false;
@@ -803,7 +803,7 @@ bool Aes::InitEnc() {
 
 
 bool Aes::InitDec() {
-  decrypt_round_key_= new uint32_t[4*(AESMAXNR+1)+1];
+  decrypt_round_key_= new uint32_t[4*(Aes::MAXNR+1)+1];
   if(decrypt_round_key_==NULL) {
     LOG(ERROR)<<"InitDec cant new key sched\n";
     return false;
@@ -817,7 +817,7 @@ bool Aes::InitDec() {
       return false;
     }
   memcpy((byte*)decrypt_round_key_, (byte*)encrypt_round_key_, 
-         (4*(AESMAXNR+1)+1)*sizeof(uint32_t));
+         (4*(Aes::MAXNR+1)+1)*sizeof(uint32_t));
   for (i = 0, j = 4*num_rounds_; i < j; i += 4, j -= 4) {
     temp = rk[i]; rk[i] = rk[j]; rk[j] = temp;
     temp = rk[i + 1]; rk[i + 1] = rk[j + 1]; rk[j + 1] = temp;

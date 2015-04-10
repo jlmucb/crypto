@@ -52,39 +52,39 @@ public:
   AesCbcHmac256Sympad();
   ~AesCbcHmac256Sympad();
 
-  void  PrintEncryptionAlgorithm();
+  void        PrintEncryptionAlgorithm();
 
-  void  CbcEncryptBlock(byte* in, byte* out);
-  void  CbcDecryptBlock(byte* in, byte* out);
+  void        CbcEncryptBlock(byte* in, byte* out);
+  void        CbcDecryptBlock(byte* in, byte* out);
 
-  bool  PlainIn(int size_in, byte* in, int* size_out, byte* out);
-  bool  CipherIn(int size_in, byte* in, int* size_out, byte* out);
-  bool  FinalPlainIn(int size_in, byte* in, int* size_out, byte* out);
-  bool  FinalCipherIn(int size_in, byte* in, int* size_out, byte* out);
+  bool        PlainIn(int size_in, byte* in, int* size_out, byte* out);
+  bool        CipherIn(int size_in, byte* in, int* size_out, byte* out);
+  bool        FinalPlainIn(int size_in, byte* in, int* size_out, byte* out);
+  bool        FinalCipherIn(int size_in, byte* in, int* size_out, byte* out);
 
-  bool  InitEnc(int size_enc, byte* enc_key, int size_int, 
-                byte* int_key, int size_iv, byte* iv, bool use_aesni);
-  bool  InitDec(int size_enc, byte* enc_key, int size_int, 
-                byte* int_key, bool use_aesni);
+  bool        InitEnc(int size_enc, byte* enc_key, int size_int, 
+                      byte* int_key, int size_iv, byte* iv, bool use_aesni);
+  bool        InitDec(int size_enc, byte* enc_key, int size_int, 
+                      byte* int_key, bool use_aesni);
 
-  int   DecryptInputQuantum();
-  int   EncryptInputQuantum();
-  int   MinimumFinalDecryptIn();
-  int   MinimumFinalEncryptIn();
-  int   MaxAdditionalOutput();
-  int   MaxAdditionalFinalOutput();
-  bool  ProcessInput(int size_in, byte* in, int* size_out, byte* out);
-  bool  ProcessFinalInput(int size_in, byte* in, int* size_out, byte* out);
-  int   InputBytesProcessed();
-  int   OutputBytesProduced();
-  bool  MessageValid();
+  int         DecryptInputQuantum();
+  int         EncryptInputQuantum();
+  int         MinimumFinalDecryptIn();
+  int         MinimumFinalEncryptIn();
+  int         MaxAdditionalOutput();
+  int         MaxAdditionalFinalOutput();
+  bool        ProcessInput(int size_in, byte* in, int* size_out, byte* out);
+  bool        ProcessFinalInput(int size_in, byte* in, int* size_out, byte* out);
+  int         InputBytesProcessed();
+  int         OutputBytesProduced();
+  bool        MessageValid();
 
-  int   GetComputedMac(int size, byte*);
-  int   GetReceivedMac(int size, byte*);
+  int         GetComputedMac(int size, byte*);
+  int         GetReceivedMac(int size, byte*);
 
-  bool  GenerateScheme(const char* name, int num_bits);
-  bool  MakeScheme(const char* name, int num_bits,
-                     byte* enc_key, byte* int_key, byte* iv);
+  bool        GenerateScheme(const char* name, int num_bits);
+  bool        MakeScheme(const char* name, int num_bits,
+                         byte* enc_key, byte* int_key, byte* iv);
 };
 
 #endif

@@ -41,12 +41,12 @@ public:
   Sha3(int num_bits);
   ~Sha3();
 
-  void TransformBlock(const uint64_t*, int);
+  void      TransformBlock(const uint64_t*, int);
 
-  bool Init();
-  void AddToHash(int size, const byte* in);
-  bool GetDigest(int size, byte* out);
-  void Final();
+  bool      Init();
+  void      AddToHash(int size, const byte* in);
+  bool      GetDigest(int size, byte* out);
+  void      Final();
 };
 #endif
 

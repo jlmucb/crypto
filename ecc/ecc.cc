@@ -1089,12 +1089,9 @@ bool  EccKey::SerializeKeyToMessage(crypto_ecc_key_message& msg) {
     msg.set_order(s->c_str());
     delete s;
   }
-  crypto_point_message* g_msg= new crypto_point_message();
-  crypto_point_message* b_msg= new crypto_point_message();
-  crypto_ecc_curve_message* c_msg= new crypto_ecc_curve_message();
-  msg.set_allocated_generator(g_msg);
-  msg.set_allocated_base_point(b_msg);
-  msg.set_allocated_curve(c_msg);
+  crypto_point_message* g_msg= msg.mutable_generator();
+  crypto_point_message* b_msg= msg.mutable_base_point();
+  crypto_ecc_curve_message* c_msg= msg.mutable_curve();
   c_.SerializeCurveToMessage(*c_msg);
   g_.SerializePointToMessage(*g_msg);
   base_.SerializePointToMessage(*b_msg);

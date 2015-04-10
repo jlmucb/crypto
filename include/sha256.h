@@ -38,12 +38,12 @@ public:
   Sha256();
   ~Sha256();
 
-  void TransformBlock(const uint32_t* data);
+  void      TransformBlock(const uint32_t* data);
 
-  bool Init();
-  void AddToHash(int size, const byte* in);
-  bool GetDigest(int size, byte* out);
-  void Final();
+  bool      Init();
+  void      AddToHash(int size, const byte* in);
+  bool      GetDigest(int size, byte* out);
+  void      Final();
 };
 #endif
 
