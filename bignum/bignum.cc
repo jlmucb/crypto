@@ -61,10 +61,10 @@ BigNum::BigNum(BigNum& n) {
 }
 
 BigNum::~BigNum() {
-  if(value_!=NULL) {
+  if(value_!=nullptr) {
     DigitArrayZeroNum(capacity_, value_);
     delete value_;
-    value_= NULL;
+    value_= nullptr;
   }
 }
 

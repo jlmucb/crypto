@@ -41,16 +41,16 @@ string* BigConvertToDecimal(BigNum& a) {
   char* str= new char[k];
 
   if(!DigitArrayConvertToDecimal(a.size_, a.value_, &k, str)) {
-    if(str!=NULL) {
+    if(str!=nullptr) {
       // delete str;
-      str= NULL;
+      str= nullptr;
     }
-    return NULL;
+    return nullptr;
   }
   string* s= new string(str);
-  if(str!=NULL) {
+  if(str!=nullptr) {
     // delete str;
-    str= NULL;
+    str= nullptr;
   }
   return s;
 }
@@ -68,16 +68,16 @@ string* BigConvertToHex(BigNum& a) {
   char* str= new char[k];
 
   if(!DigitArrayConvertToHex(a.size_, a.value_, &k, str)) {
-    if(str!=NULL) {
+    if(str!=nullptr) {
       delete str;
-      str= NULL;
+      str= nullptr;
     }
-    return NULL;
+    return nullptr;
   }
   string* s= new string(str);
-  if(str!=NULL) {
+  if(str!=nullptr) {
     delete str;
-    str= NULL;
+    str= nullptr;
   }
   return s;
 }
@@ -92,7 +92,7 @@ BigNum* BigConvertFromHex(const char* in) {
 }
 
 void  PrintNumToLog(BigNum& n, uint64_t base) {
-  string*   s= NULL;
+  string*   s= nullptr;
 
   if(base==10) {
     s= BigConvertToDecimal(n);
@@ -105,7 +105,7 @@ void  PrintNumToLog(BigNum& n, uint64_t base) {
 }
 
 void  PrintNumToConsole(BigNum& n, uint64_t base) {
-  string*   s= NULL;
+  string*   s= nullptr;
 
   if(base==10) {
     s= BigConvertToDecimal(n);
@@ -114,7 +114,7 @@ void  PrintNumToConsole(BigNum& n, uint64_t base) {
   } else {
     return;
   }
-  if(s==NULL)
+  if(s==nullptr)
     return;
   if(n.IsNegative())
     printf("(-%s)", s->c_str());
@@ -206,8 +206,8 @@ bool BigUnsignedAdd(BigNum& a, BigNum& b, BigNum& r) {
 }
 
 bool BigUnsignedSub(BigNum& a, BigNum& b, BigNum& r) {
-  int k = DigitArraySub(a.size_, a.value_, b.size_, b.value_,
-                    r.capacity_, r.value_);
+  int k = DigitArraySub(a.size_, a.value_, b.size_,
+                        b.value_, r.capacity_, r.value_);
   if(k<0)
     return false;
   r.size_= k;
@@ -216,8 +216,8 @@ bool BigUnsignedSub(BigNum& a, BigNum& b, BigNum& r) {
 }
 
 bool BigUnsignedMult(BigNum& a, BigNum& b, BigNum& r) {
-  int k = DigitArrayMult(a.size_, a.value_, b.size_, b.value_,
-                    r.capacity_, r.value_);
+  int k = DigitArrayMult(a.size_, a.value_, b.size_,
+                         b.value_, r.capacity_, r.value_);
   if(k<0) {
     return false;
   }
@@ -229,8 +229,10 @@ bool BigUnsignedMult(BigNum& a, BigNum& b, BigNum& r) {
 bool BigUnsignedEuclid(BigNum& a, BigNum& b, BigNum& q, BigNum& r) {
   int   size_q= q.capacity_;
   int   size_r= r.capacity_;
-  if(!DigitArrayDivisionAlgorithm(a.size_, a.value_, b.size_, b.value_,
-                    &size_q, q.value_, &size_r, r.value_)) {
+  if(!DigitArrayDivisionAlgorithm(a.size_, a.value_,
+                                  b.size_, b.value_,
+                                  &size_q, q.value_,
+                                  &size_r, r.value_)) {
     LOG(ERROR) << "DigitArrayDivisionAlgorithm fails in BigUnsignedEuclid\n";
     return false;
   }
@@ -238,12 +240,6 @@ bool BigUnsignedEuclid(BigNum& a, BigNum& b, BigNum& q, BigNum& r) {
   r.size_= DigitArrayComputedSize(size_r, r.value_);
   if(r.size_>b.size_) {
     LOG(ERROR)<<"*** something's wrong in BigUnsignedEuclid\n";
-#if 0
-    printf("a: "); PrintNumToConsole(a, 10ULL); printf("\n");
-    printf("b: "); PrintNumToConsole(b, 10ULL); printf("\n");
-    printf("r: "); PrintNumToConsole(r, 10ULL); printf("\n");
-    printf("q: "); PrintNumToConsole(q, 10ULL); printf("\n");
-#endif
     r.ZeroNum();
     return false;
   }
@@ -273,7 +269,8 @@ bool BigUnsignedAddTo(BigNum& a, BigNum& b) {
 }
 
 bool BigUnsignedSubFrom(BigNum& a, BigNum& b) {
-  int k= DigitArraySubFrom(a.capacity_, a.size_, a.value_ , b.size_, b.value_);
+  int k= DigitArraySubFrom(a.capacity_, a.size_, a.value_,
+                           b.size_, b.value_);
   if(k<0)
     return false;
   a.size_= k;

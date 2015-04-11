@@ -29,74 +29,74 @@
 
 RsaKey::RsaKey() {
   bit_size_modulus_= 0;
-  m_= NULL;
-  e_= NULL;
-  d_= NULL;
-  p_= NULL;
-  q_= NULL;
-  dp_= NULL;
-  dq_= NULL;
-  m_prime_= NULL;
-  p_prime_= NULL;
-  q_prime_= NULL;
+  m_= nullptr;
+  e_= nullptr;
+  d_= nullptr;
+  p_= nullptr;
+  q_= nullptr;
+  dp_= nullptr;
+  dq_= nullptr;
+  m_prime_= nullptr;
+  p_prime_= nullptr;
+  q_prime_= nullptr;
 }
 
 RsaKey::~RsaKey() {
   bit_size_modulus_= 0;
-  if(m_!=NULL) {
+  if(m_!=nullptr) {
     m_->ZeroNum();
     delete m_;
-    m_= NULL;
+    m_= nullptr;
   }
-  if(e_!=NULL) {
+  if(e_!=nullptr) {
     e_->ZeroNum();
     delete e_;
-    e_= NULL;
+    e_= nullptr;
   }
-  if(d_!=NULL) {
+  if(d_!=nullptr) {
     d_->ZeroNum();
     delete d_;
-    d_= NULL;
+    d_= nullptr;
   }
-  if(p_!=NULL) {
+  if(p_!=nullptr) {
     p_->ZeroNum();
     delete p_;
-    p_= NULL;
+    p_= nullptr;
   }
-  if(q_!=NULL) {
+  if(q_!=nullptr) {
     q_->ZeroNum();
     delete q_;
-    q_= NULL;
+    q_= nullptr;
   }
-  if(dp_!=NULL) {
+  if(dp_!=nullptr) {
     dp_->ZeroNum();
     delete dp_;
-    dp_= NULL;
+    dp_= nullptr;
   }
-  if(dq_!=NULL) {
+  if(dq_!=nullptr) {
     dq_->ZeroNum();
     delete dq_;
-    dq_= NULL;
+    dq_= nullptr;
   }
-  if(q_prime_!=NULL) {
+  if(q_prime_!=nullptr) {
     q_prime_->ZeroNum();
     delete q_prime_;
-    q_prime_= NULL;
+    q_prime_= nullptr;
   }
-  if(m_prime_!=NULL) {
+  if(m_prime_!=nullptr) {
     m_prime_->ZeroNum();
     delete m_prime_;
-    m_prime_= NULL;
+    m_prime_= nullptr;
   }
-  if(p_prime_!=NULL) {
+  if(p_prime_!=nullptr) {
     p_prime_->ZeroNum();
     delete p_prime_;
-    p_prime_= NULL;
+    p_prime_= nullptr;
   }
 }
 
 bool  RsaKey::ComputeFastDecryptParameters() {
-  if(m_==NULL) {
+  if(m_==nullptr) {
     LOG(ERROR)<<"RsaKey::ComputeFastDecryptParameters: empty modulus\n";
     return false;
   }
@@ -174,61 +174,61 @@ bool RsaKey::SerializeKeyToMessage(crypto_rsa_key_message& msg) {
 
   msg.set_key_type(key_type.c_str());
 
-  if(m_!=NULL) {
+  if(m_!=nullptr) {
     string* s= ByteToBase64RightToLeft(
                   m_->size_*sizeof(uint64_t), (byte*)m_->value_);
     msg.set_modulus(s->c_str());
     delete s;
   }
-  if(e_!=NULL) {
+  if(e_!=nullptr) {
     string* s= ByteToBase64RightToLeft(
                   e_->size_*sizeof(uint64_t), (byte*)e_->value_);
     msg.set_public_exponent(s->c_str());
     delete s;
   }
-  if(d_!=NULL) {
+  if(d_!=nullptr) {
     string* s= ByteToBase64RightToLeft(
                   d_->size_*sizeof(uint64_t), (byte*)d_->value_);
     msg.set_private_exponent(s->c_str());
     delete s;
   }
-  if(p_!=NULL) {
+  if(p_!=nullptr) {
     string* s= ByteToBase64RightToLeft(
                   p_->size_*sizeof(uint64_t), (byte*)p_->value_);
     msg.set_p(s->c_str());
     delete s;
   }
-  if(q_!=NULL) {
+  if(q_!=nullptr) {
     string* s= ByteToBase64RightToLeft(
                   q_->size_*sizeof(uint64_t), (byte*)q_->value_);
     msg.set_q(s->c_str());
     delete s;
   }
-  if(dp_!=NULL) {
+  if(dp_!=nullptr) {
     string* s= ByteToBase64RightToLeft(
                   dp_->size_*sizeof(uint64_t), (byte*)dp_->value_);
     msg.set_dp(s->c_str());
     delete s;
   }
-  if(dq_!=NULL) {
+  if(dq_!=nullptr) {
     string* s= ByteToBase64RightToLeft(
                   dq_->size_*sizeof(uint64_t), (byte*)dq_->value_);
     msg.set_dq(s->c_str());
     delete s;
   }
-  if(m_prime_!=NULL) {
+  if(m_prime_!=nullptr) {
     string* s= ByteToBase64RightToLeft(
                   m_prime_->size_*sizeof(uint64_t), (byte*)m_prime_->value_);
     msg.set_m_prime(s->c_str());
     delete s;
   }
-  if(p_prime_!=NULL) {
+  if(p_prime_!=nullptr) {
     string* s= ByteToBase64RightToLeft(
                   p_prime_->size_*sizeof(uint64_t), (byte*)p_prime_->value_);
     msg.set_p_prime(s->c_str());
     delete s;
   }
-  if(m_prime_!=NULL) {
+  if(m_prime_!=nullptr) {
     string* s= ByteToBase64RightToLeft(
                   q_prime_->size_*sizeof(uint64_t), (byte*)q_prime_->value_);
     msg.set_q_prime(s->c_str());
@@ -247,7 +247,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
   int bignum_size= (bit_size_modulus_+NBITSINUINT64-1)/NBITSINUINT64;
 
   if(msg.has_modulus()) {
-    if(m_==NULL) {
+    if(m_==nullptr) {
       m_= new BigNum(bignum_size);
     }
     k= Base64ToByteRightToLeft((char*)(msg.modulus().c_str()),
@@ -259,7 +259,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     m_->Normalize();
   }
   if(msg.has_public_exponent()) {
-    if(e_==NULL) {
+    if(e_==nullptr) {
       e_= new BigNum(bignum_size);
     }
     k= Base64ToByteRightToLeft((char*)(msg.public_exponent().c_str()),
@@ -271,7 +271,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     e_->Normalize();
   }
   if(msg.has_private_exponent()) {
-    if(d_==NULL) {
+    if(d_==nullptr) {
       d_= new BigNum(bignum_size);
     }
     k= Base64ToByteRightToLeft((char*)(msg.private_exponent().c_str()),
@@ -283,7 +283,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     d_->Normalize();
   }
   if(msg.has_p()) {
-    if(p_==NULL) {
+    if(p_==nullptr) {
       p_= new BigNum(bignum_size);
     }
     k= Base64ToByteRightToLeft((char*)(msg.p().c_str()),
@@ -295,7 +295,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     p_->Normalize();
   }
   if(msg.has_q()) {
-    if(q_==NULL) {
+    if(q_==nullptr) {
       q_= new BigNum(bignum_size);
     }
     k= Base64ToByteRightToLeft((char*)(msg.q().c_str()),
@@ -307,7 +307,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     q_->Normalize();
   }
   if(msg.has_dp()) {
-    if(dp_==NULL) {
+    if(dp_==nullptr) {
       dp_= new BigNum(bignum_size);
     }
     k= Base64ToByteRightToLeft((char*)(msg.dp().c_str()),
@@ -319,7 +319,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     dp_->Normalize();
   }
   if(msg.has_dq()) {
-    if(dq_==NULL) {
+    if(dq_==nullptr) {
       dq_= new BigNum(bignum_size);
     }
     k= Base64ToByteRightToLeft((char*)(msg.dq().c_str()),
@@ -331,7 +331,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     dq_->Normalize();
   }
   if(msg.has_m_prime()) {
-    if(m_prime_==NULL) {
+    if(m_prime_==nullptr) {
       m_prime_= new BigNum(bignum_size);
     }
     k= Base64ToByteRightToLeft((char*)(msg.m_prime().c_str()),
@@ -343,7 +343,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     m_prime_->Normalize();
   }
   if(msg.has_p_prime()) {
-    if(p_prime_==NULL) {
+    if(p_prime_==nullptr) {
       p_prime_= new BigNum(bignum_size);
     }
     k= Base64ToByteRightToLeft((char*)(msg.p_prime().c_str()),
@@ -355,7 +355,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     m_prime_->Normalize();
   }
   if(msg.has_q_prime()) {
-    if(q_prime_==NULL) {
+    if(q_prime_==nullptr) {
       q_prime_= new BigNum(bignum_size);
     }
     k= Base64ToByteRightToLeft((char*)(msg.q_prime().c_str()),
@@ -429,36 +429,36 @@ bool RsaKey::MakeRsaKey(const char* name, const char* usage,
 
 void RsaKey::PrintKey() {
   printf("bit_size_modulus_: %d\n", bit_size_modulus_);
-  if(m_!=NULL) {
+  if(m_!=nullptr) {
     printf("m: "); PrintNumToConsole(*m_, 10ULL); printf("\n");
   } else {
     printf("RSAKey: m is empty\n");
   }
-  if(e_!=NULL) {
+  if(e_!=nullptr) {
     printf("e: "); PrintNumToConsole(*e_, 10ULL); printf("\n");
   }
-  if(d_!=NULL) {
+  if(d_!=nullptr) {
     printf("d: "); PrintNumToConsole(*d_, 10ULL); printf("\n");
   }
-  if(p_!=NULL) {
+  if(p_!=nullptr) {
     printf("p: "); PrintNumToConsole(*p_, 10ULL); printf("\n");
   }
-  if(q_!=NULL) {
+  if(q_!=nullptr) {
     printf("q: "); PrintNumToConsole(*q_, 10ULL); printf("\n");
   }
-  if(dp_!=NULL) {
+  if(dp_!=nullptr) {
     printf("dp: "); PrintNumToConsole(*dp_, 10ULL); printf("\n");
   }
-  if(dq_!=NULL) {
+  if(dq_!=nullptr) {
     printf("dq: "); PrintNumToConsole(*dq_, 10ULL); printf("\n");
   }
-  if(m_prime_!=NULL) {
+  if(m_prime_!=nullptr) {
     printf("m_prime: "); PrintNumToConsole(*m_prime_, 10ULL); printf("\n");
   }
-  if(p_prime_!=NULL) {
+  if(p_prime_!=nullptr) {
     printf("p_prime: "); PrintNumToConsole(*p_prime_, 10ULL); printf("\n");
   }
-  if(q_prime_!=NULL) {
+  if(q_prime_!=nullptr) {
     printf("q_prime: "); PrintNumToConsole(*q_prime_, 10ULL); printf("\n");
   }
 }
@@ -513,7 +513,7 @@ bool RsaKey::Encrypt(int size_in, byte* in, int* size_out, byte* out, int speed)
       return false;
     }
   } else if (speed==3) {
-    if(p_prime_==NULL || p_prime_==NULL) {
+    if(p_prime_==nullptr || p_prime_==nullptr) {
       LOG(ERROR)<< "uncalculated p_prime_ in RSAKey::Encrypt\n";
       return false;
     }
@@ -594,7 +594,7 @@ bool RsaKey::Decrypt(int size_in, byte* in, int* size_out, byte* out,
       return false;
     }
   } else if (speed==3) {
-    if(p_prime_==NULL || p_prime_==NULL) {
+    if(p_prime_==nullptr || p_prime_==nullptr) {
       LOG(ERROR)<< "uncalculated p_prime_ in RSAKey::Decrypt\n";
       return false;
     }

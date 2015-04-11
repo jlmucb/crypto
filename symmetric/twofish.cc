@@ -87,10 +87,10 @@ static const byte t_table[2][4][16]= {
    
 Twofish::Twofish() {   
   direction_= NONE;
-  cipher_name_= NULL;
+  cipher_name_= nullptr;
   initialized_= false;
   num_key_bits_= 0;
-  key_= NULL;
+  key_= nullptr;
 }   
 
 Twofish::~Twofish() {   
@@ -267,13 +267,13 @@ bool Twofish::Init(int key_bit_size, byte* key, int direction) {
     return false;
   }
   num_key_bits_= key_bit_size;
-  if(key==NULL) {
-    LOG(ERROR)<<"Twofish::Init key is NULL\n";
+  if(key==nullptr) {
+    LOG(ERROR)<<"Twofish::Init key is nullptr\n";
     return false;
   }
   key_= new byte[key_bit_size/NBITSINBYTE];
-  if(key_==NULL) {
-    LOG(ERROR)<<"Twofish::Init key is NULL\n";
+  if(key_==nullptr) {
+    LOG(ERROR)<<"Twofish::Init key is nullptr\n";
     return false;
   }
   memcpy(key_, key, key_bit_size/NBITSINBYTE);

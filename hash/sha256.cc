@@ -86,7 +86,7 @@ Sha256::~Sha256() {
 bool Sha256::Init() {
   num_bytes_waiting_= 0;
   num_bits_processed_= 0;
-  if(hash_name_==NULL) {
+  if(hash_name_==nullptr) {
     hash_name_= new string("sha-256");
   }
   finalized_= false;

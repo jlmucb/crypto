@@ -75,7 +75,7 @@ byte test3in[5]= {
 bool simpletest3() {
   byte    tmpout[128];
   string* s= ByteToBase64RightToLeft(sizeof(test3in), test3in);
-  if(s==NULL)
+  if(s==nullptr)
     return false;
   int     n= Base64ToByteRightToLeft((char*) s->c_str(), 5, tmpout);
   cout << "    input: ";
@@ -113,7 +113,7 @@ string hexout("14fb9c03d9");
 bool simpletest5() {
   byte  tmpout[128];
   string* s= ByteToHexLeftToRight(sizeof(test1in), test1in);
-  if(s==NULL)
+  if(s==nullptr)
     return false;
   int     n= HexToByteLeftToRight((char*) s->c_str(), 128, tmpout);
   cout << "    input: ";

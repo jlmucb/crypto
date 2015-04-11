@@ -27,7 +27,7 @@
 
 using namespace std;
 
-EccKey* ext_ecc_key= NULL;
+EccKey* ext_ecc_key= nullptr;
 
 class BigNumTest : public ::testing::Test {
  protected:
@@ -2236,7 +2236,7 @@ uint64_t  T1= 0x6666666666666666;
 
 bool ecc_add_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
   printf("\nECC_ADD_TIME_TEST\n");
-  if(ecc_key==NULL)
+  if(ecc_key==nullptr)
     return false;
   CurvePoint  P(8);
   CurvePoint  Q(8);
@@ -2269,7 +2269,7 @@ bool ecc_add_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
 
 bool ecc_double_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
   printf("\nECC_DOUBLE_TIME_TEST\n");
-  if(ecc_key==NULL)
+  if(ecc_key==nullptr)
     return false;
   CurvePoint  P(8);
   CurvePoint  R(8);
@@ -2362,7 +2362,7 @@ CurvePoint  extP(16);
 
 bool ecc_mult_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
   printf("\nECC_MULT_TIME_TEST\n");
-  if(ecc_key==NULL)
+  if(ecc_key==nullptr)
     return false;
   CurvePoint  P(8);
   CurvePoint  R(8);
@@ -2410,7 +2410,7 @@ bool ecc_mult_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
 
 bool ecc_projective_mult_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
   printf("\nECC_PROJECTIVE_MULT_TIME_TEST\n");
-  if(ecc_key==NULL)
+  if(ecc_key==nullptr)
     return false;
   CurvePoint  P(8);
   CurvePoint  R(8);
@@ -2445,7 +2445,7 @@ bool ecc_projective_mult_time_test(const char* filename, EccKey* ecc_key, int nu
 
 bool ecc_extract_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
   printf("\nECC_EXTRACT_TIME_TEST\n");
-  if(ecc_key==NULL)
+  if(ecc_key==nullptr)
     return false;
   CurvePoint  P(16);
   BigNum      x(16);
@@ -2472,7 +2472,7 @@ bool ecc_extract_time_test(const char* filename, EccKey* ecc_key, int num_tests)
 
 bool ecc_embed_time_test(const char* filename, EccKey* ecc_key, int num_tests) {
   printf("\nECC_EMBED_TIME_TEST\n");
-  if(ecc_key==NULL)
+  if(ecc_key==nullptr)
     return false;
   CurvePoint  P(16);
   BigNum      x(16);
@@ -2511,7 +2511,7 @@ bool rsa1024_gen_time_test(const char* filename, int num_tests) {
       return false;
     }
     delete key;
-    key= NULL;
+    key= nullptr;
   }
   uint64_t  cycles_end_test= ReadRdtsc();
   uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
@@ -2535,7 +2535,7 @@ bool rsa2048_gen_time_test(const char* filename, int num_tests) {
       return false;
     }
     delete key;
-    key= NULL;
+    key= nullptr;
   }
   uint64_t  cycles_end_test= ReadRdtsc();
   uint64_t  cycles_diff= cycles_end_test-cycles_start_test;
@@ -2676,7 +2676,7 @@ bool ecc_speed_tests(EccKey* key, const char* filename, int size, int num_tests)
 
   BigNum secret(8);
   secret.ZeroNum();
-  if(key==NULL) {
+  if(key==nullptr) {
     key= new EccKey();
     secret.ZeroNum();
     if(!GetCryptoRand(4*NBITSINUINT64-64, (byte*)secret.value_)) {
@@ -2684,9 +2684,9 @@ bool ecc_speed_tests(EccKey* key, const char* filename, int size, int num_tests)
       return false;
     }
     secret.Normalize();
-    if(key==NULL || !key->MakeEccKey((const char*)"test-key", (const char*)"test", 
+    if(key==nullptr || !key->MakeEccKey((const char*)"test-key", (const char*)"test", 
             (const char*)"test", 256, COMMON_YEAR_SECONDS, &P256_Key.c_, 
-            &P256_Key.g_, NULL, P256_Key.order_of_g_, &secret)) {
+            &P256_Key.g_, nullptr, P256_Key.order_of_g_, &secret)) {
       printf("Cant generate ecc key\n");
       return false;
     }
@@ -2775,18 +2775,18 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
     return false;
   }
 
-  if(key1==NULL) {
+  if(key1==nullptr) {
     key1= new RsaKey();
-    if(key1==NULL || !key1->GenerateRsaKey("test-key", "test", "test", 1024, 
+    if(key1==nullptr || !key1->GenerateRsaKey("test-key", "test", "test", 1024, 
           COMMON_YEAR_SECONDS)) {
       printf("Cant generate 1024 bit key\n");
       return false;
     }
   }
 
-  if(key2==NULL) {
+  if(key2==nullptr) {
     key2= new RsaKey();
-    if(key2==NULL || !key2->GenerateRsaKey("test-key", "test", "test", 2048, 
+    if(key2==nullptr || !key2->GenerateRsaKey("test-key", "test", "test", 2048, 
           COMMON_YEAR_SECONDS)) {
       printf("Cant generate 2048 bit key\n");
       return false;
@@ -3195,7 +3195,7 @@ bool key_format_tests() {
 
   if(!ecc_key->MakeEccKey("JohnsECCKey1", "channel-encryption",
             "John Manferdelli", 256, COMMON_YEAR_SECONDS,
-             &P256_Key.c_, &P256_Key.g_, NULL, P256_Key.order_of_g_,
+             &P256_Key.c_, &P256_Key.g_, nullptr, P256_Key.order_of_g_,
              &secret)) {
     printf("Cant make ecc key\n");
     return false;
@@ -3235,8 +3235,8 @@ bool key_store_tests() {
     return false;
   }
 
-  CryptoKey*    p_msg= NULL;
-  string*       p_string= NULL;
+  CryptoKey*    p_msg= nullptr;
+  string*       p_string= nullptr;
   if(!key_store.FindKey("JohnsStoreKey1", &p_string, &p_msg)) {
     printf("Cant find key in store\n");
     return false;
@@ -3636,7 +3636,7 @@ bool ecc_tests() {
   printf("About to MakeEccKey\n");
   if(!ecc_key->MakeEccKey("JlmEccCode1", "key-exchange", "jlm", 256, 
                 COMMON_YEAR_SECONDS, &P256_Key.c_, &P256_Key.g_, 
-                NULL, P256_Key.order_of_g_, &secret)) {
+                nullptr, P256_Key.order_of_g_, &secret)) {
     printf("Cant MakeEccKey\n");
     return false;
   }
@@ -3723,9 +3723,9 @@ TEST(FirstBigNumCase, FirstBigNumTest) {
   EXPECT_TRUE(ecc_embed_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_extract_time_test("test_data", ext_ecc_key, 200));
   EXPECT_TRUE(ecc_projective_compare_tests(ext_ecc_key, 200));
-  EXPECT_TRUE(ecc_speed_tests(NULL, "test_data", 0, 200));
+  EXPECT_TRUE(ecc_speed_tests(nullptr, "test_data", 0, 200));
   EXPECT_TRUE(rsa_tests());
-  EXPECT_TRUE(rsa_speed_tests(NULL, NULL, "test_data", 0, 500));
+  EXPECT_TRUE(rsa_speed_tests(nullptr, nullptr, "test_data", 0, 500));
   EXPECT_TRUE(square_root_time_test("test_data", 3, *(ext_ecc_key->c_.p_), 200));
 /*
   EXPECT_TRUE(rsa1024_gen_time_test("test_data", 20));

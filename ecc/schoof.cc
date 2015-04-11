@@ -105,7 +105,7 @@ bool ComputeCompositeSolutionUsingCrt(int n, uint64_t* moduli, uint64_t* solutio
 //  theta[m]= x phi^2[m]-phi[m+1]phi[m-1]
 //  omega[m]= (phi[m]/(2 phi[2]) (phi[m+2] phi[m-1]-phi[m-2] phi^2[m+1])
 int            Max_phi= -1;
-Polynomial**   Phi_array= NULL;
+Polynomial**   Phi_array= nullptr;
 
 int nextoddrecurrencedegree(int n, int deg_phi_m, int deg_phi_m_plus_2, int deg_m_plus_1, 
                             int deg_phi_m_minus_1, int deg_m_minus_2) {
@@ -310,12 +310,12 @@ bool InitPhi(int n, Polynomial& curve_poly) {
 void FreePhi() {
   int   j;
 
-  if(Phi_array==NULL)
+  if(Phi_array==nullptr)
     return;
   for(j=0; j<Max_phi; j++) {
-    if(Phi_array[j]!=NULL) {
+    if(Phi_array[j]!=nullptr) {
       free(Phi_array[j]);
-      Phi_array[j]= NULL;
+      Phi_array[j]= nullptr;
     }
   }
 }

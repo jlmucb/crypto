@@ -27,9 +27,9 @@ EccKey        P256_Key;
 bool          P256_key_valid= false;
 
 CurvePoint::CurvePoint() {
-  x_= NULL;
-  y_= NULL;
-  z_= NULL;
+  x_= nullptr;
+  y_= nullptr;
+  z_= nullptr;
 }
 
 CurvePoint::CurvePoint(int size) {
@@ -52,20 +52,20 @@ CurvePoint::CurvePoint(BigNum& x, BigNum& y) {
 
 CurvePoint::~CurvePoint() {
   Clear();
-  if(x_!=NULL) {
+  if(x_!=nullptr) {
     x_->ZeroNum();
     delete x_;
-    x_= NULL;
+    x_= nullptr;
   }
-  if(y_!=NULL) {
+  if(y_!=nullptr) {
     y_->ZeroNum();
     delete y_;
-    y_= NULL;
+    y_= nullptr;
   }
-  if(z_!=NULL) {
+  if(z_!=nullptr) {
     z_->ZeroNum();
     delete z_;
-    z_= NULL;
+    z_= nullptr;
   }
 }
 
@@ -112,11 +112,11 @@ CurvePoint::CurvePoint(CurvePoint& P, int capacity) {
 }
 
 void CurvePoint::Clear() {
-  if(x_!=NULL)
+  if(x_!=nullptr)
     x_->ZeroNum();
-  if(y_!=NULL)
+  if(y_!=nullptr)
     y_->ZeroNum();
-  if(x_!=NULL)
+  if(x_!=nullptr)
     z_->ZeroNum();
 }
 
@@ -129,7 +129,7 @@ bool CurvePoint::Normalize(BigNum& p) {
 }
 
 void CurvePoint::PrintPoint() {
-  if(x_!=NULL) {
+  if(x_!=nullptr) {
     printf("["); 
     PrintNumToConsole(*x_, 10ULL); 
     printf(", "); PrintNumToConsole(*y_, 10ULL); 
@@ -139,9 +139,9 @@ void CurvePoint::PrintPoint() {
 }
 
 EccCurve::EccCurve() {
-  a_= NULL;
-  b_= NULL;
-  p_= NULL;
+  a_= nullptr;
+  b_= nullptr;
+  p_= nullptr;
 }
 
 EccCurve::EccCurve(int size) {
@@ -161,34 +161,34 @@ EccCurve::EccCurve(BigNum& a, BigNum& b, BigNum& p) {
 
 EccCurve::~EccCurve() {
   Clear();
-  if(a_!=NULL) {
+  if(a_!=nullptr) {
     a_->ZeroNum();
     delete a_;
-    a_= NULL;
+    a_= nullptr;
   }
-  if(b_!=NULL) {
+  if(b_!=nullptr) {
     b_->ZeroNum();
     delete b_;
-    b_= NULL;
+    b_= nullptr;
   }
-  if(p_!=NULL) {
+  if(p_!=nullptr) {
     p_->ZeroNum();
     delete p_;
-    p_= NULL;
+    p_= nullptr;
   }
 }
 
 void EccCurve::Clear() {
-  if(a_!=NULL)
+  if(a_!=nullptr)
     a_->ZeroNum();
-  if(b_!=NULL)
+  if(b_!=nullptr)
     b_->ZeroNum();
-  if(p_!=NULL)
+  if(p_!=nullptr)
     p_->ZeroNum();
 }
 
 void EccCurve::PrintCurve() {
-  if(a_!=NULL) {
+  if(a_!=nullptr) {
     printf("Curve: y^2= x^3 + "); PrintNumToConsole(*a_, 10ULL); 
     printf(" x + "); PrintNumToConsole(*b_, 10ULL); 
     printf(" (mod "); PrintNumToConsole(*p_, 10ULL); 
@@ -873,16 +873,16 @@ bool FasterEccMult(EccCurve& c, CurvePoint& P, BigNum& x, CurvePoint& R) {
 
 EccKey::EccKey() {
   bit_size_modulus_= 0;
-  a_= NULL;
-  order_of_g_= NULL;
+  a_= nullptr;
+  order_of_g_= nullptr;
 }
 
 EccKey::~EccKey() {
-  if(a_!=NULL) {
+  if(a_!=nullptr) {
     a_->ZeroNum();
     delete a_;
   }
-  if(order_of_g_!=NULL) {
+  if(order_of_g_!=nullptr) {
     order_of_g_->ZeroNum();
     delete order_of_g_;
   }
@@ -909,7 +909,7 @@ bool EccKey::MakeEccKey(const char* name, const char* usage,
     LOG(ERROR) << "EccKey::MakeECCKey: only 128 bit keys supported\n";
     return false;
   }
-  if (c!=NULL) {
+  if (c!=nullptr) {
     c_.a_= new BigNum(*c->a_);
     c_.b_= new BigNum(*c->b_);
     c_.p_= new BigNum(*c->p_);
@@ -917,7 +917,7 @@ bool EccKey::MakeEccKey(const char* name, const char* usage,
     LOG(ERROR) << "EccKey::MakeECCKey: no curve\n";
     return false;
   }
-  if(g!=NULL) { 
+  if(g!=nullptr) { 
     g_.x_= new BigNum(*g->x_);
     g_.y_= new BigNum(*g->y_);
     g_.z_= new BigNum(*g->z_);
@@ -926,7 +926,7 @@ bool EccKey::MakeEccKey(const char* name, const char* usage,
     return false;
   }
 
-  if(base!=NULL) { 
+  if(base!=nullptr) { 
     base_.x_= new BigNum(*base->x_);
     base_.y_= new BigNum(*base->y_);
     base_.z_= new BigNum(*base->z_);
@@ -935,13 +935,13 @@ bool EccKey::MakeEccKey(const char* name, const char* usage,
     base_.y_= new BigNum(2*num_bits/NBITSINUINT64);
     base_.z_= new BigNum(2*num_bits/NBITSINUINT64);
   }
-  if(order!=NULL) {
+  if(order!=nullptr) {
     order_of_g_= new BigNum(*order);
   }
-  if(secret!=NULL) {
+  if(secret!=nullptr) {
     a_= new BigNum(*secret);
   }
-  if(base==NULL && secret!=NULL) {
+  if(base==nullptr && secret!=nullptr) {
     EccMult(c_, g_, *secret, base_);
   }
   return true;
@@ -950,13 +950,13 @@ bool EccKey::MakeEccKey(const char* name, const char* usage,
 bool  CurvePoint::SerializePointToMessage(crypto_point_message& msg) {
   // TODO: z shoud be 1
   msg.set_valid(1);
-  if(x_!=NULL) {
+  if(x_!=nullptr) {
     string* s= ByteToBase64RightToLeft(
                   x_->size_*sizeof(uint64_t), (byte*)x_->value_);
     msg.set_x(s->c_str());
     delete s;
   }
-  if(y_!=NULL) {
+  if(y_!=nullptr) {
     string* s= ByteToBase64RightToLeft(
                   y_->size_*sizeof(uint64_t), (byte*)y_->value_);
     msg.set_y(s->c_str());
@@ -972,7 +972,7 @@ bool  CurvePoint::DeserializePointFromMessage(crypto_point_message& msg) {
   if(msg.has_x()) {
     len= strlen(msg.x().c_str());
     bignum_size= ((len+sizeof(uint64_t)-1)/sizeof(uint64_t))*sizeof(uint64_t);
-    if(x_==NULL) {
+    if(x_==nullptr) {
       x_= new BigNum(bignum_size);
     }
     k= Base64ToByteRightToLeft((char*)(msg.x().c_str()),
@@ -986,7 +986,7 @@ bool  CurvePoint::DeserializePointFromMessage(crypto_point_message& msg) {
   if(msg.has_y()) {
     len= strlen(msg.y().c_str());
     bignum_size= ((len+sizeof(uint64_t)-1)/sizeof(uint64_t))*sizeof(uint64_t);
-    if(y_==NULL) {
+    if(y_==nullptr) {
       y_= new BigNum(bignum_size);
     }
     k= Base64ToByteRightToLeft((char*)(msg.y().c_str()),
@@ -1004,19 +1004,19 @@ bool  CurvePoint::DeserializePointFromMessage(crypto_point_message& msg) {
 bool  EccCurve::SerializeCurveToMessage(crypto_ecc_curve_message& msg) {
   // TODO: fix
   msg.set_bit_modulus_size(256);
-  if(p_!=NULL) {
+  if(p_!=nullptr) {
     string* s= ByteToBase64RightToLeft(
                   p_->size_*sizeof(uint64_t), (byte*)p_->value_);
     msg.set_p(s->c_str());
     delete s;
   }
-  if(a_!=NULL) {
+  if(a_!=nullptr) {
     string* s= ByteToBase64RightToLeft(
                   a_->size_*sizeof(uint64_t), (byte*)a_->value_);
     msg.set_a(s->c_str());
     delete s;
   }
-  if(b_!=NULL) {
+  if(b_!=nullptr) {
     string* s= ByteToBase64RightToLeft(
                   b_->size_*sizeof(uint64_t), (byte*)b_->value_);
     msg.set_b(s->c_str());
@@ -1032,7 +1032,7 @@ bool  EccCurve::DeserializeCurveFromMessage(crypto_ecc_curve_message& msg) {
   if(msg.has_p()) {
     len= strlen(msg.p().c_str());
     bignum_size= ((len+sizeof(uint64_t)-1)/sizeof(uint64_t))*sizeof(uint64_t);
-    if(p_==NULL) {
+    if(p_==nullptr) {
       p_= new BigNum(bignum_size);
     }
     k= Base64ToByteRightToLeft((char*)(msg.p().c_str()),
@@ -1046,7 +1046,7 @@ bool  EccCurve::DeserializeCurveFromMessage(crypto_ecc_curve_message& msg) {
   if(msg.has_a()) {
     len= strlen(msg.a().c_str());
     bignum_size= ((len+sizeof(uint64_t)-1)/sizeof(uint64_t))*sizeof(uint64_t);
-    if(a_==NULL) {
+    if(a_==nullptr) {
       a_= new BigNum(bignum_size);
     }
     k= Base64ToByteRightToLeft((char*)(msg.a().c_str()),
@@ -1060,7 +1060,7 @@ bool  EccCurve::DeserializeCurveFromMessage(crypto_ecc_curve_message& msg) {
   if(msg.has_b()) {
     len= strlen(msg.b().c_str());
     bignum_size= ((len+sizeof(uint64_t)-1)/sizeof(uint64_t))*sizeof(uint64_t);
-    if(b_==NULL) {
+    if(b_==nullptr) {
       b_= new BigNum(bignum_size);
     }
     k= Base64ToByteRightToLeft((char*)(msg.b().c_str()),
@@ -1077,13 +1077,13 @@ bool  EccCurve::DeserializeCurveFromMessage(crypto_ecc_curve_message& msg) {
 bool  EccKey::SerializeKeyToMessage(crypto_ecc_key_message& msg) {
   msg.set_key_type("ecc-256");
 
-  if(a_!=NULL) {
+  if(a_!=nullptr) {
     string* s= ByteToBase64RightToLeft(
                   a_->size_*sizeof(uint64_t), (byte*)a_->value_);
     msg.set_private_nonce(s->c_str());
     delete s;
   }
-  if(order_of_g_!=NULL) {
+  if(order_of_g_!=nullptr) {
     string* s= ByteToBase64RightToLeft(
                   order_of_g_->size_*sizeof(uint64_t), (byte*)order_of_g_->value_);
     msg.set_order(s->c_str());
@@ -1109,7 +1109,7 @@ bool  EccKey::DeserializeKeyFromMessage(crypto_ecc_key_message& msg) {
   if(msg.has_private_nonce()) {
     len= strlen(msg.private_nonce().c_str());
     bignum_size= ((len+sizeof(uint64_t)-1)/sizeof(uint64_t))*sizeof(uint64_t);
-    if(a_==NULL) {
+    if(a_==nullptr) {
       a_= new BigNum(bignum_size);
     }
     k= Base64ToByteRightToLeft((char*)(msg.private_nonce().c_str()),
@@ -1123,7 +1123,7 @@ bool  EccKey::DeserializeKeyFromMessage(crypto_ecc_key_message& msg) {
   if(msg.has_order()) {
     len= strlen(msg.order().c_str());
     bignum_size= ((len+sizeof(uint64_t)-1)/sizeof(uint64_t))*sizeof(uint64_t);
-    if(order_of_g_==NULL) {
+    if(order_of_g_==nullptr) {
       order_of_g_= new BigNum(bignum_size);
     }
     k= Base64ToByteRightToLeft((char*)(msg.order().c_str()),
@@ -1151,11 +1151,11 @@ void EccKey::PrintKey() {
   printf("modulus size: %d bits\n", bit_size_modulus_); 
   c_.PrintCurve();
 
-  if(a_!=NULL) {
+  if(a_!=nullptr) {
     printf("a: "); PrintNumToConsole(*a_, 10ULL); printf("\n");
   }
   printf("g: "); g_.PrintPoint(); printf("\n");
-  if(order_of_g_!=NULL) {
+  if(order_of_g_!=nullptr) {
     printf("order: "); PrintNumToConsole(*order_of_g_, 10ULL); printf("\n");
   }
   printf("base: "); base_.PrintPoint(); printf("\n");
@@ -1253,9 +1253,9 @@ bool InitEccCurves() {
   P256_Key.g_.z_= new BigNum(1,1ULL);;
   P256_Key.g_.z_->Normalize();
   P256_key_valid= true;
-  P256_Key.base_.x_= NULL;
-  P256_Key.base_.y_= NULL;
-  P256_Key.base_.z_= NULL;
+  P256_Key.base_.x_= nullptr;
+  P256_Key.base_.y_= nullptr;
+  P256_Key.base_.z_= nullptr;
 #if 0
   ((CryptoKey*)&P256_Key)->PrintKey();
 #endif

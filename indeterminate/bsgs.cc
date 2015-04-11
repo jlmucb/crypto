@@ -44,7 +44,7 @@ extern bool SquareRoot(BigNum& n, BigNum& r);
 
 
 int64_t       Num_points_in_table= -1;
-CurvePoint**  Points_table= NULL;
+CurvePoint**  Points_table= nullptr;
 
 
 int64_t Index_point_in_table(CurvePoint& P) {
@@ -82,7 +82,7 @@ void Print_table() {
   if(Num_points_in_table<=0)
     return;
   for(j=0; j<Num_points_in_table;j++) {
-    if(Points_table[j]!=NULL) {
+    if(Points_table[j]!=nullptr) {
       printf("%lld: ", j); Points_table[j]->PrintPoint();printf("\n");
     }
   }
@@ -94,9 +94,9 @@ void Free_table() {
   if(Num_points_in_table<=0)
     return;
   for(j=0; j<Num_points_in_table;j++) {
-    if(Points_table[j]!=NULL)
+    if(Points_table[j]!=nullptr)
       free(Points_table[j]);
-    Points_table[j]= NULL;
+    Points_table[j]= nullptr;
   }
 }
 

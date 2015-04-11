@@ -53,7 +53,7 @@ Sha1::~Sha1() {
 }
 
 bool Sha1::Init() {
-  if(hash_name_==NULL) {
+  if(hash_name_==nullptr) {
     hash_name_= new string("sha-1");
   }
   num_bytes_waiting_= 0;

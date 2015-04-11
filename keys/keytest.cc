@@ -88,8 +88,8 @@ bool RunTestSuite() {
     return false;
   }
 
-  CryptoKey*    p_msg= NULL;
-  string*       p_string= NULL;
+  CryptoKey*    p_msg= nullptr;
+  string*       p_string= nullptr;
   if(!key_store.FindKey("JohnsStoreKey1", &p_string, &p_msg)) {
     printf("Cant find key in store\n");
     return false;

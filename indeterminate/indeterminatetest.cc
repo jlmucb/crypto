@@ -38,9 +38,9 @@ void IndeterminateTest::SetUp() {
 void IndeterminateTest::TearDown() {
 }
 
-Polynomial* one_poly= NULL;
-Polynomial* x_poly= NULL;
-Polynomial* x_plus_one_poly= NULL;
+Polynomial* one_poly= nullptr;
+Polynomial* x_poly= nullptr;
+Polynomial* x_plus_one_poly= nullptr;
 
 bool InitPolys(BigNum* c) {
   // p(x)= 1

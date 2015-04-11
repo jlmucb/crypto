@@ -42,13 +42,13 @@ RationalPoly::RationalPoly(int size_num, int num_c, BigNum& c, Polynomial& t, Po
 }
 
 RationalPoly::~RationalPoly() {
-  if(top_!=NULL) {
+  if(top_!=nullptr) {
     delete top_;
-    top_= NULL;
+    top_= nullptr;
   }
-  if(bot_!=NULL) {
+  if(bot_!=nullptr) {
     delete bot_;
-    bot_= NULL;
+    bot_= nullptr;
   }
 }
 

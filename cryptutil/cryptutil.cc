@@ -149,7 +149,7 @@ DEFINE_string(unprotecedkeyfile, "", "unprotected key file");
 #define BUFSIZE 2048
 
 void macFile(const char* filename, const char* alg, int size, byte* key) {
-  if(filename==NULL) {
+  if(filename==nullptr) {
     printf("macFile: No filename\n");
     return;
   }
@@ -182,7 +182,7 @@ void macFile(const char* filename, const char* alg, int size, byte* key) {
 }
 
 void hashFile(const char* name, const char* alg, int* size_out, byte* hash) {
-  if(name==NULL) {
+  if(name==nullptr) {
     printf("hashFile: No filename\n");
     return;
   }
@@ -210,7 +210,7 @@ void hashFile(const char* name, const char* alg, int* size_out, byte* hash) {
     byte  out[the_hash.DIGESTBYTESIZE];
     the_hash.GetDigest(the_hash.DIGESTBYTESIZE, out);
     printf("hash: "); PrintBytes(the_hash.DIGESTBYTESIZE, out); printf("\n");
-    if(size_out!=NULL && hash!=NULL && *size_out>=20) {
+    if(size_out!=nullptr && hash!=nullptr && *size_out>=20) {
       *size_out= 20;
       memcpy(hash, out, *size_out);
     }
@@ -228,7 +228,7 @@ void hashFile(const char* name, const char* alg, int* size_out, byte* hash) {
     byte  out[the_hash.DIGESTBYTESIZE];
     the_hash.GetDigest(the_hash.DIGESTBYTESIZE, out);
     printf("hash: "); PrintBytes(the_hash.DIGESTBYTESIZE, out); printf("\n");
-    if(size_out!=NULL && hash!=NULL && *size_out>=32) {
+    if(size_out!=nullptr && hash!=nullptr && *size_out>=32) {
       *size_out= 32;
       memcpy(hash, out, *size_out);
     }
@@ -315,7 +315,7 @@ bool DecryptKeyWithPassword(const char* pass, const char* inFile, int* size, byt
   bool      correct= true;
   int       encrypted_size= 0;
   byte*     decrypted_key= new byte[2*encrypted_size];
-  byte*     encrypted_buf= NULL;
+  byte*     encrypted_buf= nullptr;
 
   if(!ReadaFile(inFile, &encrypted_size, &encrypted_buf)) {
     printf("ReadaFile failed in DecryptKeyWithPassword\n");
@@ -347,29 +347,29 @@ RsaKey* GetRsaKey(int size, byte* in) {
   string              data(reinterpret_cast<char const*>(in), size);
 
   if(!message->ParseFromString(data)) {
-    return NULL;
+    return nullptr;
   }
   if(!((CryptoKey*)new_key)->DeserializeKeyFromMessage(*message)) {
-    return NULL;
+    return nullptr;
   }
   return new_key;
 }
 
-AesCbcHmac256Sympad* GenAesCbcHmac256SymPad(int num_bits, const char* durationStr, const char* keyName, 
-                    const char* ownerStr, const char* purposeStr, int* size, byte** out) {
-  // double duration= convertDuration(durationStr);
-
+AesCbcHmac256Sympad* GenAesCbcHmac256SymPad(int num_bits, const char* durationStr,
+                                            const char* keyName, const char* ownerStr,
+                                            const char* purposeStr, int* size,
+                                            byte** out) {
   AesCbcHmac256Sympad*  new_scheme= new AesCbcHmac256Sympad();
   if(!new_scheme->GenerateScheme(keyName, num_bits)) {
-    return NULL;
+    return nullptr;
   }
   crypto_encryption_algorithm_message* message= new crypto_encryption_algorithm_message;
   if(!((EncryptionAlgorithm*)new_scheme)->SerializeEncryptionAlgorithmToMessage(*message)) {
-    return NULL;
+    return nullptr;
   }
   string* outstr= new string();
   if(!message->SerializeToString(outstr)) {
-    return NULL;
+    return nullptr;
   }
   *size= outstr->size();
   *out= (byte*)outstr->data();
@@ -382,29 +382,32 @@ AesCbcHmac256Sympad* GetAesCbcHmac256SymPad(int size, byte* in) {
   string data(reinterpret_cast<char const*>(in), size);
 
   if(!message->ParseFromString(data)) {
-    return NULL;
+    return nullptr;
   }
   if(!((EncryptionAlgorithm*)new_scheme)->DeserializeEncryptionAlgorithmFromMessage(*message)) {
-    return NULL;
+    return nullptr;
   }
   return new_scheme;
 }
 
-AesCtrHmac256Sympad* GenAesCtrHmac256SymPad(int num_bits, const char* durationStr, const char* keyName, 
-                    const char* ownerStr, const char* purposeStr, int* size, byte** out) {
-  // double duration= convertDuration(durationStr);
-
+AesCtrHmac256Sympad* GenAesCtrHmac256SymPad(int num_bits,
+                                            const char* durationStr,
+                                            const char* keyName, 
+                                            const char* ownerStr,
+                                            const char* purposeStr,
+                                            int* size,
+                                            byte** out) {
   AesCtrHmac256Sympad*  new_scheme= new AesCtrHmac256Sympad();
   if(!new_scheme->GenerateScheme(keyName, num_bits)) {
-    return NULL;
+    return nullptr;
   }
   crypto_encryption_algorithm_message* message= new crypto_encryption_algorithm_message;
   if(!((EncryptionAlgorithm*)new_scheme)->SerializeEncryptionAlgorithmToMessage(*message)) {
-    return NULL;
+    return nullptr;
   }
   string* outstr= new string();
   if(!message->SerializeToString(outstr)) {
-    return NULL;
+    return nullptr;
   }
   *size= outstr->size();
   *out= (byte*)outstr->data();
@@ -417,10 +420,10 @@ AesCtrHmac256Sympad* GetAesCtrHmac256SymPad(int size, byte* in) {
   string data(reinterpret_cast<char const*>(in), size);
 
   if(!message->ParseFromString(data)) {
-    return NULL;
+    return nullptr;
   }
   if(!((EncryptionAlgorithm*)new_scheme)->DeserializeEncryptionAlgorithmFromMessage(*message)) {
-    return NULL;
+    return nullptr;
   }
   byte enc_key[16];
   byte int_key[512];
@@ -435,15 +438,15 @@ RsaKey* GenRsaKey(int num_bits, const char* durationStr, const char* keyName, co
   double duration= convertDuration(FLAGS_duration.c_str());
   RsaKey*  new_key= new RsaKey();
   if(!new_key->GenerateRsaKey(keyName, purposeStr, ownerStr, num_bits, duration)) {
-    return NULL;
+    return nullptr;
   }
   crypto_key_message* message= new crypto_key_message;
   if(!((CryptoKey*)new_key)->SerializeKeyToMessage(*message)) {
-    return NULL;
+    return nullptr;
   }
   string* outstr= new string();
   if(!message->SerializeToString(outstr)) {
-    return NULL;
+    return nullptr;
   }
   printf("GenRsaKey debug string: %s\n", message->DebugString().c_str());
   *size= outstr->size();
@@ -458,10 +461,10 @@ SymmetricKey* GetAesKey(int size, byte* in) {
   string data(reinterpret_cast<char const*>(in), size);
 
   if(!message->ParseFromString(data)) {
-    return NULL;
+    return nullptr;
   }
   if(!((CryptoKey*)new_key)->DeserializeKeyFromMessage(*message)) {
-    return NULL;
+    return nullptr;
   }
   return new_key;
 }
@@ -471,15 +474,15 @@ SymmetricKey* GenAesKey(int num_bits, const char* durationStr, const char* keyNa
   double duration= convertDuration(durationStr);
   SymmetricKey*  new_key= new SymmetricKey();
   if(!new_key->GenerateAesKey(keyName, purposeStr, ownerStr, num_bits, duration)) {
-    return NULL;
+    return nullptr;
   }
   crypto_key_message* message= new crypto_key_message;
   if(!((CryptoKey*)new_key)->SerializeKeyToMessage(*message)) {
-    return NULL;
+    return nullptr;
   }
   string* outstr= new string();
   if(!message->SerializeToString(outstr)) {
-    return NULL;
+    return nullptr;
   }
   *size= outstr->size();
   *out= (byte*)outstr->data();
@@ -637,10 +640,10 @@ SymmetricKey* GetTwofishKey(int size, byte* in) {
   string data(reinterpret_cast<char const*>(in), size);
 
   if(!message->ParseFromString(data)) {
-    return NULL;
+    return nullptr;
   }
   if(!((CryptoKey*)new_key)->DeserializeKeyFromMessage(*message)) {
-    return NULL;
+    return nullptr;
   }
   return new_key;
 }
@@ -650,15 +653,15 @@ SymmetricKey* GenTwofishKey(int num_bits, const char* durationStr, const char* k
   double duration= convertDuration(durationStr);
   SymmetricKey*  new_key= new SymmetricKey();
   if(!new_key->GenerateTwofishKey(keyName, purposeStr, ownerStr, num_bits, duration)) {
-    return NULL;
+    return nullptr;
   }
   crypto_key_message* message= new crypto_key_message;
   if(!((CryptoKey*)new_key)->SerializeKeyToMessage(*message)) {
-    return NULL;
+    return nullptr;
   }
   string* outstr= new string();
   if(!message->SerializeToString(outstr)) {
-    return NULL;
+    return nullptr;
   }
   *size= outstr->size();
   *out= (byte*)outstr->data();
@@ -1079,12 +1082,12 @@ int main(int an, char** av) {
 
   if(strcmp("ToBase64", FLAGS_operation.c_str())==0) {
     int   size= 0;
-    byte* out= NULL;
+    byte* out= nullptr;
     if(!ReadaFile(FLAGS_input_file.c_str(), &size, &out)) {
       printf("Cant open %s\n", FLAGS_input_file.c_str());
       return 1;
     }
-    if(out==NULL) {
+    if(out==nullptr) {
       printf("bad buffer\n");
       return 1;
     }
@@ -1099,17 +1102,17 @@ int main(int an, char** av) {
       WriteaFile(FLAGS_output_file.c_str(), strlen(str->c_str()), (byte*)str->c_str());
       delete str;
     }
-    if(out!=NULL)
+    if(out!=nullptr)
       delete out;
   } else if(strcmp("ToDecimal", FLAGS_operation.c_str())==0) {
     int   size= 0;
-    byte* out= NULL;
+    byte* out= nullptr;
 
     if(!ReadaFile(FLAGS_input_file.c_str(), &size, &out)) {
       printf("Cant open %s\n", FLAGS_input_file.c_str());
       return 1;
     }
-    if(out==NULL) {
+    if(out==nullptr) {
       printf("bad buffer\n");
       return 1;
     }
@@ -1119,17 +1122,17 @@ int main(int an, char** av) {
     string* str= BigConvertToDecimal(a);
     printf("Decimal: %s\n", str->c_str());
     delete out;
-    if(str!=NULL)
+    if(str!=nullptr)
       delete str;
   } else if(strcmp("ToHex", FLAGS_operation.c_str())==0) {
     int   size= 0;
-    byte* out= NULL;
+    byte* out= nullptr;
 
     if(!ReadaFile(FLAGS_input_file.c_str(), &size, &out)) {
       printf("Cant open %s\n", FLAGS_input_file.c_str());
       return 1;
     }
-    if(out==NULL) {
+    if(out==nullptr) {
       printf("bad buffer\n");
       return 1;
     }
@@ -1140,17 +1143,17 @@ int main(int an, char** av) {
     WriteaFile(FLAGS_output_file.c_str(), strlen(str->c_str()), (byte*)str->c_str());
     printf("Decimal: %s\n", str->c_str());
     delete out;
-    if(str!=NULL)
+    if(str!=nullptr)
       delete str;
   } else if(strcmp("FromHex", FLAGS_operation.c_str())==0) {
     int   size= 0;
-    byte* out= NULL;
+    byte* out= nullptr;
 
     if(!ReadaFile(FLAGS_input_file.c_str(), &size, &out)) {
       printf("Cant open %s\n", FLAGS_input_file.c_str());
       return 1;
     }
-    if(out==NULL) {
+    if(out==nullptr) {
       printf("bad buffer\n");
       return 1;
     }
@@ -1161,13 +1164,13 @@ int main(int an, char** av) {
     delete n;
   } else if(strcmp("FromDecimal", FLAGS_operation.c_str())==0) {
     int   size= 0;
-    byte* out= NULL;
+    byte* out= nullptr;
 
     if(!ReadaFile(FLAGS_input_file.c_str(), &size, &out)) {
       printf("Cant open %s\n", FLAGS_input_file.c_str());
       return 1;
     }
-    if(out==NULL) {
+    if(out==nullptr) {
       printf("bad buffer\n");
       return 1;
     }
@@ -1179,18 +1182,18 @@ int main(int an, char** av) {
     delete out;
   } else if(strcmp("FromBase64", FLAGS_operation.c_str())==0) {
     int   size= 0;
-    byte* out= NULL;
+    byte* out= nullptr;
 
     if(!ReadaFile(FLAGS_input_file.c_str(), &size, &out)) {
       printf("Cant open %s\n", FLAGS_input_file.c_str());
       return 1;
     }
-    if(out==NULL) {
+    if(out==nullptr) {
       printf("bad buffer\n");
       return 1;
     }
     const char* str= extractString(size, out);
-    if(str==NULL) {
+    if(str==nullptr) {
       printf("Cant extract string\n");
       return 1;
     }
@@ -1212,32 +1215,32 @@ int main(int an, char** av) {
     delete out_buf;
     delete out;
   } else if(strcmp("Hash", FLAGS_operation.c_str())==0) {
-    hashFile(FLAGS_input_file.c_str(), FLAGS_algorithm.c_str(), NULL, NULL);
+    hashFile(FLAGS_input_file.c_str(), FLAGS_algorithm.c_str(), nullptr, nullptr);
   } else if(strcmp("Mac", FLAGS_operation.c_str())==0) {
-    byte* key= NULL;
+    byte* key= nullptr;
     int   size= 0;
     if(!ReadaFile(FLAGS_key_file.c_str(), &size, &key)) {
       printf("Cant open %s\n", FLAGS_key_file.c_str());
       return 1;
     }
     macFile(FLAGS_input_file.c_str(), FLAGS_input_file.c_str(), size, key);
-    if(key!=NULL)
+    if(key!=nullptr)
       delete key;
   } else if(strcmp("SymEncryptWithKey", FLAGS_operation.c_str())==0) {
     int           size= 0;
-    byte*         out= NULL;
-    SymmetricKey* new_key= NULL;
+    byte*         out= nullptr;
+    SymmetricKey* new_key= nullptr;
 
     if(!ReadaFile(FLAGS_key_file.c_str(), &size, &out)) {
       return 1;
     }
-    if(out==NULL) {
+    if(out==nullptr) {
       printf("SymEncryptWithKey: bad buffer\n");
       return 1;
     }
     if(strcmp(FLAGS_algorithm.c_str(), "aes-128")==0) {
       new_key= GetAesKey(size, out);
-      if(new_key==NULL) {
+      if(new_key==nullptr) {
         printf("SymEncrypt: cant get key\n");
         return 1;
       }
@@ -1252,7 +1255,7 @@ int main(int an, char** av) {
     } else if(strcmp(FLAGS_algorithm.c_str(), "twofish-128")==0 || 
               strcmp(FLAGS_algorithm.c_str(), "twofish-256")==0) {
       new_key= GetTwofishKey(size, out);
-      if(new_key==NULL) {
+      if(new_key==nullptr) {
         printf("SymEncrypt/DecryptWithKey: cant get key\n");
         return 1;
       }
@@ -1269,19 +1272,19 @@ int main(int an, char** av) {
        
   } else if(strcmp("SymDecryptWithKey", FLAGS_operation.c_str())==0) {
     int           size= 0;
-    byte*         out= NULL;
-    SymmetricKey* new_key= NULL;
+    byte*         out= nullptr;
+    SymmetricKey* new_key= nullptr;
 
     if(!ReadaFile(FLAGS_key_file.c_str(), &size, &out)) {
       return 1;
     }
-    if(out==NULL) {
+    if(out==nullptr) {
       printf("SymDecryptWithKey: bad buffer\n");
       return 1;
     }
     if(strcmp(FLAGS_algorithm.c_str(), "aes-128")==0) {
       new_key= GetAesKey(size, out);
-      if(new_key==NULL) {
+      if(new_key==nullptr) {
         printf("SymEncrypt/DecryptWithKey: cant get key\n");
         return 1;
       }
@@ -1295,7 +1298,7 @@ int main(int an, char** av) {
     } else if(strcmp(FLAGS_algorithm.c_str(), "twofish-128")==0 || 
               strcmp(FLAGS_algorithm.c_str(), "twofish-256")==0) {
       new_key= GetTwofishKey(size, out);
-      if(new_key==NULL) {
+      if(new_key==nullptr) {
         printf("SymEncrypt/DecryptWithKey: cant get key\n");
         return 1;
       }
@@ -1312,18 +1315,18 @@ int main(int an, char** av) {
     }
   } else if(strcmp("SymDecryptWithScheme", FLAGS_operation.c_str())==0) {
     int           size= 0;
-    byte*         out= NULL;
+    byte*         out= nullptr;
 
     if(!ReadaFile(FLAGS_key_file.c_str(), &size, &out)) {
       return 1;
     }
-    if(out==NULL) {
+    if(out==nullptr) {
       printf("SymDecryptWithScheme: bad buffer\n");
       return 1;
     }
     if(strcmp(FLAGS_algorithm.c_str(), "aes128-cbc-hmacsha256-sympad")==0) {
       AesCbcHmac256Sympad* new_scheme= GetAesCbcHmac256SymPad(size, out);
-      if(new_scheme==NULL) {
+      if(new_scheme==nullptr) {
         printf("SymDecryptWithScheme: cant get scheme\n");
         return 1;
       }
@@ -1336,7 +1339,7 @@ int main(int an, char** av) {
       } 
     } else if(strcmp(FLAGS_algorithm.c_str(), "aes128-ctr-hmacsha256-sympad")==0) {
       AesCtrHmac256Sympad* new_scheme= GetAesCtrHmac256SymPad(size, out);
-      if(new_scheme==NULL) {
+      if(new_scheme==nullptr) {
         printf("SymDecryptWithScheme: cant get scheme\n");
         return 1;
       }
@@ -1353,18 +1356,18 @@ int main(int an, char** av) {
     }
   } else if(strcmp("SymEncryptWithScheme", FLAGS_operation.c_str())==0) {
     int           size= 0;
-    byte*         out= NULL;
+    byte*         out= nullptr;
 
     if(!ReadaFile(FLAGS_key_file.c_str(), &size, &out)) {
       return 1;
     }
-    if(out==NULL) {
+    if(out==nullptr) {
       printf("SymEncryptWithScheme: bad buffer\n");
       return 1;
     }
     if(strcmp(FLAGS_algorithm.c_str(), "aes128-cbc-hmacsha256-sympad")==0) {
       AesCbcHmac256Sympad* new_scheme= GetAesCbcHmac256SymPad(size, out);
-      if(new_scheme==NULL) {
+      if(new_scheme==nullptr) {
         printf("SymEncryptWithScheme: cant get scheme\n");
         return 1;
       }
@@ -1377,7 +1380,7 @@ int main(int an, char** av) {
       }
     } else if(strcmp(FLAGS_algorithm.c_str(), "aes128-ctr-hmacsha256-sympad")==0) {
       AesCtrHmac256Sympad* new_scheme= GetAesCtrHmac256SymPad(size, out);
-      if(new_scheme==NULL) {
+      if(new_scheme==nullptr) {
         printf("SymEncrypt/Decrypt With Scheme: cant get scheme\n");
         return 1;
       }
@@ -1394,20 +1397,20 @@ int main(int an, char** av) {
     }
   } else if(strcmp("GenerateScheme", FLAGS_operation.c_str())==0) {
     int           size= 0;
-    byte*         out= NULL;
+    byte*         out= nullptr;
 
     if(strcmp(FLAGS_algorithm.c_str(), "aes128-cbc-hmacsha256-sympad")==0) {
       AesCbcHmac256Sympad* new_scheme= GenAesCbcHmac256SymPad(128, FLAGS_duration.c_str(), 
                 FLAGS_key_name.c_str(), FLAGS_owner.c_str(), FLAGS_purpose.c_str(),
                 &size, &out);
-      if(new_scheme==NULL || out==NULL)
+      if(new_scheme==nullptr || out==nullptr)
         return 1;
       new_scheme->PrintEncryptionAlgorithm();
     } else if(strcmp(FLAGS_algorithm.c_str(), "aes128-ctr-hmacsha256-sympad")==0) {
       AesCtrHmac256Sympad* new_scheme= GenAesCtrHmac256SymPad(128, FLAGS_duration.c_str(), 
                 FLAGS_key_name.c_str(), FLAGS_owner.c_str(), FLAGS_purpose.c_str(),
                 &size, &out);
-      if(new_scheme==NULL || out==NULL)
+      if(new_scheme==nullptr || out==nullptr)
         return 1;
       new_scheme->PrintEncryptionAlgorithm();
     } else {
@@ -1416,13 +1419,13 @@ int main(int an, char** av) {
     WriteaFile(FLAGS_output_file.c_str(), size, out);
   } else if(strcmp("GenerateKey", FLAGS_operation.c_str())==0) {
     int   size= 0;
-    byte* out= NULL;
+    byte* out= nullptr;
 
     printf("GenerateKey\n");
     if(strcmp(FLAGS_algorithm.c_str(), "aes-128")==0) {
       SymmetricKey* new_key= GenAesKey(128, FLAGS_duration.c_str(), FLAGS_key_name.c_str(), 
                                   FLAGS_owner.c_str(), FLAGS_purpose.c_str(), &size, &out);
-      if(new_key==NULL) {
+      if(new_key==nullptr) {
         return 1;
       }
       ((CryptoKey*)new_key)->PrintKey();
@@ -1430,7 +1433,7 @@ int main(int an, char** av) {
     } else if(strcmp(FLAGS_algorithm.c_str(), "twofish-128")==0) {
       SymmetricKey* new_key= GenTwofishKey(128, FLAGS_duration.c_str(), FLAGS_key_name.c_str(), 
                                   FLAGS_owner.c_str(), FLAGS_purpose.c_str(), &size, &out);
-      if(new_key==NULL) {
+      if(new_key==nullptr) {
         return 1;
       }
       ((CryptoKey*)new_key)->PrintKey();
@@ -1438,37 +1441,37 @@ int main(int an, char** av) {
     } else if(strcmp(FLAGS_algorithm.c_str(), "twofish-256")==0) {
       SymmetricKey* new_key= GenTwofishKey(256, FLAGS_duration.c_str(), FLAGS_key_name.c_str(), 
                                   FLAGS_owner.c_str(), FLAGS_purpose.c_str(), &size, &out);
-      if(new_key==NULL) {
+      if(new_key==nullptr) {
         return 1;
       }
       ((CryptoKey*)new_key)->PrintKey();
       WriteaFile(FLAGS_output_file.c_str(), size, out);
     } else if(strcmp(FLAGS_algorithm.c_str(), "rsa-256")==0) {
       int   size= 0;
-      byte* out= NULL;
+      byte* out= nullptr;
       RsaKey* new_key= GenRsaKey(256, FLAGS_duration.c_str(), FLAGS_key_name.c_str(), 
                                   FLAGS_owner.c_str(), FLAGS_purpose.c_str(), &size, &out);
-      if(new_key==NULL) {
+      if(new_key==nullptr) {
         return 1;
       }
       ((CryptoKey*)new_key)->PrintKey();
       WriteaFile(FLAGS_output_file.c_str(), size, out);
     } else if(strcmp(FLAGS_algorithm.c_str(), "rsa-1024")==0) {
       int   size= 0;
-      byte* out= NULL;
+      byte* out= nullptr;
       RsaKey* new_key= GenRsaKey(1024, FLAGS_duration.c_str(), FLAGS_key_name.c_str(), 
                                   FLAGS_owner.c_str(), FLAGS_purpose.c_str(), &size, &out);
-      if(new_key==NULL) {
+      if(new_key==nullptr) {
         return 1;
       }
       ((CryptoKey*)new_key)->PrintKey();
       WriteaFile(FLAGS_output_file.c_str(), size, out);
     } else if(strcmp(FLAGS_algorithm.c_str(), "rsa-2048")==0) {
       int   size= 0;
-      byte* out= NULL;
+      byte* out= nullptr;
       RsaKey* new_key= GenRsaKey(2048, FLAGS_duration.c_str(), FLAGS_key_name.c_str(), 
                                   FLAGS_owner.c_str(), FLAGS_purpose.c_str(), &size, &out);
-      if(new_key==NULL) {
+      if(new_key==nullptr) {
         return 1;
       }
       ((CryptoKey*)new_key)->PrintKey();
@@ -1478,7 +1481,7 @@ int main(int an, char** av) {
     }
   } else if(strcmp("ReadKey", FLAGS_operation.c_str())==0) {
     int   size= 0;
-    byte* out= NULL;
+    byte* out= nullptr;
 
     if(!ReadaFile(FLAGS_input_file.c_str(), &size, &out)) {
       return 1;
@@ -1505,7 +1508,7 @@ int main(int an, char** av) {
     int   num_bytes= size/NBITSINBYTE;
     byte* rand_bytes= new byte[num_bytes];
 
-    if(rand_bytes==NULL)
+    if(rand_bytes==nullptr)
       return 1;
     if(!GetCryptoRand(size, rand_bytes)) {
       delete rand_bytes;
@@ -1517,21 +1520,21 @@ int main(int an, char** av) {
     delete rand_bytes;
   } else if(strcmp("ReadScheme", FLAGS_operation.c_str())==0) {
     int   size= 0;
-    byte* out= NULL;
+    byte* out= nullptr;
 
     if(!ReadaFile(FLAGS_input_file.c_str(), &size, &out)) {
         return 1;
     }
     if(strcmp(FLAGS_algorithm.c_str(), "aes128-cbc-hmacsha256-sympad")==0) {
       AesCbcHmac256Sympad* new_scheme= GetAesCbcHmac256SymPad(size, out);
-      if(new_scheme==NULL) {
+      if(new_scheme==nullptr) {
         printf("No scheme\n");
         return 1;
       }
       new_scheme->PrintEncryptionAlgorithm();
     } else if(strcmp(FLAGS_algorithm.c_str(), "aes128-ctr-hmacsha256-sympad")==0) {
       AesCtrHmac256Sympad* new_scheme= GetAesCtrHmac256SymPad(size, out);
-      if(new_scheme==NULL) {
+      if(new_scheme==nullptr) {
         printf("No scheme\n");
         return 1;
       }
@@ -1554,7 +1557,7 @@ int main(int an, char** av) {
     }
     if(strcmp(FLAGS_algorithm.c_str(), "aes128-cbc-hmacsha256-sympad")==0) {
       AesCbcHmac256Sympad* new_scheme= new AesCbcHmac256Sympad();
-      if(new_scheme==NULL) {
+      if(new_scheme==nullptr) {
         printf("SymEncryptWithPassword: cant get scheme\n");
         return 1;
       }
@@ -1571,7 +1574,7 @@ int main(int an, char** av) {
       } 
     } else if(strcmp(FLAGS_algorithm.c_str(), "aes128-ctr-hmacsha256-sympad")==0) {
       AesCtrHmac256Sympad* new_scheme= new AesCtrHmac256Sympad();
-      if(new_scheme==NULL) {
+      if(new_scheme==nullptr) {
         printf("EncryptWithPassword: cant get scheme\n");
         return 1;
       }
@@ -1603,7 +1606,7 @@ int main(int an, char** av) {
     }
     if(strcmp(FLAGS_algorithm.c_str(), "aes128-cbc-hmacsha256-sympad")==0) {
       AesCbcHmac256Sympad* new_scheme= new AesCbcHmac256Sympad();
-      if(new_scheme==NULL) {
+      if(new_scheme==nullptr) {
         printf("SymEncryptWithPassword: cant get scheme\n");
         return 1;
       }
@@ -1620,7 +1623,7 @@ int main(int an, char** av) {
       } 
     } else if(strcmp(FLAGS_algorithm.c_str(), "aes128-ctr-hmacsha256-sympad")==0) {
       AesCtrHmac256Sympad* new_scheme= new AesCtrHmac256Sympad();
-      if(new_scheme==NULL) {
+      if(new_scheme==nullptr) {
         printf("DecryptWithPassword: cant get scheme\n");
         return 1;
       }
@@ -1639,13 +1642,13 @@ int main(int an, char** av) {
     }
   } else if(strcmp("PkcsSignWithKey", FLAGS_operation.c_str())==0) {
     int   size=0;
-    byte* out= NULL;
+    byte* out= nullptr;
 
     if(!ReadaFile(FLAGS_key_file.c_str(), &size, &out)) {
       return 1;
     }
     RsaKey* key= GetRsaKey(size, out);
-    if(key==NULL) {
+    if(key==nullptr) {
       printf("Cant new rsa-key\n");
       return 1;
     }
@@ -1685,18 +1688,18 @@ int main(int an, char** av) {
     }
   } else if(strcmp("PkcsVerifyWithKey", FLAGS_operation.c_str())==0) {
     int   size=0;
-    byte* out= NULL;
+    byte* out= nullptr;
     if(!ReadaFile(FLAGS_key_file.c_str(), &size, &out)) {
       return 1;
     }
     RsaKey* key= GetRsaKey(size, out);
-    if(key==NULL) {
+    if(key==nullptr) {
       printf("Cant new rsa-key\n");
       return 1;
     }
 
     int   size_input;
-    byte* input= NULL;
+    byte* input= nullptr;
     int   size_hash= 64;
     byte  hash[64];
     if(strcmp("rsa-2048-sha-256-pkcs", FLAGS_algorithm.c_str())==0 || 
@@ -1729,7 +1732,7 @@ int main(int an, char** av) {
     }
   } else if(strcmp("PkcsPubSealWithKey", FLAGS_operation.c_str())==0) {
     int   size=0;
-    byte* out= NULL;
+    byte* out= nullptr;
 
     if(!ReadaFile(FLAGS_key_file.c_str(), &size, &out)) {
       return 1;
@@ -1737,13 +1740,13 @@ int main(int an, char** av) {
     if(strcmp(FLAGS_algorithm.c_str(), "rsa-1024")==0 ||
        strcmp(FLAGS_algorithm.c_str(), "rsa-2048")==0) {
       RsaKey* key= GetRsaKey(size, out);
-      if(key==NULL) {
+      if(key==nullptr) {
         printf("Cant new rsa-key\n");
         return 1;
       }
       int   size_input= 0;
       int   size_output= 512;
-      byte* input= NULL;
+      byte* input= nullptr;
       byte  buffer[512];
       byte  output[512];
       int   size_key= key->bit_size_modulus_/NBITSINBYTE;
@@ -1770,7 +1773,7 @@ int main(int an, char** av) {
     }
   } else if(strcmp("PkcsPubUnsealWithKey", FLAGS_operation.c_str())==0) {
     int   size=0;
-    byte* out= NULL;
+    byte* out= nullptr;
 
     if(!ReadaFile(FLAGS_key_file.c_str(), &size, &out)) {
       printf("PkcsPubUnsealWithKey cant read %s\n", FLAGS_key_file.c_str()); 
@@ -1779,13 +1782,13 @@ int main(int an, char** av) {
     if(strcmp(FLAGS_algorithm.c_str(), "rsa-1024")==0 ||
        strcmp(FLAGS_algorithm.c_str(), "rsa-2048")==0) {
       RsaKey* key= GetRsaKey(size, out);
-      if(key==NULL) {
+      if(key==nullptr) {
         printf("Cant new rsa-key\n");
         return 1;
       }
 
     int   input_size= 0;
-    byte* input= NULL;
+    byte* input= nullptr;
     if(!ReadaFile(FLAGS_input_file.c_str(), &input_size, &input)) {
       printf("PkcsPubUnsealWithKey cant read %s\n", FLAGS_input_file.c_str()); 
       return 1;
@@ -1812,13 +1815,13 @@ int main(int an, char** av) {
   } else if(strcmp("SignDigestWithKey", FLAGS_operation.c_str())==0) {
 
     int   size=0;
-    byte* out= NULL;
+    byte* out= nullptr;
     if(!ReadaFile(FLAGS_key_file.c_str(), &size, &out)) {
       return 1;
     }
   } else if(strcmp("VerifyDigestWithKey", FLAGS_operation.c_str())==0) {
     int   size=0;
-    byte* out= NULL;
+    byte* out= nullptr;
 
     if(!ReadaFile(FLAGS_key_file.c_str(), &size, &out)) {
       return 1;

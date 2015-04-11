@@ -25,25 +25,25 @@
 
 Aes::Aes() {
   direction_= NONE;
-  cipher_name_= NULL;
+  cipher_name_= nullptr;
   initialized_= false;
   num_key_bits_= 0;
-  key_= NULL;
-  encrypt_round_key_= NULL;
-  decrypt_round_key_= NULL;
+  key_= nullptr;
+  encrypt_round_key_= nullptr;
+  decrypt_round_key_= nullptr;
 }
 
 Aes::~Aes() {
   
-  if(encrypt_round_key_!= NULL) {
+  if(encrypt_round_key_!= nullptr) {
     memset(encrypt_round_key_,0, 4*num_rounds_*sizeof(uint32_t));
     delete encrypt_round_key_;
-    encrypt_round_key_= NULL;
+    encrypt_round_key_= nullptr;
   }
-  if(decrypt_round_key_!= NULL) {
+  if(decrypt_round_key_!= nullptr) {
     memset(decrypt_round_key_,0, 4*num_rounds_*sizeof(uint32_t));
     delete decrypt_round_key_;
-    decrypt_round_key_= NULL;
+    decrypt_round_key_= nullptr;
   }
 }
 
@@ -724,7 +724,7 @@ static const uint32_t rcon[] = {
 // compute key schedule in encrypt direction
 bool Aes::InitEnc() {
   encrypt_round_key_= new uint32_t[4*(Aes::MAXNR+1)+1];
-  if(encrypt_round_key_==NULL) {
+  if(encrypt_round_key_==nullptr) {
     LOG(ERROR)<<"InitEnc cant new key sched\n";
     return false;
   }
@@ -804,7 +804,7 @@ bool Aes::InitEnc() {
 
 bool Aes::InitDec() {
   decrypt_round_key_= new uint32_t[4*(Aes::MAXNR+1)+1];
-  if(decrypt_round_key_==NULL) {
+  if(decrypt_round_key_==nullptr) {
     LOG(ERROR)<<"InitDec cant new key sched\n";
     return false;
   }
@@ -812,7 +812,7 @@ bool Aes::InitDec() {
   uint32_t  temp;
   uint32_t* rk= decrypt_round_key_;
 
-  if (encrypt_round_key_==NULL)
+  if (encrypt_round_key_==nullptr)
     if(!InitEnc()) {
       return false;
     }
@@ -1057,13 +1057,13 @@ bool Aes::Init(int key_bit_size, byte* key_buf, int directionflag) {
   cipher_name_= new string("aes-128");
   num_key_bits_= key_bit_size;
   num_rounds_= 10;
-  if(key_buf==NULL) {
-    LOG(ERROR)<<"Aes::Init key_buf is NULL\n";
+  if(key_buf==nullptr) {
+    LOG(ERROR)<<"Aes::Init key_buf is nullptr\n";
     return false;
   }
   key_= new byte[key_bit_size/NBITSINBYTE];
-  if(key_==NULL) {
-    LOG(ERROR)<<"Aes::Init key is NULL\n";
+  if(key_==nullptr) {
+    LOG(ERROR)<<"Aes::Init key is nullptr\n";
     return false;
   }
   memcpy(key_, key_buf, key_bit_size/NBITSINBYTE);

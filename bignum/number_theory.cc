@@ -23,9 +23,9 @@
 #include "intel64_arith.h"
 
 bool BigExtendedGCD(BigNum& a, BigNum& b, BigNum& x, BigNum& y, BigNum& g) {
-  BigNum* a_coeff[3]= {NULL, NULL, NULL};
-  BigNum* b_coeff[3]= {NULL, NULL, NULL};
-  BigNum* c[3]= {NULL, NULL, NULL};
+  BigNum* a_coeff[3]= {nullptr, nullptr, nullptr};
+  BigNum* b_coeff[3]= {nullptr, nullptr, nullptr};
+  BigNum* c[3]= {nullptr, nullptr, nullptr};
 
   int     n= a.size_>b.size_?a.size_:b.size_;
   BigNum  q(2*n+1);
@@ -79,15 +79,15 @@ bool BigExtendedGCD(BigNum& a, BigNum& b, BigNum& x, BigNum& y, BigNum& g) {
 
 done:
   for(i=0;i<3; i++) {
-    if(a_coeff[i]!=NULL)
+    if(a_coeff[i]!=nullptr)
       delete a_coeff[i];
-    a_coeff[i]= NULL;
-    if(b_coeff[i]!=NULL)
+    a_coeff[i]= nullptr;
+    if(b_coeff[i]!=nullptr)
       delete b_coeff[i];
-    b_coeff[i]= NULL;
-    if(c[i]!=NULL)
+    b_coeff[i]= nullptr;
+    if(c[i]!=nullptr)
       delete c[i];
-    c[i]= NULL;
+    c[i]= nullptr;
   }
   return ret;
 }
@@ -283,8 +283,8 @@ bool BigModDiv(BigNum& a, BigNum& b, BigNum& m, BigNum& r) {
 }
 
 bool BigModExp(BigNum& a, BigNum& e, BigNum& m, BigNum& r) {
-  BigNum* accum[2]= {NULL, NULL};
-  BigNum* doubled[2]= {NULL, NULL};
+  BigNum* accum[2]= {nullptr, nullptr};
+  BigNum* doubled[2]= {nullptr, nullptr};
   int     accum_current= 0;
   int     accum_next= 1;
   int     doubler_current= 0;
@@ -346,10 +346,10 @@ bool BigModExp(BigNum& a, BigNum& e, BigNum& m, BigNum& r) {
 
 done:
   for(i=0;i<2; i++) {
-    if(accum[i]!=NULL) {
+    if(accum[i]!=nullptr) {
       delete accum[i];
     }  
-    if(doubled[i]!=NULL) {
+    if(doubled[i]!=nullptr) {
       delete doubled[i];
     }  
   }
@@ -373,7 +373,7 @@ bool BigGenPrime(BigNum& p, uint64_t num_bits) {
     for(j=0; j<250;j++, i++) {
 
       if(BigIsPrime(p)) {
-#if 1
+#if 0
         printf("BigGenPrime %d bits, %d tries\n", (int)num_bits, i+1);
 #endif
         return true;
@@ -384,7 +384,7 @@ bool BigGenPrime(BigNum& p, uint64_t num_bits) {
       }
     }
   }
-#if 1
+#if 0
   printf("BigGenPrime %d bits, failed in %d tries\n", (int)num_bits, i+1);
 #endif
   return false;

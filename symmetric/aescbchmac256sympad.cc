@@ -29,7 +29,7 @@
 
 AesCbcHmac256Sympad::AesCbcHmac256Sympad() {
   alg_name_= new string("aes128-cbc-hmacsha256-sympad");
-  message_id_= NULL;
+  message_id_= nullptr;
   num_unprocessed_input_bytes_= 0;
   input_bytes_processed_= 0;
   output_bytes_produced_= 0;
@@ -43,9 +43,9 @@ AesCbcHmac256Sympad::AesCbcHmac256Sympad() {
 }
 
 AesCbcHmac256Sympad::~AesCbcHmac256Sympad() {
-  if(alg_name_!=NULL) {
+  if(alg_name_!=nullptr) {
     delete alg_name_;
-    alg_name_= NULL;
+    alg_name_= nullptr;
   }
   initialized_= false;
 }
@@ -309,11 +309,11 @@ bool  AesCbcHmac256Sympad::ProcessInput(int size_in, byte* in,
 }
 
 void AesCbcHmac256Sympad::PrintEncryptionAlgorithm() {
-  if(alg_name_==NULL) {
+  if(alg_name_==nullptr) {
     printf("No encryption algorithm\n");
     return;
   }
-  if(message_id_!=NULL) {
+  if(message_id_!=nullptr) {
     printf("message id: %s\n", message_id_->c_str());
   }
   if(strcmp(alg_name_->c_str(), "aes128-cbc-hmacsha256-sympad")!=0) {

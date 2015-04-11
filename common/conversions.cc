@@ -70,7 +70,7 @@ int NumBase64StringInBytes(int size, byte* in) {
 }
 
 int NumBytesInBase64String(char* in) {
-  if(in==NULL)
+  if(in==nullptr)
     return 0;
   int j= strlen(in);
   // j should be a multiple of 4
@@ -155,8 +155,8 @@ string* ByteToBase64LeftToRight(int size, byte* in) {
   string* out= new string(n, 0);
   char*   str= (char*) out->c_str();
 
-  if(size<=0 || in==NULL)
-    return NULL;
+  if(size<=0 || in==nullptr)
+    return nullptr;
   while(size>=3) {
     ThreeBytesToBase64(*in, *(in+1), *(in+2), str);
     in+= 3;
@@ -183,8 +183,8 @@ string* ByteToBase64RightToLeft(int size, byte* in) {
   string* out= new string(n, 0);
   char*   str= (char*) out->c_str();
 
-  if(size<=0 || in==NULL)
-    return NULL;
+  if(size<=0 || in==nullptr)
+    return nullptr;
   in+= size-1;
   while(size>=3) {
     ThreeBytesToBase64(*in, *(in-1), *(in-2), str);
@@ -208,7 +208,7 @@ string* ByteToBase64RightToLeft(int size, byte* in) {
 }
 
 int Base64ToByteLeftToRight(char* in, int size, byte* out) {
-  if(in==NULL)
+  if(in==nullptr)
     return -1;
 
   int   k= strlen(in);
@@ -231,7 +231,7 @@ int Base64ToByteLeftToRight(char* in, int size, byte* out) {
 
 int Base64ToByteRightToLeft(char* in, int size, byte* out) {
 
-  if(in==NULL)
+  if(in==nullptr)
     return -1;
   int   k= strlen(in);
   if((k&0x3)!=0)
@@ -248,7 +248,6 @@ int Base64ToByteRightToLeft(char* in, int size, byte* out) {
     out-= 3;
     k-= 4;
   }
-  
   return n;
 }
 
@@ -257,7 +256,7 @@ int NumHexInBytes(int size, byte* in) {
 }
 
 int NumBytesInHex(char* in) {
-  if(in==NULL)
+  if(in==nullptr)
     return -1;
   int len= strlen(in);
   return ((len+1)/2);
@@ -284,8 +283,8 @@ byte HexToValue(char x) {
 }
 
 string* ByteToHexLeftToRight(int size, byte* in) {
-  if(in==NULL)
-    return NULL;
+  if(in==nullptr)
+    return nullptr;
   int     n= NumHexInBytes(size, in);
   string* out= new string(n, 0);
   char*   str= (char*) out->c_str();
@@ -303,7 +302,7 @@ string* ByteToHexLeftToRight(int size, byte* in) {
 }
 
 int HexToByteLeftToRight(char* in, int size, byte* out) {
-  if(in==NULL)
+  if(in==nullptr)
     return -1;
   int     n= NumBytesInHex(in);
   int     m= strlen(in);
@@ -322,8 +321,8 @@ int HexToByteLeftToRight(char* in, int size, byte* out) {
 }
 
 string* ByteToHexRightToLeft(int size, byte* in) {
-  if(in==NULL)
-    return NULL;
+  if(in==nullptr)
+    return nullptr;
   int     n= NumHexInBytes(size, in);
   string* out= new string(n, 0);
   char*   str= (char*) out->c_str();
@@ -342,7 +341,7 @@ string* ByteToHexRightToLeft(int size, byte* in) {
 }
 
 int HexToByteRightToLeft(char* in, int size, byte* out) {
-  if(in==NULL) {
+  if(in==nullptr) {
     return -1;
   }
   int     n= NumBytesInHex(in);

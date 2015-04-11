@@ -29,7 +29,7 @@
 
 AesCtrHmac256Sympad::AesCtrHmac256Sympad() {
   alg_name_= new string("aes128-ctr-hmacsha256-sympad");
-  message_id_= NULL;
+  message_id_= nullptr;
   num_unprocessed_input_bytes_= 0;
   input_bytes_processed_= 0;
   output_bytes_produced_= 0;
@@ -42,13 +42,13 @@ AesCtrHmac256Sympad::AesCtrHmac256Sympad() {
 }
 
 AesCtrHmac256Sympad::~AesCtrHmac256Sympad() {
-  if(alg_name_!=NULL) {
+  if(alg_name_!=nullptr) {
     delete alg_name_;
-    alg_name_= NULL;
+    alg_name_= nullptr;
   }
-  if(message_id_!=NULL) {
+  if(message_id_!=nullptr) {
     delete message_id_;
-    message_id_= NULL;
+    message_id_= nullptr;
   }
   initialized_= false;
 }
@@ -302,7 +302,7 @@ bool  AesCtrHmac256Sympad::ProcessInput(int size_in, byte* in,
 }
 
 void AesCtrHmac256Sympad::PrintEncryptionAlgorithm() {
-  if(message_id_!=NULL) {
+  if(message_id_!=nullptr) {
     printf("message id: %s\n", message_id_->c_str());
   }
   if(strcmp(alg_name_->c_str(), "aes128-ctr-hmacsha256-sympad")!=0) {

@@ -376,7 +376,7 @@ ReadFile::~ReadFile() {
 }
 
 bool ReadFile::Init(const char* filename) {
-  if(filename==NULL) {
+  if(filename==nullptr) {
     return false;
   }
 
@@ -448,7 +448,7 @@ bool WriteFile::Write(int size, byte* buf) {
 bool ReadaFile(const char* filename, int* size, byte** out) {
   ReadFile  file_desc;
 
-  *out= NULL;
+  *out= nullptr;
   if(!file_desc.Init(filename))
     return false;
   int num_bytes= file_desc.BytesInFile();

@@ -112,38 +112,38 @@ void printhashalgs() {
 
 CryptoKey::CryptoKey() {
   key_valid_= false;
-  key_name_= NULL;
-  key_type_= NULL;
-  key_usage_= NULL;
-  key_owner_= NULL;
-  not_before_= NULL;
-  not_after_= NULL;
+  key_name_= nullptr;
+  key_type_= nullptr;
+  key_usage_= nullptr;
+  key_owner_= nullptr;
+  not_before_= nullptr;
+  not_after_= nullptr;
 }
 
 CryptoKey::~CryptoKey() {
-  if(key_name_!=NULL) {
+  if(key_name_!=nullptr) {
     delete key_name_;
-    key_name_= NULL;
+    key_name_= nullptr;
   }
-  if(key_type_!=NULL) {
+  if(key_type_!=nullptr) {
     delete key_type_;
-    key_type_= NULL;
+    key_type_= nullptr;
   }
-  if(key_usage_!=NULL) {
+  if(key_usage_!=nullptr) {
     delete key_usage_;
-    key_usage_= NULL;
+    key_usage_= nullptr;
   }
-  if(key_owner_!=NULL) {
+  if(key_owner_!=nullptr) {
     delete key_owner_;
-    key_owner_= NULL;
+    key_owner_= nullptr;
   }
-  if(not_before_!=NULL) {
+  if(not_before_!=nullptr) {
     delete not_before_;
-    not_before_= NULL;
+    not_before_= nullptr;
   }
-  if(not_after_!=NULL) {
+  if(not_after_!=nullptr) {
     delete not_after_;
-    not_after_= NULL;
+    not_after_= nullptr;
   }
 }
 
@@ -154,30 +154,30 @@ bool CryptoKey::SerializeKeyToMessage(crypto_key_message& message) {
     LOG(ERROR) << "CryptoKey::SerializeKeyToMessage: key invalid\n";
     return false;
   }
-  if(key_type_==NULL) {
+  if(key_type_==nullptr) {
     LOG(ERROR) << "CryptoKey::SerializeKeyToMessage: no key type\n";
     return false;
   }
   message.set_key_type(key_type_->c_str());
-  if(key_name_!=NULL) {
+  if(key_name_!=nullptr) {
     message.set_key_name(key_name_->c_str());
   }
   message.set_key_usage(key_usage_->c_str());
-  if(key_usage_!=NULL) {
+  if(key_usage_!=nullptr) {
     message.set_key_usage(key_usage_->c_str());
   }
-  if(key_owner_!=NULL) {
+  if(key_owner_!=nullptr) {
     message.set_key_owner(key_owner_->c_str());
   }
-  if(not_before_!=NULL) {
+  if(not_before_!=nullptr) {
     string* s= EncodeTime(*not_before_);
-    if(s==NULL)
+    if(s==nullptr)
       return false;
     message.set_not_before(*s);
   }
-  if(not_after_!=NULL) {
+  if(not_after_!=nullptr) {
     string* s= EncodeTime(*not_after_);
-    if(s==NULL)
+    if(s==nullptr)
       return false;
     message.set_not_after(*s);
   }
@@ -298,35 +298,35 @@ void CryptoKey::PrintKey() {
   else
     printf("Key invalid\n");
 
-  if(key_name_==NULL)
+  if(key_name_==nullptr)
     printf("\tno key name\n");
   else
     printf("\tkey name: %s\n", key_name_->c_str());;
 
-  if(key_type_==NULL)
+  if(key_type_==nullptr)
     printf("\tno key type\n");
   else
     printf("\tkey type: %s\n", key_type_->c_str());
-  if(key_usage_==NULL)
+  if(key_usage_==nullptr)
     printf("\tno key usage\n");
   else
     printf("\tkey usage: %s\n", key_usage_->c_str());
 
-  if(not_before_==NULL) {
+  if(not_before_==nullptr) {
     printf("\tno not before\n");
   } else {
     printf("\tnot before: ");
     not_before_->PrintTime();
     printf("\n");
   }
-  if(not_after_==NULL) {
+  if(not_after_==nullptr) {
     printf("\tno not after\n");
   } else {
     printf("\tnot after: ");
     not_after_->PrintTime();
     printf("\n");
   }
-  if(key_type_==NULL)
+  if(key_type_==nullptr)
     return;
   if(strcmp(key_type_->c_str(), "symmetric-cipher")==0) {
     ((SymmetricKey*)this)->PrintKey();
@@ -345,19 +345,19 @@ void CryptoKey::PrintKey() {
 }
 
 SymmetricKey::SymmetricKey() {
-  symmetric_key_bytes_= NULL;
-  symmetric_algorithm_type_= NULL;
+  symmetric_key_bytes_= nullptr;
+  symmetric_algorithm_type_= nullptr;
 }
 
 SymmetricKey::~SymmetricKey() {
-  if(symmetric_key_bytes_!=NULL) {
+  if(symmetric_key_bytes_!=nullptr) {
     memset(symmetric_key_bytes_, 0, symmetric_key_bit_size_/NBITSINBYTE);
     delete symmetric_key_bytes_;
-    symmetric_key_bytes_= NULL;
+    symmetric_key_bytes_= nullptr;
   }
-  if(symmetric_algorithm_type_!=NULL) {
+  if(symmetric_algorithm_type_!=nullptr) {
     delete symmetric_algorithm_type_;
-    symmetric_algorithm_type_= NULL;
+    symmetric_algorithm_type_= nullptr;
   }
 }
 
@@ -439,17 +439,17 @@ bool SymmetricKey::MakeTwofishKey(const char* name, const char* usage,
 
 bool SymmetricKey::SerializeKeyToMessage(
             crypto_symmetric_key_message& message) {
-  if(symmetric_algorithm_type_!=NULL) {
+  if(symmetric_algorithm_type_!=nullptr) {
     message.set_key_type(symmetric_algorithm_type_->c_str());
   }
   message.set_key_bit_size(symmetric_key_bit_size_);
-  if(symmetric_key_bytes_==NULL) {
+  if(symmetric_key_bytes_==nullptr) {
     return false;
   }
   string* s= ByteToBase64LeftToRight(
                   symmetric_key_bit_size_/NBITSINBYTE,
                   symmetric_key_bytes_);
-  if(s==NULL) {
+  if(s==nullptr) {
     return false;
   }
   message.set_value(*s);
@@ -478,13 +478,13 @@ bool SymmetricKey::DeserializeKeyFromMessage(
 
 void SymmetricKey::PrintKey() {
 
-  if(symmetric_algorithm_type_==NULL) {
+  if(symmetric_algorithm_type_==nullptr) {
     printf("\tno symmetric algorithm\n");
   } else {
     printf("\tcrypto alg: %s\n", symmetric_algorithm_type_->c_str());
   }
 
-  if(symmetric_key_bytes_==NULL) {
+  if(symmetric_key_bytes_==nullptr) {
     printf("\tno key bytes\n");
   } else {
     printf("\t%d key bits: ", symmetric_key_bit_size_);
@@ -494,14 +494,14 @@ void SymmetricKey::PrintKey() {
 }
 
 KeyStore::KeyStore() {
-  filename_= NULL;
+  filename_= nullptr;
   num_keys_= -1;
 }
 
 KeyStore::~KeyStore() {
-  if(filename_!=NULL) {
+  if(filename_!=nullptr) {
     delete filename_;
-    filename_= NULL;
+    filename_= nullptr;
   }
 }
 
@@ -512,7 +512,7 @@ bool KeyStore::FindKey(const char* keyname, string** the_key_type,
   if(num_keys_<0)
     return false;
 
-  CryptoKey* found_key= NULL;
+  CryptoKey* found_key= nullptr;
   for (int i= 0; i<num_keys_; i++) {
     const crypto_key_message entry= store_.key_entry(i);
     if(entry.has_key_name()) {
@@ -605,48 +605,48 @@ bool KeyStore::SaveStore(const char* filename) {
 }
 
 Signature::Signature() {
-  encryption_alg_= NULL;
+  encryption_alg_= nullptr;
   size_serialized_= 0;
-  serialized_statement_= NULL;
+  serialized_statement_= nullptr;
   size_signature_= 0;
-  signature_= NULL;
-  signer_name_= NULL;
+  signature_= nullptr;
+  signer_name_= nullptr;
 }
 
 Signature::~Signature() {
-  if(encryption_alg_!=NULL) {
+  if(encryption_alg_!=nullptr) {
     delete encryption_alg_;
-    encryption_alg_= NULL;
+    encryption_alg_= nullptr;
   }
   size_serialized_= 0;
-  if(serialized_statement_!=NULL) {
+  if(serialized_statement_!=nullptr) {
     delete serialized_statement_;
-    serialized_statement_= NULL;
+    serialized_statement_= nullptr;
   }
   size_signature_= 0;
-  if(signature_!=NULL) {
+  if(signature_!=nullptr) {
     delete signature_;
-    signature_= NULL;
+    signature_= nullptr;
   }
-  if(signer_name_!=NULL) {
+  if(signer_name_!=nullptr) {
     delete signer_name_;
-    signer_name_= NULL;
+    signer_name_= nullptr;
   }
 }
 
 bool Signature::Serialize(crypto_signature& sig) {
   sig.set_encryption_algorithm_name(encryption_alg_);
-  if(size_serialized_>0 && serialized_statement_!=NULL) {
+  if(size_serialized_>0 && serialized_statement_!=nullptr) {
     string* s= ByteToBase64LeftToRight(size_serialized_,
                                      serialized_statement_);
-    if(s==NULL) 
+    if(s==nullptr) 
       return false;
     sig.set_serialized_statement(s->c_str());
   }
-  if(size_signature_>0 && signature_!=NULL) {
+  if(size_signature_>0 && signature_!=nullptr) {
     string* s= ByteToBase64LeftToRight(size_signature_,
                                      signature_);
-    if(s==NULL) 
+    if(s==nullptr) 
       return false;
     sig.set_signature(s->c_str());
     sig.set_serialized_statement("");
@@ -673,24 +673,24 @@ bool Signature::Deserialize(crypto_signature& sig) {
 }
 
 void Signature::PrintSignature() {
-  if(encryption_alg_!=NULL) {
+  if(encryption_alg_!=nullptr) {
     printf("Encryption algorithm: %s\n", encryption_alg_);
   } else {
     printf("No Encryption algorithm\n");
   }
-  if(size_serialized_>0 && serialized_statement_!=NULL) {
+  if(size_serialized_>0 && serialized_statement_!=nullptr) {
     printf("Serialized statement: ");
     PrintBytes(size_serialized_, serialized_statement_); printf("\n");
   } else {
     printf("No serialized statement\n");
   }
-  if(size_signature_>0 && signature_!=NULL) {
+  if(size_signature_>0 && signature_!=nullptr) {
     printf("Signature: ");
     PrintBytes(size_signature_, signature_); printf("\n");
   } else {
     printf("No signature\n");
   }
-  if(signer_name_!=NULL) {
+  if(signer_name_!=nullptr) {
     printf("Signer: %s\n", signer_name_);
   } else {
     printf("No signer\n");

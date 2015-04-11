@@ -31,7 +31,7 @@ inline int max(int a, int b) {
 
 monomial::monomial() {
   d_= 0;
-  n_= NULL;
+  n_= nullptr;
 }
 
 monomial::monomial(int d, int size, uint64_t v) {
@@ -42,9 +42,9 @@ monomial::monomial(int d, int size, uint64_t v) {
 
 monomial::~monomial() {
   d_= 0;
-  if(n_!=NULL) {
+  if(n_!=nullptr) {
     delete n_;
-    n_= NULL;
+    n_= nullptr;
   }
 }
 
@@ -75,13 +75,13 @@ Polynomial::Polynomial(int size_num, int num_c, BigNum& c) {
 Polynomial::~Polynomial() {
   int i;
   for(i=0; i<num_c_; i++) {
-    if(c_[i]!=NULL)
+    if(c_[i]!=nullptr)
       delete c_[i];
-    c_[i]= NULL;
+    c_[i]= nullptr;
   }
-  if(m_!=NULL)
+  if(m_!=nullptr)
     delete m_;
-  m_= NULL;
+  m_= nullptr;
   size_num_= 0;
   num_c_= 0;
 }
@@ -160,8 +160,8 @@ bool PolyIsEqual(Polynomial& a, Polynomial& b) {
 
 Polynomial* MakePoly(int size_num, int num_c, int n, monomial* m) {
   Polynomial* p= new Polynomial(size_num, num_c);
-  if(p==NULL)
-    return NULL;
+  if(p==nullptr)
+    return nullptr;
 
   int i;
   for(i=0; i<n; i++) {
@@ -300,9 +300,9 @@ bool PolyEuclid(Polynomial& a, Polynomial& b, Polynomial& q, Polynomial& r) {
 
 bool PolyExtendedGcd(Polynomial& a, Polynomial& b, Polynomial& x, Polynomial& y, 
                      Polynomial& g) {
-  Polynomial*   a_coeff[3]= {NULL, NULL, NULL};
-  Polynomial*   b_coeff[3]= {NULL, NULL, NULL};
-  Polynomial*   c[3]= {NULL, NULL, NULL};
+  Polynomial*   a_coeff[3]= {nullptr, nullptr, nullptr};
+  Polynomial*   b_coeff[3]= {nullptr, nullptr, nullptr};
+  Polynomial*   c[3]= {nullptr, nullptr, nullptr};
 
   int           n= a.num_c_+b.num_c_+2;
   Polynomial    q(a.size_num_, n, *a.m_);
@@ -356,15 +356,15 @@ bool PolyExtendedGcd(Polynomial& a, Polynomial& b, Polynomial& x, Polynomial& y,
 
 done:
   for(i=0;i<3; i++) {
-    if(a_coeff[i]!=NULL)
+    if(a_coeff[i]!=nullptr)
       delete a_coeff[i];
-    a_coeff[i]= NULL;
-    if(b_coeff[i]!=NULL)
+    a_coeff[i]= nullptr;
+    if(b_coeff[i]!=nullptr)
       delete b_coeff[i];
-    b_coeff[i]= NULL;
-    if(c[i]!=NULL)
+    b_coeff[i]= nullptr;
+    if(c[i]!=nullptr)
       delete c[i];
-    c[i]= NULL;
+    c[i]= nullptr;
   }
   return ret;
 }

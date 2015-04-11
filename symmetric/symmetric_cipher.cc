@@ -25,41 +25,41 @@
 
 SymmetricCipher::SymmetricCipher() {
   direction_= NONE;
-  cipher_name_= NULL;
+  cipher_name_= nullptr;
   initialized_= false;
   num_key_bits_= 0;
-  key_= NULL;
+  key_= nullptr;
 }
 
 SymmetricCipher::~SymmetricCipher() {
-  if(cipher_name_!= NULL) {
+  if(cipher_name_!= nullptr) {
     delete cipher_name_;
-    cipher_name_= NULL;
+    cipher_name_= nullptr;
   }
   initialized_= false;
   num_key_bits_= 0;
-  if(key_!= NULL) {
+  if(key_!= nullptr) {
     memset(key_, 0, num_key_bits_/NBITSINBYTE);
     delete key_;
-    key_= NULL;
+    key_= nullptr;
   }
 }
 
 bool SymmetricCipher::SerializeSymmetricCipherToMessage(
                   crypto_symmetric_key_message& message) {
-  if(cipher_name_==NULL) {
-    LOG(ERROR) << "SymmetricCipher::SerializeSymmetricCipherToMessage: no key type\n";
+  if(cipher_name_==nullptr) {
+    LOG(ERROR) << "SerializeSymmetricCipherToMessage: no key type\n";
     return false;
   }
   message.set_key_type(cipher_name_->c_str());
   if(strcmp(cipher_name_->c_str(), "aes-128")!=0) {
-    LOG(ERROR) << "SymmetricCipher::SerializeSymmetricCipherToMessage: unhandled alg\n";
+    LOG(ERROR) << "SerializeSymmetricCipherToMessage: unhandled alg\n";
     return false;
   }
   message.set_key_bit_size(128);
   string* s= ByteToBase64LeftToRight(Aes::BLOCKBYTESIZE, key_);
-  if(s==NULL) {
-    LOG(ERROR) << "SymmetricCipher::SerializeSymmetricCipherToMessage: can't build base64 key\n";
+  if(s==nullptr) {
+    LOG(ERROR) << "SerializeSymmetricCipherToMessage: can't build base64 key\n";
     return false;
   }
   message.set_value(s->c_str());
@@ -70,26 +70,26 @@ bool SymmetricCipher::SerializeSymmetricCipherToMessage(
 bool SymmetricCipher::DeserializeSymmetricCipherFromMessage(
                   crypto_symmetric_key_message& message) {
   if(!message.has_key_type()) {
-    LOG(ERROR) << "SymmetricCipher::DeserializeSymmetricCipherToMessage: no key type\n";
+    LOG(ERROR) << "DeserializeSymmetricCipherToMessage: no key type\n";
     return false;
   }
   cipher_name_= new string(message.key_type().c_str());
   num_key_bits_= message.key_bit_size();
   if(!message.has_value()) {
-    LOG(ERROR) << "SymmetricCipher::DeserializeSymmetricCipherToMessage: no key\n";
+    LOG(ERROR) << "DeserializeSymmetricCipherToMessage: no key\n";
     return false;
   }
   key_= new byte[Aes::BLOCKBYTESIZE];
   if(Base64ToByteLeftToRight((char*)message.value().c_str(),
                      Aes::BLOCKBYTESIZE, key_)<0) {
-    LOG(ERROR) << "SymmetricCipher::DeserializeSymmetricCipherToMessage: can't base64 encode key\n";
+    LOG(ERROR) << "DeserializeSymmetricCipherToMessage: can't base64 encode key\n";
     return false;
   }
   return true;
 }
 
 void SymmetricCipher::PrintSymmetricKey() {
-  if(cipher_name_==NULL) {
+  if(cipher_name_==nullptr) {
     printf("no cipher name\n");
     return;
   }
@@ -107,7 +107,7 @@ void SymmetricCipher::PrintSymmetricKey() {
   } else {
     printf("symmetric key uninitialized\n");
   }
-  if(key_==NULL) {
+  if(key_==nullptr) {
     printf("No key\n");
   } else {
     printf("%d key bits: ", num_key_bits_);

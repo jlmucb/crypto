@@ -25,32 +25,32 @@
 
 AesNi::AesNi() {
   direction_= NONE;
-  cipher_name_= NULL;
+  cipher_name_= nullptr;
   initialized_= false;
   num_key_bits_= 0;
-  key_= NULL;
-  encrypt_round_key_= NULL;
-  decrypt_round_key_= NULL;
+  key_= nullptr;
+  encrypt_round_key_= nullptr;
+  decrypt_round_key_= nullptr;
 }
 
 AesNi::~AesNi() {
   
-  if(encrypt_round_key_!= NULL) {
+  if(encrypt_round_key_!= nullptr) {
     memset(encrypt_round_key_,0, 4*num_rounds_*sizeof(uint32_t));
     delete encrypt_round_key_;
-    encrypt_round_key_= NULL;
+    encrypt_round_key_= nullptr;
   }
-  if(decrypt_round_key_!= NULL) {
+  if(decrypt_round_key_!= nullptr) {
     memset(decrypt_round_key_,0, 4*num_rounds_*sizeof(uint32_t));
     delete decrypt_round_key_;
-    decrypt_round_key_= NULL;
+    decrypt_round_key_= nullptr;
   }
 }
 
 // compute key schedule in encrypt direction
 bool AesNi::InitEnc() {
   encrypt_round_key_= new uint32_t[4*(AesNi::MAXNR+1)+1];
-  if(encrypt_round_key_==NULL) {
+  if(encrypt_round_key_==nullptr) {
     return false;
   }
   byte* enc_key_sched= (byte*)encrypt_round_key_;
@@ -125,10 +125,10 @@ void FixAes128DecRoundKeys(byte* ks) {
 
 bool AesNi::InitDec() {
   decrypt_round_key_= new uint32_t[4*(AesNi::MAXNR+1)+1];
-  if(decrypt_round_key_==NULL) {
+  if(decrypt_round_key_==nullptr) {
     return false;
   }           
-  if (encrypt_round_key_==NULL) {
+  if (encrypt_round_key_==nullptr) {
     if(!InitEnc()) {
       return false;
     }
@@ -219,11 +219,11 @@ bool AesNi::Init(int key_bit_size, byte* key_buf, int directionflag) {
   cipher_name_= new string("aes-128");
   num_key_bits_= key_bit_size;
   num_rounds_= 10;
-  if(key_buf==NULL) {
+  if(key_buf==nullptr) {
     return false;
   }
   key_= new byte[key_bit_size/NBITSINBYTE];
-  if(key_==NULL) {
+  if(key_==nullptr) {
     return false;
   }
   memcpy(key_, key_buf, key_bit_size/NBITSINBYTE);
