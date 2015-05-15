@@ -62,7 +62,8 @@ dobj=	$(O)/symmetrictest.o $(O)/symmetric_cipher.o $(O)/aes.o $(O)/util.o \
 	$(O)/encryption_algorithm.o $(O)/sha256.o $(O)/aescbchmac256sympad.o \
 	$(O)/keys.o $(O)/keys.pb.o $(O)/rsa.o $(O)/ecc.o $(O)/intel64_arith.o \
 	$(O)/bignum.o $(O)/number_theory.o $(O)/smallprimes.o $(O)/globals.o \
-	$(O)/basic_arith.o $(O)/twofish.o $(O)/aesctrhmac256sympad.o
+	$(O)/basic_arith.o $(O)/twofish.o $(O)/aesctrhmac256sympad.o $(O)/rc4.o \
+	$(O)/tea.o
 
 all:	symmetrictest.exe
 clean:
@@ -106,6 +107,14 @@ $(O)/aesctrhmac256sympad.o: $(S)/aesctrhmac256sympad.cc
 $(O)/twofish.o: $(S)/twofish.cc
 	@echo "compiling twofish.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/twofish.o $(S)/twofish.cc
+
+$(O)/rc4.o: $(S)/rc4.cc
+	@echo "compiling rc4.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/rc4.o $(S)/rc4.cc
+
+$(O)/tea.o: $(S)/tea.cc
+	@echo "compiling tea.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/tea.o $(S)/tea.cc
 
 $(O)/util.o: $(SRC_DIR)/common/util.cc
 	@echo "compiling util.cc"

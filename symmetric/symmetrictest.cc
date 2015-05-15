@@ -26,6 +26,8 @@
 #include "keys.h"
 #include "aes.h"
 #include "twofish.h"
+#include "rc4.h"
+#include "tea.h"
 #include "encryption_algorithm.h"
 #include "aescbchmac256sympad.h"
 #include "aesctrhmac256sympad.h"
@@ -855,6 +857,60 @@ bool sha256_benchmark_tests() {
   /*
    */
   return true;
+}
+
+byte rc4_test_key[5]= {0x01, 0x02, 0x03, 0x04, 0x05};
+byte rc4_test_in[16]= {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte rc4_test_out[16]= {0xb2, 0x39, 0x63, 0x05, 0xf0, 0x3d, 0xc0, 0x27, 
+                        0xcc, 0xc3, 0x52, 0x4a,  0x0a, 0x11, 0x18, 0xa8};
+TEST(Rc4, Simple) {
+  byte out[16];  
+  Rc4   rc4;
+
+  EXPECT_TRUE(rc4.Init(5, rc4_test_key));
+  rc4.Encrypt(16, rc4_test_in, out);
+  printf("Rc4 test\n");
+  printf("\tKey            : ");
+  PrintBytes(5, rc4_test_key);
+  printf("\n");
+  printf("\tCorrect out : ");
+  PrintBytes(16, rc4_test_out);
+  printf("\n");
+  printf("\tout         : ");
+  PrintBytes(16, out);
+  printf("\n");
+  EXPECT_TRUE(memcmp(out, rc4_test_out, 16)==0);
+}
+
+byte tea_test_key[8]= {0, 0, 0, 0, 0, 0, 0, 0};
+byte tea_test_in[8]= {0, 0, 0, 0, 0, 0, 0, 0};
+byte tea_test_out[8]= {0x0a, 0x3a, 0xea, 0x41, 0x40, 0xa9, 0xba, 0x94};
+TEST(Tea, Simple) {
+  byte in[16];  
+  byte out[16];  
+  Tea   tea;
+
+  EXPECT_TRUE(tea.Init(64, tea_test_key, 0));
+  printf("Tea test\n");
+  printf("\tKey            : ");
+  PrintBytes(8, tea_test_key);
+  printf("\n");
+  printf("\tin             : ");
+  PrintBytes(8, tea_test_in);
+  printf("\n");
+  printf("\tcorrect out    : ");
+  PrintBytes(8, tea_test_out);
+  printf("\n");
+  tea.Encrypt(8, tea_test_in, out);
+  tea.Decrypt(8, out, in);
+  printf("\tEncrypted      : ");
+  PrintBytes(8, out);
+  printf("\n");
+  printf("\tDecrypted      : ");
+  PrintBytes(8, in);
+  printf("\n");
+  EXPECT_TRUE(memcmp(out, tea_test_out, 8)==0);
+  EXPECT_TRUE(memcmp(in, tea_test_in, 8)==0);
 }
 
 byte test_key[]= {

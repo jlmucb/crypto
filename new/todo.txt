@@ -3,9 +3,6 @@ Do benchmark tests
 
 Add
     rc4
-    simon
-    speck
-    tea
     xml d-sig formats
     aes128-cbc-vmac-sympad
     aes128-ctr-vmac-sympad
@@ -15,11 +12,9 @@ Add
 Integrate twofish, aes-256 and sha-3 into the composite encryption schemes
 and command line utility.
 
-
 ECC point counting
     Schoof
     Schoof-Elkies-Atkins
-
 Add access to the ECC stuff from the utility.
 
 Perf
