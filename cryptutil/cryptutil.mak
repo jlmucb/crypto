@@ -38,7 +38,20 @@ INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE) -I
 
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
 CFLAGS1=$(INCLUDE) -O3 -g -Wall -std=c++11
-LDFLAGS= $(LOCAL_LIB)/libgflags.a $(LOCAL_LIB)/libprotobuf.a $(LOCAL_LIB)/libgtest.a -lpthread
+
+include ../OSName
+ifdef YOSEMITE
+	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
+else
+	LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a $(LOCAL_LIB)/libgflags.a -lpthread
+endif
+ifdef YOSEMITE
+	CC=clang++
+	LINK=clang++
+else
+	CC=g++
+	LINK=g++
+endif
 CRYPTOLIB= $(OBJ_DIR)/jlmcryptolib.a
 
 
@@ -55,9 +68,6 @@ clean:
 cryptutil.exe: $(dobj) 
 	@echo "linking executable files"
 	$(LINK) -o $(EXE_DIR)/cryptutil.exe $(dobj) $(CRYPTOLIB) $(LDFLAGS)
-
-CC=g++
-LINK=g++
 
 $(O)/cryptutil.o: $(S)/cryptutil.cc
 	@echo "compiling cryptutil.cc"

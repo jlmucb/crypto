@@ -38,7 +38,22 @@ INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(SRC_DIR)/keys -I/usr/local/include -I$(
 
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
 CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
-LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a  $(LOCAL_LIB)/libgflags.a
+
+include ../OSName
+ifdef YOSEMITE
+	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
+else
+	LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a $(LOCAL_LIB)/libgflags.a -lpthread
+endif
+ifdef YOSEMITE
+	CC=clang++
+	LINK=clang++
+	AR=ar
+else
+	CC=g++
+	LINK=g++
+	AR=ar
+endif
 
 dobj=	$(O)/polynomial.o $(O)/rational.o $(O)/indeterminatetest.o $(O)/util.o \
 	$(O)/bignum.o $(O)/globals.o $(O)/basic_arith.o $(O)/number_theory.o \
@@ -54,11 +69,6 @@ clean:
 indeterminatetest.exe: $(dobj) 
 	@echo "linking executable files"
 	$(LINK) -o $(EXE_DIR)/indeterminatetest.exe $(dobj) $(LDFLAGS)
-
-CC=g++
-LINK=g++
-AR=ar
-PROTO=protoc
 
 $(O)/indeterminatetest.o: $(S)/indeterminatetest.cc
 	@echo "compiling indeterminatetest.cc"

@@ -38,7 +38,22 @@ O= $(OBJ_DIR)/common
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE)
 
 CFLAGS=$(INCLUDE) -O3 -g -Wall
-LDFLAGS= $(LOCAL_LIB)/libgtest.a $(LOCAL_LIB)/libgflags.a -lpthread
+
+include ../OSName
+ifdef YOSEMITE
+	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
+else
+	LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a $(LOCAL_LIB)/libgflags.a -lpthread
+endif
+ifdef YOSEMITE
+	CC=clang++
+	LINK=clang++
+	AR=ar
+else
+	CC=g++
+	LINK=g++
+	AR=ar
+endif
 
 dobj=	$(O)/commontest.o $(O)/conversions.o $(O)/util.o
 
@@ -52,10 +67,6 @@ clean:
 commontest.exe: $(dobj) 
 	@echo "linking executable files"
 	$(LINK) -o $(EXE_DIR)/commontest.exe $(dobj) $(LDFLAGS)
-
-CC=g++
-LINK=g++
-AR=ar
 
 $(O)/commontest.o: $(S)/commontest.cc
 	@echo "compiling commontest.cc"

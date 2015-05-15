@@ -38,7 +38,24 @@ INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(SRC_DIR)/keys -I/usr/local/include -I$(
 
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
 CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
-LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a  $(LOCAL_LIB)/libgflags.a -pthread
+
+include ../OSName
+ifdef YOSEMITE
+	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
+else
+	LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a $(LOCAL_LIB)/libgflags.a -lpthread
+endif
+ifdef YOSEMITE
+	CC=clang++
+	LINK=clang++
+	PROTO=protoc
+	AR=ar
+else
+	CC=g++
+	LINK=g++
+	PROTO=protoc
+	AR=ar
+endif
 
 dobj=	$(O)/symmetrictest.o $(O)/symmetric_cipher.o $(O)/aes.o $(O)/util.o \
 	$(O)/conversions.o $(O)/aesni.o $(O)/hash.o $(O)/hmac_sha256.o \
@@ -57,11 +74,6 @@ clean:
 symmetrictest.exe: $(dobj) 
 	@echo "linking executable files"
 	$(LINK) -o $(EXE_DIR)/symmetrictest.exe $(dobj) $(LDFLAGS)
-
-CC=g++
-LINK=g++
-AR=ar
-PROTO=protoc
 
 $(O)/symmetrictest.o: $(S)/symmetrictest.cc
 	@echo "compiling symmetrictest.cc"

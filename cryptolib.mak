@@ -38,7 +38,20 @@ INCLUDE= -I$(SRC_DIR)/include -I/usr/local/include -I$(SRC_DIR)/keys -I$(GOOGLE_
 
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
 CFLAGS1=$(INCLUDE) -O3 -g -Wall -std=c++11
-LDFLAGS= $(LOCAL_LIB)/libprotobuf.a $(LOCAL_LIB)/libgtest.a 
+
+include OSName
+ifdef YOSEMITE
+	LDFLAGS= # $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
+else
+	LDFLAGS= # $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a $(LOCAL_LIB)/libgflags.a -lpthread
+endif
+ifdef YOSEMITE
+	CC=clang++
+	LINK=clang++
+else
+	CC=g++
+	LINK=g++
+endif
 
 dobj=	$(O)/bignum.o $(O)/basic_arith.o $(O)/number_theory.o \
 	$(O)/intel64_arith.o $(O)/globals.o $(O)/util.o $(O)/conversions.o \
@@ -55,8 +68,8 @@ clean:
 	@echo "removing library file"
 	rm $(OBJ_DIR)/jlmcryptolib.a
 
-CC=g++
-LINK=g++
+CC=clang++
+LINK=clang++
 AR=ar
 PROTO=protoc
 

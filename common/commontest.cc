@@ -342,6 +342,7 @@ int main(int an, char** av) {
     printf("GetCryptoRand() failed\n");
     return 1;
   }
+  printf("Rand: ");
   PrintBytes(4, buf);
   printf("\n");
   int result= RUN_ALL_TESTS();

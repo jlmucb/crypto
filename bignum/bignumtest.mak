@@ -39,7 +39,22 @@ INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE) -I
 
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
 CFLAGS1=$(INCLUDE) -O3 -g -Wall -std=c++11
-LDFLAGS= $(LOCAL_LIB)/libprotobuf.a $(LOCAL_LIB)/libgtest.a -lpthread
+
+include ../OSName
+ifdef YOSEMITE
+	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
+else
+	LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a $(LOCAL_LIB)/libgflags.a -lpthread
+endif
+ifdef YOSEMITE
+	CC=clang++
+	LINK=clang++
+	AR=ar
+else
+	CC=g++
+	LINK=g++
+	AR=ar
+endif
 
 dobj=	$(O)/bignumtest.o $(O)/bignum.o $(O)/basic_arith.o $(O)/number_theory.o \
 	$(O)/intel64_arith.o $(O)/globals.o $(O)/util.o $(O)/conversions.o \
@@ -56,9 +71,6 @@ bignumtest.exe: $(dobj)
 	@echo "linking executable files"
 	$(LINK) -o $(EXE_DIR)/bignumtest.exe $(dobj) $(LDFLAGS)
 
-CC=g++
-LINK=g++
-AR=ar
 
 $(O)/bignumtest.o: $(S)/bignumtest.cc
 	@echo "compiling bignumtest.cc"

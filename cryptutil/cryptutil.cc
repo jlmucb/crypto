@@ -28,6 +28,7 @@
 #include "hash.h"
 #include "sha1.h"
 #include "sha256.h"
+#include "sha3.h"
 #include "util.h"
 #include "conversions.h"
 #include "keys.h"
@@ -106,7 +107,7 @@ std::string cryptalgs[]= {
   "ecc-256",
   "sha-1",
   "sha-256",
-  "sha-3-512",
+  "sha-3",
   "hmac-sha-256",
   "PBKDF-128",
   "aes-128-sha-256-hmac-sha256",
@@ -230,6 +231,24 @@ void hashFile(const char* name, const char* alg, int* size_out, byte* hash) {
     printf("hash: "); PrintBytes(the_hash.DIGESTBYTESIZE, out); printf("\n");
     if(size_out!=nullptr && hash!=nullptr && *size_out>=32) {
       *size_out= 32;
+      memcpy(hash, out, *size_out);
+    }
+  } else if(strcmp("sha-3", alg)==0) {
+    Sha3      the_hash(1024);
+
+    the_hash.Init();
+    for(;;) {
+      n= reader.Read(BUFSIZE, buf);
+      the_hash.AddToHash(n, buf);
+      if(n<=0)
+        break;
+    }
+    the_hash.Final();
+    byte  out[256];
+    the_hash.GetDigest(128, out);
+    printf("hash: "); PrintBytes(128, out); printf("\n");
+    if(size_out!=nullptr && hash!=nullptr && *size_out>=128) {
+      *size_out= 128;
       memcpy(hash, out, *size_out);
     }
   } else {

@@ -29,15 +29,5 @@ Perf
     Why is Mont slower?
 
 Simplify MontMult
-All assembler Mult and add
-balign 16 on jmps
-(%%base, %%index, mult)
-r8: i
-r9: j
-r11d: i+j
-r11: in1
-r12: in2
-r13: carry
-r14: out
     
 

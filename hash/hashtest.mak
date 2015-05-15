@@ -37,7 +37,23 @@ O= $(OBJ_DIR)/hash
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE)
 
 CFLAGS=$(INCLUDE) -O3 -g -Wall
-LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a $(LOCAL_LIB)/libgflags.a -lpthread
+
+include ../OSName
+ifdef YOSEMITE
+	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
+else
+	LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a $(LOCAL_LIB)/libgflags.a -lpthread
+endif
+ifdef YOSEMITE
+	CC=clang++
+	LINK=clang++
+	AR=ar
+else
+	CC=g++
+	LINK=g++
+	AR=ar
+endif
+LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
 
 dobj=	$(O)/hashtest.o $(O)/hash.o $(O)/sha1.o $(O)/util.o $(O)/sha256.o \
 	$(O)/sha3.o $(O)/hmac_sha256.o $(O)/pkcs.o $(O)/pbkdf2.o
@@ -52,11 +68,6 @@ clean:
 hashtest.exe: $(dobj) 
 	@echo "linking executable files"
 	$(LINK) -o $(EXE_DIR)/hashtest.exe $(dobj) $(LDFLAGS)
-
-CC=g++
-LINK=g++
-AR=ar
-PROTO=protoc
 
 $(O)/hashtest.o: $(S)/hashtest.cc
 	@echo "compiling hashtest.cc"

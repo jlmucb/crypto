@@ -37,9 +37,26 @@ S= $(SRC_DIR)/keys
 O= $(OBJ_DIR)/keys
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE)
 
-CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
-CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
-LDFLAGS= $(LOCAL_LIB)/libgtest.a $(LOCAL_LIB)/libprotobuf.a $(LOCAL_LIB)/libgflags.a -lpthread
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -stdlib=libc++
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -stdlib=libc++
+
+include ../OSName
+ifdef YOSEMITE
+	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
+else
+	LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a $(LOCAL_LIB)/libgflags.a -lpthread
+endif
+ifdef YOSEMITE
+	CC=clang++
+	LINK=clang++
+	PROTO=protoc
+	AR=ar
+else
+	CC=g++
+	LINK=g++
+	PROTO=protoc
+	AR=ar
+endif
 
 dobj=	$(O)/keytest.o $(O)/keys.o $(O)/keys.pb.o $(O)/util.o $(O)/conversions.o \
         $(O)/rsa.o $(O)/ecc.o $(O)/bignum.o $(O)/basic_arith.o \
@@ -55,11 +72,6 @@ clean:
 keytest.exe: $(dobj) 
 	@echo "linking executable files"
 	$(LINK) -o $(EXE_DIR)/keytest.exe $(dobj) $(LDFLAGS)
-
-CC=g++
-LINK=g++
-AR=ar
-PROTO=protoc
 
 $(S)/keys.pb.cc $(S)/keys.pb.h: $(S)/keys.proto
 	$(PROTO) -I=$(S) --cpp_out=$(S) $(S)/keys.proto
