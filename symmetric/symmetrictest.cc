@@ -914,9 +914,18 @@ TEST(Tea, Simple) {
   EXPECT_TRUE(memcmp(in, tea_test_in, 8)==0);
 }
 
-uint64_t t_k[2]= {0x0f0e0d0c0b0a0908, 0x0706050403020100};
-uint64_t t_i[2]= {0x6373656420737265, 0x6c6c657661727420};
-uint64_t t_o[2]= {0x49681b1e1e54fe3f, 0x65aa832af84e0bbc};
+uint64_t t_k[2]= {
+	0x0f0e0d0c0b0a0908,
+	0x0706050403020100,
+};
+uint64_t t_i[2]= {
+	0x6373656420737265,
+	0x6c6c657661727420,
+};
+uint64_t t_o[2]= {
+	0x49681b1e1e54fe3f,
+	0x65aa832af84e0bbc,
+};
 byte* simon_test_key= (byte*)t_k;
 byte* simon_test_in= (byte*) t_i;
 byte* simon_test_out= (byte*) t_o;
@@ -927,24 +936,18 @@ TEST(Simon, Simple) {
 
   EXPECT_TRUE(simon.Init(128, simon_test_key, 0));
   printf("Simon128 test\n");
-  printf("\tKey         : ");
-  PrintBytes(16, simon_test_key);
-  printf("\n");
-  printf("\tCorrect in  : ");
-  PrintBytes(16, simon_test_in);
-  printf("\n");
-  printf("\tCorrect out : ");
-  PrintBytes(16, simon_test_out);
-  printf("\n");
+  printf("\tKey         : %016llx %016llx\n", t_k[0], t_k[1]);
+  printf("\tCorrect in  : %016llx %016llx\n", t_i[0], t_i[1]);
+  printf("\tCorrect out : %016llx %016llx\n", t_o[0], t_o[1]);
+  uint64_t* o1= (uint64_t*) out;
+  uint64_t* o2= (uint64_t*) (out+8);
+  uint64_t* i1= (uint64_t*) in;
+  uint64_t* i2= (uint64_t*) (in+8);
   simon.Encrypt(16, simon_test_in, out);
-  printf("\tout         : ");
-  PrintBytes(16, out);
-  printf("\n");
-  // EXPECT_TRUE(memcmp(out, simon_test_out, 16)==0);
   simon.Decrypt(16, out, in);
-  printf("\tin          : ");
-  PrintBytes(16, in);
-  printf("\n");
+  printf("\tout         : %016llx %016llx\n", *o1, *o2);
+  printf("\tin          : %016llx %016llx\n", *i1, *i2);
+  // EXPECT_TRUE(memcmp(out, simon_test_out, 16)==0);
   EXPECT_TRUE(memcmp(in, simon_test_in, 16)==0);
 }
 

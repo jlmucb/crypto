@@ -33,7 +33,6 @@ private:
   uint64_t  key_[4];
   uint64_t  round_key_[72];
   int       num_rounds_;
-  uint64_t  constants_[68];
   bool      CalculateKS();
   uint64_t  ConstCalc(int cn, int sn);
 
