@@ -914,20 +914,20 @@ TEST(Tea, Simple) {
   EXPECT_TRUE(memcmp(in, tea_test_in, 8)==0);
 }
 
-byte simon_test_key[16]= {0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08,
-                          0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00};
-byte simon_test_in[16]=  {0x63, 0x73, 0x65, 0x64, 0x20, 0x73, 0x72, 0x65,
-                          0x6c, 0x6c, 0x65, 0x76, 0x61, 0x72, 0x74, 0x20};
-byte simon_test_out[16]= {0x49, 0x68, 0x1b, 0x1e, 0x1e, 0x54, 0xfe, 0x3f,
-                          0x65, 0xaa, 0x83, 0x2a, 0xf8, 0x4e, 0x0b, 0xbc};
+uint64_t t_k[2]= {0x0f0e0d0c0b0a0908, 0x0706050403020100};
+uint64_t t_i[2]= {0x6373656420737265, 0x6c6c657661727420};
+uint64_t t_o[2]= {0x49681b1e1e54fe3f, 0x65aa832af84e0bbc};
+byte* simon_test_key= (byte*)t_k;
+byte* simon_test_in= (byte*) t_i;
+byte* simon_test_out= (byte*) t_o;
 TEST(Simon, Simple) {
   byte out[16];  
   byte in[16];  
   Simon128 simon;
 
-  // EXPECT_TRUE(simon.Init(128, simon_test_key, 0));
+  EXPECT_TRUE(simon.Init(128, simon_test_key, 0));
   printf("Simon128 test\n");
-  printf("\tKey            : ");
+  printf("\tKey         : ");
   PrintBytes(16, simon_test_key);
   printf("\n");
   printf("\tCorrect in  : ");
@@ -936,12 +936,16 @@ TEST(Simon, Simple) {
   printf("\tCorrect out : ");
   PrintBytes(16, simon_test_out);
   printf("\n");
-  // simon.Encrypt(16, simon_test_in, out);
-  // printf("\tout         : ");
-  // PrintBytes(16, out);
-  // printf("\n");
+  simon.Encrypt(16, simon_test_in, out);
+  printf("\tout         : ");
+  PrintBytes(16, out);
+  printf("\n");
   // EXPECT_TRUE(memcmp(out, simon_test_out, 16)==0);
-  // simon.Decrypt(16, out, in);
+  simon.Decrypt(16, out, in);
+  printf("\tin          : ");
+  PrintBytes(16, in);
+  printf("\n");
+  EXPECT_TRUE(memcmp(in, simon_test_in, 16)==0);
 }
 
 byte test_key[]= {

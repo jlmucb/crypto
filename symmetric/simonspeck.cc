@@ -41,11 +41,11 @@ Simon128::~Simon128() {
 }
 
 static byte s_z2[64] = {
+  0, 0,
   1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0,
   0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0,
   1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1,
   1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 
-  0, 0
 };
 /*
 static byte s_z3[64] = {
@@ -73,7 +73,7 @@ uint64_t  ConvertTo64(byte* in) {
 }
 
 uint64_t Simon128::ConstCalc(int cn, int sn) {
-  if (cn==2 && sn<63) {
+  if (cn==2 && sn<62) {
     return constants_[sn];
   }
   return 0ULL;
@@ -81,13 +81,19 @@ uint64_t Simon128::ConstCalc(int cn, int sn) {
 
 bool Simon128::CalculateKS() {
   if(size_!=2)
-    return true;
+    return false;
+
   uint64_t c= ConvertTo64(s_z2);
+  int k;
   for (int i= 0; i<num_rounds_; i++) {
-    constants_[i]= c<<i|((c>>(62-i))&~0x3ULL);
+    k= i%62;
+    constants_[i]= ((c<<k)&0x3fffffffffffffffULL)|(c>>(62-k));
+    printf("constants_[%02d]= %016llx\n",i,constants_[i]);
   }
 
   uint64_t  t;
+  for (int i= 0; i<size_; i++)
+    round_key_[i]= key_[i];
   for (int i= size_; i<num_rounds_; i++) {
     t= leftRotate64(round_key_[i-1], -3);
     if (size_==4) {
@@ -96,6 +102,9 @@ bool Simon128::CalculateKS() {
     t= t^leftRotate64(t,-1);
     round_key_[i]= (~round_key_[i-size_])^t^ConstCalc(2, (i-size_)%62)^0x3ULL;
   }
+  printf("\nRound keys:\n");
+  for (int i= 0; i<num_rounds_; i++)
+    printf("%02d %016llx\n", i, round_key_[i]);
   return true;
 }
 
