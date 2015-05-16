@@ -63,7 +63,7 @@ dobj=	$(O)/symmetrictest.o $(O)/symmetric_cipher.o $(O)/aes.o $(O)/util.o \
 	$(O)/keys.o $(O)/keys.pb.o $(O)/rsa.o $(O)/ecc.o $(O)/intel64_arith.o \
 	$(O)/bignum.o $(O)/number_theory.o $(O)/smallprimes.o $(O)/globals.o \
 	$(O)/basic_arith.o $(O)/twofish.o $(O)/aesctrhmac256sympad.o $(O)/rc4.o \
-	$(O)/tea.o
+	$(O)/tea.o $(O)/simonspeck.o
 
 all:	symmetrictest.exe
 clean:
@@ -115,6 +115,10 @@ $(O)/rc4.o: $(S)/rc4.cc
 $(O)/tea.o: $(S)/tea.cc
 	@echo "compiling tea.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/tea.o $(S)/tea.cc
+
+$(O)/simonspeck.o: $(S)/simonspeck.cc
+	@echo "compiling simonspeck.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/simonspeck.o $(S)/simonspeck.cc
 
 $(O)/util.o: $(SRC_DIR)/common/util.cc
 	@echo "compiling util.cc"

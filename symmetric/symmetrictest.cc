@@ -28,6 +28,7 @@
 #include "twofish.h"
 #include "rc4.h"
 #include "tea.h"
+#include "simonspeck.h"
 #include "encryption_algorithm.h"
 #include "aescbchmac256sympad.h"
 #include "aesctrhmac256sympad.h"
@@ -911,6 +912,36 @@ TEST(Tea, Simple) {
   printf("\n");
   EXPECT_TRUE(memcmp(out, tea_test_out, 8)==0);
   EXPECT_TRUE(memcmp(in, tea_test_in, 8)==0);
+}
+
+byte simon_test_key[16]= {0x0f, 0x0e, 0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08,
+                          0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00};
+byte simon_test_in[16]=  {0x63, 0x73, 0x65, 0x64, 0x20, 0x73, 0x72, 0x65,
+                          0x6c, 0x6c, 0x65, 0x76, 0x61, 0x72, 0x74, 0x20};
+byte simon_test_out[16]= {0x49, 0x68, 0x1b, 0x1e, 0x1e, 0x54, 0xfe, 0x3f,
+                          0x65, 0xaa, 0x83, 0x2a, 0xf8, 0x4e, 0x0b, 0xbc};
+TEST(Simon, Simple) {
+  byte out[16];  
+  byte in[16];  
+  Simon128 simon;
+
+  // EXPECT_TRUE(simon.Init(128, simon_test_key, 0));
+  printf("Simon128 test\n");
+  printf("\tKey            : ");
+  PrintBytes(16, simon_test_key);
+  printf("\n");
+  printf("\tCorrect in  : ");
+  PrintBytes(16, simon_test_in);
+  printf("\n");
+  printf("\tCorrect out : ");
+  PrintBytes(16, simon_test_out);
+  printf("\n");
+  // simon.Encrypt(16, simon_test_in, out);
+  // printf("\tout         : ");
+  // PrintBytes(16, out);
+  // printf("\n");
+  // EXPECT_TRUE(memcmp(out, simon_test_out, 16)==0);
+  // simon.Decrypt(16, out, in);
 }
 
 byte test_key[]= {

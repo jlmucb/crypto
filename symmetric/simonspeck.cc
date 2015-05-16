@@ -23,55 +23,147 @@
 #include <iostream>
 #include "simonspeck.h"
 
-#define LCS _lrotl //left circular shift
-#define RCS _lrotr //right circular shift
-#define f(x) ((LCS(x,1) & LCS(x,8)) ^ LCS(x,2))
-#define R2(x,y,k1,k2) (y^=f(x), y^=k1, x^=f(y), x^=k2)
-
-void Simon128Encrypt(uint64_t pt[], uint64_t ct[], uint64_t k[])
-{
-  uint64_t i;
-
-  ct[0]= pt[0];
-  ct[1]= pt[1];
-  for(i= 0; i<68; i+= 2)
-    R2(ct[1], ct[0], k[i], k[i+1]);
+inline uint64_t leftRotate64(uint64_t x, int r) {
+  if (r<0)
+    r+= 64;
+  return (x<<r)|(x>>(64-r));
 }
 
-#define R(x,y,k) (x=RCS(x,8), x+=y, x^=k, y=LCS(y,3), y^=x)
+Simon128::Simon128() {
+  initialized_= false;
+  size_= 0;
+}
 
-void Speck128ExpandKeyAndEncrypt(uint64_t pt[], uint64_t ct[], uint64_t K[]) {
-  uint64_t i;
-  uint64_t B= K[1];
-  uint64_t A= K[0];
+Simon128::~Simon128() {
+  memset((byte*)key_, 0, sizeof(uint64_t)*4);
+  memset((byte*)round_key_, 0, sizeof(uint64_t)*72);
+  initialized_= false;
+}
 
-  ct[0]= pt[0];
-  ct[1]= pt[1];
-  for(i=0; i<32; i++){
-    R(ct[1], ct[0], A);
-    R(B, A, i);
+static byte s_z2[64] = {
+  1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0,
+  0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0,
+  1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1,
+  1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 
+  0, 0
+};
+/*
+static byte s_z3[64] = {
+  1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0,
+  0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+  0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1,
+  0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 
+  0, 0
+};
+static byte s_z4[64] = {
+  1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0,
+  1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+  0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0,
+  1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 
+  0, 0
+};
+ */
+
+uint64_t  ConvertTo64(byte* in) {
+  uint64_t  x= 0ULL;
+
+  for (int i= 0; i<64; i++)
+    x= (x<<1)|in[i];
+  return x;
+}
+
+uint64_t Simon128::ConstCalc(int cn, int sn) {
+  if (cn==2 && sn<63) {
+    return constants_[sn];
+  }
+  return 0ULL;
+}
+
+bool Simon128::CalculateKS() {
+  if(size_!=2)
+    return true;
+  uint64_t c= ConvertTo64(s_z2);
+  for (int i= 0; i<num_rounds_; i++) {
+    constants_[i]= c<<i|((c>>(62-i))&~0x3ULL);
+  }
+
+  uint64_t  t;
+  for (int i= size_; i<num_rounds_; i++) {
+    t= leftRotate64(round_key_[i-1], -3);
+    if (size_==4) {
+      t= t^round_key_[i-3];
+    }
+    t= t^leftRotate64(t,-1);
+    round_key_[i]= (~round_key_[i-size_])^t^ConstCalc(2, (i-size_)%62)^0x3ULL;
+  }
+  return true;
+}
+
+bool Simon128::Init(int key_bit_size, byte* key, int directionflag) {
+  size_= 0;
+  switch(key_bit_size) {
+    case 128:
+      size_= 2;
+      num_rounds_= 68;
+      memcpy((byte*)key_, key, sizeof(uint64_t)*size_);
+      break;
+    case 192:
+    case 256:
+    default:
+      return false;
+  }
+  if(!CalculateKS()) {
+    initialized_= false;
+    return false;
+  }
+  initialized_= true;
+  return true;
+}
+
+void Simon128::EncryptBlock(const byte* in, byte* out) {
+  uint64_t  x= *((uint64_t*)in);
+  uint64_t  y= *((uint64_t*)(in+sizeof(uint64_t)));
+  uint64_t  t;
+
+  for (int i= 0; i<num_rounds_; i++) {
+    t= x;
+    x= y^(leftRotate64(x,1)&leftRotate64(x,8))^leftRotate64(x,2)^round_key_[i];
+    y= t;
+  }
+
+  *((uint64_t*)out)= x;
+  *((uint64_t*)(out+sizeof(uint64_t)))= y;
+}
+
+void Simon128::DecryptBlock(const byte* in, byte* out) {
+  uint64_t  x= *((uint64_t*)in);
+  uint64_t  y= *((uint64_t*)(in+sizeof(uint64_t)));
+  uint64_t  t;
+
+  for (int i= (num_rounds_-1); i>=0; i--) {
+    t= y;
+    y= x^(leftRotate64(y,1)&leftRotate64(y,8))^leftRotate64(y,2)^round_key_[i];
+    x= t;
+  }
+
+  *((uint64_t*)out)= x;
+  *((uint64_t*)(out+sizeof(uint64_t)))= y;
+}
+
+void Simon128::Encrypt(int size, byte* in, byte* out) {
+  while(size>0) {
+    EncryptBlock(in, out);
+    size-= BLOCKBYTESIZE;
+    in+= BLOCKBYTESIZE;
+    out+= BLOCKBYTESIZE;
   }
 }
 
-void Speck128Encrypt(uint64_t pt[], uint64_t ct[], uint64_t k[])
-{
-  uint64_t i;
-
-  ct[0]= pt[0];
-  ct[1]= pt[1];
-  for(i= 0; i<32; i++)
-    R(ct[1], ct[0], k[i]);
+void Simon128::Decrypt(int size, byte* in, byte* out) {
+  while(size>0) {
+    DecryptBlock(in, out);
+    size-= BLOCKBYTESIZE;
+    in+= BLOCKBYTESIZE;
+    out+= BLOCKBYTESIZE;
+  }
 }
-
-/*
-  Simon 128
-  k:  0x0f0e0d0c0b0a0908 0706050403020100
-  pt: 0x6373656420737265 6c6c657661727420
-  ct: 0x49681b1e1e54fe3f 65aa832af84e0bbc
-
-  Speck 128
-  k:  0x0f0e0d0c0b0a0908 0706050403020100
-  pt: 0x6c61766975716520 7469206564616d20
-  ct: 0xa65d985179783265 7860fedf5c570d18
- */
-
