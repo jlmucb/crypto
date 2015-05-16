@@ -947,7 +947,7 @@ TEST(Simon, Simple) {
   simon.Decrypt(16, out, in);
   printf("\tout         : %016llx %016llx\n", *o1, *o2);
   printf("\tin          : %016llx %016llx\n", *i1, *i2);
-  // EXPECT_TRUE(memcmp(out, simon_test_out, 16)==0);
+  EXPECT_TRUE(memcmp(out, simon_test_out, 16)==0);
   EXPECT_TRUE(memcmp(in, simon_test_in, 16)==0);
 }
 
