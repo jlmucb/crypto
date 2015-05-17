@@ -25,6 +25,10 @@
 using namespace std;
 
 class Rc4 {
+public:
+  enum {
+    BLOCKBYTESIZE=8,
+  };
 private:
   bool      initialized_;
   int       key_size_;

@@ -36,6 +36,9 @@
 #include "hmac_sha256.h"
 #include "aes.h"
 #include "twofish.h"
+#include "rc4.h"
+#include "tea.h"
+#include "simonspeck.h"
 #include "encryption_algorithm.h"
 #include "aescbchmac256sympad.h"
 #include "aesctrhmac256sympad.h"
@@ -94,7 +97,7 @@ std::string cryptutil_ops[]= {
     "--pass=password --input_file=file --output_file=file",
 };
 
-const int num_cryptutil_algs= 15;
+const int num_cryptutil_algs= 20;
 std::string cryptalgs[]= {
   "aes-128",
   "aes-256",
@@ -113,6 +116,11 @@ std::string cryptalgs[]= {
   "aes-128-sha-256-hmac-sha256",
   "rsa-1024-sha-256-pkcs",
   "rsa-2048-sha-256-pkcs",
+  "twofish-128",
+  "twofish-256",
+  "rc4-128",
+  "tea-64",
+  "simon-128"
 };
 
 void print_options() {
@@ -813,6 +821,417 @@ bool TwoFishDecrypt(SymmetricKey* key, const char* inFile, const char* outFile) 
   return true;
 }
 
+#if 1
+SymmetricKey* GetSimonKey(int size, byte* in) {
+  crypto_key_message* message= new crypto_key_message;
+  SymmetricKey*  new_key= new SymmetricKey();
+  string data(reinterpret_cast<char const*>(in), size);
+
+  if(!message->ParseFromString(data)) {
+    return nullptr;
+  }
+  if(!((CryptoKey*)new_key)->DeserializeKeyFromMessage(*message)) {
+    return nullptr;
+  }
+  return new_key;
+}
+
+SymmetricKey* GenSimonKey(int num_bits, const char* durationStr, const char* keyName, 
+                  const char* ownerStr, const char* purposeStr, int* size, byte** out) {
+  double duration= convertDuration(durationStr);
+  SymmetricKey*  new_key= new SymmetricKey();
+  if(!new_key->GenerateSimonKey(keyName, purposeStr, ownerStr, num_bits, duration)) {
+    return nullptr;
+  }
+  crypto_key_message* message= new crypto_key_message;
+  if(!((CryptoKey*)new_key)->SerializeKeyToMessage(*message)) {
+    return nullptr;
+  }
+  string* outstr= new string();
+  if(!message->SerializeToString(outstr)) {
+    return nullptr;
+  }
+  *size= outstr->size();
+  *out= (byte*)outstr->data();
+  return new_key;
+}
+
+bool SimonEncrypt(SymmetricKey* key, const char* inFile, const char* outFile) {
+  Simon128 the_cipher;
+
+  printf("SimonEncrypt bit size is %d\n", key->symmetric_key_bit_size_);
+  PrintBytes(key->symmetric_key_bit_size_/NBITSINBYTE, key->symmetric_key_bytes_); printf("\n");
+  if(!the_cipher.Init(key->symmetric_key_bit_size_, 
+                      key->symmetric_key_bytes_, 
+                      Simon128::ENCRYPT)) {
+    printf("SimonEncrypt cipher init: failed\n");
+    return false;
+  }
+  ReadFile  reader;
+  WriteFile writer;
+
+  if(!reader.Init(inFile)) {
+    printf("SimonEncrypt: can't open %s\n", inFile);
+    return false;
+  }
+  if(!writer.Init(outFile)) {
+    printf("Simon128Encrypt: can't open %s\n", outFile);
+    return false;
+  }
+
+  int   n;
+  int   k;
+  byte  in_buf[BUFSIZE];
+  byte  out_buf[BUFSIZE];
+  bool  final= false;
+
+  for(;;) {
+    n= reader.Read(BUFSIZE, in_buf);
+    if(n<0) {
+      printf("Simon128Encrypt: error reading file\n");
+      break;
+    }
+    if(n<BUFSIZE) {
+      memset(&in_buf[n], 0, BUFSIZE-n);
+      in_buf[n++]= 0x80;
+      final= true;
+    }
+    k= (n+the_cipher.BLOCKBYTESIZE-1)/the_cipher.BLOCKBYTESIZE;
+    k*= the_cipher.BLOCKBYTESIZE;
+    the_cipher.Encrypt(k, in_buf, out_buf);
+    writer.Write(k, out_buf);
+    if(final)
+      break;
+  }
+  reader.Close();
+  writer.Close();
+  return true;
+}
+
+bool SimonDecrypt(SymmetricKey* key, const char* inFile, const char* outFile) {
+    Simon128 the_cipher;
+
+    if(!the_cipher.Init(key->symmetric_key_bit_size_,
+                        key->symmetric_key_bytes_, 
+                        the_cipher.DECRYPT)) {
+      printf("Simon128Decrypt: failed\n");
+      return false;
+    }
+    ReadFile  reader;
+    WriteFile writer;
+
+    if(!reader.Init(inFile)) {
+      printf("Simon128Decrypt: can't open %s\n", inFile);
+      return false;
+    }
+    if(!writer.Init(outFile)) {
+      printf("AesDecrypt: can't open %s\n", outFile);
+      return false;
+    }
+
+    int   m;
+    int   n;
+    int   k;
+    byte  in_buf[BUFSIZE];
+    byte  out_buf[BUFSIZE];
+    bool  final= false;
+
+    for(;;) {
+      k= reader.BytesLeftInFile()-the_cipher.BLOCKBYTESIZE;
+      if(k<=0) {
+        m=reader.BytesLeftInFile();
+        n= reader.Read(m, in_buf);
+        if(n<0) {
+          printf("Simon128Decrypt: error reading file\n");
+          break;
+        }
+        k= (n+the_cipher.BLOCKBYTESIZE-1)/the_cipher.BLOCKBYTESIZE;
+        k*= the_cipher.BLOCKBYTESIZE;
+        the_cipher.Decrypt(k, in_buf, out_buf);
+        for(m=(k-1); m>=0; m--) {
+          if(out_buf[m]!=0) {
+            if(out_buf[--m]!=0x80) {
+            }
+          }
+        }
+        if(m>0)
+          writer.Write(m, out_buf);
+        final= true;
+      } else {
+        if(k>BUFSIZE) {
+          m= BUFSIZE;
+        } else {
+          m= k;
+        }
+
+        n= reader.Read(m, in_buf);
+        if(n<0) {
+          printf("SimonDecrypt: error reading file\n");
+          break;
+        }
+        k= (n+the_cipher.BLOCKBYTESIZE-1)/the_cipher.BLOCKBYTESIZE;
+        k*= the_cipher.BLOCKBYTESIZE;
+        the_cipher.Decrypt(k, in_buf, out_buf);
+        writer.Write(k, out_buf);
+      }
+      if(final)
+        break;
+    }
+  reader.Close();
+  writer.Close();
+  return true;
+}
+
+SymmetricKey* GetRc4Key(int size, byte* in) {
+  crypto_key_message* message= new crypto_key_message;
+  SymmetricKey*  new_key= new SymmetricKey();
+  string data(reinterpret_cast<char const*>(in), size);
+
+  if(!message->ParseFromString(data)) {
+    return nullptr;
+  }
+  if(!((CryptoKey*)new_key)->DeserializeKeyFromMessage(*message)) {
+    return nullptr;
+  }
+  return new_key;
+}
+
+SymmetricKey* GenRc4Key(int num_bits, const char* durationStr, const char* keyName, 
+                  const char* ownerStr, const char* purposeStr, int* size, byte** out) {
+  double duration= convertDuration(durationStr);
+  SymmetricKey*  new_key= new SymmetricKey();
+  if(!new_key->GenerateRc4Key(keyName, purposeStr, ownerStr, num_bits, duration)) {
+    return nullptr;
+  }
+  crypto_key_message* message= new crypto_key_message;
+  if(!((CryptoKey*)new_key)->SerializeKeyToMessage(*message)) {
+    return nullptr;
+  }
+  string* outstr= new string();
+  if(!message->SerializeToString(outstr)) {
+    return nullptr;
+  }
+  *size= outstr->size();
+  *out= (byte*)outstr->data();
+  return new_key;
+}
+
+bool Rc4Encrypt(SymmetricKey* key, const char* inFile, const char* outFile) {
+  Rc4 the_cipher;
+
+  printf("Rc4Encrypt bit size is %d\n", key->symmetric_key_bit_size_);
+  PrintBytes(key->symmetric_key_bit_size_/NBITSINBYTE, key->symmetric_key_bytes_); printf("\n");
+  if(!the_cipher.Init(key->symmetric_key_bit_size_, 
+                      key->symmetric_key_bytes_)) {
+    printf("Rc4Encrypt cipher init: failed\n");
+    return false;
+  }
+  ReadFile  reader;
+  WriteFile writer;
+
+  if(!reader.Init(inFile)) {
+    printf("Rc4Encrypt: can't open %s\n", inFile);
+    return false;
+  }
+  if(!writer.Init(outFile)) {
+    printf("Rc4Encrypt: can't open %s\n", outFile);
+    return false;
+  }
+
+  int   n;
+  int   k;
+  byte  in_buf[BUFSIZE];
+  byte  out_buf[BUFSIZE];
+  bool  final= false;
+
+  for(;;) {
+    n= reader.Read(BUFSIZE, in_buf);
+    if(n<0) {
+      printf("Rc4Encrypt: error reading file\n");
+      break;
+    }
+    if(n<BUFSIZE) {
+      memset(&in_buf[n], 0, BUFSIZE-n);
+      in_buf[n++]= 0x80;
+      final= true;
+    }
+    k= (n+the_cipher.BLOCKBYTESIZE-1)/the_cipher.BLOCKBYTESIZE;
+    k*= the_cipher.BLOCKBYTESIZE;
+    the_cipher.Encrypt(k, in_buf, out_buf);
+    writer.Write(k, out_buf);
+    if(final)
+      break;
+  }
+  reader.Close();
+  writer.Close();
+  return true;
+}
+
+bool Rc4Decrypt(SymmetricKey* key, const char* inFile, const char* outFile) {
+  return Rc4Encrypt(key, inFile, outFile);
+}
+
+SymmetricKey* GetTeaKey(int size, byte* in) {
+  crypto_key_message* message= new crypto_key_message;
+  SymmetricKey*  new_key= new SymmetricKey();
+  string data(reinterpret_cast<char const*>(in), size);
+
+  if(!message->ParseFromString(data)) {
+    return nullptr;
+  }
+  if(!((CryptoKey*)new_key)->DeserializeKeyFromMessage(*message)) {
+    return nullptr;
+  }
+  return new_key;
+}
+
+SymmetricKey* GenTeaKey(int num_bits, const char* durationStr, const char* keyName, 
+                  const char* ownerStr, const char* purposeStr, int* size, byte** out) {
+  double duration= convertDuration(durationStr);
+  SymmetricKey*  new_key= new SymmetricKey();
+  if(!new_key->GenerateTeaKey(keyName, purposeStr, ownerStr, num_bits, duration)) {
+    return nullptr;
+  }
+  crypto_key_message* message= new crypto_key_message;
+  if(!((CryptoKey*)new_key)->SerializeKeyToMessage(*message)) {
+    return nullptr;
+  }
+  string* outstr= new string();
+  if(!message->SerializeToString(outstr)) {
+    return nullptr;
+  }
+  *size= outstr->size();
+  *out= (byte*)outstr->data();
+  return new_key;
+}
+
+bool TeaEncrypt(SymmetricKey* key, const char* inFile, const char* outFile) {
+  Tea the_cipher;
+
+  printf("TeaEncrypt bit size is %d\n", key->symmetric_key_bit_size_);
+  PrintBytes(key->symmetric_key_bit_size_/NBITSINBYTE, key->symmetric_key_bytes_); printf("\n");
+  if(!the_cipher.Init(key->symmetric_key_bit_size_, 
+                      key->symmetric_key_bytes_, 
+                      Tea::ENCRYPT)) {
+    printf("TeaEncrypt cipher init: failed\n");
+    return false;
+  }
+  ReadFile  reader;
+  WriteFile writer;
+
+  if(!reader.Init(inFile)) {
+    printf("TeaEncrypt: can't open %s\n", inFile);
+    return false;
+  }
+  if(!writer.Init(outFile)) {
+    printf("Tea.Encrypt: can't open %s\n", outFile);
+    return false;
+  }
+
+  int   n;
+  int   k;
+  byte  in_buf[BUFSIZE];
+  byte  out_buf[BUFSIZE];
+  bool  final= false;
+
+  for(;;) {
+    n= reader.Read(BUFSIZE, in_buf);
+    if(n<0) {
+      printf("Tea.Encrypt: error reading file\n");
+      break;
+    }
+    if(n<BUFSIZE) {
+      memset(&in_buf[n], 0, BUFSIZE-n);
+      in_buf[n++]= 0x80;
+      final= true;
+    }
+    k= (n+the_cipher.BLOCKBYTESIZE-1)/the_cipher.BLOCKBYTESIZE;
+    k*= the_cipher.BLOCKBYTESIZE;
+    the_cipher.Encrypt(k, in_buf, out_buf);
+    writer.Write(k, out_buf);
+    if(final)
+      break;
+  }
+  reader.Close();
+  writer.Close();
+  return true;
+}
+
+bool TeaDecrypt(SymmetricKey* key, const char* inFile, const char* outFile) {
+    Tea the_cipher;
+
+    if(!the_cipher.Init(key->symmetric_key_bit_size_,
+                        key->symmetric_key_bytes_, 
+                        the_cipher.DECRYPT)) {
+      printf("Tea.Decrypt: failed\n");
+      return false;
+    }
+    ReadFile  reader;
+    WriteFile writer;
+
+    if(!reader.Init(inFile)) {
+      printf("Tea.Decrypt: can't open %s\n", inFile);
+      return false;
+    }
+    if(!writer.Init(outFile)) {
+      printf("AesDecrypt: can't open %s\n", outFile);
+      return false;
+    }
+
+    int   m;
+    int   n;
+    int   k;
+    byte  in_buf[BUFSIZE];
+    byte  out_buf[BUFSIZE];
+    bool  final= false;
+
+    for(;;) {
+      k= reader.BytesLeftInFile()-the_cipher.BLOCKBYTESIZE;
+      if(k<=0) {
+        m=reader.BytesLeftInFile();
+        n= reader.Read(m, in_buf);
+        if(n<0) {
+          printf("AesDecrypt: error reading file\n");
+          break;
+        }
+        k= (n+the_cipher.BLOCKBYTESIZE-1)/the_cipher.BLOCKBYTESIZE;
+        k*= the_cipher.BLOCKBYTESIZE;
+        the_cipher.Decrypt(k, in_buf, out_buf);
+        for(m=(k-1); m>=0; m--) {
+          if(out_buf[m]!=0) {
+            if(out_buf[--m]!=0x80) {
+            }
+          }
+        }
+        if(m>0)
+          writer.Write(m, out_buf);
+        final= true;
+      } else {
+        if(k>BUFSIZE) {
+          m= BUFSIZE;
+        } else {
+          m= k;
+        }
+
+        n= reader.Read(m, in_buf);
+        if(n<0) {
+          printf("TeaDecrypt: error reading file\n");
+          break;
+        }
+        k= (n+the_cipher.BLOCKBYTESIZE-1)/the_cipher.BLOCKBYTESIZE;
+        k*= the_cipher.BLOCKBYTESIZE;
+        the_cipher.Decrypt(k, in_buf, out_buf);
+        writer.Write(k, out_buf);
+      }
+      if(final)
+        break;
+    }
+  reader.Close();
+  writer.Close();
+  return true;
+}
+#endif
+
 bool CbcEncrypt(AesCbcHmac256Sympad* scheme, 
                 const char* inFile, const char* outFile,
                 bool aes_ni) {
@@ -1285,6 +1704,46 @@ int main(int an, char** av) {
         printf("Encryption succeeded\n");
         return 0;
       }
+
+    } else if(strcmp(FLAGS_algorithm.c_str(), "rc4-128")==0) {
+      new_key= GetRc4Key(size, out);
+      if(new_key==nullptr) {
+        printf("SymEncrypt/DecryptWithKey: cant get key\n");
+        return 1;
+      }
+      if(!Rc4Encrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
+        printf("Encryption failed\n");
+        return 1;
+      } else {
+        printf("Encryption succeeded\n");
+        return 0;
+      }
+    } else if(strcmp(FLAGS_algorithm.c_str(), "simon-128")==0) {
+      new_key= GetSimonKey(size, out);
+      if(new_key==nullptr) {
+        printf("SymEncrypt/DecryptWithKey: cant get key\n");
+        return 1;
+      }
+      if(!SimonEncrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
+        printf("Encryption failed\n");
+        return 1;
+      } else {
+        printf("Encryption succeeded\n");
+        return 0;
+      }
+    } else if(strcmp(FLAGS_algorithm.c_str(), "tea-64")==0) {
+      new_key= GetTeaKey(size, out);
+      if(new_key==nullptr) {
+        printf("SymEncrypt/DecryptWithKey: cant get key\n");
+        return 1;
+      }
+      if(!TeaEncrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
+        printf("Encryption failed\n");
+        return 1;
+      } else {
+        printf("Encryption succeeded\n");
+        return 0;
+      }
     } else {
         printf("unknown encryption alg %s\n", FLAGS_algorithm.c_str());
     }
@@ -1322,6 +1781,45 @@ int main(int an, char** av) {
         return 1;
       }
       if(!TwoFishDecrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
+        printf("Decryption failed\n");
+        return 1;
+      } else {
+        printf("Decryption succeeded\n");
+        return 0;
+      }
+    } else if(strcmp(FLAGS_algorithm.c_str(), "simon-128")==0) {
+      new_key= GetSimonKey(size, out);
+      if(new_key==nullptr) {
+        printf("SymEncrypt/DecryptWithKey: cant get key\n");
+        return 1;
+      }
+      if(!SimonDecrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
+        printf("Decryption failed\n");
+        return 1;
+      } else {
+        printf("Decryption succeeded\n");
+        return 0;
+      }
+    } else if(strcmp(FLAGS_algorithm.c_str(), "rc4-128")==0) {
+      new_key= GetRc4Key(size, out);
+      if(new_key==nullptr) {
+        printf("SymEncrypt/DecryptWithKey: cant get key\n");
+        return 1;
+      }
+      if(!Rc4Decrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
+        printf("Decryption failed\n");
+        return 1;
+      } else {
+        printf("Decryption succeeded\n");
+        return 0;
+      }
+    } else if(strcmp(FLAGS_algorithm.c_str(), "tea-64")==0) {
+      new_key= GetTeaKey(size, out);
+      if(new_key==nullptr) {
+        printf("SymEncrypt/DecryptWithKey: cant get key\n");
+        return 1;
+      }
+      if(!TeaDecrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
         printf("Decryption failed\n");
         return 1;
       } else {
@@ -1465,6 +1963,30 @@ int main(int an, char** av) {
       }
       ((CryptoKey*)new_key)->PrintKey();
       WriteaFile(FLAGS_output_file.c_str(), size, out);
+    } else if(strcmp(FLAGS_algorithm.c_str(), "simon-128")==0) {
+      SymmetricKey* new_key= GenSimonKey(128, FLAGS_duration.c_str(), FLAGS_key_name.c_str(), 
+                                  FLAGS_owner.c_str(), FLAGS_purpose.c_str(), &size, &out);
+      if(new_key==nullptr) {
+        return 1;
+      }
+      ((CryptoKey*)new_key)->PrintKey();
+      WriteaFile(FLAGS_output_file.c_str(), size, out);
+    } else if(strcmp(FLAGS_algorithm.c_str(), "rc4-128")==0) {
+      SymmetricKey* new_key= GenRc4Key(128, FLAGS_duration.c_str(), FLAGS_key_name.c_str(), 
+                                  FLAGS_owner.c_str(), FLAGS_purpose.c_str(), &size, &out);
+      if(new_key==nullptr) {
+        return 1;
+      }
+      ((CryptoKey*)new_key)->PrintKey();
+      WriteaFile(FLAGS_output_file.c_str(), size, out);
+    } else if(strcmp(FLAGS_algorithm.c_str(), "tea-64")==0) {
+      SymmetricKey* new_key= GenTeaKey(64, FLAGS_duration.c_str(), FLAGS_key_name.c_str(), 
+                                  FLAGS_owner.c_str(), FLAGS_purpose.c_str(), &size, &out);
+      if(new_key==nullptr) {
+        return 1;
+      }
+      ((CryptoKey*)new_key)->PrintKey();
+      WriteaFile(FLAGS_output_file.c_str(), size, out);
     } else if(strcmp(FLAGS_algorithm.c_str(), "rsa-256")==0) {
       int   size= 0;
       byte* out= nullptr;
@@ -1508,6 +2030,18 @@ int main(int an, char** av) {
     if(strcmp(FLAGS_algorithm.c_str(), "aes-128")==0) {
       SymmetricKey* new_key= GetAesKey(size, out);
       ((CryptoKey*)new_key)->PrintKey();
+    } else if(strcmp(FLAGS_algorithm.c_str(), "twofish-128")==0) {
+      SymmetricKey* new_key= GetTwofishKey(size, out);
+      ((CryptoKey*)new_key)->PrintKey();
+    } else if(strcmp(FLAGS_algorithm.c_str(), "simon-128")==0) {
+      SymmetricKey* new_key= GetSimonKey(size, out);
+      ((CryptoKey*)new_key)->PrintKey();
+    } else if(strcmp(FLAGS_algorithm.c_str(), "rc4-128")==0) {
+      SymmetricKey* new_key= GetRc4Key(size, out);
+      ((CryptoKey*)new_key)->PrintKey();
+    } else if(strcmp(FLAGS_algorithm.c_str(), "tea-64")==0) {
+      SymmetricKey* new_key= GetTeaKey(size, out);
+      ((CryptoKey*)new_key)->PrintKey();
     } else if(strcmp(FLAGS_algorithm.c_str(), "rsa-256")==0) {
       RsaKey* new_key= GetRsaKey(size, out);
       ((CryptoKey*)new_key)->PrintKey();
@@ -1518,6 +2052,7 @@ int main(int an, char** av) {
       RsaKey* new_key= GetRsaKey(size, out);
       ((CryptoKey*)new_key)->PrintKey();
     } else {
+      printf("GenerateKey: no such key type\n");
       return 1;
     }
   } else if(strcmp("GetRandom", FLAGS_operation.c_str())==0) {

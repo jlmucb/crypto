@@ -33,7 +33,7 @@ public:
     BLOCKBYTESIZE= 16,
     MAXKB= (256/8),
     MAXKC= (256/32)
-};
+  };
 
   uint32_t* encrypt_round_key_;
   uint32_t* decrypt_round_key_;

@@ -69,6 +69,26 @@ public:
   bool    MakeTwofishKey(const char* name, const char* usage,
                          const char* owner, int num_bits, double secondstolive,
                          byte* key);
+  bool    GenerateRc4Key(const char* name, const char* usage, 
+                         const char* owner, int num_bits, 
+                         double seconds_to_live);
+  bool    MakeRc4Key(const char* name, const char* usage, 
+                     const char* owner, int num_bits, double secondstolive,
+                     byte* key);
+
+  bool    GenerateSimonKey(const char* name, const char* usage, 
+                         const char* owner, int num_bits, 
+                         double seconds_to_live);
+  bool    MakeSimonKey(const char* name, const char* usage, 
+                     const char* owner, int num_bits, double secondstolive,
+                     byte* key);
+
+  bool    GenerateTeaKey(const char* name, const char* usage, 
+                         const char* owner, int num_bits, 
+                         double seconds_to_live);
+  bool    MakeTeaKey(const char* name, const char* usage, 
+                     const char* owner, int num_bits, double secondstolive,
+                     byte* key);
   bool    ReadKey(string& filename);
   bool    SaveKey(string& filename);
 

@@ -30,7 +30,7 @@
 
 using namespace std;
 
-const int num_cryptoalgs= 9;
+const int num_cryptoalgs= 12;
 string cryptoalgs[]= {
   "undefined",
   "aes128",
@@ -41,6 +41,9 @@ string cryptoalgs[]= {
   "rsa2048",
   "twofish128",
   "twofish256",
+  "simon128",
+  "rc4128",
+  "tea64",
 };
 
 const int num_cryptoschemes= 5;
@@ -436,6 +439,118 @@ bool SymmetricKey::MakeTwofishKey(const char* name, const char* usage,
   key_valid_= true;
   return true;
 }
+
+bool SymmetricKey::GenerateRc4Key(const char* name, const char* usage, 
+                    const char* owner, int num_bits, double secondstolive) {
+  byte  my_key[32];
+
+  if(num_bits!=128) {
+    LOG(ERROR) << "SymmetricKey::GenerateRc4Key: unsupported key size "<< num_bits<<"\n";
+    return false;
+  }
+  if(!GetCryptoRand(num_bits, my_key)) {
+    LOG(ERROR) << "SymmetricKey::GenerateRc4Key: can't get key bits\n";
+    return false;
+  }
+  return MakeRc4Key(name, usage, owner, num_bits, secondstolive, my_key);
+}
+
+bool SymmetricKey::MakeRc4Key(const char* name, const char* usage, 
+            const char* owner, int num_bits, double secondstolive , byte* key) {
+  key_type_= new string("symmetric-cipher");
+  key_name_= new string(name);
+  key_usage_= new string(usage);
+  key_owner_= new string(owner);
+  not_before_= new TimePoint();
+  not_after_= new TimePoint();
+  not_before_->TimePointNow();
+  not_after_->TimePointLaterBySeconds(*not_before_, secondstolive);
+  if(num_bits!=128) {
+    LOG(ERROR) << "SymmetricKey::MakeRc4Key: only 128 bit keys supported\n";
+    return false;
+  }
+  symmetric_key_bit_size_= num_bits;
+  symmetric_key_bytes_= new byte[32];
+  symmetric_algorithm_type_= new string("rc4-128");
+  memcpy(symmetric_key_bytes_, key, num_bits/NBITSINBYTE);
+  key_valid_= true;
+  return true;
+}
+
+bool SymmetricKey::GenerateSimonKey(const char* name, const char* usage, 
+                    const char* owner, int num_bits, double secondstolive) {
+  byte  my_key[32];
+
+  if(num_bits!=128 && num_bits!=256) {
+    LOG(ERROR) << "SymmetricKey::GenerateSimonKey: unsupported key size "<< num_bits<<"\n";
+    return false;
+  }
+  if(!GetCryptoRand(num_bits, my_key)) {
+    LOG(ERROR) << "SymmetricKey::GenerateSimonKey: can't get key bits\n";
+    return false;
+  }
+  return MakeSimonKey(name, usage, owner, num_bits, secondstolive, my_key);
+}
+
+bool SymmetricKey::MakeSimonKey(const char* name, const char* usage, 
+            const char* owner, int num_bits, double secondstolive , byte* key) {
+  key_type_= new string("symmetric-cipher");
+  key_name_= new string(name);
+  key_usage_= new string(usage);
+  key_owner_= new string(owner);
+  not_before_= new TimePoint();
+  not_after_= new TimePoint();
+  not_before_->TimePointNow();
+  not_after_->TimePointLaterBySeconds(*not_before_, secondstolive);
+  if(num_bits!=128) {
+    LOG(ERROR) << "SymmetricKey::MakeSimonKey: only 128 bit keys supported\n";
+    return false;
+  }
+  symmetric_key_bit_size_= num_bits;
+  symmetric_key_bytes_= new byte[32];
+  symmetric_algorithm_type_= new string("simon-128");
+  memcpy(symmetric_key_bytes_, key, num_bits/NBITSINBYTE);
+  key_valid_= true;
+  return true;
+}
+
+bool SymmetricKey::GenerateTeaKey(const char* name, const char* usage, 
+                    const char* owner, int num_bits, double secondstolive) {
+  byte  my_key[32];
+
+  if(num_bits!=64) {
+    LOG(ERROR) << "SymmetricKey::GenerateTeaKey: unsupported key size "<< num_bits<<"\n";
+    return false;
+  }
+  if(!GetCryptoRand(num_bits, my_key)) {
+    LOG(ERROR) << "SymmetricKey::GenerateTeaKey: can't get key bits\n";
+    return false;
+  }
+  return MakeTeaKey(name, usage, owner, num_bits, secondstolive, my_key);
+}
+
+bool SymmetricKey::MakeTeaKey(const char* name, const char* usage, 
+            const char* owner, int num_bits, double secondstolive , byte* key) {
+  key_type_= new string("symmetric-cipher");
+  key_name_= new string(name);
+  key_usage_= new string(usage);
+  key_owner_= new string(owner);
+  not_before_= new TimePoint();
+  not_after_= new TimePoint();
+  not_before_->TimePointNow();
+  not_after_->TimePointLaterBySeconds(*not_before_, secondstolive);
+  if(num_bits!=64) {
+    LOG(ERROR) << "SymmetricKey::MakeTeaKey: only 64 bit keys supported\n";
+    return false;
+  }
+  symmetric_key_bit_size_= num_bits;
+  symmetric_key_bytes_= new byte[32];
+  symmetric_algorithm_type_= new string("tea-64");
+  memcpy(symmetric_key_bytes_, key, num_bits/NBITSINBYTE);
+  key_valid_= true;
+  return true;
+}
+
 
 bool SymmetricKey::SerializeKeyToMessage(
             crypto_symmetric_key_message& message) {

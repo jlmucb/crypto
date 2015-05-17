@@ -39,6 +39,21 @@
 ./cryptutil.exe --operation=PkcsVerifyWithKey --algorithm=rsa-1024-sha-256-pkcs --key_file=johnsrsakey1 --hash_file=randFile --sig_file=randFile.sig
 ./cryptutil.exe --operation=PkcsPubSealWithKey --key_file=johnsrsakey1 --algorithm=rsa-1024 --input_file=toseal --output_file=sealedsecret
 ./cryptutil.exe --operation=PkcsPubUnsealWithKey --key_file=johnsrsakey1 --algorithm=rsa-1024 --input_file=sealedsecret --output_file=secret2
+./cryptutil.exe --operation=GenerateKey --algorithm=simon-128 --key_name=johnsimonkey1 --duration=1Y \
+--output_file=johnssimonkey1 --owner=JLM --purpose=bulk-encryption
+./cryptutil.exe --operation=ReadKey --algorithm=simon-128 --input_file=johnssimonkey1
+./cryptutil.exe --operation=SymEncryptWithKey --key_file=johnssimonkey1 --algorithm=simon-128 --input_file=randFile --output_file=randFile.out
+./cryptutil.exe --operation=SymDecryptWithKey --key_file=johnssimonkey1 --algorithm=simon-128 --input_file=randFile.out --output_file=randFile.out2
+./cryptutil.exe --operation=GenerateKey --algorithm=rc4-128 --key_name=johnrc4key1 --duration=1Y \
+--output_file=johnsrc4key1 --owner=JLM --purpose=bulk-encryption
+./cryptutil.exe --operation=ReadKey --algorithm=rc4-128 --input_file=johnsrc4key1
+./cryptutil.exe --operation=SymEncryptWithKey --key_file=johnsrc4key1 --algorithm=rc4-128 --input_file=randFile --output_file=randFile.out
+./cryptutil.exe --operation=SymDecryptWithKey --key_file=johnsrc4key1 --algorithm=rc4-128 --input_file=randFile.out --output_file=randFile.out2
+./cryptutil.exe --operation=GenerateKey --algorithm=tea-64 --key_name=johnteakey1 --duration=1Y \
+--output_file=johnsteakey1 --owner=JLM --purpose=bulk-encryption
+./cryptutil.exe --operation=ReadKey --algorithm=tea-64 --input_file=johnsteakey1
+./cryptutil.exe --operation=SymEncryptWithKey --key_file=johnsteakey1 --algorithm=tea-64 --input_file=randFile --output_file=randFile.out
+./cryptutil.exe --operation=SymDecryptWithKey --key_file=johnsteakey1 --algorithm=tea-64 --input_file=randFile.out --output_file=randFile.out2
 
 #./cryptutil.exe --operation=Mac --algorithm=alg --keyfile=file --input_file=file --output_file=file
 #./cryptutil.exe --operation=VerifyMac --algorithm=alg --keyfile=file --input_file=file --output_file=file
