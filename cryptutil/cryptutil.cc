@@ -97,7 +97,7 @@ std::string cryptutil_ops[]= {
     "--pass=password --input_file=file --output_file=file",
 };
 
-const int num_cryptutil_algs= 20;
+const int num_cryptutil_algs= 22;
 std::string cryptalgs[]= {
   "aes-128",
   "aes-256",
