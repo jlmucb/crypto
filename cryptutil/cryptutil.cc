@@ -71,17 +71,17 @@ std::string cryptutil_ops[]= {
     "--purpose=pur --owner=own --duration=dur --output_file=file",
   "--operation=ReadKey --algorithm=alg --key_name=name " \
     "--duration=dur --input_file=file",
-  "--operation=SymEncryptWithKey --key_file=key_file --algorithm=alg " \
+  "--operation=EncryptWithKey --key_file=key_file --algorithm=alg " \
     "--input_file=file --output_file=file",
-  "--operation=SymDecryptWithKey --key_file=key_file --algorithm=alg " \
+  "--operation=DecryptWithKey --key_file=key_file --algorithm=alg " \
     "--input_file=file --output_file=file",
   "--operation=GenerateScheme --algorithm=alg --key_name=name "\
     "--duration=dur --output_file=file",
   "--operation=ReadScheme --algorithm=alg --key_name=name" \
     " --duration=dur --input_file=file",
-  "--operation=SymEncryptWithScheme --scheme_file=scheme_file " \
+  "--operation=EncryptWithScheme --scheme_file=scheme_file " \
     "--algorithm=alg --input_file=file --output_file=file",
-  "--operation=SymDecryptWithScheme --scheme_file=scheme_file" \
+  "--operation=DecryptWithScheme --scheme_file=scheme_file" \
     " --algorithm=alg --input_file=file --output_file=file",
   "--operation=PkcsSignWithKey --algorithm=alg --keyfile=file " \
     "--hash_file= file --input_file=file --output_file=file",
@@ -91,9 +91,9 @@ std::string cryptutil_ops[]= {
     "--input_file=file --output_file=file",
   "--operation=PkcsPubSealWithKey --keyfile=file --algorithm=alg " \
       "--input_file=file --output_file=file",
-  "--operation=SymEncryptWithPassword --key_file=key_file --algorithm=alg " \
+  "--operation=EncryptWithPassword --pass=password --algorithm=aes128-ctr-hmacsha256-sympad " \
     "--pass=password --input_file=file --output_file=file",
-  "--operation=SymDecryptWithPassword --key_file=key_file --algorithm=alg " \
+  "--operation=DecryptWithPassword --pass=password --algorithm=aes128-ctr-hmacsha256-sympad " \
     "--pass=password --input_file=file --output_file=file",
 };
 
@@ -1664,7 +1664,7 @@ int main(int an, char** av) {
     macFile(FLAGS_input_file.c_str(), FLAGS_input_file.c_str(), size, key);
     if(key!=nullptr)
       delete key;
-  } else if(strcmp("SymEncryptWithKey", FLAGS_operation.c_str())==0) {
+  } else if(strcmp("EncryptWithKey", FLAGS_operation.c_str())==0) {
     int           size= 0;
     byte*         out= nullptr;
     SymmetricKey* new_key= nullptr;
@@ -1748,7 +1748,7 @@ int main(int an, char** av) {
         printf("unknown encryption alg %s\n", FLAGS_algorithm.c_str());
     }
        
-  } else if(strcmp("SymDecryptWithKey", FLAGS_operation.c_str())==0) {
+  } else if(strcmp("DecryptWithKey", FLAGS_operation.c_str())==0) {
     int           size= 0;
     byte*         out= nullptr;
     SymmetricKey* new_key= nullptr;
@@ -1777,7 +1777,7 @@ int main(int an, char** av) {
               strcmp(FLAGS_algorithm.c_str(), "twofish-256")==0) {
       new_key= GetTwofishKey(size, out);
       if(new_key==nullptr) {
-        printf("SymEncrypt/DecryptWithKey: cant get key\n");
+        printf("Encrypt/DecryptWithKey: cant get key\n");
         return 1;
       }
       if(!TwoFishDecrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
@@ -1790,7 +1790,7 @@ int main(int an, char** av) {
     } else if(strcmp(FLAGS_algorithm.c_str(), "simon-128")==0) {
       new_key= GetSimonKey(size, out);
       if(new_key==nullptr) {
-        printf("SymEncrypt/DecryptWithKey: cant get key\n");
+        printf("DecryptWithKey: cant get key\n");
         return 1;
       }
       if(!SimonDecrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
@@ -1827,10 +1827,9 @@ int main(int an, char** av) {
         return 0;
       }
     } else {
-        printf("SymDecrypt With Key: unsupported algorithm %s\n", FLAGS_algorithm.c_str());
-        return 1;
+      printf("Decrypt: Unknown encryption alg\n");
     }
-  } else if(strcmp("SymDecryptWithScheme", FLAGS_operation.c_str())==0) {
+  } else if(strcmp("DecryptWithScheme", FLAGS_operation.c_str())==0) {
     int           size= 0;
     byte*         out= nullptr;
 
@@ -1838,7 +1837,7 @@ int main(int an, char** av) {
       return 1;
     }
     if(out==nullptr) {
-      printf("SymDecryptWithScheme: bad buffer\n");
+      printf("DecryptWithScheme: bad buffer\n");
       return 1;
     }
     if(strcmp(FLAGS_algorithm.c_str(), "aes128-cbc-hmacsha256-sympad")==0) {
@@ -1868,10 +1867,10 @@ int main(int an, char** av) {
         return 0;
       } 
     } else {
-      printf("SymDecryptWithKey: unsupported algorithm\n");
+      printf("DecryptWithKey: unsupported algorithm\n");
       return 1;
     }
-  } else if(strcmp("SymEncryptWithScheme", FLAGS_operation.c_str())==0) {
+  } else if(strcmp("EncryptWithScheme", FLAGS_operation.c_str())==0) {
     int           size= 0;
     byte*         out= nullptr;
 
@@ -2102,7 +2101,7 @@ int main(int an, char** av) {
     byte  iv[64];
 
     if(!keysFromPassPhrase(FLAGS_pass.c_str(), &size, out)) {
-        printf("SymEncryptWithPassword: cant get key from password\n");
+        printf("EncryptWithPassword: cant get key from password\n");
         return 1;
     }
     if(!GetCryptoRand(128, iv)) {
@@ -2112,7 +2111,7 @@ int main(int an, char** av) {
     if(strcmp(FLAGS_algorithm.c_str(), "aes128-cbc-hmacsha256-sympad")==0) {
       AesCbcHmac256Sympad* new_scheme= new AesCbcHmac256Sympad();
       if(new_scheme==nullptr) {
-        printf("SymEncryptWithPassword: cant get scheme\n");
+        printf("EncryptWithPassword: cant get scheme\n");
         return 1;
       }
       if(!new_scheme->MakeScheme("password-key", 128, out, &out[16], iv)) {
@@ -2143,6 +2142,7 @@ int main(int an, char** av) {
         return 0;
       } 
     } else {
+      printf("EncryptWithPassword: unknown scheme\n");
       return 1;
     }
   } else if(strcmp("DecryptWithPassword", FLAGS_operation.c_str())==0) {
@@ -2151,7 +2151,7 @@ int main(int an, char** av) {
     byte  iv[64];
 
     if(!keysFromPassPhrase(FLAGS_pass.c_str(), &size, out)) {
-        printf("SymDecryptWithPassword: cant get key from password\n");
+        printf("DecryptWithPassword: cant get key from password\n");
         return 1;
     }
     if(!GetCryptoRand(128, iv)) {
