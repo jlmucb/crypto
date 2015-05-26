@@ -91,9 +91,9 @@ std::string cryptutil_ops[]= {
     "--input_file=file --output_file=file",
   "--operation=PkcsPubSealWithKey --keyfile=file --algorithm=alg " \
       "--input_file=file --output_file=file",
-  "--operation=EncryptWithPassword --pass=password --algorithm=aes128-ctr-hmacsha256-sympad " \
+  "--operation=EncryptWithPassword --algorithm=aes128-ctr-hmacsha256-sympad " \
     "--pass=password --input_file=file --output_file=file",
-  "--operation=DecryptWithPassword --pass=password --algorithm=aes128-ctr-hmacsha256-sympad " \
+  "--operation=DecryptWithPassword --algorithm=aes128-ctr-hmacsha256-sympad " \
     "--pass=password --input_file=file --output_file=file",
 };
 
