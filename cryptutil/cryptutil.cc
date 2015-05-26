@@ -50,20 +50,19 @@ using std::string;
 
 int num_cryptutil_ops= 10;
 std::string cryptutil_ops[]= {
-  "--operation=ToBase64 --direction=[left-right|right-left] --input_file=file" \
+  "--operation=ToBase64 --direction=[left-right|right-left] --input_file=file " \
     "--output_file=file",
   "--operation=FromBase64 --direction=[left-right|right-left] --input_file=file " \
     "--output_file=file",
-  "--operation=ToHex --direction=[left-right|right-left] --input_file=file" \
+  "--operation=ToHex --direction=[left-right|right-left] --input_file=file " \
     "--output_file=file",
   "--operation=FromHex --direction=[left-right|right-left] --input_file=file " \
     "--output_file=file",
   "--operation=ToDecimal --direction=[left-right|right-left] --input_file=file",
   "--operation=FromDecimal --direction=[left-right|right-left] --input_file=file " \
     "--output_file=file",
-  "--operation=Hash --algorithm=alg --input_file=file --output_file=file",
-  "--operation=Mac --algorithm=alg --key_file=file --input_file=file ",
-  "--operation=VerifyMac --algorithm=alg --keyfile=file --input_file=file ",
+  "--operation=Hash --algorithm=alg --input_file=file",
+  "--operation=Mac --algorithm=alg --key_file=file --input_file=file --output_file=file",
   "--operation=GetRandom --size=num-bits --output_file=file",
   "--operation=GenerateKey --algorithm=alg --key_name=name " \
     "--purpose=pur --owner=own --duration=dur --output_file=file",
@@ -93,6 +92,7 @@ std::string cryptutil_ops[]= {
     "--pass=password --input_file=file --output_file=file",
   "--operation=DecryptWithPassword --algorithm=aes128-ctr-hmacsha256-sympad " \
     "--pass=password --input_file=file --output_file=file",
+  "--operation=VerifyMac --algorithm=alg --keyfile=file --input_file=file --input2_file=file",
 };
 
 const int num_cryptutil_algs= 22;
@@ -139,6 +139,7 @@ DEFINE_string(key_file, "", "Key file name");
 DEFINE_string(scheme_file, "", "Scheme file name");
 DEFINE_string(key_name, "", "Key name");
 DEFINE_string(input_file, "", "Input file name");
+DEFINE_string(input2_file, "", "Second input file name");
 DEFINE_string(output_file, "", "Output file name");
 DEFINE_string(direction, "left-right", "string value direction left-right or right-left");
 DEFINE_string(algorithm, "sha256", "hash algorithm");
@@ -154,17 +155,15 @@ DEFINE_string(protecedkeyfile, "", "protected key file");
 DEFINE_string(unprotecedkeyfile, "", "unprotected key file");
 
 #define BUFSIZE 2048
+#define MAXMACSIZE 512
 
-void macFile(const char* filename, const char* alg, int size, byte* key) {
-  if(filename==nullptr) {
-    printf("macFile: No filename\n");
-    return;
-  }
+bool calculatefileMac(const char* filename, const char* alg, int key_size,
+                      byte* key, int* out_size, byte* out) {
   ReadFile  reader;
 
   if(!reader.Init(filename)) {
     printf("can't open %s\n", filename);
-    return;
+    return false;
   }
   int   n;
   byte  buf[BUFSIZE];
@@ -172,7 +171,13 @@ void macFile(const char* filename, const char* alg, int size, byte* key) {
   if(strcmp("hmac-sha-256", alg)==0) {
     HmacSha256  the_mac;
 
-    the_mac.Init(size, key);
+    if(*out_size<the_mac.MACBYTESIZE) {
+      printf("calculatefileMac: output buffer provided is too small\n");
+      return false;
+    }
+    *out_size= the_mac.MACBYTESIZE;
+
+    the_mac.Init(key_size, key);
     for(;;) {
       n= reader.Read(BUFSIZE, buf);
       the_mac.AddToInnerHash(n, buf);
@@ -180,11 +185,63 @@ void macFile(const char* filename, const char* alg, int size, byte* key) {
         break;
     }
     the_mac.Final();
-    byte  out[the_mac.MACBYTESIZE];
-    the_mac.GetHmac(the_mac.MACBYTESIZE, out);
-    printf("mac: "); PrintBytes(the_mac.MACBYTESIZE, out); printf("\n");
+    the_mac.GetHmac(*out_size, out);
   } else {
-    printf("%s: no such alg\n", alg);
+    printf("calculatefileMac: unsupported algorithm\n");
+    return false;
+  }
+  return true;
+}
+
+void macFile(const char* filename, const char* alg, int key_size, byte* key,
+	     const char* out_filename) {
+  if(filename==nullptr) {
+    printf("macFile: No filename\n");
+    return;
+  }
+  byte out[MAXMACSIZE];
+  int out_size= MAXMACSIZE;
+  if(!calculatefileMac(filename, alg, key_size, key, &out_size, out)) {
+    printf("Can't calculate mac\n");
+    return;
+  }
+  printf("mac: "); PrintBytes(out_size, out); printf("\n");
+  if(out_filename!=nullptr) {
+    WriteaFile(out_filename, out_size, out);
+  }
+}
+
+void verifymacFile(const char* filename, const char* alg, int key_size, byte* key,
+		   const char* mac_filename) {
+  if(mac_filename==nullptr) {
+    printf("macFile: No mac filename\n");
+    return;
+  }
+  byte* input_mac= nullptr;
+  int input_mac_size= MAXMACSIZE;
+  if(!ReadaFile(mac_filename, &input_mac_size, &input_mac)) {
+    printf("Can't open input mac file %s\n", mac_filename);
+    return;
+  }
+
+  if(filename==nullptr) {
+    printf("macFile: No filename\n");
+    return;
+  }
+
+  byte out[MAXMACSIZE];
+  int out_size= MAXMACSIZE;
+
+  if(!calculatefileMac(filename, alg, key_size, key, &out_size, out)) {
+    printf("verifymacFile: Can't calculate mac\n");
+    return;
+  }
+  printf("input    mac: "); PrintBytes(input_mac_size, input_mac); printf("\n");
+  printf("computed mac: "); PrintBytes(out_size, out); printf("\n");
+  if(input_mac_size== out_size && memcmp(input_mac, out, input_mac_size)==0) {
+    printf("Mac VERIFIES\n");
+  } else {
+    printf("Mac DOES NOT verify\n");
   }
 }
 
@@ -1256,7 +1313,7 @@ bool CbcEncrypt(AesCbcHmac256Sympad* scheme,
 
   if(!encrypt_obj.InitEnc(Aes::BLOCKBYTESIZE, scheme->aesni_obj_.key_, Aes::BLOCKBYTESIZE, 
                           scheme->hmac_.key_, Aes::BLOCKBYTESIZE, scheme->iv_, true)) {
-    printf("CbcEncrypt: Cant initialize AesCbcHmac256Sympad encrypt object\n");
+    printf("CbcEncrypt: Can't initialize AesCbcHmac256Sympad encrypt object\n");
     return false;
   }
   int  encrypt_min_final= encrypt_obj.MinimumFinalEncryptIn();
@@ -1322,7 +1379,7 @@ bool CbcDecrypt(AesCbcHmac256Sympad* scheme,
 
   if(!decrypt_obj.InitDec(Aes::BLOCKBYTESIZE, scheme->aesni_obj_.key_, Aes::BLOCKBYTESIZE,
                           scheme->hmac_.key_, true)) {
-    printf("Cant initialize AesCbcHmac256Sympad decrypt object\n");
+    printf("Can't initialize AesCbcHmac256Sympad decrypt object\n");
     return false;
   }
   int  decrypt_min_final= decrypt_obj.MinimumFinalDecryptIn();
@@ -1520,7 +1577,7 @@ int main(int an, char** av) {
     int   size= 0;
     byte* out= nullptr;
     if(!ReadaFile(FLAGS_input_file.c_str(), &size, &out)) {
-      printf("Cant open %s\n", FLAGS_input_file.c_str());
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
       return 1;
     }
     if(out==nullptr) {
@@ -1545,7 +1602,7 @@ int main(int an, char** av) {
     byte* out= nullptr;
 
     if(!ReadaFile(FLAGS_input_file.c_str(), &size, &out)) {
-      printf("Cant open %s\n", FLAGS_input_file.c_str());
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
       return 1;
     }
     if(out==nullptr) {
@@ -1565,7 +1622,7 @@ int main(int an, char** av) {
     byte* out= nullptr;
 
     if(!ReadaFile(FLAGS_input_file.c_str(), &size, &out)) {
-      printf("Cant open %s\n", FLAGS_input_file.c_str());
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
       return 1;
     }
     if(out==nullptr) {
@@ -1586,7 +1643,7 @@ int main(int an, char** av) {
     byte* out= nullptr;
 
     if(!ReadaFile(FLAGS_input_file.c_str(), &size, &out)) {
-      printf("Cant open %s\n", FLAGS_input_file.c_str());
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
       return 1;
     }
     if(out==nullptr) {
@@ -1603,7 +1660,7 @@ int main(int an, char** av) {
     byte* out= nullptr;
 
     if(!ReadaFile(FLAGS_input_file.c_str(), &size, &out)) {
-      printf("Cant open %s\n", FLAGS_input_file.c_str());
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
       return 1;
     }
     if(out==nullptr) {
@@ -1621,7 +1678,7 @@ int main(int an, char** av) {
     byte* out= nullptr;
 
     if(!ReadaFile(FLAGS_input_file.c_str(), &size, &out)) {
-      printf("Cant open %s\n", FLAGS_input_file.c_str());
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
       return 1;
     }
     if(out==nullptr) {
@@ -1630,7 +1687,7 @@ int main(int an, char** av) {
     }
     const char* str= extractString(size, out);
     if(str==nullptr) {
-      printf("Cant extract string\n");
+      printf("Can't extract string\n");
       return 1;
     }
     int   n= strlen(str);
@@ -1656,10 +1713,23 @@ int main(int an, char** av) {
     byte* key= nullptr;
     int   size= 0;
     if(!ReadaFile(FLAGS_key_file.c_str(), &size, &key)) {
-      printf("Cant open %s\n", FLAGS_key_file.c_str());
+      printf("Can't open %s\n", FLAGS_key_file.c_str());
       return 1;
     }
-    macFile(FLAGS_input_file.c_str(), FLAGS_algorithm.c_str(), size, key);
+    macFile(FLAGS_input_file.c_str(), FLAGS_algorithm.c_str(),
+            size, key, FLAGS_output_file.c_str());
+    if(key!=nullptr)
+      delete key;
+  } else if(strcmp("VerifyMac", FLAGS_operation.c_str())==0) {
+
+    byte* key= nullptr;
+    int   size= 0;
+    if(!ReadaFile(FLAGS_key_file.c_str(), &size, &key)) {
+      printf("Can't open %s\n", FLAGS_key_file.c_str());
+      return 1;
+    }
+    verifymacFile(FLAGS_input_file.c_str(), FLAGS_algorithm.c_str(),
+            size, key, FLAGS_input2_file.c_str());
     if(key!=nullptr)
       delete key;
   } else if(strcmp("EncryptWithKey", FLAGS_operation.c_str())==0) {
@@ -1677,7 +1747,7 @@ int main(int an, char** av) {
     if(strcmp(FLAGS_algorithm.c_str(), "aes-128")==0) {
       new_key= GetAesKey(size, out);
       if(new_key==nullptr) {
-        printf("SymEncrypt: cant get key\n");
+        printf("SymEncrypt: can't get key\n");
         return 1;
       }
       if(!AesEncrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
@@ -1692,7 +1762,7 @@ int main(int an, char** av) {
               strcmp(FLAGS_algorithm.c_str(), "twofish-256")==0) {
       new_key= GetTwofishKey(size, out);
       if(new_key==nullptr) {
-        printf("SymEncrypt/DecryptWithKey: cant get key\n");
+        printf("SymEncrypt/DecryptWithKey: can't get key\n");
         return 1;
       }
       if(!TwoFishEncrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
@@ -1706,7 +1776,7 @@ int main(int an, char** av) {
     } else if(strcmp(FLAGS_algorithm.c_str(), "rc4-128")==0) {
       new_key= GetRc4Key(size, out);
       if(new_key==nullptr) {
-        printf("SymEncrypt/DecryptWithKey: cant get key\n");
+        printf("SymEncrypt/DecryptWithKey: can't get key\n");
         return 1;
       }
       if(!Rc4Encrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
@@ -1719,7 +1789,7 @@ int main(int an, char** av) {
     } else if(strcmp(FLAGS_algorithm.c_str(), "simon-128")==0) {
       new_key= GetSimonKey(size, out);
       if(new_key==nullptr) {
-        printf("SymEncrypt/DecryptWithKey: cant get key\n");
+        printf("SymEncrypt/DecryptWithKey: can't get key\n");
         return 1;
       }
       if(!SimonEncrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
@@ -1732,7 +1802,7 @@ int main(int an, char** av) {
     } else if(strcmp(FLAGS_algorithm.c_str(), "tea-64")==0) {
       new_key= GetTeaKey(size, out);
       if(new_key==nullptr) {
-        printf("SymEncrypt/DecryptWithKey: cant get key\n");
+        printf("SymEncrypt/DecryptWithKey: can't get key\n");
         return 1;
       }
       if(!TeaEncrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
@@ -1761,7 +1831,7 @@ int main(int an, char** av) {
     if(strcmp(FLAGS_algorithm.c_str(), "aes-128")==0) {
       new_key= GetAesKey(size, out);
       if(new_key==nullptr) {
-        printf("SymEncrypt/DecryptWithKey: cant get key\n");
+        printf("SymEncrypt/DecryptWithKey: can't get key\n");
         return 1;
       }
       if(!AesDecrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
@@ -1775,7 +1845,7 @@ int main(int an, char** av) {
               strcmp(FLAGS_algorithm.c_str(), "twofish-256")==0) {
       new_key= GetTwofishKey(size, out);
       if(new_key==nullptr) {
-        printf("Encrypt/DecryptWithKey: cant get key\n");
+        printf("Encrypt/DecryptWithKey: can't get key\n");
         return 1;
       }
       if(!TwoFishDecrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
@@ -1788,7 +1858,7 @@ int main(int an, char** av) {
     } else if(strcmp(FLAGS_algorithm.c_str(), "simon-128")==0) {
       new_key= GetSimonKey(size, out);
       if(new_key==nullptr) {
-        printf("DecryptWithKey: cant get key\n");
+        printf("DecryptWithKey: can't get key\n");
         return 1;
       }
       if(!SimonDecrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
@@ -1801,7 +1871,7 @@ int main(int an, char** av) {
     } else if(strcmp(FLAGS_algorithm.c_str(), "rc4-128")==0) {
       new_key= GetRc4Key(size, out);
       if(new_key==nullptr) {
-        printf("SymEncrypt/DecryptWithKey: cant get key\n");
+        printf("SymEncrypt/DecryptWithKey: can't get key\n");
         return 1;
       }
       if(!Rc4Decrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
@@ -1814,7 +1884,7 @@ int main(int an, char** av) {
     } else if(strcmp(FLAGS_algorithm.c_str(), "tea-64")==0) {
       new_key= GetTeaKey(size, out);
       if(new_key==nullptr) {
-        printf("SymEncrypt/DecryptWithKey: cant get key\n");
+        printf("SymEncrypt/DecryptWithKey: can't get key\n");
         return 1;
       }
       if(!TeaDecrypt(new_key, FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
@@ -1841,7 +1911,7 @@ int main(int an, char** av) {
     if(strcmp(FLAGS_algorithm.c_str(), "aes128-cbc-hmacsha256-sympad")==0) {
       AesCbcHmac256Sympad* new_scheme= GetAesCbcHmac256SymPad(size, out);
       if(new_scheme==nullptr) {
-        printf("SymDecryptWithScheme: cant get scheme\n");
+        printf("SymDecryptWithScheme: can't get scheme\n");
         return 1;
       }
       if(!CbcDecrypt(new_scheme, FLAGS_input_file.c_str(), FLAGS_output_file.c_str(), true)) {
@@ -1854,7 +1924,7 @@ int main(int an, char** av) {
     } else if(strcmp(FLAGS_algorithm.c_str(), "aes128-ctr-hmacsha256-sympad")==0) {
       AesCtrHmac256Sympad* new_scheme= GetAesCtrHmac256SymPad(size, out);
       if(new_scheme==nullptr) {
-        printf("SymDecryptWithScheme: cant get scheme\n");
+        printf("SymDecryptWithScheme: can't get scheme\n");
         return 1;
       }
       if(!CtrDecrypt(new_scheme, FLAGS_input_file.c_str(), FLAGS_output_file.c_str(), true)) {
@@ -1882,7 +1952,7 @@ int main(int an, char** av) {
     if(strcmp(FLAGS_algorithm.c_str(), "aes128-cbc-hmacsha256-sympad")==0) {
       AesCbcHmac256Sympad* new_scheme= GetAesCbcHmac256SymPad(size, out);
       if(new_scheme==nullptr) {
-        printf("SymEncryptWithScheme: cant get scheme\n");
+        printf("SymEncryptWithScheme: can't get scheme\n");
         return 1;
       }
       if(!CbcEncrypt(new_scheme, FLAGS_input_file.c_str(), FLAGS_output_file.c_str(), true)) {
@@ -1895,7 +1965,7 @@ int main(int an, char** av) {
     } else if(strcmp(FLAGS_algorithm.c_str(), "aes128-ctr-hmacsha256-sympad")==0) {
       AesCtrHmac256Sympad* new_scheme= GetAesCtrHmac256SymPad(size, out);
       if(new_scheme==nullptr) {
-        printf("SymEncrypt/Decrypt With Scheme: cant get scheme\n");
+        printf("SymEncrypt/Decrypt With Scheme: can't get scheme\n");
         return 1;
       }
       if(!CtrEncrypt(new_scheme, FLAGS_input_file.c_str(), FLAGS_output_file.c_str(), true)) {
@@ -2099,21 +2169,21 @@ int main(int an, char** av) {
     byte  iv[64];
 
     if(!keysFromPassPhrase(FLAGS_pass.c_str(), &size, out)) {
-        printf("EncryptWithPassword: cant get key from password\n");
+        printf("EncryptWithPassword: can't get key from password\n");
         return 1;
     }
     if(!GetCryptoRand(128, iv)) {
-      printf("EncryptWithPassword: cant get iv\n");
+      printf("EncryptWithPassword: can't get iv\n");
       return 1;
     }
     if(strcmp(FLAGS_algorithm.c_str(), "aes128-cbc-hmacsha256-sympad")==0) {
       AesCbcHmac256Sympad* new_scheme= new AesCbcHmac256Sympad();
       if(new_scheme==nullptr) {
-        printf("EncryptWithPassword: cant get scheme\n");
+        printf("EncryptWithPassword: can't get scheme\n");
         return 1;
       }
       if(!new_scheme->MakeScheme("password-key", 128, out, &out[16], iv)) {
-        printf("EncryptWithPassword: cant make scheme\n");
+        printf("EncryptWithPassword: can't make scheme\n");
         return 1;
       }
       if(!CbcEncrypt(new_scheme, FLAGS_input_file.c_str(), FLAGS_output_file.c_str(), true)) {
@@ -2126,11 +2196,11 @@ int main(int an, char** av) {
     } else if(strcmp(FLAGS_algorithm.c_str(), "aes128-ctr-hmacsha256-sympad")==0) {
       AesCtrHmac256Sympad* new_scheme= new AesCtrHmac256Sympad();
       if(new_scheme==nullptr) {
-        printf("EncryptWithPassword: cant get scheme\n");
+        printf("EncryptWithPassword: can't get scheme\n");
         return 1;
       }
       if(!new_scheme->MakeScheme("password-key", 128, out, &out[16], iv, &iv[4])) {
-        printf("EncryptWithPassword: cant make scheme\n");
+        printf("EncryptWithPassword: can't make scheme\n");
         return 1;
       }
       if(!CtrEncrypt(new_scheme, FLAGS_input_file.c_str(), FLAGS_output_file.c_str(), true)) {
@@ -2149,21 +2219,21 @@ int main(int an, char** av) {
     byte  iv[64];
 
     if(!keysFromPassPhrase(FLAGS_pass.c_str(), &size, out)) {
-        printf("DecryptWithPassword: cant get key from password\n");
+        printf("DecryptWithPassword: can't get key from password\n");
         return 1;
     }
     if(!GetCryptoRand(128, iv)) {
-      printf("DecryptWithPassword: cant get iv\n");
+      printf("DecryptWithPassword: can't get iv\n");
       return 1;
     }
     if(strcmp(FLAGS_algorithm.c_str(), "aes128-cbc-hmacsha256-sympad")==0) {
       AesCbcHmac256Sympad* new_scheme= new AesCbcHmac256Sympad();
       if(new_scheme==nullptr) {
-        printf("SymEncryptWithPassword: cant get scheme\n");
+        printf("SymEncryptWithPassword: can't get scheme\n");
         return 1;
       }
       if(!new_scheme->MakeScheme("password-key", 128, out, &out[16], iv)) {
-        printf("DecryptWithPassword: cant make scheme\n");
+        printf("DecryptWithPassword: can't make scheme\n");
         return 1;
       }
       if(!CbcDecrypt(new_scheme, FLAGS_input_file.c_str(), FLAGS_output_file.c_str(), true)) {
@@ -2176,11 +2246,11 @@ int main(int an, char** av) {
     } else if(strcmp(FLAGS_algorithm.c_str(), "aes128-ctr-hmacsha256-sympad")==0) {
       AesCtrHmac256Sympad* new_scheme= new AesCtrHmac256Sympad();
       if(new_scheme==nullptr) {
-        printf("DecryptWithPassword: cant get scheme\n");
+        printf("DecryptWithPassword: can't get scheme\n");
         return 1;
       }
       if(!new_scheme->MakeScheme("password-key", 128, out, &out[16], iv, &iv[4])) {
-        printf("EncryptWithPassword: cant make scheme\n");
+        printf("EncryptWithPassword: can't make scheme\n");
         return 1;
       }
       if(!CtrDecrypt(new_scheme, FLAGS_input_file.c_str(), FLAGS_output_file.c_str(), true)) {
@@ -2201,7 +2271,7 @@ int main(int an, char** av) {
     }
     RsaKey* key= GetRsaKey(size, out);
     if(key==nullptr) {
-      printf("Cant new rsa-key\n");
+      printf("Can't new rsa-key\n");
       return 1;
     }
     int   size_hash= 64;
@@ -2246,7 +2316,7 @@ int main(int an, char** av) {
     }
     RsaKey* key= GetRsaKey(size, out);
     if(key==nullptr) {
-      printf("Cant new rsa-key\n");
+      printf("Can't new rsa-key\n");
       return 1;
     }
 
@@ -2258,7 +2328,7 @@ int main(int an, char** av) {
        strcmp("rsa-1024-sha-256-pkcs", FLAGS_algorithm.c_str())==0) {
       hashFile(FLAGS_hash_file.c_str(), "sha-256", &size_hash, hash);
       if(!ReadaFile(FLAGS_sig_file.c_str(), &size_input, &input)) {
-        printf("Cant read %s\n", FLAGS_sig_file.c_str());
+        printf("Can't read %s\n", FLAGS_sig_file.c_str());
         return 1;
       }
       Signature         sig_obj;
@@ -2266,11 +2336,11 @@ int main(int an, char** av) {
       string            data(reinterpret_cast<char const*>(input), size_input);
 
       if(!sig.ParseFromString(data)) {
-        printf("Cant parse from string\n");
+        printf("Can't parse from string\n");
         return 1;
       }
       if(!sig_obj.Deserialize(sig)) {
-        printf("Cant deserialize from string\n");
+        printf("Can't deserialize from string\n");
         return 1;
       }
       sig_obj.PrintSignature();
@@ -2293,7 +2363,7 @@ int main(int an, char** av) {
        strcmp(FLAGS_algorithm.c_str(), "rsa-2048")==0) {
       RsaKey* key= GetRsaKey(size, out);
       if(key==nullptr) {
-        printf("Cant new rsa-key\n");
+        printf("Can't new rsa-key\n");
         return 1;
       }
       int   size_input= 0;
@@ -2304,15 +2374,15 @@ int main(int an, char** av) {
       int   size_key= key->bit_size_modulus_/NBITSINBYTE;
 
       if(!ReadaFile(FLAGS_input_file.c_str(), &size_input, &input)) {
-        printf("PkcsPubSealWithKey cant read %s\n", FLAGS_input_file.c_str()); 
+        printf("PkcsPubSealWithKey can't read %s\n", FLAGS_input_file.c_str()); 
         return 1;
       }
       if(!PkcsEmbed(size_input, input, size_key, buffer)) {
-        printf("cant pkcs embed\n");
+        printf("can't pkcs embed\n");
         return 1;
       }
       if(!key->Decrypt(size_key, buffer, &size_output, output) ) {
-        printf("cant RsaDecrypt\n");
+        printf("can't RsaDecrypt\n");
         return 1;
       }
       if(!WriteaFile(FLAGS_output_file.c_str(), size_output, output)) {
@@ -2328,21 +2398,21 @@ int main(int an, char** av) {
     byte* out= nullptr;
 
     if(!ReadaFile(FLAGS_key_file.c_str(), &size, &out)) {
-      printf("PkcsPubUnsealWithKey cant read %s\n", FLAGS_key_file.c_str()); 
+      printf("PkcsPubUnsealWithKey can't read %s\n", FLAGS_key_file.c_str()); 
       return 1;
     }
     if(strcmp(FLAGS_algorithm.c_str(), "rsa-1024")==0 ||
        strcmp(FLAGS_algorithm.c_str(), "rsa-2048")==0) {
       RsaKey* key= GetRsaKey(size, out);
       if(key==nullptr) {
-        printf("Cant new rsa-key\n");
+        printf("Can't new rsa-key\n");
         return 1;
       }
 
     int   input_size= 0;
     byte* input= nullptr;
     if(!ReadaFile(FLAGS_input_file.c_str(), &input_size, &input)) {
-      printf("PkcsPubUnsealWithKey cant read %s\n", FLAGS_input_file.c_str()); 
+      printf("PkcsPubUnsealWithKey can't read %s\n", FLAGS_input_file.c_str()); 
       return 1;
     }
       int   size_output= 512;
@@ -2350,11 +2420,11 @@ int main(int an, char** av) {
       byte  output[512];
       int   size_key= key->bit_size_modulus_/NBITSINBYTE;
       if(!key->Encrypt(size_key, input, &size_output, buffer) ) {
-        printf("cant RsaEncrypt\n");
+        printf("Can't RsaEncrypt\n");
         return 1;
       }
       if(!PkcsExtract(size_key, buffer, &size_output, output)) {
-        printf("cant pkcs extract\n");
+        printf("can't pkcs extract\n");
         return 1;
       }
       if(!WriteaFile(FLAGS_output_file.c_str(), size_output, output)) {
