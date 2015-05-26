@@ -50,7 +50,7 @@ using std::string;
 
 int num_cryptutil_ops= 10;
 std::string cryptutil_ops[]= {
-  "--operation=ToBase64 --direction=[left-right|right-left] --input_file=file", \
+  "--operation=ToBase64 --direction=[left-right|right-left] --input_file=file" \
     "--output_file=file",
   "--operation=FromBase64 --direction=[left-right|right-left] --input_file=file " \
     "--output_file=file",
@@ -62,10 +62,8 @@ std::string cryptutil_ops[]= {
   "--operation=FromDecimal --direction=[left-right|right-left] --input_file=file " \
     "--output_file=file",
   "--operation=Hash --algorithm=alg --input_file=file --output_file=file",
-  "--operation=Mac --algorithm=alg --key_file=file --input_file=file " \
-    "--output_file=file",
-  "--operation=VerifyMac --algorithm=alg --keyfile=file --input_file=file " \
-    "--output_file=file",
+  "--operation=Mac --algorithm=alg --key_file=file --input_file=file ",
+  "--operation=VerifyMac --algorithm=alg --keyfile=file --input_file=file ",
   "--operation=GetRandom --size=num-bits --output_file=file",
   "--operation=GenerateKey --algorithm=alg --key_name=name " \
     "--purpose=pur --owner=own --duration=dur --output_file=file",
@@ -124,13 +122,13 @@ std::string cryptalgs[]= {
 };
 
 void print_options() {
-  printf("Permitted operations\n");
+  printf("Permitted operations:\n");
   for (int i=0; i<num_cryptutil_ops; i++) {
-    printf("cryptutil.exe %s\n", cryptutil_ops[i].c_str());
+    printf("  cryptutil.exe %s\n", cryptutil_ops[i].c_str());
   }
-  printf("\nAlgs\n");
+  printf("\nAlgs:\n");
   for (int i=0; i<num_cryptutil_algs; i++) {
-    printf("\t%s\n", cryptalgs[i].c_str());
+    printf("  %s\n", cryptalgs[i].c_str());
   }
   return;
 }
@@ -1508,7 +1506,7 @@ int main(int an, char** av) {
   num_cryptutil_ops=  sizeof(cryptutil_ops)/sizeof(std::string);
 
   if(FLAGS_operation=="") {
-    std::cout<<"No operation specified\n";
+    std::cout<<"No operation specified.\n\n";
     print_options();
     return 1;
   }
@@ -1661,7 +1659,7 @@ int main(int an, char** av) {
       printf("Cant open %s\n", FLAGS_key_file.c_str());
       return 1;
     }
-    macFile(FLAGS_input_file.c_str(), FLAGS_input_file.c_str(), size, key);
+    macFile(FLAGS_input_file.c_str(), FLAGS_algorithm.c_str(), size, key);
     if(key!=nullptr)
       delete key;
   } else if(strcmp("EncryptWithKey", FLAGS_operation.c_str())==0) {
