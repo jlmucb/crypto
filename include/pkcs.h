@@ -29,4 +29,3 @@ bool PkcsVerify(const char* hash_alg, byte* hash, int in_size, byte* in);
 bool PkcsEmbed(int in_size, byte* in, int out_size, byte* out);
 bool PkcsExtract(int in_size, byte* in, int* out_size, byte* out);
 #endif
-

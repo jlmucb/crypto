@@ -27,27 +27,22 @@
 using namespace std;
 
 class SymmetricCipher {
-public:
-  enum {
-    NONE= 0,
-    ENCRYPT= 1,
-    DECRYPT= 2,
-    BOTH= 3
-  };
-  int           direction_;
-  bool          initialized_;
+ public:
+  enum { NONE = 0, ENCRYPT = 1, DECRYPT = 2, BOTH = 3 };
+  int direction_;
+  bool initialized_;
 
-  string*       cipher_name_;
-  int           num_key_bits_;
-  byte*         key_;
+  string* cipher_name_;
+  int num_key_bits_;
+  byte* key_;
 
   SymmetricCipher();
   virtual ~SymmetricCipher();
 
   // direction: encrypt= 0, decrypt=
-  virtual bool Init(int key_bit_size, byte* key_buf, int directionflag)= 0;
-  virtual void Encrypt(int byte_size, byte* in, byte* out)= 0;
-  virtual void Decrypt(int byte_size, byte* in, byte* out)= 0;
+  virtual bool Init(int key_bit_size, byte* key_buf, int directionflag) = 0;
+  virtual void Encrypt(int byte_size, byte* in, byte* out) = 0;
+  virtual void Decrypt(int byte_size, byte* in, byte* out) = 0;
 
   bool SerializeSymmetricCipherToMessage(crypto_symmetric_key_message&);
   bool DeserializeSymmetricCipherFromMessage(crypto_symmetric_key_message&);
@@ -55,4 +50,3 @@ public:
 };
 
 #endif
-

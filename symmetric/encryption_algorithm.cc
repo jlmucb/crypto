@@ -31,23 +31,23 @@
 using namespace std;
 
 EncryptionAlgorithm::EncryptionAlgorithm() {
-  alg_name_= nullptr;
-  message_id_= nullptr;
-  input_bytes_processed_= 0;
-  output_bytes_produced_= 0;
-  initialized_= false;
+  alg_name_ = nullptr;
+  message_id_ = nullptr;
+  input_bytes_processed_ = 0;
+  output_bytes_produced_ = 0;
+  initialized_ = false;
 }
 
 EncryptionAlgorithm::~EncryptionAlgorithm() {
-  if(alg_name_!= nullptr) {
+  if (alg_name_ != nullptr) {
     delete alg_name_;
-    alg_name_= nullptr;
+    alg_name_ = nullptr;
   }
-  if(message_id_!= nullptr) {
+  if (message_id_ != nullptr) {
     delete message_id_;
-    message_id_= nullptr;
+    message_id_ = nullptr;
   }
-  initialized_= false;
+  initialized_ = false;
 }
 
 bool EncryptionAlgorithm::ReadEncryptionAlgorithm(string& filename) {
@@ -58,8 +58,9 @@ bool EncryptionAlgorithm::ReadEncryptionAlgorithm(string& filename) {
     LOG(ERROR) << "ReadEncryptionAlgorithm cant read message file\n";
     return false;
   }
-  if(!DeserializeEncryptionAlgorithmFromMessage(message)) {
-    LOG(ERROR) << "ReadEncryptionAlgorithm cant DeserializeEncryptionAlgorithmFromBuffer\n";
+  if (!DeserializeEncryptionAlgorithmFromMessage(message)) {
+    LOG(ERROR) << "ReadEncryptionAlgorithm cant "
+                  "DeserializeEncryptionAlgorithmFromBuffer\n";
     return false;
   }
   return true;
@@ -68,7 +69,7 @@ bool EncryptionAlgorithm::ReadEncryptionAlgorithm(string& filename) {
 bool EncryptionAlgorithm::SaveEncryptionAlgorithm(string& filename) {
   crypto_encryption_algorithm_message message;
 
-  if(!SerializeEncryptionAlgorithmToMessage(message)) {
+  if (!SerializeEncryptionAlgorithmToMessage(message)) {
     LOG(ERROR) << "SaveEncryptionAlgorithm: "
                << "cant DeserializeEncryptionAlgorithmFromMessage\n";
     return false;
@@ -84,33 +85,34 @@ bool EncryptionAlgorithm::SaveEncryptionAlgorithm(string& filename) {
 }
 
 bool EncryptionAlgorithm::SerializeEncryptionAlgorithmToMessage(
-                crypto_encryption_algorithm_message& message) {
-  crypto_symmetric_key_message* key_message= new crypto_symmetric_key_message();
+    crypto_encryption_algorithm_message& message) {
+  crypto_symmetric_key_message* key_message =
+      new crypto_symmetric_key_message();
 
   message.set_allocated_key_msg(key_message);
-  SymmetricCipher* sc= nullptr;
-  if(((AesCbcHmac256Sympad*)this)->use_aesni_) {
-    sc= (SymmetricCipher*)&((((AesCbcHmac256Sympad*)this)->aesni_obj_));
+  SymmetricCipher* sc = nullptr;
+  if (((AesCbcHmac256Sympad*)this)->use_aesni_) {
+    sc = (SymmetricCipher*)&((((AesCbcHmac256Sympad*)this)->aesni_obj_));
   } else {
-    sc= (SymmetricCipher*)&((((AesCbcHmac256Sympad*)this)->aes_obj_));
+    sc = (SymmetricCipher*)&((((AesCbcHmac256Sympad*)this)->aes_obj_));
   }
-  if(!sc->SerializeSymmetricCipherToMessage(*key_message)) {
+  if (!sc->SerializeSymmetricCipherToMessage(*key_message)) {
     LOG(ERROR) << "SerializeEncryptionAlgorithmToMessage "
                << "can't SerializeKeyToMessage\n";
     return false;
   }
-  if(alg_name_==nullptr) {
+  if (alg_name_ == nullptr) {
     LOG(ERROR) << "no algorithm name\n";
     return false;
   }
-  if(!initialized_) {
+  if (!initialized_) {
     LOG(ERROR) << "encryption_algorithm not initialized\n";
     return false;
   }
-  if(strcmp(alg_name_->c_str(), "aes128-cbc-hmacsha256-sympad")==0) {
+  if (strcmp(alg_name_->c_str(), "aes128-cbc-hmacsha256-sympad") == 0) {
     message.set_encryption_algorithm_name("aes128-cbc-hmacsha256-sympad");
     message.set_encryption_algorithm_mode("cbc");
-  } else if(strcmp(alg_name_->c_str(), "aes128-ctr-hmacsha256-sympad")==0) {
+  } else if (strcmp(alg_name_->c_str(), "aes128-ctr-hmacsha256-sympad") == 0) {
     message.set_encryption_algorithm_name("aes128-ctr-hmacsha256-sympad");
     message.set_encryption_algorithm_mode("ctr");
   } else {
@@ -119,82 +121,86 @@ bool EncryptionAlgorithm::SerializeEncryptionAlgorithmToMessage(
     return false;
   }
   message.set_encryption_algorithm_pad("sympad");
-  if(message_id_!=nullptr) {
+  if (message_id_ != nullptr) {
     message.set_message_id(message_id_->c_str());
   }
-  string* s= ByteToBase64LeftToRight(HmacSha256::BLOCKBYTESIZE,
-              ((AesCbcHmac256Sympad*)this)->hmac_.key_);
-  if(s==nullptr) {
+  string* s = ByteToBase64LeftToRight(HmacSha256::BLOCKBYTESIZE,
+                                      ((AesCbcHmac256Sympad*)this)->hmac_.key_);
+  if (s == nullptr) {
     LOG(ERROR) << "EncryptionAlgorithm::SerializeEncryptionAlgorithmToMessage"
                << "  can't ByteToBase64LeftToRight\n";
     return false;
   }
   message.set_encryption_algorithm_hmac_key(s->c_str());
   delete s;
-  string* t= ByteToBase64LeftToRight(Aes::BLOCKBYTESIZE,
-                ((AesCbcHmac256Sympad*)this)->iv_);
-  if(t==nullptr) {
+  string* t = ByteToBase64LeftToRight(Aes::BLOCKBYTESIZE,
+                                      ((AesCbcHmac256Sympad*)this)->iv_);
+  if (t == nullptr) {
     LOG(ERROR) << "EncryptionAlgorithm::SerializeEncryptionAlgorithmToMessage"
                << " can't ByteToBase64LeftToRight\n";
     return false;
   }
   message.set_encryption_algorithm_iv(t->c_str());
   delete t;
-  initialized_= true;
+  initialized_ = true;
   return true;
 }
 
 bool EncryptionAlgorithm::DeserializeEncryptionAlgorithmFromMessage(
-                            crypto_encryption_algorithm_message& message) {
+    crypto_encryption_algorithm_message& message) {
   int n;
 
-  if(!message.has_encryption_algorithm_name()) {
+  if (!message.has_encryption_algorithm_name()) {
     LOG(ERROR) << "DeserializeEncryptionAlgorithmFromMessage no alg name\n";
     return false;
   }
-  if(strcmp(message.encryption_algorithm_name().c_str(),
-            "aes128-cbc-hmacsha256-sympad")==0) {
-    alg_name_= new string("aes128-cbc-hmacsha256-sympad");
-  } else if(strcmp(message.encryption_algorithm_name().c_str(),
-            "aes128-ctr-hmacsha256-sympad")==0) {
-    alg_name_= new string("aes128-ctr-hmacsha256-sympad");
+  if (strcmp(message.encryption_algorithm_name().c_str(),
+             "aes128-cbc-hmacsha256-sympad") == 0) {
+    alg_name_ = new string("aes128-cbc-hmacsha256-sympad");
+  } else if (strcmp(message.encryption_algorithm_name().c_str(),
+                    "aes128-ctr-hmacsha256-sympad") == 0) {
+    alg_name_ = new string("aes128-ctr-hmacsha256-sympad");
   } else {
-    LOG(ERROR) << "DeserializeEncryptionAlgorithmFromMessage incorrect alg name\n";
+    LOG(ERROR)
+        << "DeserializeEncryptionAlgorithmFromMessage incorrect alg name\n";
     return false;
   }
-  ((AesCbcHmac256Sympad*)this)->use_aesni_= true;
-  if(message.has_message_id()) {
-    message_id_= new string(message.message_id().c_str());
+  ((AesCbcHmac256Sympad*)this)->use_aesni_ = true;
+  if (message.has_message_id()) {
+    message_id_ = new string(message.message_id().c_str());
   } else {
-    message_id_= nullptr;
+    message_id_ = nullptr;
   }
-  if(!message.has_encryption_algorithm_hmac_key()) {
-    LOG(ERROR) << "EncryptionAlgorithm::DeserializeEncryptionAlgorithmFromMessage"
-               << "  no mac key\n";
+  if (!message.has_encryption_algorithm_hmac_key()) {
+    LOG(ERROR)
+        << "EncryptionAlgorithm::DeserializeEncryptionAlgorithmFromMessage"
+        << "  no mac key\n";
     return false;
   }
-  n= Base64ToByteLeftToRight((char*)message.encryption_algorithm_hmac_key().c_str(), 
-                     HmacSha256::BLOCKBYTESIZE, ((AesCbcHmac256Sympad*)this)->hmac_.key_);
+  n = Base64ToByteLeftToRight(
+      (char*)message.encryption_algorithm_hmac_key().c_str(),
+      HmacSha256::BLOCKBYTESIZE, ((AesCbcHmac256Sympad*)this)->hmac_.key_);
 
-  if(!message.has_encryption_algorithm_iv()) {
+  if (!message.has_encryption_algorithm_iv()) {
     LOG(ERROR) << "DeserializeEncryptionAlgorithmFromMessage no iv\n";
     return false;
   }
-  n= Base64ToByteLeftToRight((char*)message.encryption_algorithm_iv().c_str(), 
-                     Aes::BLOCKBYTESIZE, ((AesCbcHmac256Sympad*)this)->iv_);
-  if(n<0) {
+  n = Base64ToByteLeftToRight((char*)message.encryption_algorithm_iv().c_str(),
+                              Aes::BLOCKBYTESIZE,
+                              ((AesCbcHmac256Sympad*)this)->iv_);
+  if (n < 0) {
     LOG(ERROR) << "DeserializeEncryptionAlgorithmFromMessage"
                << " iv base64 failed\n";
     return false;
   }
-  crypto_symmetric_key_message* key_message= message.mutable_key_msg();
-  SymmetricCipher* sc= (SymmetricCipher*)&((((AesCbcHmac256Sympad*)this)->aesni_obj_));
-  if(!sc->DeserializeSymmetricCipherFromMessage(*key_message)) {
+  crypto_symmetric_key_message* key_message = message.mutable_key_msg();
+  SymmetricCipher* sc =
+      (SymmetricCipher*)&((((AesCbcHmac256Sympad*)this)->aesni_obj_));
+  if (!sc->DeserializeSymmetricCipherFromMessage(*key_message)) {
     LOG(ERROR) << "DeserializeEncryptionAlgorithmFromMessage"
                << " cant deserialize cipher form message\n";
     return false;
   }
-  initialized_= true;
+  initialized_ = true;
   return true;
 }
-

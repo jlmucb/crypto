@@ -27,96 +27,96 @@
 // returns  0, if l==r
 // returns -1, if l<r
 int BigCompare(BigNum& l, BigNum& r) {
-  if(l.IsPositive() && r.IsNegative())
+  if (l.IsPositive() && r.IsNegative())
     return 1;
-  if(r.IsPositive() && r.IsNegative())
+  if (r.IsPositive() && r.IsNegative())
     return -1;
-  if(l.IsPositive() && r.IsPositive())
+  if (l.IsPositive() && r.IsPositive())
     return DigitArrayCompare(l.Size(), l.ValuePtr(), r.Size(), r.ValuePtr());
-  return 1-DigitArrayCompare(l.Size(), l.ValuePtr(), r.Size(), r.ValuePtr());
+  return 1 - DigitArrayCompare(l.Size(), l.ValuePtr(), r.Size(), r.ValuePtr());
 }
 
 string* BigConvertToDecimal(BigNum& a) {
-  int   k= 32*a.size_;
-  char* str= new char[k];
+  int k = 32 * a.size_;
+  char* str = new char[k];
 
-  if(!DigitArrayConvertToDecimal(a.size_, a.value_, &k, str)) {
-    if(str!=nullptr) {
+  if (!DigitArrayConvertToDecimal(a.size_, a.value_, &k, str)) {
+    if (str != nullptr) {
       // delete str;
-      str= nullptr;
+      str = nullptr;
     }
     return nullptr;
   }
-  string* s= new string(str);
-  if(str!=nullptr) {
+  string* s = new string(str);
+  if (str != nullptr) {
     // delete str;
-    str= nullptr;
+    str = nullptr;
   }
   return s;
 }
 
 BigNum* BigConvertFromDecimal(const char* in) {
-  int     k= strlen(in);
-  int     m= ((k+29)/30)+6;
-  BigNum* n= new BigNum(m);
-  n->size_= DigitArrayConvertFromDecimal(in, n->capacity_, n->value_);
+  int k = strlen(in);
+  int m = ((k + 29) / 30) + 6;
+  BigNum* n = new BigNum(m);
+  n->size_ = DigitArrayConvertFromDecimal(in, n->capacity_, n->value_);
   return n;
 }
 
 string* BigConvertToHex(BigNum& a) {
-  int   k= 18*a.size_;
-  char* str= new char[k];
+  int k = 18 * a.size_;
+  char* str = new char[k];
 
-  if(!DigitArrayConvertToHex(a.size_, a.value_, &k, str)) {
-    if(str!=nullptr) {
+  if (!DigitArrayConvertToHex(a.size_, a.value_, &k, str)) {
+    if (str != nullptr) {
       delete str;
-      str= nullptr;
+      str = nullptr;
     }
     return nullptr;
   }
-  string* s= new string(str);
-  if(str!=nullptr) {
+  string* s = new string(str);
+  if (str != nullptr) {
     delete str;
-    str= nullptr;
+    str = nullptr;
   }
   return s;
 }
 
 BigNum* BigConvertFromHex(const char* in) {
-  int     k= strlen(in);
-  int     m= ((k+31)/16)*16+1;
-  BigNum* n= new BigNum(m);
+  int k = strlen(in);
+  int m = ((k + 31) / 16) * 16 + 1;
+  BigNum* n = new BigNum(m);
 
-  n->size_= DigitArrayConvertFromHex(in, n->capacity_, n->value_);
+  n->size_ = DigitArrayConvertFromHex(in, n->capacity_, n->value_);
   return n;
 }
 
-void  PrintNumToLog(BigNum& n, uint64_t base) {
-  string*   s= nullptr;
+void PrintNumToLog(BigNum& n, uint64_t base) {
+  string* s = nullptr;
 
-  if(base==10) {
-    s= BigConvertToDecimal(n);
-  } else if(base==16) {
-    s= BigConvertToHex(n);
+  if (base == 10) {
+    s = BigConvertToDecimal(n);
+  } else if (base == 16) {
+    s = BigConvertToHex(n);
   } else {
     return;
   }
   LOG(INFO) << *s;
 }
 
-void  PrintNumToConsole(BigNum& n, uint64_t base) {
-  string*   s= nullptr;
+void PrintNumToConsole(BigNum& n, uint64_t base) {
+  string* s = nullptr;
 
-  if(base==10) {
-    s= BigConvertToDecimal(n);
-  } else if(base==16) {
-    s= BigConvertToHex(n);
+  if (base == 10) {
+    s = BigConvertToDecimal(n);
+  } else if (base == 16) {
+    s = BigConvertToHex(n);
   } else {
     return;
   }
-  if(s==nullptr)
+  if (s == nullptr)
     return;
-  if(n.IsNegative())
+  if (n.IsNegative())
     printf("(-%s)", s->c_str());
   else
     printf("(%s)", s->c_str());
@@ -124,10 +124,10 @@ void  PrintNumToConsole(BigNum& n, uint64_t base) {
   return;
 }
 
-int  BigHighDigit(BigNum& a) {
+int BigHighDigit(BigNum& a) {
   a.Normalize();
-  if(a.size_==1) {
-    if(a.value_[0]!=0) 
+  if (a.size_ == 1) {
+    if (a.value_[0] != 0)
       return 1;
     else
       return 0;
@@ -136,110 +136,107 @@ int  BigHighDigit(BigNum& a) {
 }
 
 int BigHighBit(BigNum& a) {
-  return NBITSINUINT64*(a.size_-1)+HighBitInDigit(a.value_[a.size_-1]);
+  return NBITSINUINT64 * (a.size_ - 1) + HighBitInDigit(a.value_[a.size_ - 1]);
 }
 
 bool BigBitPositionOn(BigNum& a, int n) {
-  int j= (n-1)/NBITSINUINT64;
-  int k= n-j*NBITSINUINT64-1;
+  int j = (n - 1) / NBITSINUINT64;
+  int k = n - j * NBITSINUINT64 - 1;
 
-  if(a.size_<(j+1))
+  if (a.size_ < (j + 1))
     return false;
-  uint64_t  x= a.value_[j];
-  if((x>>k)&1)
+  uint64_t x = a.value_[j];
+  if ((x >> k) & 1)
     return true;
   return false;
 }
 
 int BigMaxPowerOfTwoDividing(BigNum& a) {
-  int       i, j;
-  uint64_t  n= 0;
-  uint64_t  x;
-  bool      getout= false;
+  int i, j;
+  uint64_t n = 0;
+  uint64_t x;
+  bool getout = false;
 
-  for(i=0; i<a.size_; i++) {
-    x= a.value_[i];
-    for(j=0; j<NBITSINUINT64;j++) {
-      if((x&1ULL)!=0) {
-        getout= true;
+  for (i = 0; i < a.size_; i++) {
+    x = a.value_[i];
+    for (j = 0; j < NBITSINUINT64; j++) {
+      if ((x & 1ULL) != 0) {
+        getout = true;
         break;
       }
       n++;
-      x>>= 1;
+      x >>= 1;
     }
-    if(getout)
+    if (getout)
       break;
   }
   return n;
 }
 
-bool BigShift(BigNum& a, int64_t shift, BigNum& r)  {
-  int   k;
+bool BigShift(BigNum& a, int64_t shift, BigNum& r) {
+  int k;
 
   // positive shift increases value
-  if(shift>0)  {
-    k= DigitArrayShiftUp(a.size_, a.value_, (int)shift,
-                      r.capacity_, r.value_);
-    if(k<0)
+  if (shift > 0) {
+    k = DigitArrayShiftUp(a.size_, a.value_, (int)shift, r.capacity_, r.value_);
+    if (k < 0)
       return false;
-    r.size_= k;
+    r.size_ = k;
     return true;
-  } else if(shift==0LL) {
+  } else if (shift == 0LL) {
     return r.CopyFrom(a);
   } else {
-    k= DigitArrayShiftDown(a.size_, a.value_, (int)-shift,
-                      r.capacity_, r.value_);
-    if(k<0)
+    k = DigitArrayShiftDown(a.size_, a.value_, (int)-shift, r.capacity_,
+                            r.value_);
+    if (k < 0)
       return false;
-    r.size_= k;
+    r.size_ = k;
     return true;
   }
 }
 
 bool BigUnsignedAdd(BigNum& a, BigNum& b, BigNum& r) {
-  int k = DigitArrayAdd(a.size_, a.value_, b.size_, b.value_,
-                    r.capacity_, r.value_);
-  if(k<0)
+  int k = DigitArrayAdd(a.size_, a.value_, b.size_, b.value_, r.capacity_,
+                        r.value_);
+  if (k < 0)
     return false;
-  r.size_= k;
+  r.size_ = k;
   return true;
 }
 
 bool BigUnsignedSub(BigNum& a, BigNum& b, BigNum& r) {
-  int k = DigitArraySub(a.size_, a.value_, b.size_,
-                        b.value_, r.capacity_, r.value_);
-  if(k<0)
+  int k = DigitArraySub(a.size_, a.value_, b.size_, b.value_, r.capacity_,
+                        r.value_);
+  if (k < 0)
     return false;
-  r.size_= k;
+  r.size_ = k;
   r.Normalize();
   return true;
 }
 
 bool BigUnsignedMult(BigNum& a, BigNum& b, BigNum& r) {
-  int k = DigitArrayMult(a.size_, a.value_, b.size_,
-                         b.value_, r.capacity_, r.value_);
-  if(k<0) {
+  int k = DigitArrayMult(a.size_, a.value_, b.size_, b.value_, r.capacity_,
+                         r.value_);
+  if (k < 0) {
     return false;
   }
-  r.size_= k;
+  r.size_ = k;
   r.Normalize();
   return true;
 }
 
 bool BigUnsignedEuclid(BigNum& a, BigNum& b, BigNum& q, BigNum& r) {
-  int   size_q= q.capacity_;
-  int   size_r= r.capacity_;
-  if(!DigitArrayDivisionAlgorithm(a.size_, a.value_,
-                                  b.size_, b.value_,
-                                  &size_q, q.value_,
-                                  &size_r, r.value_)) {
+  int size_q = q.capacity_;
+  int size_r = r.capacity_;
+  if (!DigitArrayDivisionAlgorithm(a.size_, a.value_, b.size_, b.value_,
+                                   &size_q, q.value_, &size_r, r.value_)) {
     LOG(ERROR) << "DigitArrayDivisionAlgorithm fails in BigUnsignedEuclid\n";
     return false;
   }
-  q.size_= DigitArrayComputedSize(size_q, q.value_);
-  r.size_= DigitArrayComputedSize(size_r, r.value_);
-  if(r.size_>b.size_) {
-    LOG(ERROR)<<"*** something's wrong in BigUnsignedEuclid\n";
+  q.size_ = DigitArrayComputedSize(size_q, q.value_);
+  r.size_ = DigitArrayComputedSize(size_r, r.value_);
+  if (r.size_ > b.size_) {
+    LOG(ERROR) << "*** something's wrong in BigUnsignedEuclid\n";
     r.ZeroNum();
     return false;
   }
@@ -247,149 +244,138 @@ bool BigUnsignedEuclid(BigNum& a, BigNum& b, BigNum& q, BigNum& r) {
 }
 
 bool BigUnsignedDiv(BigNum& a, BigNum& b, BigNum& q) {
-  BigNum  tmp(2*a.capacity_+1);
+  BigNum tmp(2 * a.capacity_ + 1);
   return BigUnsignedEuclid(a, b, q, tmp);
 }
 
 bool BigUnsignedSquare(BigNum& a, BigNum& r) {
-  int k = DigitArraySquare(a.size_, a.value_, 
-                           r.capacity_, r.value_);
-  if(k<0)
+  int k = DigitArraySquare(a.size_, a.value_, r.capacity_, r.value_);
+  if (k < 0)
     return false;
-  r.size_= k;
+  r.size_ = k;
   return true;
 }
 
 bool BigUnsignedAddTo(BigNum& a, BigNum& b) {
-  int k= DigitArrayAddTo(a.capacity_, a.size_, a.value_ , b.size_, b.value_);
-  if(k<0)
+  int k = DigitArrayAddTo(a.capacity_, a.size_, a.value_, b.size_, b.value_);
+  if (k < 0)
     return false;
-  a.size_= k;
+  a.size_ = k;
   return true;
 }
 
 bool BigUnsignedSubFrom(BigNum& a, BigNum& b) {
-  int k= DigitArraySubFrom(a.capacity_, a.size_, a.value_,
-                           b.size_, b.value_);
-  if(k<0)
+  int k = DigitArraySubFrom(a.capacity_, a.size_, a.value_, b.size_, b.value_);
+  if (k < 0)
     return false;
-  a.size_= k;
+  a.size_ = k;
   return true;
 }
 
 bool BigUnsignedInc(BigNum& a) {
-  uint64_t  one= 1ULL;
-  int       k= DigitArrayAddTo(a.size_, a.size_, a.value_, 1, &one);
-  if(k<0)
+  uint64_t one = 1ULL;
+  int k = DigitArrayAddTo(a.size_, a.size_, a.value_, 1, &one);
+  if (k < 0)
     return false;
   return true;
 }
 
 bool BigUnsignedDec(BigNum& a) {
-  uint64_t  one= 1ULL;
-  int       k= DigitArraySubFrom(a.size_, a.size_, a.value_, 1, &one);
-  if(k<0)
+  uint64_t one = 1ULL;
+  int k = DigitArraySubFrom(a.size_, a.size_, a.value_, 1, &one);
+  if (k < 0)
     return false;
   return true;
 }
 
 bool BigAdd(BigNum& a, BigNum& b, BigNum& r) {
-  if(a.IsPositive() && b.IsPositive()) {
-    if(!BigUnsignedAdd(a, b, r))
+  if (a.IsPositive() && b.IsPositive()) {
+    if (!BigUnsignedAdd(a, b, r))
       return false;
-    r.sign_= false;
+    r.sign_ = false;
     r.Normalize();
     return true;
-  }
-  else if(a.IsNegative() && b.IsNegative()) {
-    if(!BigUnsignedAdd(a, b, r))
-      return false;
-    r.sign_= true;
+  } else if (a.IsNegative() && b.IsNegative()) {
+    if (!BigUnsignedAdd(a, b, r)) return false;
+    r.sign_ = true;
     r.Normalize();
     return true;
-  }
-  else if(a.IsPositive() && b.IsNegative()) {
-    int cmp=  DigitArrayCompare(a.size_, a.value_, b.size_, b.value_);
-    if(cmp>0) {
-      r.sign_= false;
+  } else if (a.IsPositive() && b.IsNegative()) {
+    int cmp = DigitArrayCompare(a.size_, a.value_, b.size_, b.value_);
+    if (cmp > 0) {
+      r.sign_ = false;
       return BigUnsignedSub(a, b, r);
     }
-    if(cmp==0) {
+    if (cmp == 0) {
       r.ZeroNum();
       return true;
     }
-    r.sign_= true;
+    r.sign_ = true;
     return BigUnsignedSub(b, a, r);
-  }
-  else {    // a<0, b>0
-    int cmp=  DigitArrayCompare(b.size_, b.value_, a.size_, a.value_);
-    if(cmp>0) {
-      r.sign_= false;
+  } else {  // a<0, b>0
+    int cmp = DigitArrayCompare(b.size_, b.value_, a.size_, a.value_);
+    if (cmp > 0) {
+      r.sign_ = false;
       return BigUnsignedSub(b, a, r);
     }
-    if(cmp==0) {
+    if (cmp == 0) {
       r.ZeroNum();
       return true;
     }
-    r.sign_= true;
+    r.sign_ = true;
     return BigUnsignedSub(a, b, r);
   }
 }
 
 bool BigSub(BigNum& a, BigNum& b, BigNum& r) {
-  if(a.IsPositive() && b.IsNegative()) {
-    if(!BigUnsignedAdd(a, b, r))
+  if (a.IsPositive() && b.IsNegative()) {
+    if (!BigUnsignedAdd(a, b, r))
       return false;
-    r.sign_= false;
+    r.sign_ = false;
     return true;
-  }
-  else if(a.IsNegative() && b.IsPositive()) {
-    if(!BigUnsignedAdd(a, b, r))
-      return false;
-    r.sign_= true;
+  } else if (a.IsNegative() && b.IsPositive()) {
+    if (!BigUnsignedAdd(a, b, r)) return false;
+    r.sign_ = true;
     return true;
-  }
-  else if(a.IsPositive() && b.IsPositive()) {
-    int cmp=  DigitArrayCompare(a.size_, a.value_, b.size_, b.value_);
-    if(cmp>0) {
-      r.sign_= false;
+  } else if (a.IsPositive() && b.IsPositive()) {
+    int cmp = DigitArrayCompare(a.size_, a.value_, b.size_, b.value_);
+    if (cmp > 0) {
+      r.sign_ = false;
       return BigUnsignedSub(a, b, r);
     }
-    if(cmp==0) {
+    if (cmp == 0) {
       r.ZeroNum();
       return true;
     }
-    r.sign_= true;
+    r.sign_ = true;
     return BigUnsignedSub(b, a, r);
-  }
-  else {    // a<0, b<0
-    int cmp=  DigitArrayCompare(b.size_, b.value_, a.size_, a.value_);
-    if(cmp>0) {
-      r.sign_= true;
+  } else {  // a<0, b<0
+    int cmp = DigitArrayCompare(b.size_, b.value_, a.size_, a.value_);
+    if (cmp > 0) {
+      r.sign_ = true;
       return BigUnsignedSub(b, a, r);
     }
-    if(cmp==0) {
+    if (cmp == 0) {
       r.ZeroNum();
       return true;
     }
-    r.sign_= false;
+    r.sign_ = false;
     return BigUnsignedSub(a, b, r);
   }
 }
 
 bool BigMult(BigNum& a, BigNum& b, BigNum& r) {
-  if(a.IsPositive() != b.IsPositive())
-    r.sign_= true;
-  return BigUnsignedMult(a,b,r);
+  if (a.IsPositive() != b.IsPositive())
+    r.sign_ = true;
+  return BigUnsignedMult(a, b, r);
 }
 
 bool BigDiv(BigNum& a, BigNum& b, BigNum& r) {
-  if(a.IsPositive() != b.IsPositive())
-    r.sign_= true;
-  return BigUnsignedDiv(a,b,r);
+  if (a.IsPositive() != b.IsPositive())
+    r.sign_ = true;
+  return BigUnsignedDiv(a, b, r);
 }
 
 bool BigSquare(BigNum& a, BigNum& r) {
   return BigUnsignedSquare(a, r);
 }
-

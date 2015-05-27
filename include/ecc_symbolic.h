@@ -11,9 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// 
+//
 // File: ecc_symbolic.h
-
 
 #ifndef ECC_SYMBOLIC__H_
 #define ECC_SYMBOLIC__H_
@@ -28,27 +27,30 @@ bool RationalPolyFromCurve(EccCurve& curve, RationalPoly** curve_rational);
 bool RationalPolyNegate(RationalPoly& a);
 bool MakeSymbolicIdentity(RationalPoly& x, RationalPoly& y);
 bool IsSymbolicIdentity(RationalPoly& x, RationalPoly& y);
-bool EccSymbolicAdd(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& in1_y, 
-                    RationalPoly& in2_x, RationalPoly& in2_y, 
-                    RationalPoly& out_x, RationalPoly& out_y);
-bool EccSymbolicSub(Polynomial& curve_poly, RationalPoly& in1_x, RationalPoly& in1_y,
-                    RationalPoly& in2_x, RationalPoly& in2_y,
-                    RationalPoly& out_x, RationalPoly& out_y);
-bool EccSymbolicMult(Polynomial& curve_poly, BigNum& m,
-                     RationalPoly& in_x, RationalPoly& in_y,
-                     RationalPoly& out_x, RationalPoly& out_y);
-bool ReducedEccSymbolicAdd(Polynomial& curve_poly, Polynomial& mod_poly, 
-                     RationalPoly& in1_x, RationalPoly& in1_y,
-                     RationalPoly& in2_x, RationalPoly& in2_y,
-                     RationalPoly& out_x, RationalPoly& out_y);
-bool ReducedEccSymbolicMult(Polynomial& curve_poly, 
-                     Polynomial& mod_poly, BigNum& m,
-                     RationalPoly& in_x, RationalPoly& in_y,
-                     RationalPoly& out_x, RationalPoly& out_y);
-bool ReducedRaisetoLargePower(Polynomial& in, BigNum& e,
-                       Polynomial& mod_poly, Polynomial& out);
-bool EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e, Polynomial& mod_poly,
-                                  RationalPoly& out_x, RationalPoly& out_y);
-bool EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m, Polynomial& mod_poly,
-                                 RationalPoly& out_x, RationalPoly& out_y);
+bool EccSymbolicAdd(Polynomial& curve_poly, RationalPoly& in1_x,
+                    RationalPoly& in1_y, RationalPoly& in2_x,
+                    RationalPoly& in2_y, RationalPoly& out_x,
+                    RationalPoly& out_y);
+bool EccSymbolicSub(Polynomial& curve_poly, RationalPoly& in1_x,
+                    RationalPoly& in1_y, RationalPoly& in2_x,
+                    RationalPoly& in2_y, RationalPoly& out_x,
+                    RationalPoly& out_y);
+bool EccSymbolicMult(Polynomial& curve_poly, BigNum& m, RationalPoly& in_x,
+                     RationalPoly& in_y, RationalPoly& out_x,
+                     RationalPoly& out_y);
+bool ReducedEccSymbolicAdd(Polynomial& curve_poly, Polynomial& mod_poly,
+                           RationalPoly& in1_x, RationalPoly& in1_y,
+                           RationalPoly& in2_x, RationalPoly& in2_y,
+                           RationalPoly& out_x, RationalPoly& out_y);
+bool ReducedEccSymbolicMult(Polynomial& curve_poly, Polynomial& mod_poly,
+                            BigNum& m, RationalPoly& in_x, RationalPoly& in_y,
+                            RationalPoly& out_x, RationalPoly& out_y);
+bool ReducedRaisetoLargePower(Polynomial& in, BigNum& e, Polynomial& mod_poly,
+                              Polynomial& out);
+bool EccSymbolicPowerEndomorphism(Polynomial& curve_poly, BigNum& e,
+                                  Polynomial& mod_poly, RationalPoly& out_x,
+                                  RationalPoly& out_y);
+bool EccSymbolicMultEndomorphism(Polynomial& curve_poly, BigNum& m,
+                                 Polynomial& mod_poly, RationalPoly& out_x,
+                                 RationalPoly& out_y);
 #endif

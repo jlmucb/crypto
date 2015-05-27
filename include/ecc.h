@@ -22,7 +22,7 @@
 #define _CRYPTO_ECC_H__
 
 class CurvePoint {
-public:
+ public:
   BigNum* x_;
   BigNum* y_;
   BigNum* z_;
@@ -34,19 +34,19 @@ public:
   CurvePoint(CurvePoint& P, int capacity);
   ~CurvePoint();
 
-  bool  IsZero();
-  void  Clear();
-  void  MakeZero();
-  bool  CopyFrom(CurvePoint& P);
-  bool  CopyTo(CurvePoint& P);
-  bool  Normalize(BigNum& p);
-  bool  SerializePointToMessage(crypto_point_message&);
-  bool  DeserializePointFromMessage(crypto_point_message&);
-  void  PrintPoint();
+  bool IsZero();
+  void Clear();
+  void MakeZero();
+  bool CopyFrom(CurvePoint& P);
+  bool CopyTo(CurvePoint& P);
+  bool Normalize(BigNum& p);
+  bool SerializePointToMessage(crypto_point_message&);
+  bool DeserializePointFromMessage(crypto_point_message&);
+  void PrintPoint();
 };
 
 class EccCurve {
-public:
+ public:
   BigNum* a_;
   BigNum* b_;
   BigNum* p_;
@@ -56,12 +56,11 @@ public:
   EccCurve(BigNum& a, BigNum& b, BigNum& p);
   ~EccCurve();
 
-  void  Clear();
-  bool  SerializeCurveToMessage(crypto_ecc_curve_message&);
-  bool  DeserializeCurveFromMessage(crypto_ecc_curve_message&);
-  void  PrintCurve();
+  void Clear();
+  bool SerializeCurveToMessage(crypto_ecc_curve_message&);
+  bool DeserializeCurveFromMessage(crypto_ecc_curve_message&);
+  void PrintCurve();
 };
-
 
 bool InitEccCurves();
 bool EccEmbed(EccCurve& c, BigNum& m, CurvePoint& P, int shift, int trys);
@@ -78,4 +77,3 @@ bool ProjectiveDouble(EccCurve& c, CurvePoint& P, CurvePoint& R);
 bool ProjectivePointMult(EccCurve& c, BigNum& x, CurvePoint& P, CurvePoint& R);
 
 #endif
-

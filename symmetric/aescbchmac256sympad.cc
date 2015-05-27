@@ -28,143 +28,149 @@
 #include <stdlib.h>
 
 AesCbcHmac256Sympad::AesCbcHmac256Sympad() {
-  alg_name_= new string("aes128-cbc-hmacsha256-sympad");
-  message_id_= nullptr;
-  num_unprocessed_input_bytes_= 0;
-  input_bytes_processed_= 0;
-  output_bytes_produced_= 0;
-  iv_processed_= false;
+  alg_name_ = new string("aes128-cbc-hmacsha256-sympad");
+  message_id_ = nullptr;
+  num_unprocessed_input_bytes_ = 0;
+  input_bytes_processed_ = 0;
+  output_bytes_produced_ = 0;
+  iv_processed_ = false;
   memset(iv_, 0, Aes::BLOCKBYTESIZE);
-  memset(last_cipher_block_,0, Aes::BLOCKBYTESIZE);
+  memset(last_cipher_block_, 0, Aes::BLOCKBYTESIZE);
   memset(hmac_received_, 0, HmacSha256::MACBYTESIZE);
   memset(hmac_computed_, 0, HmacSha256::MACBYTESIZE);
-  output_verified_= false;
-  use_aesni_= false;
+  output_verified_ = false;
+  use_aesni_ = false;
 }
 
 AesCbcHmac256Sympad::~AesCbcHmac256Sympad() {
-  if(alg_name_!=nullptr) {
+  if (alg_name_ != nullptr) {
     delete alg_name_;
-    alg_name_= nullptr;
+    alg_name_ = nullptr;
   }
-  initialized_= false;
+  initialized_ = false;
 }
 
-bool  AesCbcHmac256Sympad::InitEnc(int size_enc, byte* enc_key, int size_int, 
-                byte* int_key, int size_iv, byte* iv, bool use_aesni) {
-  alg_name_= new string("aes128-cbc-hmacsha256-sympad");
-  use_aesni_= use_aesni;
-  if(size_iv!=Aes::BLOCKBYTESIZE) {
-      return false;
+bool AesCbcHmac256Sympad::InitEnc(int size_enc, byte* enc_key, int size_int,
+                                  byte* int_key, int size_iv, byte* iv,
+                                  bool use_aesni) {
+  alg_name_ = new string("aes128-cbc-hmacsha256-sympad");
+  use_aesni_ = use_aesni;
+  if (size_iv != Aes::BLOCKBYTESIZE) {
+    return false;
   }
   memcpy(iv_, iv, size_iv);
   memcpy(last_cipher_block_, iv, size_iv);
-  if(use_aesni) {
-    if(!aesni_obj_.Init(size_enc*NBITSINBYTE, enc_key, SymmetricCipher::ENCRYPT)) {
+  if (use_aesni) {
+    if (!aesni_obj_.Init(size_enc * NBITSINBYTE, enc_key,
+                         SymmetricCipher::ENCRYPT)) {
       return false;
     }
   } else {
-    if(!aes_obj_.Init(size_enc*NBITSINBYTE, enc_key, SymmetricCipher::ENCRYPT)) {
+    if (!aes_obj_.Init(size_enc * NBITSINBYTE, enc_key,
+                       SymmetricCipher::ENCRYPT)) {
       return false;
     }
   }
-  if(!hmac_.Init(size_int, int_key)) {
+  if (!hmac_.Init(size_int, int_key)) {
     return false;
   }
-  output_verified_= false;
-  num_unprocessed_input_bytes_= 0;
-  direction_= EncryptionAlgorithm::ENCRYPT;
-  initialized_= true;
+  output_verified_ = false;
+  num_unprocessed_input_bytes_ = 0;
+  direction_ = EncryptionAlgorithm::ENCRYPT;
+  initialized_ = true;
   return true;
 }
 
-bool  AesCbcHmac256Sympad::InitDec(int size_enc, byte* enc_key, int size_int, 
-                byte* int_key, bool use_aesni) {
-
-  alg_name_= new string("aes128-cbc-hmacsha256-sympad");
-  use_aesni_= use_aesni;
-  if(use_aesni) {
-    if(!aesni_obj_.Init(size_enc*NBITSINBYTE, enc_key, SymmetricCipher::DECRYPT)) {
+bool AesCbcHmac256Sympad::InitDec(int size_enc, byte* enc_key, int size_int,
+                                  byte* int_key, bool use_aesni) {
+  alg_name_ = new string("aes128-cbc-hmacsha256-sympad");
+  use_aesni_ = use_aesni;
+  if (use_aesni) {
+    if (!aesni_obj_.Init(size_enc * NBITSINBYTE, enc_key,
+                         SymmetricCipher::DECRYPT)) {
       return false;
     }
   } else {
-    if(!aes_obj_.Init(size_enc*NBITSINBYTE, enc_key, SymmetricCipher::DECRYPT)) {
+    if (!aes_obj_.Init(size_enc * NBITSINBYTE, enc_key,
+                       SymmetricCipher::DECRYPT)) {
       return false;
     }
   }
-  if(!hmac_.Init(size_int, int_key)) {
+  if (!hmac_.Init(size_int, int_key)) {
     return false;
   }
-  output_verified_= false;
-  num_unprocessed_input_bytes_= 0;
-  direction_= EncryptionAlgorithm::DECRYPT;
-  iv_processed_= false;
-  initialized_= true;
+  output_verified_ = false;
+  num_unprocessed_input_bytes_ = 0;
+  direction_ = EncryptionAlgorithm::DECRYPT;
+  iv_processed_ = false;
+  initialized_ = true;
   return true;
 }
 
-bool  AesCbcHmac256Sympad::FinalPlainIn(int size_in, byte* in, int* size_out, byte* out) {
-
+bool AesCbcHmac256Sympad::FinalPlainIn(int size_in, byte* in, int* size_out,
+                                       byte* out) {
   // process all but partial final block
-  int num_out= *size_out;
-  if(!PlainIn(size_in, in, &num_out, out)) {
+  int num_out = *size_out;
+  if (!PlainIn(size_in, in, &num_out, out)) {
     LOG(ERROR) << "PlainIn failed\n";
     return false;
   }
-  out+= num_out;
-  if(*size_out<(num_out+Aes::BLOCKBYTESIZE+HmacSha256::MACBYTESIZE)) {
-    LOG(ERROR) << "PlainIn output buffer is too small, size_out: "<< *size_out 
+  out += num_out;
+  if (*size_out < (num_out + Aes::BLOCKBYTESIZE + HmacSha256::MACBYTESIZE)) {
+    LOG(ERROR) << "PlainIn output buffer is too small, size_out: " << *size_out
                << ", num_out: " << num_out << "\n";
     return false;
   }
   // all that's left is pad block
-  int n= num_unprocessed_input_bytes_;
-  input_buf[num_unprocessed_input_bytes_++]= 0x80;
-  memset(&input_buf[num_unprocessed_input_bytes_], 0, Aes::BLOCKBYTESIZE-num_unprocessed_input_bytes_);
+  int n = num_unprocessed_input_bytes_;
+  input_buf[num_unprocessed_input_bytes_++] = 0x80;
+  memset(&input_buf[num_unprocessed_input_bytes_], 0,
+         Aes::BLOCKBYTESIZE - num_unprocessed_input_bytes_);
   CbcEncryptBlock(input_buf, out);
-  out+= Aes::BLOCKBYTESIZE;
+  out += Aes::BLOCKBYTESIZE;
   // compute hmac
   hmac_.Final();
   hmac_.GetHmac(HmacSha256::MACBYTESIZE, hmac_computed_);
   memcpy(out, hmac_computed_, HmacSha256::MACBYTESIZE);
-  output_bytes_produced_+= Aes::BLOCKBYTESIZE+HmacSha256::MACBYTESIZE;
-  input_bytes_processed_+= n;
-  *size_out= num_out+Aes::BLOCKBYTESIZE+HmacSha256::MACBYTESIZE;
+  output_bytes_produced_ += Aes::BLOCKBYTESIZE + HmacSha256::MACBYTESIZE;
+  input_bytes_processed_ += n;
+  *size_out = num_out + Aes::BLOCKBYTESIZE + HmacSha256::MACBYTESIZE;
   return true;
 }
 
-bool  AesCbcHmac256Sympad::FinalCipherIn(int size_in, byte* in, int* size_out, byte* out) {
-  int num_out= *size_out;
-  int k= Aes::BLOCKBYTESIZE+HmacSha256::MACBYTESIZE;
-  int n= 0;
+bool AesCbcHmac256Sympad::FinalCipherIn(int size_in, byte* in, int* size_out,
+                                        byte* out) {
+  int num_out = *size_out;
+  int k = Aes::BLOCKBYTESIZE + HmacSha256::MACBYTESIZE;
+  int n = 0;
 
-  if(size_in<k || (size_in%Aes::BLOCKBYTESIZE)!=0) {
+  if (size_in < k || (size_in % Aes::BLOCKBYTESIZE) != 0) {
     LOG(ERROR) << "FinalCipherIn failed\n";
     return false;
   }
 
   // process all but final block and hmac
-  if(size_in>k) {
-    if(!CipherIn(size_in-k, in, &num_out, out)) {
+  if (size_in > k) {
+    if (!CipherIn(size_in - k, in, &num_out, out)) {
       LOG(ERROR) << "FinalCipherIn: CipherIn failed\n";
       return false;
     }
-    out+= num_out;
-    in+= size_in-k;
+    out += num_out;
+    in += size_in - k;
   }
 
   // decrypt final ciphertext and depad
   byte padded[Aes::BLOCKBYTESIZE];
   CbcDecryptBlock(in, padded);
-  for(n=(Aes::BLOCKBYTESIZE-1);n>=0;n--) {
-    if(padded[n]==0x80)
+  for (n = (Aes::BLOCKBYTESIZE - 1); n >= 0; n--) {
+    if (padded[n] == 0x80)
       break;
-    if(padded[n]!=0) {
+    if (padded[n] != 0) {
       LOG(ERROR) << "FinalCipherIn: bad pad\n";
       return false;
     }
   }
-  in+= Aes::BLOCKBYTESIZE;
+  in += Aes::BLOCKBYTESIZE;
   memcpy(out, padded, n);
   memcpy(hmac_received_, in, HmacSha256::MACBYTESIZE);
 
@@ -172,18 +178,20 @@ bool  AesCbcHmac256Sympad::FinalCipherIn(int size_in, byte* in, int* size_out, b
   hmac_.Final();
   hmac_.GetHmac(HmacSha256::MACBYTESIZE, hmac_computed_);
 
-  output_bytes_produced_+= n;
-  input_bytes_processed_+= Aes::BLOCKBYTESIZE+HmacSha256::MACBYTESIZE;
-  *size_out= num_out+n;
+  output_bytes_produced_ += n;
+  input_bytes_processed_ += Aes::BLOCKBYTESIZE + HmacSha256::MACBYTESIZE;
+  *size_out = num_out + n;
   // verify it is the same as the received one
-  output_verified_= (memcmp(hmac_received_, hmac_computed_, HmacSha256::MACBYTESIZE)==0);
+  output_verified_ =
+      (memcmp(hmac_received_, hmac_computed_, HmacSha256::MACBYTESIZE) == 0);
   return true;
 }
 
-bool  AesCbcHmac256Sympad::ProcessFinalInput(int size_in, byte* in, int* size_out, byte* out) {
-  if(direction_==EncryptionAlgorithm::ENCRYPT) {
+bool AesCbcHmac256Sympad::ProcessFinalInput(int size_in, byte* in,
+                                            int* size_out, byte* out) {
+  if (direction_ == EncryptionAlgorithm::ENCRYPT) {
     return FinalPlainIn(size_in, in, size_out, out);
-  } else if(direction_==EncryptionAlgorithm::DECRYPT) {
+  } else if (direction_ == EncryptionAlgorithm::DECRYPT) {
     return FinalCipherIn(size_in, in, size_out, out);
   } else {
     return false;
@@ -191,11 +199,11 @@ bool  AesCbcHmac256Sympad::ProcessFinalInput(int size_in, byte* in, int* size_ou
 }
 
 void AesCbcHmac256Sympad::CbcEncryptBlock(byte* in, byte* out) {
-  byte  toencrypt[2*Aes::BLOCKBYTESIZE];
+  byte toencrypt[2 * Aes::BLOCKBYTESIZE];
 
-  for(int i=0;i<Aes::BLOCKBYTESIZE;i++)
-    toencrypt[i]= last_cipher_block_[i]^in[i];
-  if(use_aesni_) {
+  for (int i = 0; i < Aes::BLOCKBYTESIZE; i++)
+    toencrypt[i] = last_cipher_block_[i] ^ in[i];
+  if (use_aesni_) {
     aesni_obj_.EncryptBlock(toencrypt, out);
   } else {
     aes_obj_.EncryptBlock(toencrypt, out);
@@ -205,103 +213,104 @@ void AesCbcHmac256Sympad::CbcEncryptBlock(byte* in, byte* out) {
 }
 
 void AesCbcHmac256Sympad::CbcDecryptBlock(byte* in, byte* out) {
-  byte  decrypted[2*Aes::BLOCKBYTESIZE];
+  byte decrypted[2 * Aes::BLOCKBYTESIZE];
 
   hmac_.AddToInnerHash(Aes::BLOCKBYTESIZE, in);
-  if(use_aesni_) {
+  if (use_aesni_) {
     aesni_obj_.DecryptBlock(in, decrypted);
   } else {
     aes_obj_.DecryptBlock(in, decrypted);
   }
-  for(int i=0;i<Aes::BLOCKBYTESIZE;i++)
-    out[i]= last_cipher_block_[i]^decrypted[i];
+  for (int i = 0; i < Aes::BLOCKBYTESIZE; i++)
+    out[i] = last_cipher_block_[i] ^ decrypted[i];
   memcpy(last_cipher_block_, in, Aes::BLOCKBYTESIZE);
 }
 
-bool  AesCbcHmac256Sympad::PlainIn(int size_in, byte* in, int* size_out, byte* out) {
-  int   n;
-  int   num_iv= 0;
-  int   num_out= 0;
+bool AesCbcHmac256Sympad::PlainIn(int size_in, byte* in, int* size_out,
+                                  byte* out) {
+  int n;
+  int num_iv = 0;
+  int num_out = 0;
 
-  if(!iv_processed_) {
-    iv_processed_= true;
+  if (!iv_processed_) {
+    iv_processed_ = true;
     memcpy(out, last_cipher_block_, Aes::BLOCKBYTESIZE);
-    out+= Aes::BLOCKBYTESIZE;
-    num_iv= Aes::BLOCKBYTESIZE;
+    out += Aes::BLOCKBYTESIZE;
+    num_iv = Aes::BLOCKBYTESIZE;
   }
-  if(num_unprocessed_input_bytes_>0) {
-    if((num_unprocessed_input_bytes_+size_in)<Aes::BLOCKBYTESIZE) {
+  if (num_unprocessed_input_bytes_ > 0) {
+    if ((num_unprocessed_input_bytes_ + size_in) < Aes::BLOCKBYTESIZE) {
       memcpy(&input_buf[num_unprocessed_input_bytes_], in, size_in);
-      num_unprocessed_input_bytes_+= size_in;
-      *size_out= 0;
+      num_unprocessed_input_bytes_ += size_in;
+      *size_out = 0;
       return true;
     } else {
-      n= Aes::BLOCKBYTESIZE-num_unprocessed_input_bytes_;
+      n = Aes::BLOCKBYTESIZE - num_unprocessed_input_bytes_;
       memcpy(&input_buf[num_unprocessed_input_bytes_], in, n);
-      size_in-= n;
-      in+= n;
-      num_unprocessed_input_bytes_= 0;
+      size_in -= n;
+      in += n;
+      num_unprocessed_input_bytes_ = 0;
       CbcEncryptBlock(input_buf, out);
-      num_out+= Aes::BLOCKBYTESIZE;
-      out+= Aes::BLOCKBYTESIZE;
+      num_out += Aes::BLOCKBYTESIZE;
+      out += Aes::BLOCKBYTESIZE;
     }
-  } 
-  while(size_in>=Aes::BLOCKBYTESIZE) {
-      CbcEncryptBlock(in, out);
-      num_out+= Aes::BLOCKBYTESIZE;
-      in+= Aes::BLOCKBYTESIZE;
-      out+= Aes::BLOCKBYTESIZE;
-      size_in-= Aes::BLOCKBYTESIZE;
   }
-  if(size_in>0) {
-      memcpy(input_buf, in, size_in);
-      num_unprocessed_input_bytes_= size_in;
+  while (size_in >= Aes::BLOCKBYTESIZE) {
+    CbcEncryptBlock(in, out);
+    num_out += Aes::BLOCKBYTESIZE;
+    in += Aes::BLOCKBYTESIZE;
+    out += Aes::BLOCKBYTESIZE;
+    size_in -= Aes::BLOCKBYTESIZE;
   }
-  *size_out= num_out+num_iv;
-  output_bytes_produced_+= *size_out;
-  input_bytes_processed_+= num_out;
+  if (size_in > 0) {
+    memcpy(input_buf, in, size_in);
+    num_unprocessed_input_bytes_ = size_in;
+  }
+  *size_out = num_out + num_iv;
+  output_bytes_produced_ += *size_out;
+  input_bytes_processed_ += num_out;
   return true;
 }
 
-bool  AesCbcHmac256Sympad::CipherIn(int size_in, byte* in, int* size_out, byte* out) {
-  int num_out= 0;
-  int num_iv= 0;
- 
-  if((size_in%Aes::BLOCKBYTESIZE)!=0) {
+bool AesCbcHmac256Sympad::CipherIn(int size_in, byte* in, int* size_out,
+                                   byte* out) {
+  int num_out = 0;
+  int num_iv = 0;
+
+  if ((size_in % Aes::BLOCKBYTESIZE) != 0) {
     LOG(ERROR) << "CipherIn: not multiple of AES BLOCKSIZE " << size_in << "\n";
     return false;
   }
 
-  if(!iv_processed_) {
+  if (!iv_processed_) {
     memcpy(last_cipher_block_, in, Aes::BLOCKBYTESIZE);
-    in+= Aes::BLOCKBYTESIZE;
-    num_iv= Aes::BLOCKBYTESIZE;
-    size_in-= Aes::BLOCKBYTESIZE;
-    iv_processed_= true;
-    num_iv= Aes::BLOCKBYTESIZE;
+    in += Aes::BLOCKBYTESIZE;
+    num_iv = Aes::BLOCKBYTESIZE;
+    size_in -= Aes::BLOCKBYTESIZE;
+    iv_processed_ = true;
+    num_iv = Aes::BLOCKBYTESIZE;
   }
 
-  while(size_in>=Aes::BLOCKBYTESIZE) {
-      CbcDecryptBlock(in, out);
-      num_out+= Aes::BLOCKBYTESIZE;
-      in+= Aes::BLOCKBYTESIZE;
-      out+= Aes::BLOCKBYTESIZE;
-      size_in-= Aes::BLOCKBYTESIZE;
+  while (size_in >= Aes::BLOCKBYTESIZE) {
+    CbcDecryptBlock(in, out);
+    num_out += Aes::BLOCKBYTESIZE;
+    in += Aes::BLOCKBYTESIZE;
+    out += Aes::BLOCKBYTESIZE;
+    size_in -= Aes::BLOCKBYTESIZE;
   }
-  *size_out= num_out;
-  output_bytes_produced_+= num_out;
-  input_bytes_processed_+= num_iv+num_iv;
+  *size_out = num_out;
+  output_bytes_produced_ += num_out;
+  input_bytes_processed_ += num_iv + num_iv;
   return true;
 }
 
-bool  AesCbcHmac256Sympad::ProcessInput(int size_in, byte* in, 
-                                        int* size_out, byte* out) {
-  if(!initialized_)
+bool AesCbcHmac256Sympad::ProcessInput(int size_in, byte* in, int* size_out,
+                                       byte* out) {
+  if (!initialized_)
     return false;
-  if(direction_==EncryptionAlgorithm::ENCRYPT) {
+  if (direction_ == EncryptionAlgorithm::ENCRYPT) {
     return PlainIn(size_in, in, size_out, out);
-  }
-  else if(direction_==EncryptionAlgorithm::DECRYPT) {
+  } else if (direction_ == EncryptionAlgorithm::DECRYPT) {
     return CipherIn(size_in, in, size_out, out);
   } else {
     return false;
@@ -309,19 +318,19 @@ bool  AesCbcHmac256Sympad::ProcessInput(int size_in, byte* in,
 }
 
 void AesCbcHmac256Sympad::PrintEncryptionAlgorithm() {
-  if(alg_name_==nullptr) {
+  if (alg_name_ == nullptr) {
     printf("No encryption algorithm\n");
     return;
   }
-  if(message_id_!=nullptr) {
+  if (message_id_ != nullptr) {
     printf("message id: %s\n", message_id_->c_str());
   }
-  if(strcmp(alg_name_->c_str(), "aes128-cbc-hmacsha256-sympad")!=0) {
+  if (strcmp(alg_name_->c_str(), "aes128-cbc-hmacsha256-sympad") != 0) {
     printf("Unknown encryption algorithm\n");
     return;
   }
   printf("aes128-cbc-hmacsha256-sympad\n");
-  if(use_aesni_) {
+  if (use_aesni_) {
     printf("using aesni\n");
     aesni_obj_.PrintSymmetricKey();
   } else {
@@ -336,52 +345,42 @@ void AesCbcHmac256Sympad::PrintEncryptionAlgorithm() {
   printf("\n");
 }
 
-int   AesCbcHmac256Sympad::DecryptInputQuantum() {
-  return Aes::BLOCKBYTESIZE;
+int AesCbcHmac256Sympad::DecryptInputQuantum() { return Aes::BLOCKBYTESIZE; }
+
+int AesCbcHmac256Sympad::EncryptInputQuantum() { return 1; }
+
+int AesCbcHmac256Sympad::MaxAdditionalOutput() { return Aes::BLOCKBYTESIZE; }
+
+int AesCbcHmac256Sympad::MaxAdditionalFinalOutput() {
+  return 4 * Aes::BLOCKBYTESIZE;
 }
 
-int   AesCbcHmac256Sympad::EncryptInputQuantum() {
-  return 1;
+int AesCbcHmac256Sympad::MinimumFinalDecryptIn() {
+  return 4 * Aes::BLOCKBYTESIZE;
 }
 
-int   AesCbcHmac256Sympad::MaxAdditionalOutput() {
-  return Aes::BLOCKBYTESIZE;
-}
+int AesCbcHmac256Sympad::MinimumFinalEncryptIn() { return 1; }
 
-int   AesCbcHmac256Sympad::MaxAdditionalFinalOutput() {
-  return 4*Aes::BLOCKBYTESIZE;
-}
-
-int   AesCbcHmac256Sympad::MinimumFinalDecryptIn() {
-  return 4*Aes::BLOCKBYTESIZE;
-}
-
-int   AesCbcHmac256Sympad::MinimumFinalEncryptIn() {
-  return 1;
-}
-
-int   AesCbcHmac256Sympad::InputBytesProcessed() {
+int AesCbcHmac256Sympad::InputBytesProcessed() {
   return input_bytes_processed_;
 }
 
-int   AesCbcHmac256Sympad::OutputBytesProduced() {
+int AesCbcHmac256Sympad::OutputBytesProduced() {
   return output_bytes_produced_;
 }
 
-bool  AesCbcHmac256Sympad::MessageValid() {
-  return output_verified_;
-}
+bool AesCbcHmac256Sympad::MessageValid() { return output_verified_; }
 
-int   AesCbcHmac256Sympad::GetComputedMac(int size, byte* out) {
-  if(size<HmacSha256::MACBYTESIZE) {
+int AesCbcHmac256Sympad::GetComputedMac(int size, byte* out) {
+  if (size < HmacSha256::MACBYTESIZE) {
     return -1;
   }
   memcpy(out, hmac_computed_, HmacSha256::MACBYTESIZE);
   return HmacSha256::MACBYTESIZE;
 }
 
-int   AesCbcHmac256Sympad::GetReceivedMac(int size, byte* out) {
-  if(size<HmacSha256::MACBYTESIZE) {
+int AesCbcHmac256Sympad::GetReceivedMac(int size, byte* out) {
+  if (size < HmacSha256::MACBYTESIZE) {
     return -1;
   }
   memcpy(out, hmac_received_, HmacSha256::MACBYTESIZE);
@@ -389,49 +388,48 @@ int   AesCbcHmac256Sympad::GetReceivedMac(int size, byte* out) {
 }
 
 bool AesCbcHmac256Sympad::GenerateScheme(const char* name, int num_bits) {
-  byte  enc_key[64];
-  byte  int_key[64];
-  byte  iv[64];
+  byte enc_key[64];
+  byte int_key[64];
+  byte iv[64];
 
-  if(num_bits!=128 && num_bits!=256) {
+  if (num_bits != 128 && num_bits != 256) {
     LOG(ERROR) << "AesCbcHmac256Sympad::GenerateScheme: unsupported key size\n";
     return false;
   }
-  if(!GetCryptoRand(Aes::BLOCKBYTESIZE*NBITSINBYTE, iv)) {
+  if (!GetCryptoRand(Aes::BLOCKBYTESIZE * NBITSINBYTE, iv)) {
     LOG(ERROR) << "GenerateScheme: can't get key bits\n";
     return false;
   }
-  if(!GetCryptoRand(Aes::BLOCKBYTESIZE*NBITSINBYTE, int_key)) {
+  if (!GetCryptoRand(Aes::BLOCKBYTESIZE * NBITSINBYTE, int_key)) {
     LOG(ERROR) << "GenerateScheme: can't get key bits\n";
     return false;
   }
-  if(!GetCryptoRand(HmacSha256::BLOCKBYTESIZE*NBITSINBYTE, enc_key)) {
+  if (!GetCryptoRand(HmacSha256::BLOCKBYTESIZE * NBITSINBYTE, enc_key)) {
     LOG(ERROR) << "GenerateScheme: can't get key bits\n";
     return false;
   }
   return MakeScheme(name, num_bits, enc_key, int_key, iv);
 }
 
-bool AesCbcHmac256Sympad::MakeScheme(const char* id,  int num_bits,
-                     byte* enc_key, byte* int_key, byte* iv) {
-  if(!hmac_.Init(HmacSha256::BLOCKBYTESIZE, int_key)) {
+bool AesCbcHmac256Sympad::MakeScheme(const char* id, int num_bits,
+                                     byte* enc_key, byte* int_key, byte* iv) {
+  if (!hmac_.Init(HmacSha256::BLOCKBYTESIZE, int_key)) {
     LOG(ERROR) << "AesCbcHmac256Sympad::MakeScheme: hmac_Init fails\n";
     return false;
   }
-  if(!aes_obj_.Init(128, enc_key, SymmetricCipher::BOTH)) {
+  if (!aes_obj_.Init(128, enc_key, SymmetricCipher::BOTH)) {
     LOG(ERROR) << "AesCbcHmac256Sympad::MakeScheme: aes_obj_.Init fails\n";
     return false;
   }
-  if(!aesni_obj_.Init(128, int_key, SymmetricCipher::BOTH)) {
+  if (!aesni_obj_.Init(128, int_key, SymmetricCipher::BOTH)) {
     LOG(ERROR) << "AesCbcHmac256Sympad::MakeScheme: aesni_obj_.Init fails\n";
     return false;
   }
 
-  alg_name_= new string("aes128-cbc-hmacsha256-sympad");
-  message_id_= new string(id);
+  alg_name_ = new string("aes128-cbc-hmacsha256-sympad");
+  message_id_ = new string(id);
   memcpy(iv_, iv, Aes::BLOCKBYTESIZE);
-  use_aesni_= false;
-  initialized_= true;
+  use_aesni_ = false;
+  initialized_ = true;
   return true;
 }
-

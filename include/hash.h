@@ -25,12 +25,11 @@
 using namespace std;
 
 class CryptographicHash {
-public:
-  string*   hash_name_;
-  bool      finalized_;
+ public:
+  string* hash_name_;
+  bool finalized_;
 
   CryptographicHash();
   virtual ~CryptographicHash();
 };
 #endif
-

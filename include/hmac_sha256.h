@@ -25,24 +25,20 @@
 using namespace std;
 
 class HmacSha256 {
-public:
-  enum {
-    BLOCKBYTESIZE= 64,
-    MACBYTESIZE= 32
-  };
+ public:
+  enum { BLOCKBYTESIZE = 64, MACBYTESIZE = 32 };
 
-  bool    macvalid_;
-  byte    key_[BLOCKBYTESIZE];
-  byte    mac_[MACBYTESIZE];
-  Sha256  inner_sha256_;
+  bool macvalid_;
+  byte key_[BLOCKBYTESIZE];
+  byte mac_[MACBYTESIZE];
+  Sha256 inner_sha256_;
 
   HmacSha256();
   ~HmacSha256();
 
-  bool    Init(int size, byte* key);
-  void    AddToInnerHash(int size, const byte* in);
-  bool    GetHmac(int size, byte* out);
-  void    Final();
+  bool Init(int size, byte* key);
+  void AddToInnerHash(int size, const byte* in);
+  bool GetHmac(int size, byte* out);
+  void Final();
 };
 #endif
-

@@ -23,30 +23,29 @@
 #define _CRYPTO_SHA3__H
 
 class Sha3 : public CryptographicHash {
-public:
-  enum {    
-    BLOCKBYTESIZE= 128,
-    BLOCKBITSIZE= 1024,
-    NR= 24,
-    LANESIZEBITS= 64,
+ public:
+  enum {
+    BLOCKBYTESIZE = 128,
+    BLOCKBITSIZE = 1024,
+    NR = 24,
+    LANESIZEBITS = 64,
   };
-  int       num_out_bytes_;
-  int       num_bytes_waiting_;
-  byte      bytes_waiting_[BLOCKBYTESIZE];
-  uint64_t  state_[5*5];
-  byte      digest_[256];
-  uint64_t  num_bits_processed_;
-  bool      finalized_;
+  int num_out_bytes_;
+  int num_bytes_waiting_;
+  byte bytes_waiting_[BLOCKBYTESIZE];
+  uint64_t state_[5 * 5];
+  byte digest_[256];
+  uint64_t num_bits_processed_;
+  bool finalized_;
 
   Sha3(int num_bits);
   ~Sha3();
 
-  void      TransformBlock(const uint64_t*, int);
+  void TransformBlock(const uint64_t*, int);
 
-  bool      Init();
-  void      AddToHash(int size, const byte* in);
-  bool      GetDigest(int size, byte* out);
-  void      Final();
+  bool Init();
+  void AddToHash(int size, const byte* in);
+  bool GetDigest(int size, byte* out);
+  void Final();
 };
 #endif
-

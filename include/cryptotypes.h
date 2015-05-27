@@ -55,4 +55,3 @@ typedef long long unsigned uint64_t;
 #include <cstddef>
 
 #endif
-

@@ -25,24 +25,25 @@
 using namespace std;
 
 class Rc4 {
-public:
+ public:
   enum {
-    BLOCKBYTESIZE=8,
+    BLOCKBYTESIZE = 8,
   };
-private:
-  bool      initialized_;
-  int       key_size_;
-  byte      key_[256];
-  byte      state_[256];
-  int       index1_;
-  int       index2_;
 
-public:
-            Rc4();
-            ~Rc4();
+ private:
+  bool initialized_;
+  int key_size_;
+  byte key_[256];
+  byte state_[256];
+  int index1_;
+  int index2_;
 
-  bool      Init(int size, byte* key);
-  byte      Next();
-  void      Encrypt(int size, byte* in, byte* out);
+ public:
+  Rc4();
+  ~Rc4();
+
+  bool Init(int size, byte* key);
+  byte Next();
+  void Encrypt(int size, byte* in, byte* out);
 };
 #endif

@@ -24,7 +24,6 @@
 #define _CRYPTO_PBKDF_H__
 using namespace std;
 
-bool pbkdf2(const char* pass, int saltLen, byte* salt, int iter, 
-            int out_size, byte* out);
+bool pbkdf2(const char* pass, int saltLen, byte* salt, int iter, int out_size,
+            byte* out);
 #endif
-

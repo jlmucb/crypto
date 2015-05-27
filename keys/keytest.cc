@@ -34,18 +34,16 @@ class KeyTest : public ::testing::Test {
   virtual void TearDown();
 };
 
-void KeyTest::SetUp() {
-}
+void KeyTest::SetUp() {}
 
-void KeyTest::TearDown() {
-}
+void KeyTest::TearDown() {}
 
 bool simpletest1() {
-  SymmetricKey  the_key;
-  SymmetricKey  new_key;
+  SymmetricKey the_key;
+  SymmetricKey new_key;
 
-  if(!the_key.GenerateAesKey("JohnsKey", "channel-encryption", 
-            "John Manferdelli", 128, COMMON_YEAR_SECONDS)) {
+  if (!the_key.GenerateAesKey("JohnsKey", "channel-encryption",
+                              "John Manferdelli", 128, COMMON_YEAR_SECONDS)) {
     printf("GenerateAesKey failed\n");
     return false;
   }
@@ -53,13 +51,13 @@ bool simpletest1() {
   the_key.PrintKey();
   printf("\n");
 
-  string  filename("jlmTestSave1");
-  if(!((CryptoKey*)&the_key)->SaveKey(filename)) {
+  string filename("jlmTestSave1");
+  if (!((CryptoKey*)&the_key)->SaveKey(filename)) {
     printf("SaveKey failed\n");
     return false;
   }
 
-  if(!((CryptoKey*)&new_key)->ReadKey(filename)) {
+  if (!((CryptoKey*)&new_key)->ReadKey(filename)) {
     printf("ReadKey failed\n");
     return false;
   }
@@ -70,27 +68,27 @@ bool simpletest1() {
 }
 
 bool RunTestSuite() {
-  KeyStore      key_store;
-  SymmetricKey  the_key;
+  KeyStore key_store;
+  SymmetricKey the_key;
 
-  if(!the_key.GenerateAesKey("JohnsStoreKey1", "channel-encryption", 
-            "John Manferdelli", 128, COMMON_YEAR_SECONDS)) {
+  if (!the_key.GenerateAesKey("JohnsStoreKey1", "channel-encryption",
+                              "John Manferdelli", 128, COMMON_YEAR_SECONDS)) {
     printf("GenerateAesKey failed\n");
     return false;
   }
 
-  if(!key_store.ReadStore("TestKeyStore")) {
+  if (!key_store.ReadStore("TestKeyStore")) {
     printf("Cant read key store\n");
     return false;
   }
-  if(!key_store.AddKey((CryptoKey*)&the_key)) {
+  if (!key_store.AddKey((CryptoKey*)&the_key)) {
     printf("Cant add to key store\n");
     return false;
   }
 
-  CryptoKey*    p_msg= nullptr;
-  string*       p_string= nullptr;
-  if(!key_store.FindKey("JohnsStoreKey1", &p_string, &p_msg)) {
+  CryptoKey* p_msg = nullptr;
+  string* p_string = nullptr;
+  if (!key_store.FindKey("JohnsStoreKey1", &p_string, &p_msg)) {
     printf("Cant find key in store\n");
     return false;
   }
@@ -98,26 +96,19 @@ bool RunTestSuite() {
   return true;
 }
 
-TEST(FirstKeyCase, FirstKeyTest) {
-  EXPECT_TRUE(simpletest1());
-}
+TEST(FirstKeyCase, FirstKeyTest) { EXPECT_TRUE(simpletest1()); }
 
-TEST_F(KeyTest, RunTestSuite) {
-  EXPECT_TRUE(RunTestSuite());
-}
+TEST_F(KeyTest, RunTestSuite) { EXPECT_TRUE(RunTestSuite()); }
 
 DEFINE_string(log_file, "keytest.log", "keytest logging file name");
 
 int main(int an, char** av) {
-
   ::testing::InitGoogleTest(&an, av);
-  if(!InitUtilities(FLAGS_log_file.c_str())) {
+  if (!InitUtilities(FLAGS_log_file.c_str())) {
     printf("InitUtilities() failed\n");
     return 1;
   }
-  int result= RUN_ALL_TESTS();
+  int result = RUN_ALL_TESTS();
   CloseUtilities();
   return result;
 }
-
-

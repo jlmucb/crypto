@@ -22,51 +22,45 @@
 #include "rc4.h"
 
 inline void swap(byte* a, byte* b) {
-  byte c= *a;
-  *a= *b;
-  *b= c;
+  byte c = *a;
+  *a = *b;
+  *b = c;
 }
 
-Rc4::Rc4() {
-  initialized_= false;
-}
+Rc4::Rc4() { initialized_ = false; }
 
-Rc4::~Rc4() {
-  initialized_= false;
-}
+Rc4::~Rc4() { initialized_ = false; }
 
 bool Rc4::Init(int size, byte* key) {
-  int   i;
+  int i;
 
-  for(i= 0; i<256; i++)
-    state_[i]= i;
+  for (i = 0; i < 256; i++) state_[i] = i;
 
-  key_size_= size;
-  for(i= 0; i<256; i++) {
-    key_[i]= key[i%size];
+  key_size_ = size;
+  for (i = 0; i < 256; i++) {
+    key_[i] = key[i % size];
   }
 
-  index2_= 0;
-  for(index1_= 0; index1_<256; index1_++) {
-    index2_= (key_[index1_]+state_[index1_]+index2_)%256;
+  index2_ = 0;
+  for (index1_ = 0; index1_ < 256; index1_++) {
+    index2_ = (key_[index1_] + state_[index1_] + index2_) % 256;
     swap(&state_[index1_], &state_[index2_]);
   }
-  index1_= 0;
-  index2_= 0;
-  initialized_= true;
+  index1_ = 0;
+  index2_ = 0;
+  initialized_ = true;
   return true;
 }
 
 byte Rc4::Next() {
-  index1_= (index1_+1)%256;
-  index2_= (index2_+state_[index1_])%256;
+  index1_ = (index1_ + 1) % 256;
+  index2_ = (index2_ + state_[index1_]) % 256;
   swap(&state_[index1_], &state_[index2_]);
-  return state_[(state_[index1_]+state_[index2_])%256];
+  return state_[(state_[index1_] + state_[index2_]) % 256];
 }
 
 void Rc4::Encrypt(int size, byte* in, byte* out) {
   int i;
 
-  for(i= 0; i<size; i++)
-      out[i]= in[i]^Next();
+  for (i = 0; i < size; i++) out[i] = in[i] ^ Next();
 }

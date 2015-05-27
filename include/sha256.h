@@ -24,26 +24,22 @@
 using namespace std;
 
 class Sha256 : public CryptographicHash {
-public:
-  enum {
-    BLOCKBYTESIZE= 64,
-    DIGESTBYTESIZE= 32
-  };
-  int       num_bytes_waiting_;
-  byte      bytes_waiting_[BLOCKBYTESIZE];
-  uint32_t  state_[DIGESTBYTESIZE/sizeof(uint32_t)];
-  byte      digest_[DIGESTBYTESIZE];
-  uint64_t  num_bits_processed_;
+ public:
+  enum { BLOCKBYTESIZE = 64, DIGESTBYTESIZE = 32 };
+  int num_bytes_waiting_;
+  byte bytes_waiting_[BLOCKBYTESIZE];
+  uint32_t state_[DIGESTBYTESIZE / sizeof(uint32_t)];
+  byte digest_[DIGESTBYTESIZE];
+  uint64_t num_bits_processed_;
 
   Sha256();
   ~Sha256();
 
-  void      TransformBlock(const uint32_t* data);
+  void TransformBlock(const uint32_t* data);
 
-  bool      Init();
-  void      AddToHash(int size, const byte* in);
-  bool      GetDigest(int size, byte* out);
-  void      Final();
+  bool Init();
+  void AddToHash(int size, const byte* in);
+  bool GetDigest(int size, byte* out);
+  void Final();
 };
 #endif
-

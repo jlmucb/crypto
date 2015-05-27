@@ -26,28 +26,28 @@ using namespace std;
 #define _CRYPTO_INDETERMINATE_H__
 
 class Polynomial {
-public:
-  int           size_num_;
-  BigNum*       m_;
-  int           num_c_;
-  BigNum**      c_;
+ public:
+  int size_num_;
+  BigNum* m_;
+  int num_c_;
+  BigNum** c_;
 
   Polynomial(int size_num, int num_c);
   Polynomial(int size_num, int num_c, BigNum& c);
   ~Polynomial();
 
-  int           Degree();
-  bool          IsZero();
-  bool          IsOne();
-  bool          CopyTo(Polynomial& a);
-  bool          CopyFrom(Polynomial& a);
-  void          Print(bool small= false);
+  int Degree();
+  bool IsZero();
+  bool IsOne();
+  bool CopyTo(Polynomial& a);
+  bool CopyFrom(Polynomial& a);
+  void Print(bool small = false);
 };
 
 class monomial {
-public:
-  int           d_;
-  BigNum*       n_;
+ public:
+  int d_;
+  BigNum* n_;
 
   monomial();
   monomial(int d, int size, uint64_t v);
@@ -57,22 +57,23 @@ public:
 Polynomial* MakePoly(int size_num, int num_c, int n, monomial* m);
 
 class RationalPoly {
-public:
-  Polynomial*   top_;
-  Polynomial*   bot_;
+ public:
+  Polynomial* top_;
+  Polynomial* bot_;
 
   RationalPoly(int size_num, int num_c);
   RationalPoly(int size_num, int num_c, BigNum& c);
-  RationalPoly(int size_num, int num_c, BigNum& c, Polynomial& t, Polynomial& b);
+  RationalPoly(int size_num, int num_c, BigNum& c, Polynomial& t,
+               Polynomial& b);
   ~RationalPoly();
 
-  int           Degree();
-  bool          Reduce();
-  bool          IsZero();
-  bool          IsOne();
-  bool          CopyTo(RationalPoly& a);
-  bool          CopyFrom(RationalPoly& a);
-  void          Print(bool small= false);
+  int Degree();
+  bool Reduce();
+  bool IsZero();
+  bool IsOne();
+  bool CopyTo(RationalPoly& a);
+  bool CopyFrom(RationalPoly& a);
+  void Print(bool small = false);
 };
 
 bool PolyIsEqual(Polynomial& a, Polynomial& b);
@@ -83,7 +84,7 @@ bool MultiplyPolyByMonomial(Polynomial& a, int d, BigNum& n, Polynomial& r);
 bool ZeroPoly(Polynomial& a);
 bool OnePoly(Polynomial& a);
 bool PolyEuclid(Polynomial& a, Polynomial& b, Polynomial& q, Polynomial& r);
-bool PolyExtendedGcd(Polynomial& a, Polynomial& b, Polynomial& x, Polynomial& y, 
+bool PolyExtendedGcd(Polynomial& a, Polynomial& b, Polynomial& x, Polynomial& y,
                      Polynomial& g);
 bool ReduceModPoly(Polynomial& a, Polynomial& m, Polynomial& r);
 
@@ -96,4 +97,3 @@ bool ZeroRational(RationalPoly& a);
 bool OneRational(RationalPoly& a);
 
 #endif
-

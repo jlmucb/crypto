@@ -34,6 +34,3 @@ string* ByteToHexRightToLeft(int, byte*);
 int HexToByteLeftToRight(char*, int, byte*);
 int HexToByteRightToLeft(char*, int, byte*);
 #endif
-
-
-

@@ -27,119 +27,106 @@
 //  __declspec(align(4)) uint32_t  capacity_;
 //  __declspec(align(4)) uint32_t  size_;
 //  __declspec(align(8)) uint64_t* value_;
-  
+
 BigNum::BigNum(int size) {
-  value_= new uint64_t[size];
-  capacity_= size; 
+  value_ = new uint64_t[size];
+  capacity_ = size;
   DigitArrayZeroNum(capacity_, value_);
-  size_= 1; 
-  sign_= false;
+  size_ = 1;
+  sign_ = false;
 }
 
 BigNum::BigNum(int size, uint64_t x) {
-  value_= new uint64_t[1];
-  capacity_= 1;
-  size_= 1; 
-  value_[0]= x;
-  sign_= false;
+  value_ = new uint64_t[1];
+  capacity_ = 1;
+  size_ = 1;
+  value_[0] = x;
+  sign_ = false;
 }
 
 BigNum::BigNum(BigNum& n, int capacity) {
-  capacity_= capacity; 
-  size_= n.size_; 
-  sign_= n.sign_; 
-  value_= new uint64_t[capacity_];
+  capacity_ = capacity;
+  size_ = n.size_;
+  sign_ = n.sign_;
+  value_ = new uint64_t[capacity_];
   CopyFrom(n);
 }
 
 BigNum::BigNum(BigNum& n) {
-  capacity_= n.capacity_; 
-  size_= n.size_; 
-  sign_= n.sign_; 
-  value_= new uint64_t[capacity_];
+  capacity_ = n.capacity_;
+  size_ = n.size_;
+  sign_ = n.sign_;
+  value_ = new uint64_t[capacity_];
   CopyFrom(n);
 }
 
 BigNum::~BigNum() {
-  if(value_!=nullptr) {
+  if (value_ != nullptr) {
     DigitArrayZeroNum(capacity_, value_);
     delete value_;
-    value_= nullptr;
+    value_ = nullptr;
   }
 }
 
-int BigNum::Capacity() {
-  return capacity_;
-}
+int BigNum::Capacity() { return capacity_; }
 
-int BigNum::Size() {
-  return size_;
-}
+int BigNum::Size() { return size_; }
 
-uint64_t*   BigNum::ValuePtr() {
-  return value_;
-}
+uint64_t* BigNum::ValuePtr() { return value_; }
 
-bool BigNum::IsPositive() {
-  return !sign_;
-}
+bool BigNum::IsPositive() { return !sign_; }
 
 bool BigNum::IsZero() {
-  size_= DigitArrayComputedSize(capacity_, value_);
-  if(size_==1 && value_[0]==0ULL)
+  size_ = DigitArrayComputedSize(capacity_, value_);
+  if (size_ == 1 && value_[0] == 0ULL)
     return true;
-  return false; 
+  return false;
 }
 
 bool BigNum::IsOne() {
-  size_= DigitArrayComputedSize(capacity_, value_);
-  if(size_==1 && value_[0]==1ULL)
+  size_ = DigitArrayComputedSize(capacity_, value_);
+  if (size_ == 1 && value_[0] == 1ULL)
     return true;
-  return false; 
+  return false;
 }
 
-bool BigNum::IsNegative() {
-  return sign_;
-}
+bool BigNum::IsNegative() { return sign_; }
 
-void BigNum::ToggleSign() {
-  sign_= !sign_;
-}
+void BigNum::ToggleSign() { sign_ = !sign_; }
 
 void BigNum::Normalize() {
-  if(IsZero()) {
-    size_= 1;
-    sign_= false;
+  if (IsZero()) {
+    size_ = 1;
+    sign_ = false;
     return;
   }
-  size_= DigitArrayComputedSize(capacity_, value_);
+  size_ = DigitArrayComputedSize(capacity_, value_);
 }
 
 void BigNum::ZeroNum() {
-  size_= 1;
-  sign_= false;
+  size_ = 1;
+  sign_ = false;
   DigitArrayZeroNum(capacity_, value_);
 }
 
 bool BigNum::CopyFrom(BigNum& old) {
-  if(old.size_>capacity_)
-    return false; 
-  DigitArrayZeroNum(capacity_, value_);
-  sign_= old.sign_;
-  if(!DigitArrayCopy(old.size_, old.value_, capacity_, value_))
+  if (old.size_ > capacity_)
     return false;
-  size_= DigitArrayComputedSize(capacity_, value_);
+  DigitArrayZeroNum(capacity_, value_);
+  sign_ = old.sign_;
+  if (!DigitArrayCopy(old.size_, old.value_, capacity_, value_))
+    return false;
+  size_ = DigitArrayComputedSize(capacity_, value_);
   return true;
 }
 
 bool BigNum::CopyTo(BigNum& other) {
-  if(size_>other.capacity_)
-    return false; 
-  DigitArrayZeroNum(other.capacity_, other.value_);
-  other.sign_= sign_;
-  if(!DigitArrayCopy(size_, value_, other.capacity_, other.value_))
+  if (size_ > other.capacity_)
     return false;
-  other.size_= DigitArrayComputedSize(other.capacity_, other.value_);
+  DigitArrayZeroNum(other.capacity_, other.value_);
+  other.sign_ = sign_;
+  if (!DigitArrayCopy(size_, value_, other.capacity_, other.value_))
+    return false;
+  other.size_ = DigitArrayComputedSize(other.capacity_, other.value_);
   return true;
 }
-

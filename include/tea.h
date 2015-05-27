@@ -27,23 +27,19 @@
 using namespace std;
 
 class Tea : public SymmetricCipher {
-private:
-  bool      initialized_;
-  uint32_t  key_[4];
+ private:
+  bool initialized_;
+  uint32_t key_[4];
 
-public:
-  enum {
-    BLOCKBYTESIZE= 16,
-    MAXKB= (256/8),
-    MAXKC= (256/32)
-};
-            Tea();
-            ~Tea();
+ public:
+  enum { BLOCKBYTESIZE = 16, MAXKB = (256 / 8), MAXKC = (256 / 32) };
+  Tea();
+  ~Tea();
 
-  bool      Init(int key_bit_size, byte* key, int direction);
-  void      EncryptBlock(const byte* in, byte* out);
-  void      DecryptBlock(const byte* in, byte* out);
-  void      Encrypt(int size, byte* in, byte* out);
-  void      Decrypt(int size, byte* in, byte* out);
+  bool Init(int key_bit_size, byte* key, int direction);
+  void EncryptBlock(const byte* in, byte* out);
+  void DecryptBlock(const byte* in, byte* out);
+  void Encrypt(int size, byte* in, byte* out);
+  void Decrypt(int size, byte* in, byte* out);
 };
 #endif

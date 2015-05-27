@@ -22,15 +22,14 @@
 #include "hash.h"
 
 CryptographicHash::CryptographicHash() {
-  hash_name_= nullptr;
-  finalized_= false;
+  hash_name_ = nullptr;
+  finalized_ = false;
 }
 
 CryptographicHash::~CryptographicHash() {
-  if(hash_name_!=nullptr) {
+  if (hash_name_ != nullptr) {
     delete hash_name_;
-    hash_name_= nullptr;
+    hash_name_ = nullptr;
   }
-  finalized_= false;
+  finalized_ = false;
 }
-

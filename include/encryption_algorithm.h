@@ -27,39 +27,39 @@
 #define _CRYPTO_ENCRYPTION_ALGORITHM_H__
 using namespace std;
 
-
 class EncryptionAlgorithm {
-public:
-  enum {
-    ENCRYPT= 1,
-    DECRYPT= 2
-  };
-  string*       alg_name_;
-  string*       message_id_;
-  bool          initialized_;
-  int           direction_;
-  int           input_bytes_processed_;
-  int           output_bytes_produced_;
+ public:
+  enum { ENCRYPT = 1, DECRYPT = 2 };
+  string* alg_name_;
+  string* message_id_;
+  bool initialized_;
+  int direction_;
+  int input_bytes_processed_;
+  int output_bytes_produced_;
 
   EncryptionAlgorithm();
   virtual ~EncryptionAlgorithm();
 
-  bool     ReadEncryptionAlgorithm(string& filename);
-  bool     SaveEncryptionAlgorithm(string& filename);
-  bool     SerializeEncryptionAlgorithmToMessage(crypto_encryption_algorithm_message&);
-  bool     DeserializeEncryptionAlgorithmFromMessage(crypto_encryption_algorithm_message&);
+  bool ReadEncryptionAlgorithm(string& filename);
+  bool SaveEncryptionAlgorithm(string& filename);
+  bool SerializeEncryptionAlgorithmToMessage(
+      crypto_encryption_algorithm_message&);
+  bool DeserializeEncryptionAlgorithmFromMessage(
+      crypto_encryption_algorithm_message&);
 
-  virtual int   DecryptInputQuantum()= 0;
-  virtual int   EncryptInputQuantum()= 0;
-  virtual int   MinimumFinalDecryptIn()= 0;
-  virtual int   MinimumFinalEncryptIn()= 0;
-  virtual int   MaxAdditionalOutput()= 0;
-  virtual int   MaxAdditionalFinalOutput()= 0;
-  virtual bool  ProcessInput(int size_in, byte* in, int* size_out, byte* out)= 0;
-  virtual bool  ProcessFinalInput(int size_in, byte* in, int* size_out, byte* out)= 0;
-  virtual int   InputBytesProcessed()= 0;
-  virtual int   OutputBytesProduced()= 0;
-  virtual bool  MessageValid()= 0;
+  virtual int DecryptInputQuantum() = 0;
+  virtual int EncryptInputQuantum() = 0;
+  virtual int MinimumFinalDecryptIn() = 0;
+  virtual int MinimumFinalEncryptIn() = 0;
+  virtual int MaxAdditionalOutput() = 0;
+  virtual int MaxAdditionalFinalOutput() = 0;
+  virtual bool ProcessInput(int size_in, byte* in, int* size_out,
+                            byte* out) = 0;
+  virtual bool ProcessFinalInput(int size_in, byte* in, int* size_out,
+                                 byte* out) = 0;
+  virtual int InputBytesProcessed() = 0;
+  virtual int OutputBytesProduced() = 0;
+  virtual bool MessageValid() = 0;
 };
 
 //
@@ -70,4 +70,3 @@ public:
 //    aes-ctr-hmacsha256-sympad
 //    aes-gcm-sympad
 #endif
-

@@ -27,27 +27,26 @@
 using namespace std;
 
 class Simon128 : public SymmetricCipher {
-private:
-  bool      initialized_;
-  int       size_;
-  uint64_t  key_[4];
-  uint64_t  round_key_[72];
-  int       num_rounds_;
-  bool      CalculateKS();
-  uint64_t  ConstCalc(int cn, int sn);
+ private:
+  bool initialized_;
+  int size_;
+  uint64_t key_[4];
+  uint64_t round_key_[72];
+  int num_rounds_;
+  bool CalculateKS();
+  uint64_t ConstCalc(int cn, int sn);
 
-public:
+ public:
   enum {
-    BLOCKBYTESIZE= 16,
-};
-            Simon128();
-  virtual   ~Simon128();
+    BLOCKBYTESIZE = 16,
+  };
+  Simon128();
+  virtual ~Simon128();
 
-  bool      Init(int key_bit_size, byte* key, int directionflag);
-  void      EncryptBlock(const byte* in, byte* out);
-  void      DecryptBlock(const byte* in, byte* out);
-  void      Encrypt(int size, byte* in, byte* out);
-  void      Decrypt(int size, byte* in, byte* out);
+  bool Init(int key_bit_size, byte* key, int directionflag);
+  void EncryptBlock(const byte* in, byte* out);
+  void DecryptBlock(const byte* in, byte* out);
+  void Encrypt(int size, byte* in, byte* out);
+  void Decrypt(int size, byte* in, byte* out);
 };
 #endif
-
