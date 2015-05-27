@@ -54,7 +54,6 @@
 ./cryptutil.exe --operation=ReadKey --algorithm=tea-64 --input_file=johnsteakey1
 ./cryptutil.exe --operation=SymEncryptWithKey --key_file=johnsteakey1 --algorithm=tea-64 --input_file=randFile --output_file=randFile.out
 ./cryptutil.exe --operation=SymDecryptWithKey --key_file=johnsteakey1 --algorithm=tea-64 --input_file=randFile.out --output_file=randFile.out2
-
-#./cryptutil.exe --operation=Mac --algorithm=alg --keyfile=file --input_file=file --output_file=file
-#./cryptutil.exe --operation=VerifyMac --algorithm=alg --keyfile=file --input_file=file --output_file=file
+./cryptutil.exe --operation=Mac --algorithm=hmac-sha-256 --key_file=xx --input_file=xx --output_file=mac.out
+./cryptutil.exe --operation=VerifyMac --algorithm=hmac-sha-256 --key_file=xx --input_file=xx --input2_file=mac.out 
 
