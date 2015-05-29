@@ -258,9 +258,9 @@ void Uint64AddWithCarryStep(uint64_t a, uint64_t b, uint64_t carry_in,
       "\tjnc    2f\n"
       "\tmovq   $1,(%%rbx)\n"
       "2:\n"
-      "\tmovq   %%rax, (%%rcx)\n" ::[result] "g"(result),
-      [carry_out] "g"(carry_out), [a] "g"(a), [b] "g"(b),
-      [carry_in] "g"(carry_in)
+      "\tmovq   %%rax, (%%rcx)\n"
+      ::[result] "g"(result), [carry_out] "g"(carry_out), [a] "g"(a),
+      [b] "g"(b), [carry_in] "g"(carry_in)
       : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx");
 }
 
@@ -280,9 +280,9 @@ void Uint64SubWithBorrowStep(uint64_t a, uint64_t b, uint64_t borrow_in,
       "\tjnc    2f\n"
       "\tmovq   $1,(%%rbx)\n"
       "2:\n"
-      "\tmovq   %%rax,(%%rcx)\n" ::[result] "g"(result),
-      [borrow_out] "g"(borrow_out), [a] "g"(a), [b] "g"(b),
-      [borrow_in] "g"(borrow_in)
+      "\tmovq   %%rax,(%%rcx)\n"
+      ::[result] "g"(result), [borrow_out] "g"(borrow_out), [a] "g"(a),
+      [b] "g"(b), [borrow_in] "g"(borrow_in)
       : "cc", "memory", "%rax", "%rbx", "%rcx");
 }
 
@@ -304,8 +304,8 @@ void Uint64MultWithCarryStep(uint64_t a, uint64_t b, uint64_t carry1,
       "\taddq   $1,%%rdx\n"
       "2:\n"
       "\tmovq   %%rax,(%%rcx)\n"
-      "\tmovq   %%rdx,(%%rbx)\n" ::[a] "g"(a),
-      [b] "g"(b), [carry1] "g"(carry1), [carry2] "g"(carry2),
+      "\tmovq   %%rdx,(%%rbx)\n"
+      ::[a] "g"(a), [b] "g"(b), [carry1] "g"(carry1), [carry2] "g"(carry2),
       [result] "g"(result), [carry_out] "g"(carry_out)
       : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx");
 }
@@ -420,10 +420,8 @@ int DigitArrayMult(int size_a, uint64_t* a, int size_b, uint64_t* b,
       "\naddq   $1, %%r11\n"
       "\tcmpq   %[size_A], %%r11\n"
       "\tjl     1b\n"
-
-      ::[carry] "m"(carry),
-      [in1] "g"(a), [in2] "g"(b), [size_A] "g"(size_A), [size_B] "g"(size_B),
-      [result] "g"(result)
+      ::[carry] "m"(carry), [in1] "g"(a), [in2] "g"(b), [size_A] "g"(size_A),
+	[size_B] "g"(size_B), [result] "g"(result)
       : "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r11", "%r12", "%r13",
         "%r14", "%r15");
 #else
@@ -544,7 +542,6 @@ int DigitArraySquare(int size_a, uint64_t* a, int size_result,
       "\tjmp    2b\n"
       "\t.balign 16\n"
       "11:\n"
-
       : [cur_in] "=m"(cur_in), [cur_out] "=m"(cur_out)
       : [a] "m"(a), [result] "m"(result), [size_a] "m"(size_a),
         [size_result] "m"(size_result)
@@ -580,8 +577,8 @@ int DigitArrayMultBy(int capacity_a, int size_a, uint64_t* a, uint64_t x) {
       "\tsubq   $1,%%rbx\n"
       "\tcmpq   $0,%%rbx\n"
       "\tjg     1b\n"
-      "\tmovq   %%r8,(%%rcx)\n" ::[a] "g"(a),
-      [x] "g"(x), [size_a] "g"(size_a)
+      "\tmovq   %%r8,(%%rcx)\n"
+      ::[a] "g"(a), [x] "g"(x), [size_a] "g"(size_a)
       : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx", "%r8");
 
   return DigitArrayComputedSize(size_a, a);
@@ -631,8 +628,8 @@ int DigitArrayAddTo(int capacity_a, int size_a, uint64_t* a, int size_b,
       "\tcmpq   $0,%%r9\n"
       "\tjg     3b\n"
       "7:\n"
-      "\tmovq   %%r8,(%%rcx)\n" ::[a] "g"(a),
-      [b] "g"(b), [len_a] "g"(len_a), [len_b] "g"(len_b)
+      "\tmovq   %%r8,(%%rcx)\n"
+      ::[a] "g"(a), [b] "g"(b), [len_a] "g"(len_a), [len_b] "g"(len_b)
       : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9", "%r12");
 
   return DigitArrayComputedSize(capacity_a, a);
@@ -682,8 +679,7 @@ int DigitArraySubFrom(int capacity_a, int size_a, uint64_t* a, int size_b,
       "\tsubq   $1,%%r9\n"
       "\tcmpq   $0,%%r9\n"
       "\tjg     3b\n"
-      ::[a] "g"(a),
-      [b] "g"(b), [len_a] "g"(len_a), [len_b] "g"(len_b)
+      ::[a] "g"(a), [b] "g"(b), [len_a] "g"(len_a), [len_b] "g"(len_b)
       : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9", "%r12");
 
   return DigitArrayComputedSize(capacity_a, a);
@@ -711,7 +707,8 @@ bool DigitArrayShortDivisionAlgorithm(int size_a, uint64_t* a, uint64_t b,
       "\tjg     1b\n"
       "\tmovq   %[r],%%rbx\n"
       "\tmovq   %%rdx, (%%rbx)\n"
-      ::[r] "g"(r), [len_a] "g"(len_a), [a_high] "g"(a_high), [b] "g"(b), [q_high] "g"(q_high)
+      ::[r] "g"(r), [len_a] "g"(len_a), [a_high] "g"(a_high), [b] "g"(b),
+        [q_high] "g"(q_high)
       : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx", "%r8");
   *size_q = DigitArrayComputedSize(*size_q, q);
   return true;

@@ -2,7 +2,6 @@ New assembly for BigMult
 Do benchmark tests
 
 Add
-    rc4
     xml d-sig formats
     aes128-cbc-vmac-sympad
     aes128-ctr-vmac-sympad
