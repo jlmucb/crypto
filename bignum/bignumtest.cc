@@ -4171,52 +4171,163 @@ bool RunTestSuite() { return true; }
 
 #define TESTBUFSIZE 2048
 
-TEST(FirstBigNumCase, FirstBigNumTest) {
+TEST(BigNum, RandTest) {
   EXPECT_TRUE(getrand_time_tests(100));
-  EXPECT_TRUE(simpletest());
-  EXPECT_TRUE(unsigned_arith_tests());
-  EXPECT_TRUE(square_test());
-  EXPECT_TRUE(print_tests());
-  EXPECT_TRUE(basic_tests());
-  EXPECT_TRUE(convert_tests());
-  EXPECT_TRUE(bit_tests());
-  EXPECT_TRUE(shift_tests());
-  EXPECT_TRUE(raw_arith_tests());
-  EXPECT_TRUE(signed_arith_tests());
-  EXPECT_TRUE(number_theory_tests());
-  EXPECT_TRUE(key_format_tests());
-  EXPECT_TRUE(key_store_tests());
-  EXPECT_TRUE(mont_arith_tests());
-  EXPECT_TRUE(simple_mult_time_test("test_data", TESTBUFSIZE, 1000000));
-  EXPECT_TRUE(simple_div_time_test("test_data", TESTBUFSIZE, 1000000));
-  EXPECT_TRUE(mult_div_stress("test_data", 32, 5000));
-  EXPECT_TRUE(mult_time_test("test_data", 32, 5000));
-  EXPECT_TRUE(mult_time_test("test_data", 64, 5000));
-  EXPECT_TRUE(div_time_test("test_data", 32, 5000));
-  EXPECT_TRUE(exp_time_test("test_data", 16, 50));
-  EXPECT_TRUE(mont_exp_time_test("test_data", 16, 50));
-  EXPECT_TRUE(simple_ecc_tests());
-  EXPECT_TRUE(simple_projective_ecc_tests());
-  EXPECT_TRUE(ecc_tests());
-  EXPECT_TRUE(ecc_add_time_test("test_data", ext_ecc_key, 200));
-  EXPECT_TRUE(ecc_double_time_test("test_data", ext_ecc_key, 200));
-  EXPECT_TRUE(ecc_mult_time_test("test_data", ext_ecc_key, 200));
-  EXPECT_TRUE(ecc_projective_mult_time_test("test_data", ext_ecc_key, 200));
-  EXPECT_TRUE(ecc_embed_time_test("test_data", ext_ecc_key, 200));
-  EXPECT_TRUE(ecc_extract_time_test("test_data", ext_ecc_key, 200));
-  EXPECT_TRUE(ecc_projective_compare_tests(ext_ecc_key, 200));
-  EXPECT_TRUE(ecc_speed_tests(nullptr, "test_data", 0, 200));
-  EXPECT_TRUE(rsa_tests());
-  EXPECT_TRUE(rsa_speed_tests(nullptr, nullptr, "test_data", 0, 500));
-  EXPECT_TRUE(
-      square_root_time_test("test_data", 3, *(ext_ecc_key->c_.p_), 200));
-  /*
-    EXPECT_TRUE(rsa1024_gen_time_test("test_data", 20));
-    EXPECT_TRUE(rsa2048_gen_time_test("test_data", 20));
-  */
 }
 
-TEST_F(BigNumTest, RunTestSuite) { EXPECT_TRUE(RunTestSuite()); }
+TEST(BigNum, SimpleTest) {
+  EXPECT_TRUE(simpletest());
+}
+
+TEST(BigNum, UnsignedArithTest) {
+  EXPECT_TRUE(unsigned_arith_tests());
+}
+
+TEST(BigNum, SquareTest) {
+  EXPECT_TRUE(square_test());
+}
+
+TEST(BigNum, PrintTest) {
+  EXPECT_TRUE(print_tests());
+}
+
+TEST(BigNum, BasicTest) {
+  EXPECT_TRUE(basic_tests());
+}
+
+TEST(BigNum, ConvertTest) {
+  EXPECT_TRUE(convert_tests());
+}
+
+TEST(BigNum, BitTest) {
+  EXPECT_TRUE(bit_tests());
+}
+
+TEST(BigNum, ShiftTest) {
+  EXPECT_TRUE(shift_tests());
+}
+
+TEST(BigNum, RawArithTest) {
+  EXPECT_TRUE(raw_arith_tests());
+}
+
+TEST(BigNum, SignedArithTest) {
+  EXPECT_TRUE(signed_arith_tests());
+}
+
+TEST(BigNum, NumberTheoryTest) {
+  EXPECT_TRUE(number_theory_tests());
+}
+
+TEST(BigNum, KeyFormatTest) {
+  EXPECT_TRUE(key_format_tests());
+}
+
+TEST(BigNum, KeyStoreTest) {
+  EXPECT_TRUE(key_store_tests());
+}
+
+TEST(BigNum, MontTest) {
+  EXPECT_TRUE(mont_arith_tests());
+}
+
+TEST(BigNum, SImpleMultTest) {
+  EXPECT_TRUE(simple_mult_time_test("test_data", TESTBUFSIZE, 1000000));
+}
+
+TEST(BigNum, SimpleDivTest) {
+  EXPECT_TRUE(simple_div_time_test("test_data", TESTBUFSIZE, 1000000));
+}
+
+TEST(BigNum, MultDivTest) {
+  EXPECT_TRUE(mult_div_stress("test_data", 32, 5000));
+}
+
+TEST(BigNum, MultTimeTest) {
+  EXPECT_TRUE(mult_time_test("test_data", 32, 5000));
+  EXPECT_TRUE(mult_time_test("test_data", 64, 5000));
+}
+
+TEST(BigNum, DivTimeTest) {
+  EXPECT_TRUE(div_time_test("test_data", 32, 5000));
+}
+
+TEST(BigNum, ExpTimeTest) {
+  EXPECT_TRUE(exp_time_test("test_data", 16, 50));
+}
+
+TEST(BigNum, MontTimeTest) {
+  EXPECT_TRUE(mont_exp_time_test("test_data", 16, 50));
+}
+
+TEST(BigNum, SimpleEccTest) {
+  EXPECT_TRUE(simple_ecc_tests());
+}
+
+TEST(BigNum, ProjectiveEccTest) {
+  EXPECT_TRUE(simple_projective_ecc_tests());
+}
+
+TEST(BigNum, EccTest) {
+  EXPECT_TRUE(ecc_tests());
+}
+
+TEST(BigNum, ExtAddTimeTest) {
+  EXPECT_TRUE(ecc_add_time_test("test_data", ext_ecc_key, 200));
+}
+
+TEST(BigNum, EccDoubleTimeTest) {
+  EXPECT_TRUE(ecc_double_time_test("test_data", ext_ecc_key, 200));
+}
+
+TEST(BigNum, EccMultTimeTest) {
+  EXPECT_TRUE(ecc_mult_time_test("test_data", ext_ecc_key, 200));
+}
+
+TEST(BigNum, EccProjectiveMultTimeTest) {
+  EXPECT_TRUE(ecc_projective_mult_time_test("test_data", ext_ecc_key, 200));
+}
+
+TEST(BigNum, EccEmbedTimeTest) {
+  EXPECT_TRUE(ecc_embed_time_test("test_data", ext_ecc_key, 200));
+}
+
+TEST(BigNum, EccExtractTimeTest) {
+  EXPECT_TRUE(ecc_extract_time_test("test_data", ext_ecc_key, 200));
+}
+
+TEST(BigNum, EccProjectiveCompareTimeTest) {
+  EXPECT_TRUE(ecc_projective_compare_tests(ext_ecc_key, 200));
+}
+
+TEST(BigNum, EccSpeedTest) {
+  EXPECT_TRUE(ecc_speed_tests(nullptr, "test_data", 0, 200));
+}
+
+TEST(BigNum, RsaTest) {
+  EXPECT_TRUE(rsa_tests());
+}
+
+TEST(BigNum, RsaSpeedTest) {
+  EXPECT_TRUE(rsa_speed_tests(nullptr, nullptr, "test_data", 0, 500));
+}
+
+TEST(BigNum, SquareRootTest) {
+  EXPECT_TRUE(
+      square_root_time_test("test_data", 3, *(ext_ecc_key->c_.p_), 200));
+}
+
+TEST(BigNum, RsaGen1024Test) {
+    // EXPECT_TRUE(rsa1024_gen_time_test("test_data", 20));
+}
+
+TEST(BigNum, RsaGen20148Test) {
+    // EXPECT_TRUE(rsa2048_gen_time_test("test_data", 20));
+}
+
+TEST_F(BigNumTest, RunTestSuite) {
+  EXPECT_TRUE(RunTestSuite());
+}
 
 int main(int an, char** av) {
   ::testing::InitGoogleTest(&an, av);
