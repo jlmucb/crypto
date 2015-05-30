@@ -1,0 +1,54 @@
+MacBook Pro
+
+Computer has 2801552140 cycles per second (Haswell)
+
+                                    crypto                  openssl
+Operation           Time per op    Ops/sec    Time per op   Ops/sec
+64 bit   multiply   4.75e-09
+64 bit   divide     1.14e-08
+2048 bit multiply   1.49e-06
+4096 bit multiply   5.31e-06
+2048 bit divide     8.06e-06
+1024 bit exp        8.71e-03
+1024 bit Mont exp   4.84e-03
+256  bit EcAdd      9.67e-06
+256  bit EcDouble   9.78e-06
+256 bit  EcMult     3.76e-02   <---
+256 bit  EcEmbed
+256 bit  EcExtract
+1024 bit RsaGen        2.66 secs
+2048 bit RsaGen       23.56 secs
+
+                                    crypto                  openssl
+Operation           Time per op    Ops/sec    Time per op   Ops/sec
+rsa1024 encrypt(0)     9.80e-05
+rsa1024 decrypt(0)     8.66e-03
+rsa1024 encrypt(1)     6.37e-05      15873         2.3e-5     42329
+rsa1024 decrypt(1)     4.64-03
+rsa1024 encrypt(2)     2.60-04                             
+rsa1024 decrypt(2)     2.05-03         384         4.9e-4      2055
+rsa1024 encrypt(3)     2.78-04
+rsa1024 decrypt(3)     4.98-02
+
+                                    crypto                  openssl
+Operation           Time per op    Ops/sec    Time per op   Ops/sec
+rsa2048 encrypt(0)     7.09e-04
+rsa2048 decrypt(0)     4.98e-02
+rsa2048 encrypt(1)     1.78e-04       5882         6.7e-5     14974
+rsa2048 decrypt(1)     2.59e-02
+rsa2048 encrypt(2)     7.09e-04                            
+rsa2048 decrypt(2)     9.80e-03        102         2.3e-3       395
+rsa2048 encrypt(3)     6.45e-04
+rsa2048 decrypt(3)     1.00e-02
+
+                                    crypto                  openssl
+Operation           Time per op    Ops/sec    Time per op   Ops/sec
+ecc-256 encrypt         5.25-02         20         8.4e-4      1190
+ecc-256 decrypt         5.18-02         20         1.8e-4      5430
+
+                                    crypto                  openssl
+Operation           Time per op    Ops/sec    Time per op   Ops/sec
+sha-256                                            2.2e-7    4.46e6
+aes-128-cbc                                        8.6e-8    11.9e6
+
+
