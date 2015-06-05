@@ -237,8 +237,9 @@ void Uint64DivStep(uint64_t a, uint64_t b, uint64_t c, uint64_t* result,
       "\tdivq   %[c]\n"
       "\tmovq   %%rax, (%%rcx)\n"
       "\tmovq   %%rdx,(%%rbx)\n"
-      "1:\n" ::[result] "m"(result),
-      [carry] "m"(carry), [a] "m"(a), [b] "m"(b), [c] "m"(c)
+      "1:\n"
+      ::[result] "m"(result), [carry] "m"(carry),
+        [a] "m"(a), [b] "m"(b), [c] "m"(c)
       : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx");
 }
 

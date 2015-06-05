@@ -122,10 +122,6 @@ bool simpletest() {
   a = (uint64_t)-1ULL;
   b = (uint64_t)1ULL;
   Uint64AddStep(a, b, &result, &carry);
-#if 0
-  printf("%lx+%lx= %lx:%lx\n", (unsigned long)a, (unsigned long)b, 
-         (unsigned long)carry, (unsigned long)result);
-#endif
   if (carry != 1ULL || result != 0ULL) {
     printf("Test 1 failed\n");
     return false;
@@ -134,10 +130,6 @@ bool simpletest() {
   a = 1ULL;
   b = 1ULL;
   Uint64AddStep(a, b, &result, &carry);
-#if 0
-  printf("%lx+%lx= %lx:%lx\n", (unsigned long)a, (unsigned long)b, 
-         (unsigned long)carry, (unsigned long)result);
-#endif
   if (carry != 0ULL || result != 2ULL) {
     printf("Test 2 failed\n");
     return false;
@@ -146,10 +138,6 @@ bool simpletest() {
   a = 0x0ULL;
   b = 0x1ULL;
   Uint64MultStep(a, b, &result, &carry);
-#if 0
-  printf("%lx*%lx= %lx:%lx\n", (unsigned long)a, (unsigned long)b, 
-         (unsigned long)carry, (unsigned long)result);
-#endif
   if (carry != 0ULL || result != 0ULL) {
     printf("Test 3 failed\n");
     return false;
@@ -159,11 +147,6 @@ bool simpletest() {
   b = (uint64_t)1ULL;
   carry_in = 0ULL;
   Uint64AddWithCarryStep(a, b, carry_in, &result, &carry_out);
-#if 0
-  printf("%lx+%lx+%lx= %lx:%lx\n", (unsigned long)a, (unsigned long)b, 
-         (unsigned long)carry_in, (unsigned long)carry_out, 
-         (unsigned long)result);
-#endif
   if (carry_out != 1ULL || result != 0ULL) {
     printf("Test 4 failed\n");
     return false;
@@ -173,11 +156,6 @@ bool simpletest() {
   b = (uint64_t)1ULL;
   carry_in = 1ULL;
   Uint64AddWithCarryStep(a, b, carry_in, &result, &carry_out);
-#if 0
-  printf("%lx+%lx+%lx= %lx:%lx\n", (unsigned long)a, (unsigned long)b, 
-         (unsigned long)carry_in, (unsigned long)carry_out, 
-         (unsigned long)result);
-#endif
   if (carry_out != 1ULL || result != 1ULL) {
     printf("Test 5 failed\n");
     return false;
@@ -187,11 +165,6 @@ bool simpletest() {
   b = (uint64_t)0ULL;
   borrow_in = 0ULL;
   Uint64SubWithBorrowStep(a, b, borrow_in, &result, &borrow_out);
-#if 0
-  printf("%lx-%lx-%lx= %lx-%lx*base\n", (unsigned long)a, (unsigned long)b, 
-         (unsigned long)borrow_in, (unsigned long)result, 
-         (unsigned long)borrow_out);
-#endif
   if (borrow_out != 0ULL || result != 1ULL) {
     printf("Test 6 failed\n");
     return false;
@@ -201,11 +174,6 @@ bool simpletest() {
   b = (uint64_t)1ULL;
   borrow_in = 0ULL;
   Uint64SubWithBorrowStep(a, b, borrow_in, &result, &borrow_out);
-#if 0
-  printf("%lx-%lx-%lx= %lx-%lx*base\n", (unsigned long)a, (unsigned long)b, 
-         (unsigned long)borrow_in, (unsigned long)result, 
-         (unsigned long)borrow_out);
-#endif
   if (borrow_out != 1ULL || result != 0xffffffffffffffffULL) {
     printf("Test 7 failed\n");
     return false;
@@ -269,14 +237,6 @@ bool simpletest() {
   DigitArrayZeroNum(sizeof(test_c) / sizeof(uint64_t), test_c);
   k = DigitArrayMult(real_size_test_y, test_y, real_size_test_x1, test_x1,
                      size_test_c, test_c);
-#if 0
-  TempPrintNum(real_size_test_y, test_y); printf("\n * ");
-  TempPrintNum(real_size_test_x1, test_x1);
-  printf("\n");
-  printf(" = ");
-  TempPrintNum(k, test_c); printf("\n");
-  printf("\n");
-#endif
   if (test_c[0] != test_x1[0] || test_c[1] != test_x1[1]) {
     printf("Test 9 failed\n");
     return false;
@@ -286,14 +246,6 @@ bool simpletest() {
   DigitArrayZeroNum(sizeof(test_c) / sizeof(uint64_t), test_c);
   k = DigitArrayMult(real_size_test_y, test_y, real_size_test_x, test_x,
                      size_test_c, test_c);
-#if 0
-  TempPrintNum(real_size_test_y, test_y); printf("\n * ");
-  TempPrintNum(real_size_test_x, test_x);
-  printf("\n");
-  printf(" = ");
-  TempPrintNum(k, test_c); printf("\n");
-  printf("\n");
-#endif
   if (test_c[0] != test_x[0] || test_c[1] != test_x[1]) {
     printf("Test 9 failed\n");
     return false;
@@ -303,14 +255,6 @@ bool simpletest() {
   DigitArrayZeroNum(sizeof(test_c) / sizeof(uint64_t), test_c);
   k = DigitArrayMult(real_size_test_x, test_x, real_size_test_y, test_y,
                      size_test_c, test_c);
-#if 0
-  TempPrintNum(real_size_test_x, test_x); printf("\n * ");
-  TempPrintNum(real_size_test_y, test_y);
-  printf("\n");
-  printf(" = ");
-  TempPrintNum(k, test_c); printf("\n");
-  printf("\n");
-#endif
   if (test_c[0] != test_x[0] || test_c[1] != test_x[1]) {
     printf("Test 9 failed\n");
     return false;
@@ -319,26 +263,10 @@ bool simpletest() {
   DigitArrayZeroNum(sizeof(test_c) / sizeof(uint64_t), test_c);
   k = DigitArrayMult(real_size_test_x1, test_x1, real_size_test_x, test_x,
                      size_test_c, test_c);
-#if 0
-  TempPrintNum(real_size_test_x1, test_x1); printf("\n * ");
-  TempPrintNum(real_size_test_x, test_x);
-  printf("\n");
-  printf(" = ");
-  TempPrintNum(k, test_c); printf("\n");
-  printf("\n");
-#endif
 
   DigitArrayZeroNum(sizeof(test_c) / sizeof(uint64_t), test_c);
   k = DigitArrayMult(real_size_test_x, test_x, real_size_test_x, test_x,
                      size_test_c, test_c);
-#if 0
-  TempPrintNum(real_size_test_x, test_x); printf("\n * ");
-  TempPrintNum(real_size_test_x, test_x);
-  printf("\n");
-  printf(" = ");
-  TempPrintNum(k, test_c); printf("\n");
-  printf("\n");
-#endif
   if (test_c[0] != 1 || test_c[1] != 0 || test_c[2] != 0xfffffffffffffffe ||
       test_c[3] != 0xffffffffffffffff) {
     printf("Test 10 failed\n");
@@ -913,7 +841,7 @@ bool raw_arith_tests() {
     if (DigitArrayComputedSize(size_c, c) != (i + 1)) {
       printf("DigitComputedSizeTest test %d failed (value: %d)\n", i,
              DigitArrayComputedSize(size_c, c));
-      printf("c[%d]= %lx\n", i, (unsigned long)c[i]);
+      printf("c[%d]= %llx\n", i, (uint64_t)c[i]);
       return false;
     }
     c[i] = 0ULL;
@@ -958,30 +886,14 @@ bool raw_arith_tests() {
   for (i = 0; i < 256; i++) {
     z = (uint64_t)i;
     Uint64AddStep(x, z, &u, &t);
-#if 0
-    printf("%lx + %lx= %lx, carry: %ld\n", 
-        (long unsigned) x, (long unsigned) z,
-        (long unsigned) u, (long unsigned) t);
-#endif
     if (i > 3 && t == 0) return false;
     Uint64AddStep(y, z, &u, &t);
-#if 0
-    printf("%lx + %lx= %lx, carry: %ld\n", 
-        (long unsigned) y, (long unsigned) z,
-        (long unsigned) u, (long unsigned) t);
-#endif
     if (t == 1) return false;
     x = 0xfffffffffffffffd;
     y = (uint64_t)2 * i;
     z = (uint64_t)i;
     t = (uint64_t)i;
     Uint64MultWithCarryStep(x, y, z, t, &u, &v);
-#if 0
-    printf("%lx * %lx + %lx + %lx= %lx:%lx\n", 
-        (long unsigned) x, (long unsigned) y,
-        (long unsigned) z, (long unsigned) t,
-        (long unsigned) v, (long unsigned) u);
-#endif
   }
   for (i = 0; i < 4; i++) {
     a[i] = (uint64_t)0xffffffffffffffff;
@@ -1939,22 +1851,7 @@ bool number_theory_tests() {
     printf("No prime found\n");
     return false;
   }
-#if 0
-  PrintNumToConsole(test_q, 10ULL); printf(" is proposed prime\n");
-  test_q.ZeroNum();
-  if(!BigGenPrime(test_q, 384)) {
-    printf("No prime found\n");
-    return false;
-  }
-  PrintNumToConsole(test_q, 10ULL); printf(" is proposed prime\n");
-  test_q.ZeroNum();
-  if(!BigGenPrime(test_q, 512)) {
-    printf("No prime found\n");
-    return false;
-  }
-  PrintNumToConsole(test_q, 10ULL); printf(" is proposed prime\n");
 
-#endif
   // add ExtendedGCD sanity checks
   // exponent index tests
   // a**(p-1)=1 (mod p)
