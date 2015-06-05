@@ -34,7 +34,6 @@
 
 HmacSha256::HmacSha256() {
   macvalid_ = false;
-  ;
 }
 
 HmacSha256::~HmacSha256() {
@@ -47,7 +46,6 @@ bool HmacSha256::Init(int size, byte* key) {
   if (size <= 0 || key == nullptr)
     return false;
   macvalid_ = false;
-  ;
 
   int i;
   byte padded[BLOCKBYTESIZE];
