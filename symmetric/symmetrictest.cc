@@ -188,7 +188,7 @@ bool CbcEncryptTest(int size_enc_key, byte* enc_key, int size_int_key,
     return false;
   }
 
-#if 1
+#if 0
   printf("\n");
   printf("name: %s\n", encrypt_obj.alg_name_->c_str());
   if (aes_ni) {
@@ -312,7 +312,7 @@ bool CtrEncryptTest(int size_enc_key, byte* enc_key, int size_int_key,
     return false;
   }
 
-#if 1
+#if 0
   printf("\n");
   printf("name: %s\n", encrypt_obj.alg_name_->c_str());
   if (aes_ni) {

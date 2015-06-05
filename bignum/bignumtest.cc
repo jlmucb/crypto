@@ -3475,12 +3475,6 @@ bool mont_arith_tests() {
     printf("BigMakeReduce fails\n");
     return false;
   }
-#if 0
-  printf("aR: "); PrintNumToConsole(aR, 10); printf("\n");
-  printf("bR: "); PrintNumToConsole(bR, 10); printf("\n");
-  printf("abR: "); PrintNumToConsole(abR, 10); printf("\n");
-  printf("ab: "); PrintNumToConsole(ab, 10); printf("\n");
-#endif
   if (!BigModMult(a, b, m, ab2)) {
     printf("BigModMult  fails\n");
     return false;
