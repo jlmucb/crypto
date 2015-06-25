@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <string>
 #include "pwutil.pb.h"
+#include "tokenizer.h"
 #include "cryptotypes.h"
 #include "util.h"
 #include <cmath>
@@ -204,14 +205,6 @@ bool CbcDecrypt(AesCbcHmac256Sympad* scheme, const char* inFile,
 }
 
 
-bool ToText(const pw_message& pw_data, const string& out_file) {
-  return true;
-}
-
-bool FromText(const string& in_file, const pw_message* pw_data) {
-  return true;
-}
-
 void WriteTextFile(const string& out_file, pw_message& pw_proto) {
   string name = pw_proto.pw_name();
   int epoch = pw_proto.pw_epoch();
@@ -219,7 +212,6 @@ void WriteTextFile(const string& out_file, pw_message& pw_proto) {
   string secret = pw_proto.pw_value();
 
   FILE* out= fopen(out_file.c_str(), "w");
-
   fprintf(out, "name: %s\nepoch: %d\nstatus: %s\nsecret: %s\n", name.c_str(),
          epoch, status.c_str(), secret.c_str());
   pw_time* time_ptr = pw_proto.mutable_pw_time_point();
@@ -234,16 +226,46 @@ void WriteTextFile(const string& out_file, pw_message& pw_proto) {
   fclose(out);
 }
 
+void parse_test(const string& file) {
+#if 0
+  int i = 0;
+  ReadLines reader;
+  string line;
+
+  if (!reader.Open(file)) {
+    printf("cant open %s\n", file.c_str());
+    return;
+  }
+
+  while (reader.NextLine(line)>=0) {
+    printf("line: %d, %s\n", ++i, line.c_str());
+  }
+  reader.Close();
+  printf("%d lines processed\n", i); 
+#else
+  pw_message proto;
+  if(FillSecretProto(file, proto))
+    printf("FillProto returns true\n");
+  else
+    printf("FillProto returns false\n");
+#endif
+}
+
 bool ReadTextFile(const string& in_file, pw_message* pw_proto) {
+
+  if (!FillSecretProto(in_file, *pw_proto))
+    return false;
+/*
   const string name("/manferdelli/test1");
   const string status("active");
   const string secret("secret");
-  TimePoint time_now;
-
   pw_proto->set_pw_name(name);
   pw_proto->set_pw_epoch(1);
   pw_proto->set_pw_status(status);
   pw_proto->set_pw_value(secret);
+*/
+  TimePoint time_now;
+
   pw_time* time_ptr = pw_proto->mutable_pw_time_point();
   time_now.TimePointNow();
   time_ptr->set_year(time_now.year_);
@@ -292,7 +314,6 @@ int main(int an, char** av) {
     string proto_string;
     proto_string.assign((const char*)proto_buf, proto_size);
     pw_proto.ParseFromString(proto_string);
-
     WriteTextFile(FLAGS_output.c_str(), pw_proto);
   } else if (FLAGS_operation == "from-text") {
     pw_message pw_proto;
@@ -393,6 +414,8 @@ int main(int an, char** av) {
       printf("unsupported encryption scheme\n");
       return 1;
     }
+  } else if (FLAGS_operation == "test") {
+    parse_test(FLAGS_input);
   } else {
     printf("unsupported operation\n");
   }

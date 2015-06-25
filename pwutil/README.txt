@@ -7,6 +7,4 @@ name: key-name
 epoch: int
 status: string
 value: string
-time: 
-
 

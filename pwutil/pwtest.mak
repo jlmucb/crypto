@@ -59,7 +59,7 @@ else
 	AR=ar
 endif
 
-dobj=	$(O)/pwutil.o $(O)/pwutil.pb.o
+dobj=	$(O)/pwutil.o $(O)/pwutil.pb.o $(O)/tokenizer.o
 
 all:	pwutil.exe
 clean:
@@ -82,4 +82,8 @@ $(O)/pwutil.o: $(S)/pwutil.cc $(S)/pwutil.pb.h
 $(O)/pwutil.pb.o: $(S)/pwutil.pb.cc
 	@echo "compiling pwutil.pb.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/pwutil.pb.o $(S)/pwutil.pb.cc
+
+$(O)/tokenizer.o: $(S)/tokenizer.cc $(S)/tokenizer.h
+	@echo "compiling tokenizer.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/tokenizer.o $(S)/tokenizer.cc
 
