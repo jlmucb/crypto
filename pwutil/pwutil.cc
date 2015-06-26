@@ -227,7 +227,6 @@ void WriteTextFile(const string& out_file, pw_message& pw_proto) {
 }
 
 void parse_test(const string& file) {
-#if 0
   int i = 0;
   ReadLines reader;
   string line;
@@ -238,32 +237,26 @@ void parse_test(const string& file) {
   }
 
   while (reader.NextLine(line)>=0) {
-    printf("line: %d, %s\n", ++i, line.c_str());
+    printf("line: %d, %s\ttokens: ", ++i, line.c_str());
+    Tokenizer tokens;
+    char* token = tokens.NextToken((char*)line.c_str(), true);
+    for(;;) {
+      if (token == nullptr) {
+        printf("\n");
+        break;
+      }
+      printf("%s, ", token); 
+      token = tokens.NextToken((char*)line.c_str(), false);
+    }
   }
   reader.Close();
   printf("%d lines processed\n", i); 
-#else
-  pw_message proto;
-  if(FillSecretProto(file, proto))
-    printf("FillProto returns true\n");
-  else
-    printf("FillProto returns false\n");
-#endif
 }
 
 bool ReadTextFile(const string& in_file, pw_message* pw_proto) {
 
   if (!FillSecretProto(in_file, *pw_proto))
     return false;
-/*
-  const string name("/manferdelli/test1");
-  const string status("active");
-  const string secret("secret");
-  pw_proto->set_pw_name(name);
-  pw_proto->set_pw_epoch(1);
-  pw_proto->set_pw_status(status);
-  pw_proto->set_pw_value(secret);
-*/
   TimePoint time_now;
 
   pw_time* time_ptr = pw_proto->mutable_pw_time_point();
@@ -349,7 +342,7 @@ int main(int an, char** av) {
       }
 
       std::unique_ptr<AesCbcHmac256Sympad>
-	  scheme(GetAesCbcHmac256SymPad(scheme_size, scheme_out));
+          scheme(GetAesCbcHmac256SymPad(scheme_size, scheme_out));
       if (scheme == nullptr) {
         printf("No scheme\n");
         return 1;
@@ -357,8 +350,8 @@ int main(int an, char** av) {
       scheme->PrintEncryptionAlgorithm();
       if (!CbcEncrypt(scheme.get(), FLAGS_input.c_str(),
                       FLAGS_output.c_str(), true)) {
-	// delete out;
-	printf("can't encrypt\n");
+        // delete out;
+        printf("can't encrypt\n");
         return 1;
       }
       // delete out;
@@ -394,7 +387,7 @@ int main(int an, char** av) {
       }
 
       std::unique_ptr<AesCbcHmac256Sympad>
-	  scheme(GetAesCbcHmac256SymPad(scheme_size, scheme_out));
+          scheme(GetAesCbcHmac256SymPad(scheme_size, scheme_out));
       if (scheme == nullptr) {
         printf("No scheme\n");
         return 1;
@@ -402,8 +395,8 @@ int main(int an, char** av) {
       scheme->PrintEncryptionAlgorithm();
       if (!CbcDecrypt(scheme.get(), FLAGS_input.c_str(),
                       FLAGS_output.c_str(), true)) {
-	// delete out;
-	printf("can't encrypt\n");
+        // delete out;
+        printf("can't encrypt\n");
         return 1;
       }
       // delete out;
