@@ -43,6 +43,9 @@ bool PolyGcmMult::MultAndReduce(uint64_t* a, uint64_t* b, uint64_t* c) {
   return true;
 }
 
+/*
+ */
+
 AesGcm::AesGcm() {
   alg_name_ = new string("aes128-gcm128");
 }
@@ -57,8 +60,18 @@ AesGcm::~AesGcm() {
 }
 
 bool AesGcm::Init(int size_key, byte*, int size_block, int size_tag,
-            int size_A, int size_iv, byte* iv, bool use_aesni) {
+            int size_A, int size_C, int size_iv, byte* iv, bool use_aesni) {
   use_aesni_ = use_aesni;
+  byte zero[16];
+  memset(zero, 0, 16);
+  // aesni_.EncryptBlock(zero, (byte*)H_);
+  // s = 128*ceiling(size_iv/128) - size_iv
+  // J = GHash(iv || 0 || size_iv_64)
+  // u = 128*ceiling(len(C)/128) - len(C)
+  // v = 128*ceiling(len(A)/128) - len())
+  // S Ghash_H(A || O^v ||| C || 0^u || len(A)_64 || len(c)_64)
+  // T =  MSB_t(GCtr(J, S))
+  // return (C, T)
   initialized_ = true;
   return true;
 }
@@ -88,6 +101,10 @@ void AesGcm::GHashInit(int size_H, uint64_t* H) {
 }
 
 void AesGcm::GHashAddBlock(uint64_t* X) {
+  uint64_t Y[4];
+  for (int i = 0; i < 2; i++)
+    Y[i] = last_Y_[i]^X[i];
+  m_.MultAndReduce(Y, H_, last_Y_);
 }
 
 void AesGcm::GHashAdd(int size, uint64_t* X) {
@@ -97,6 +114,13 @@ void AesGcm::GCtrInit(int size_key, uint64_t* key, int size_iv, uint64_t* iv) {
 }
 
 void AesGcm::GCtrAddBlock(uint64_t* X, uint64_t* Y) {
+  uint64_t T[4];
+
+  aes_obj_.EncryptBlock((byte*)last_CB_, (byte*)T);
+  (*ctr_)++;
+  for (int i = 0; i < 2; i++)
+    Y[i] = X[i]^T[i];
+  m_.MultAndReduce(Y, H_, last_Y_);
 }
 
 void AesGcm::GCtrAdd(uint64_t* X, uint64_t* Y, int size) {
@@ -116,12 +140,12 @@ bool AesGcm::PlainIn(int size_in, byte* in, int* size_out,
 }
 
 bool AesGcm::CipherIn(int size_in, byte* in, int* size_out,
-                                   byte* out) {
+                      byte* out) {
   return true;
 }
 
 bool AesGcm::ProcessInput(int size_in, byte* in, int* size_out,
-                                       byte* out) {
+                          byte* out) {
   if (!initialized_) return false;
   return true;
 }

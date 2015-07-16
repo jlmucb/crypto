@@ -43,16 +43,29 @@ class AesGcm : public EncryptionAlgorithm {
 
   Aes aes_obj_;
   AesNi aesni_obj_;
-  byte iv_[32];
   byte ctr_blk_[Aes::BLOCKBYTESIZE];
 
   int num_unprocessed_input_bytes_;
   byte input_buf[Aes::BLOCKBYTESIZE];
 
-  unsigned* ctr_;
   bool output_verified_;
+  int block_size_;
+
+  int size_A_;
+  int size_C_;
+
+  unsigned* ctr_;
+  uint64_t last_CB_[4];
 
   uint64_t last_Y_[4];
+  int size_H;
+  uint64_t H_[4];
+  int size_iv_;
+  uint64_t iv_[4];
+  int size_key_;
+  uint64_t key_[4];
+
+  PolyGcmMult m_;
 
   AesGcm();
   ~AesGcm();
@@ -66,10 +79,13 @@ class AesGcm : public EncryptionAlgorithm {
   void GCtrAdd(uint64_t* X, uint64_t* Y, int size);
 
   bool Init(int size_key, byte*, int size_block,
-            int size_tag, int size_A,
+            int size_tag, int size_A, int size_C,
             int size_iv, byte* iv, bool use_aesni);
 
   void PrintEncryptionAlgorithm();
+
+  int GetComputedTag(int size, byte*);
+  int GetReceivedTag(int size, byte*);
 
   void GcmEncryptBlock(byte* in, byte* out);
   void GcmDecryptBlock(byte* in, byte* out);
@@ -93,13 +109,11 @@ class AesGcm : public EncryptionAlgorithm {
   int InputBytesProcessed();
   int OutputBytesProduced();
 
-  int GetComputedTag(int size, byte*);
-  int GetReceivedTag(int size, byte*);
   bool MessageValid();
 
   bool GenerateScheme(const char* name, int num_bits);
   bool MakeScheme(const char* name, int num_key_bits,
-                  byte* enc_key, byte* iv);
+                  byte* key, byte* iv);
 };
 
 #endif
