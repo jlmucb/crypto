@@ -27,14 +27,42 @@
 #define _CRYPTO_AESGCM_H__
 using namespace std;
 
-class PolyGcmMult {
+bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
+              int size_c, uint64_t* c);
+bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly);
+bool MultAndReduce(int size_a, uint64_t* a, int size_b, uint64_t* b,
+                   int size_p, uint64_t* min_poly, int size_c, uint64_t* c);
+
+class Ghash {
 public:
-  static uint64_t p_[3]; // = {0x87ULL, 0ULL, 1ULL};
-  PolyGcmMult();
-  ~PolyGcmMult();
-  bool MultPoly(uint64_t* a, uint64_t* b, uint64_t* c);
-  bool Reduce(uint64_t* a);
-  bool MultAndReduce(uint64_t* a, uint64_t* b, uint64_t* c);
+  Ghash(uint64_t* H);
+  ~Ghash();
+
+  void Init();
+  void AddToHash(int size, byte* data);
+  void Final();
+  bool GetHash(uint64_t* out); 
+
+private:
+  uint64_t min_poly_[4];
+  uint64_t H_[4];
+  uint64_t last_x_[4];
+};
+
+class GAesCtr {
+public:
+  GAesCtr();
+  ~GAesCtr();
+
+  void Init(int size_iv, uint64_t* iv, int size_K, byte* K);
+  void NextBlock(uint64_t* in, uint64_t* out);
+
+private:
+  bool use_aesni_;
+  Aes aes_;
+  AesNi aesni_;
+  uint64_t  last_ctr_[2];
+  uint32_t* ctr_;
 };
 
 class AesGcm : public EncryptionAlgorithm {
@@ -65,23 +93,11 @@ class AesGcm : public EncryptionAlgorithm {
   int size_key_;
   uint64_t key_[4];
 
-  PolyGcmMult m_;
-
   AesGcm();
   ~AesGcm();
 
-  void GHashInit(int size_H, uint64_t* H);
-  void GHashAddBlock(uint64_t* X);
-  void GHashAdd(int size, uint64_t* X);
-
-  void GCtrInit(int size_key, uint64_t* key, int size_iv, uint64_t* iv);
-  void GCtrAddBlock(uint64_t* X, uint64_t* Y);
-  void GCtrAdd(uint64_t* X, uint64_t* Y, int size);
-
-  bool Init(int size_key, byte*, int size_block,
-            int size_tag, int size_A, int size_C,
-            int size_iv, byte* iv, bool use_aesni);
-
+  bool Init(int size_key, byte*, int size_block, int size_tag,
+            int size_A, int size_C, int size_iv, byte* iv, bool use_aesni);
   void PrintEncryptionAlgorithm();
 
   int GetComputedTag(int size, byte*);

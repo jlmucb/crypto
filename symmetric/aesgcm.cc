@@ -25,26 +25,69 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-PolyGcmMult::PolyGcmMult() {
-}
-
-PolyGcmMult::~PolyGcmMult() {
-}
-
-bool PolyGcmMult::MultPoly(uint64_t* a, uint64_t* b, uint64_t* c) {
+bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
+              int size_c, uint64_t* c) {
   return true;
 }
 
-bool PolyGcmMult::Reduce(uint64_t* a) {
+bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly) {
   return true;
 }
 
-bool PolyGcmMult::MultAndReduce(uint64_t* a, uint64_t* b, uint64_t* c) {
+bool MultAndReduce(int size_a, uint64_t* a, int size_b, uint64_t* b,
+                   int size_p, uint64_t* min_poly, int size_c, uint64_t* c) {
   return true;
 }
 
-/*
- */
+Ghash::Ghash(uint64_t* H) {
+  // x^7+x^2+x+1
+  min_poly_[0] = 0x83;
+  min_poly_[1] = 0x0;
+  // x^128
+  min_poly_[3] = 0x1;
+  memcpy(H_, H, 16);
+  memset(last_x_, 0, 32);
+}
+
+Ghash::~Ghash() {
+}
+
+void Ghash::Init() {
+}
+
+void Ghash::AddToHash(int size, byte* data) {
+}
+
+void Ghash::Final() {
+}
+
+bool Ghash::GetHash(uint64_t* out)  {
+  return true;
+}
+
+GAesCtr::GAesCtr() {
+  use_aesni_ = false;
+}
+
+GAesCtr::~GAesCtr() {
+}
+
+void GAesCtr::Init(int size_iv, uint64_t* iv, int size_K, byte* K) {
+  // initialize iv and key
+}
+
+void GAesCtr::NextBlock(uint64_t* in, uint64_t* out) {
+  uint64_t t[2];
+
+  if (use_aesni_)
+    aesni_.EncryptBlock((byte*)last_ctr_, (byte*)t);
+  else
+    aes_.EncryptBlock((byte*)last_ctr_, (byte*)t);
+  for (int i = 0; i < 2; i++) {
+    in[i] = out[i] ^ t[i];
+  }
+  (*ctr_)++;
+}
 
 AesGcm::AesGcm() {
   alg_name_ = new string("aes128-gcm128");
@@ -95,35 +138,6 @@ void AesGcm::GcmEncryptBlock(byte* in, byte* out) {
 }
 
 void AesGcm::GcmDecryptBlock(byte* in, byte* out) {
-}
-
-void AesGcm::GHashInit(int size_H, uint64_t* H) {
-}
-
-void AesGcm::GHashAddBlock(uint64_t* X) {
-  uint64_t Y[4];
-  for (int i = 0; i < 2; i++)
-    Y[i] = last_Y_[i]^X[i];
-  m_.MultAndReduce(Y, H_, last_Y_);
-}
-
-void AesGcm::GHashAdd(int size, uint64_t* X) {
-}
-
-void AesGcm::GCtrInit(int size_key, uint64_t* key, int size_iv, uint64_t* iv) {
-}
-
-void AesGcm::GCtrAddBlock(uint64_t* X, uint64_t* Y) {
-  uint64_t T[4];
-
-  aes_obj_.EncryptBlock((byte*)last_CB_, (byte*)T);
-  (*ctr_)++;
-  for (int i = 0; i < 2; i++)
-    Y[i] = X[i]^T[i];
-  m_.MultAndReduce(Y, H_, last_Y_);
-}
-
-void AesGcm::GCtrAdd(uint64_t* X, uint64_t* Y, int size) {
 }
 
 bool AesGcm::AuthenticatedIn(int size_in, byte* in, int* size_out, byte* out) {
