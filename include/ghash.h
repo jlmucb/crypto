@@ -32,10 +32,10 @@ bool MultAndReduce(int size_a, uint64_t* a, int size_b, uint64_t* b,
 class Ghash {
 public:
   enum {AUTH = 0, CIPHER = 1};
-  Ghash(uint64_t* H);
+  Ghash();
   ~Ghash();
 
-  void Reset();
+  void Init(uint64_t* H);
   void AddAHash(int size, byte* data);
   void AddCHash(int size, byte* data);
   void FinalA();

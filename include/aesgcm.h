@@ -48,25 +48,12 @@ class AesGcm : public EncryptionAlgorithm {
  public:
   bool use_aesni_;
 
-  Aes aes_obj_;
-  AesNi aesni_obj_;
-  byte ctr_blk_[Aes::BLOCKBYTESIZE];
-
   int num_unprocessed_input_bytes_;
   byte input_buf[Aes::BLOCKBYTESIZE];
 
   bool output_verified_;
   int block_size_;
 
-  int size_A_;
-  int size_C_;
-
-  unsigned* ctr_;
-  uint64_t last_CB_[4];
-
-  uint64_t last_Y_[4];
-  int size_H;
-  uint64_t H_[4];
   int size_iv_;
   uint64_t iv_[4];
   int size_key_;
@@ -76,7 +63,7 @@ class AesGcm : public EncryptionAlgorithm {
   ~AesGcm();
 
   bool Init(int size_key, byte*, int size_block, int size_tag,
-            int size_A, int size_C, int size_iv, byte* iv, bool use_aesni);
+            int size_iv, byte* iv, bool use_aesni);
   void PrintEncryptionAlgorithm();
 
   int GetComputedTag(int size, byte*);

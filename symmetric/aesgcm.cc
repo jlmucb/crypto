@@ -26,46 +26,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
-              int size_c, uint64_t* c) {
-  return true;
-}
-
-bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly) {
-  return true;
-}
-
-bool MultAndReduce(int size_a, uint64_t* a, int size_b, uint64_t* b,
-                   int size_p, uint64_t* min_poly, int size_c, uint64_t* c) {
-  return true;
-}
-
-Ghash::Ghash(uint64_t* H) {
-  // x^7+x^2+x+1
-  min_poly_[0] = 0x83;
-  min_poly_[1] = 0x0;
-  // x^128
-  min_poly_[3] = 0x1;
-  memcpy(H_, H, 16);
-  memset(last_x_, 0, 32);
-}
-
-Ghash::~Ghash() {
-}
-
-void Ghash::Init() {
-}
-
-void Ghash::AddToHash(int size, byte* data) {
-}
-
-void Ghash::Final() {
-}
-
-bool Ghash::GetHash(uint64_t* out)  {
-  return true;
-}
-
 GAesCtr::GAesCtr() {
   use_aesni_ = false;
 }
@@ -104,7 +64,7 @@ AesGcm::~AesGcm() {
 }
 
 bool AesGcm::Init(int size_key, byte*, int size_block, int size_tag,
-            int size_A, int size_C, int size_iv, byte* iv, bool use_aesni) {
+                  int size_iv, byte* iv, bool use_aesni) {
   use_aesni_ = use_aesni;
   byte zero[16];
   memset(zero, 0, 16);
@@ -173,9 +133,9 @@ void AesGcm::PrintEncryptionAlgorithm() {
   printf("aes128-gcm128\n");
   if (use_aesni_) {
     printf("using aesni\n");
-    aesni_obj_.PrintSymmetricKey();
+    // aesni_obj_.PrintSymmetricKey();
   } else {
-    aes_obj_.PrintSymmetricKey();
+    // aes_obj_.PrintSymmetricKey();
     printf("not using aesni\n");
   }
 }

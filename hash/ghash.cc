@@ -36,14 +36,14 @@ bool MultAndReduce(int size_a, uint64_t* a, int size_b, uint64_t* b,
   return true;
 }
 
-Ghash::Ghash(uint64_t* H) {
+Ghash::Ghash() {
   // x^7+x^2+x+1
   min_poly_[0] = 0x83;
   min_poly_[1] = 0x0;
   // x^128
   min_poly_[3] = 0x1;
-  memcpy(H_, H, 16);
-  Reset();
+  uint64_t zero[2]={0, 0};
+  Init(zero);
 }
 
 Ghash::~Ghash() {
@@ -52,7 +52,8 @@ Ghash::~Ghash() {
   memset(digest_, 0, 64);
 }
 
-void Ghash::Reset() {
+void Ghash::Init(uint64_t* H) {
+  memcpy(H_, H, 16);
   finalized_A_ = false;
   finalized_C_ = false;
   size_partial_ = 0;
