@@ -31,34 +31,30 @@ bool MultAndReduce(int size_a, uint64_t* a, int size_b, uint64_t* b,
 
 class Ghash {
 public:
+  enum {AUTH = 0, CIPHER = 1};
   Ghash(uint64_t* H);
   ~Ghash();
 
-  void Init();
-  void AddToHash(int size, byte* data);
-  void Final();
-  bool GetHash(uint64_t* out); 
+  void Reset();
+  void AddAHash(int size, byte* data);
+  void AddCHash(int size, byte* data);
+  void FinalA();
+  void FinalC();
+  bool GetHash(byte* out); 
 
 private:
+  bool finalized_A_;
+  bool finalized_C_;
   uint64_t min_poly_[4];
   uint64_t H_[4];
+  uint64_t size_A_;
+  uint64_t size_C_;
   uint64_t last_x_[4];
+  int size_partial_;
+  byte partial_[32];
+  byte digest_[32];
+
+  void AddBlock(uint64_t* block);
+  void AddToHash(int size, byte* data);
 };
-
-class GAesCtr {
-public:
-  GAesCtr();
-  ~GAesCtr();
-
-  void Init(int size_iv, uint64_t* iv, int size_K, byte* K);
-  void NextBlock(uint64_t* in, uint64_t* out);
-
-private:
-  bool use_aesni_;
-  Aes aes_;
-  AesNi aesni_;
-  uint64_t  last_ctr_[2];
-  uint32_t* ctr_;
-};
-
 #endif
