@@ -60,7 +60,7 @@ dobj=	$(O)/bignum.o $(O)/basic_arith.o $(O)/number_theory.o \
 	$(O)/aesni.o $(O)/hash.o $(O)/hmac_sha256.o $(O)/sha3.o $(O)/twofish.o \
 	$(O)/encryption_algorithm.o $(O)/sha256.o $(O)/aescbchmac256sympad.o \
         $(O)/aesgcm.o $(O)/aesctrhmac256sympad.o $(O)/pkcs.o $(O)/pbkdf2.o \
-	$(O)/simonspeck.o $(O)/rc4.o $(O)/tea.o
+	$(O)/ghash.o $(O)/simonspeck.o $(O)/rc4.o $(O)/tea.o
 
 all:	$(OBJ_DIR)/jlmcryptolib.a
 clean:
@@ -157,6 +157,10 @@ $(O)/pkcs.o: $(SRC_DIR)/hash/pkcs.cc
 $(O)/pbkdf2.o: $(SRC_DIR)/hash/pbkdf2.cc
 	@echo "compiling pbkdf2.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/pbkdf2.o $(SRC_DIR)/hash/pbkdf2.cc
+
+$(O)/ghash.o: $(SRC_DIR)/hash/ghash.cc
+	@echo "compiling ghash.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/ghash.o $(SRC_DIR)/hash/ghash.cc
 
 $(O)/symmetric_cipher.o: $(SRC_DIR)/symmetric/symmetric_cipher.cc
 	@echo "compiling symmetric_cipher.cc"

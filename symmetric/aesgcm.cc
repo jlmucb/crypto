@@ -20,6 +20,7 @@
 #include "symmetric_cipher.h"
 #include "encryption_algorithm.h"
 #include "aes.h"
+#include "ghash.h"
 #include "aesgcm.h"
 #include <string>
 #include <stdio.h>

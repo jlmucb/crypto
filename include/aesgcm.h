@@ -18,6 +18,7 @@
 #include "util.h"
 #include "symmetric_cipher.h"
 #include "encryption_algorithm.h"
+#include "ghash.h"
 #include "aes.h"
 #include <string>
 #include <stdio.h>
@@ -26,28 +27,6 @@
 #ifndef _CRYPTO_AESGCM_H__
 #define _CRYPTO_AESGCM_H__
 using namespace std;
-
-bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
-              int size_c, uint64_t* c);
-bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly);
-bool MultAndReduce(int size_a, uint64_t* a, int size_b, uint64_t* b,
-                   int size_p, uint64_t* min_poly, int size_c, uint64_t* c);
-
-class Ghash {
-public:
-  Ghash(uint64_t* H);
-  ~Ghash();
-
-  void Init();
-  void AddToHash(int size, byte* data);
-  void Final();
-  bool GetHash(uint64_t* out); 
-
-private:
-  uint64_t min_poly_[4];
-  uint64_t H_[4];
-  uint64_t last_x_[4];
-};
 
 class GAesCtr {
 public:
