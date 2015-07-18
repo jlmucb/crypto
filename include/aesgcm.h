@@ -44,7 +44,7 @@ public:
   GAesCtr();
   ~GAesCtr();
 
-  bool Init(int size_iv, byte* iv, int size_K, byte* K,
+  bool Init(int size_iv, byte* iv, int bit_size_K, byte* K,
             int direction, bool use_aesni);
   void EncryptBlock(uint64_t* in, uint64_t* out);
   void Encrypt(int size, byte* in, byte* out);

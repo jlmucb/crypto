@@ -964,19 +964,46 @@ TEST(FirstCtrEncryptionAlgorithmTest, FirstEncryptionCtrAlgorithmTest) {
 }
 TEST(RunTestSuite, RunTestSuite) { EXPECT_TRUE(RunTestSuite()); }
 
-byte test_aesgcm_key_1[16]; //  = (byte*) "0123456789abcdef";
-byte test_aesgcm_iv_1[16]; //  = (byte*) "0123456789abcdef";
+void ReverseInPlace(int size, byte* in) {
+  std::shared_ptr<byte>t(new byte[16]);
+  ReverseCpy(size, in, t.get());
+  memcpy((void*)in, (void*)t.get(), size);
+}
+
+byte test_aesgcm_K_1[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+byte test_aesgcm_iv_1[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+byte test_aesgcm_H_1[16] = {0x66, 0xe9, 0x4b, 0xd4, 0xef, 0x8a, 0x2c, 0x3b,
+                            0x88, 0x4c, 0xfa, 0x59, 0xca, 0x34, 0x2b, 0x2e};
+byte test_aesgcm_Y0_1[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+byte test_aesgcm_EY0_1[16] = {0x58, 0xe2, 0xfc, 0xce, 0xfa, 0x7e, 0x30, 0x61,
+                              0x36, 0x7f, 0x1d, 0x57, 0xa4, 0xe7, 0x45, 0x5a};
+byte test_aesgcm_len_1[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+byte test_aesgcm_Ghash_1[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+byte test_aesgcm_T_1[16] = {0x58, 0xe2, 0xfc, 0xce, 0xfa, 0x7e, 0x30, 0x61,
+                            0x36, 0x7f, 0x1d, 0x57, 0xa4, 0xe7, 0x45, 0x5a};
+
+TEST(AesGcm, FirstAesGcmTest) {
+  AesGcm aesgcm_obj;
+
+  ReverseInPlace(16, test_aesgcm_K_1);
+  EXPECT_TRUE(aesgcm_obj.Init(NBITSINBYTE * sizeof(test_aesgcm_K_1), test_aesgcm_K_1, 128,
+             16, test_aesgcm_iv_1, AesGcm::ENCRYPT, false));
+  int size_out = 16;
+  byte test_out[16];
+  EXPECT_TRUE(aesgcm_obj.FinalCipherIn(0, 0, &size_out, test_out));
+  byte tag[32];
+  aesgcm_obj.GetComputedTag(8, tag);
+  printf("Computed tag   : "); PrintBytes(16, tag); printf("\n");
+  printf("test_aesgcm_T_1: "); PrintBytes(16, test_aesgcm_T_1); printf("\n");
+  EXPECT_TRUE(memcmp(tag, test_aesgcm_T_1, 16) == 0);
+}
 
 /*
-00000000000000000000000000000000  // K
-000000000000000000000000  // IV
-66e94bd4ef8a2c3b884cfa59ca342b2e // H
-00000000000000000000000000000001 // Y0
-58e2fccefa7e3061367f1d57a4e7455a // E(K,Y0)
-00000000000000000000000000000000 // len(A)||len(C)
-00000000000000000000000000000000 // GHASH
-58e2fccefa7e3061367f1d57a4e7455a // T
-
 feffe9928665731c6d6a8f9467308308 // K
 d9313225f88406e5a55909c5aff5269a // P
 86a7a9531534f7da2e4c303d8a318a72 
@@ -1008,11 +1035,24 @@ e3aa212f2c02a4e035c17e2329aca12e
 1ba30b396a0aac973d58e091473f5985 
 4d5c2af327cd64a62cf35abd2ba6fab4 // T
  */
-TEST(AesGcm, FirstAesGcmTest) {
-  AesGcm aes_obj;
+TEST(AesGcm, SecondAesGcmTest) {
+/*
+  AesGcm aesgcm_obj;
 
- EXPECT_TRUE(aes_obj.Init(sizeof(test_aesgcm_key_1), test_aesgcm_key_1, 128,
-             96, test_aesgcm_iv_1, AesGcm::ENCRYPT, true));
+  ReverseInPlace(16, test_aesgcm_K_1);
+  EXPECT_TRUE(aesgcm_obj.Init(NBITSINBYTE * sizeof(test_aesgcm_K_1), test_aesgcm_K_1, 128,
+             16, test_aesgcm_iv_1, AesGcm::ENCRYPT, false));
+  int size_out = 16;
+  byte test_out[16];
+  EXPECT_TRUE(aesgcm_obj.FinalCipherIn(0, 0, &size_out, test_out));
+  byte tag[32];
+  aesgcm_obj.GetComputedTag(16, tag);
+  EXPECT_TRUE(memcmp(tag, test_aesgcm_T_1, 16) ==0);
+  printf("test_aesgcm_H_1 should be : "); PrintBytes(16, test_aesgcm_H_1); printf("\n");
+  printf("test_aesgcm_Ghash_1 should be : "); PrintBytes(16, test_aesgcm_Ghash_1); printf("\n");
+  printf("test_aesgcm_EY0_1 should be : "); PrintBytes(16, test_aesgcm_EY0_1); printf("\n");
+*/
+  printf("Done\n");
 }
 
 DEFINE_string(log_file, "symmetrictest.log", "symmetrictest file name");

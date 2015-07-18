@@ -33,11 +33,18 @@ GAesCtr::GAesCtr() {
 GAesCtr::~GAesCtr() {
 }
 
-bool GAesCtr::Init(int size_iv, byte* iv, int size_K, byte* K,
+bool GAesCtr::Init(int size_iv, byte* iv, int bit_size_K, byte* K,
                    int direction, bool use_aesni) {
+  if (bit_size_K != 128)
+    return false;
+
   // initialize iv and key
   direction_ = direction;
   use_aesni_ = use_aesni;
+  memcpy(last_ctr_, iv, 16);
+  ctr_ = (uint32_t*)&last_ctr_[1];
+  size_partial_ = 0;
+  memset(partial_, 0, 16);
   if (use_aesni_) {
     if (!aesni_.Init(128, K, Aes::ENCRYPT))
       return false;
@@ -45,10 +52,6 @@ bool GAesCtr::Init(int size_iv, byte* iv, int size_K, byte* K,
     if (!aes_.Init(128, K, Aes::ENCRYPT))
       return false;
   }
-  memcpy(last_ctr_, iv, 16);
-  ctr_ = (uint32_t*)&last_ctr_[1];
-  size_partial_ = 0;
-  memset(partial_, 0, 16);
   return true;
 }
 
@@ -112,6 +115,7 @@ bool GAesCtr::GetCtr(byte* out) {
 
 AesGcm::AesGcm() {
   alg_name_ = new string("aes128-gcm128");
+  message_id_ = nullptr;
 }
 
 AesGcm::~AesGcm() {
@@ -123,18 +127,22 @@ AesGcm::~AesGcm() {
   initialized_ = false;
 }
 
-bool AesGcm::Init(int size_key, byte* key, int size_tag,
+bool AesGcm::Init(int bit_size_key, byte* key, int size_tag,
                   int size_iv, byte* iv, int direction,
                   bool use_aesni) {
-  if (!aesctr_.Init(size_iv, iv, size_key, key, direction, use_aesni))
-    return false;
-  // Calculate H
-  byte zero[16];
-  memset(zero, 0, 16);
+printf("AesGcm::Init :"); PrintBytes(size_iv, iv); printf(", tag_size: %d\n", size_tag);
   Aes aes;
   AesNi aesni;
+  byte zero[16];
   uint64_t H[4];
   byte initial_iv[16];
+  memset(zero, 0, 16);
+
+printf("Calling GAesCtr::Init\n");
+  if (!aesctr_.Init(size_iv, iv, bit_size_key, key,
+                    direction, use_aesni)) {
+    return false;
+  }
   aesctr_.GetCtr(initial_iv);
   if (use_aesni) {
     if (!aesni.Init(128, key, AesNi::ENCRYPT))
@@ -147,6 +155,10 @@ bool AesGcm::Init(int size_key, byte* key, int size_tag,
      aes.EncryptBlock(zero, (byte*)H);
      aes.EncryptBlock(initial_iv, encrypted_initial_iv_);
   }
+printf("AesCtr::Init K: "); PrintBytes(16, (byte*)key); printf("\n");
+printf("AesCtr::Init H: "); PrintBytes(16, (byte*)H); printf("\n");
+printf("AesGcm::Init initial iv: "); PrintBytes(16, initial_iv); printf("\n");
+printf("AesCtr::Init encrypted initial iv: "); PrintBytes(16, encrypted_initial_iv_); printf("\n");
   ghash_.Init(H);
   size_tag_ = size_tag;
   direction_ = direction;
@@ -221,8 +233,13 @@ int AesGcm::MinimumFinalEncryptIn() { return 1; }
 bool AesGcm::MessageValid() { return output_verified_; }
 
 int AesGcm::GetComputedTag(int size, byte* out) {
-  // xor in encrypted_initial_iv_
-  return 0;
+  byte the_hash[16];
+  ghash_.GetHash(the_hash);
+printf("GHASH : ");PrintBytes(16, the_hash);printf("\n");
+  for (int i = 0; i<16; i++)
+    out[i] = encrypted_initial_iv_[i] ^ the_hash[i];
+printf("TAG: ");PrintBytes(16, the_hash);printf("\n");
+  return size;
 }
 
 int AesGcm::SetReceivedTag(int size, byte* out) {

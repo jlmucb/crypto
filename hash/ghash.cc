@@ -58,6 +58,7 @@ void XorPolyTo(int size_a, uint64_t* a, int size_b, uint64_t* b) {
 
 bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
               int size_c, uint64_t* c) {
+printf("MultPoly %d %d %d\n", size_a, size_b, size_c);
   if ((size_a + size_b) > 4)
     return false;
   if (size_c < 4)
@@ -68,13 +69,15 @@ bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
 
   memset(accum, 0, sizeof(uint64_t) * 8);
   memset(c, 0, sizeof(uint64_t) * size_c);
-  memset(t, 0, sizeof(uint64_t) * 4);
+  memset(t, 0, sizeof(uint64_t) * 8);
+printf("accum(  0): "); PrintBytes(16, (byte*)accum); printf("\n");
 
   for (int j = 0; j < (uint64_bit_size * size_b); j++) {
     if (BitOn(b, j)) {
       Shift(size_a, a, j, 4, t);
       XorPolyTo(size_c, t, size_c, accum);
     }
+printf("accum %d): ", j); PrintBytes(16, (byte*)accum); printf("\n");
   }
   memcpy(c, accum, sizeof(uint64_t)*4);
   return true;
@@ -83,6 +86,7 @@ bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
 bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly) {
   uint64_t t[8];
 
+printf("Reduce %d %d\n", size_a, size_p);
   int top_bit_a = size_a * uint64_bit_size - 1;
   int top_bit_p = size_p * uint64_bit_size - 1;
   int k;
@@ -114,7 +118,8 @@ bool MultAndReduce(int size_a, uint64_t* a, int size_b, uint64_t* b,
                    int size_p, uint64_t* min_poly, int size_c, uint64_t* c) {
   uint64_t t[8];
   memset(t, 0, sizeof(uint64_t) * 8);
-  if (!MultPoly(size_a, a, size_b, b, size_c, c))
+printf("MultoplyAndReduce %d %d %d\n", size_a, size_b, size_c);
+  if (!MultPoly(size_a, a, size_b, b, size_c, t))
       return false;
   if (!Reduce(4, t, 3, min_poly))
     return false;
@@ -128,38 +133,49 @@ Ghash::Ghash() {
   min_poly_[1] = 0x0;
   // x^128
   min_poly_[2] = 0x1;
-  uint64_t zero[2] = {0ULL, 0ULL};
-  Init(zero);
+  finalized_A_ = false;
+  finalized_C_ = false;
+  size_partial_ = 0;
+  memset(partial_, 0, 32);
+  memset(last_x_, 0, 32);
+  memset(digest_, 0, 32);
+  size_A_ = 0;
+  size_C_ = 0;
 }
 
 Ghash::~Ghash() {
   memset(H_, 0, 32);
   memset(last_x_, 0, 32);
-  memset(digest_, 0, 64);
+  memset(digest_, 0, 32);
 }
 
 void Ghash::Init(uint64_t* H) {
+printf("Ghash::Init: "); PrintBytes(16, (byte*)H); printf("\n");
   memcpy(H_, H, 16);
   finalized_A_ = false;
   finalized_C_ = false;
   size_partial_ = 0;
-  memset(partial_, 0, 64);
-  memset(last_x_, 0, 64);
-  memset(digest_, 0, 64);
+  memset(partial_, 0, 32);
+  memset(last_x_, 0, 32);
+  memset(digest_, 0, 32);
   size_A_ = 0;
   size_C_ = 0;
 }
 
 void Ghash::AddBlock(uint64_t* block) {
+printf("Ghash::AddBlock: "); PrintBytes(16, (byte*)block); printf("\n");
+printf("Before         : "); PrintBytes(16, (byte*)last_x_); printf("\n");
   uint64_t t[2];
-  
+
   for (int i = 0; i < 2; i++) 
     last_x_[i] ^= block[i];
-  MultAndReduce(16, last_x_, 16, H_, 48, min_poly_, 16, t);
+  MultAndReduce(2, last_x_, 2, H_, 3, min_poly_, 4, t);
   memcpy(last_x_, t, 32);
+printf("After          : "); PrintBytes(16, (byte*)last_x_); printf("\n");
 }
 
 void Ghash::AddToHash(int size, byte* data) {
+printf("Ghash::AddToHash(%d)\n", size);
   byte* next = data;
 
   if (size_partial_ > 0) {
@@ -190,16 +206,19 @@ void Ghash::AddToHash(int size, byte* data) {
 }
 
 void Ghash::AddAHash(int size, byte* data) {
+printf("Ghash::AddAHash(%d)\n", size);
   size_A_ += size*NBITSINBYTE;
   AddToHash(size, data);
 }
 
 void Ghash::AddCHash(int size, byte* data) {
+printf("Ghash::AddCHash(%d)\n", size);
   size_C_ += size*NBITSINBYTE;
   AddToHash(size, data);
 }
 
 void Ghash::FinalA() {
+printf("Ghash::FinalA()\n");
   if (size_partial_ > 0) {
     AddBlock((uint64_t*)partial_);
     size_partial_ = 0;
@@ -208,6 +227,7 @@ void Ghash::FinalA() {
 }
 
 void Ghash::FinalC() {
+printf("Ghash::FinalC()\n");
   if (size_partial_ > 0) {
     AddBlock((uint64_t*)partial_);
     size_partial_ = 0;
@@ -222,6 +242,7 @@ void Ghash::FinalC() {
 }
 
 bool Ghash::GetHash(byte* out)  {
+printf("Ghash::GetHash\n");
   if (!finalized_C_)
     return false;
   memcpy(out, (byte*)digest_, 16);

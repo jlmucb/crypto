@@ -116,4 +116,6 @@ string* EncodeTime(TimePoint the_time);
 bool DecodeTime(string encoded_time, TimePoint* the_time);
 uint64_t ReadRdtsc();
 uint64_t CalibrateRdtsc();
+
+void ReverseCpy(int size, byte* in, byte* out);
 #endif
