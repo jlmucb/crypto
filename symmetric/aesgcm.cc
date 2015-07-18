@@ -105,6 +105,11 @@ void GAesCtr::Decrypt(int size, byte* in, byte* out) {
   Encrypt(size, in, out);
 }
 
+bool GAesCtr::GetCtr(byte* out) {
+  memcpy(out, last_ctr_, 16);
+  return true;
+}
+
 AesGcm::AesGcm() {
   alg_name_ = new string("aes128-gcm128");
 }
@@ -129,14 +134,18 @@ bool AesGcm::Init(int size_key, byte* key, int size_tag,
   Aes aes;
   AesNi aesni;
   uint64_t H[4];
+  byte initial_iv[16];
+  aesctr_.GetCtr(initial_iv);
   if (use_aesni) {
     if (!aesni.Init(128, key, AesNi::ENCRYPT))
       return false;
      aesni.EncryptBlock(zero, (byte*)H);
+     aesni.EncryptBlock(initial_iv, encrypted_initial_iv_);
   } else {
     if (!aes.Init(128, key, Aes::ENCRYPT))
       return false;
      aes.EncryptBlock(zero, (byte*)H);
+     aes.EncryptBlock(initial_iv, encrypted_initial_iv_);
   }
   ghash_.Init(H);
   size_tag_ = size_tag;
@@ -212,10 +221,11 @@ int AesGcm::MinimumFinalEncryptIn() { return 1; }
 bool AesGcm::MessageValid() { return output_verified_; }
 
 int AesGcm::GetComputedTag(int size, byte* out) {
+  // xor in encrypted_initial_iv_
   return 0;
 }
 
-int AesGcm::GetReceivedTag(int size, byte* out) {
+int AesGcm::SetReceivedTag(int size, byte* out) {
   return 0;
 }
 

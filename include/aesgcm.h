@@ -50,6 +50,7 @@ public:
   void Encrypt(int size, byte* in, byte* out);
   void DecryptBlock(uint64_t* in, uint64_t* out);
   void Decrypt(int size, byte* in, byte* out);
+  bool GetCtr(byte* out);
 };
 
 class AesGcm : public EncryptionAlgorithm {
@@ -58,6 +59,7 @@ private:
   int direction_;
   bool output_verified_;
   int size_tag_;
+  byte encrypted_initial_iv_[16];
 
   GAesCtr aesctr_;
   Ghash ghash_;
@@ -78,8 +80,8 @@ private:
   int InputBytesProcessed() {return 0;}
   int OutputBytesProduced() {return 0;}
 
-  int GetComputedTag(int size, byte*);
-  int GetReceivedTag(int size, byte*);
+  int GetComputedTag(int size, byte* out);
+  int SetReceivedTag(int size, byte* in);
 
   bool AuthenticatedIn(int size_in, byte* in);
   bool FinalAuthenticatedIn(int size_in, byte* in);
