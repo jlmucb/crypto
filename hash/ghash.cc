@@ -22,17 +22,98 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+const int uint64_bit_size = sizeof(uint64_t) * NBITSINBYTE;
+
+bool BitOn(uint64_t* in, int pos) {
+  int word_position = pos / uint64_bit_size;
+  int bit_position = pos - word_position*uint64_bit_size;
+
+  return (in[word_position] & (0x1 >> bit_position)) != 0;
+}
+
+void Shift(int size_in, uint64_t* in, int shift, int size_out, uint64_t* out) {
+  int word_shift = shift / uint64_bit_size;
+  int bit_shift = shift - word_shift * uint64_bit_size;
+
+  uint64_t bottom;
+  uint64_t top;
+  for (int i = 0; i < size_in; i++) {
+    bottom = in[i] >> bit_shift;
+    top = in[i] << (sizeof(uint64_t) * NBITSINBYTE - bit_shift);
+    out[word_shift + i] |= bottom;
+    out[word_shift + i + 1] |= top;
+  }
+}
+
+void XorPolyTo(int size_a, uint64_t* a, int size_b, uint64_t* b) {
+  for (int i = 0; i < size_a; i++)
+    b[i] |= a[i];
+}
+
 bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
               int size_c, uint64_t* c) {
+  if ((size_a + size_b) > 4)
+    return false;
+  if (size_c < 4)
+    return false;
+
+  uint64_t t[8];
+  uint64_t accum[8];
+
+  memset(accum, 0, sizeof(uint64_t) * 8);
+  memset(c, 0, sizeof(uint64_t) * size_c);
+  memset(t, 0, sizeof(uint64_t) * 8);
+
+  for (int i = 0; i < size_a; i++) {
+    for (int j = 0; j< (uint64_bit_size * size_b); j++) {
+      if (BitOn(b, j)) {
+        Shift(size_a, a, j, 8, t);
+        XorPolyTo(size_c, t, size_c, accum);
+      }
+    }
+  }
   return true;
 }
 
 bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly) {
+  uint64_t t[8];
+
+  int top_bit_a = size_a * uint64_bit_size - 1;
+  int top_bit_p = size_p * uint64_bit_size - 1;
+  int k;
+
+  for (k = top_bit_p; k >= 128; k--) {
+    if (BitOn(min_poly, k))
+      top_bit_p--;
+    else
+      break;
+  }
+  for (k = top_bit_a; k >= 256; k--) {
+    if (BitOn(a, k))
+      top_bit_a--;
+    else
+      break;
+  }
+
+  for (k = top_bit_a; k >= top_bit_p; k--) {
+    memset(t, 0, sizeof(uint64_t) * 8);
+    if (BitOn(a, k)) {
+    Shift(size_p, min_poly, k - top_bit_p, 8, t);
+    XorPolyTo(8, t, size_a, a);
+    }
+  }
   return true;
 }
 
 bool MultAndReduce(int size_a, uint64_t* a, int size_b, uint64_t* b,
                    int size_p, uint64_t* min_poly, int size_c, uint64_t* c) {
+  uint64_t t[8];
+  memset(t, 0, sizeof(uint64_t) * 8);
+  if (!MultPoly(size_a, a, size_b, b, size_c, c))
+      return false;
+  if (!Reduce(4, t, 3, min_poly))
+    return false;
+  memcpy(c, t, 4 * sizeof(uint64_t));
   return true;
 }
 
@@ -41,8 +122,8 @@ Ghash::Ghash() {
   min_poly_[0] = 0x83;
   min_poly_[1] = 0x0;
   // x^128
-  min_poly_[3] = 0x1;
-  uint64_t zero[2]={0, 0};
+  min_poly_[2] = 0x1;
+  uint64_t zero[2] = {0ULL, 0ULL};
   Init(zero);
 }
 
