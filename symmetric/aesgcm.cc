@@ -34,8 +34,9 @@ GAesCtr::~GAesCtr() {
 }
 
 bool GAesCtr::Init(int size_iv, byte* iv, int size_K, byte* K,
-                   bool use_aesni) {
+                   int direction, bool use_aesni) {
   // initialize iv and key
+  direction_ = direction;
   use_aesni_ = use_aesni;
   if (use_aesni_) {
     if (!aesni_.Init(128, K, Aes::ENCRYPT))
@@ -118,10 +119,28 @@ AesGcm::~AesGcm() {
 }
 
 bool AesGcm::Init(int size_key, byte* key, int size_tag,
-                  int size_iv, byte* iv, bool use_aesni) {
-  if (!aesctr_.Init(size_iv, iv, size_key, key, use_aesni))
+                  int size_iv, byte* iv, int direction,
+                  bool use_aesni) {
+  if (!aesctr_.Init(size_iv, iv, size_key, key, direction, use_aesni))
     return false;
+  // Calculate H
+  byte zero[16];
+  memset(zero, 0, 16);
+  Aes aes;
+  AesNi aesni;
+  uint64_t H[4];
+  if (use_aesni) {
+    if (!aesni.Init(128, key, AesNi::ENCRYPT))
+      return false;
+     aesni.EncryptBlock(zero, (byte*)H);
+  } else {
+    if (!aes.Init(128, key, Aes::ENCRYPT))
+      return false;
+     aes.EncryptBlock(zero, (byte*)H);
+  }
+  ghash_.Init(H);
   size_tag_ = size_tag;
+  direction_ = direction;
   initialized_ = true;
   return true;
 }

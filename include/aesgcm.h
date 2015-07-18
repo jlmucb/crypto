@@ -29,17 +29,9 @@
 using namespace std;
 
 class GAesCtr {
-public:
-  GAesCtr();
-  ~GAesCtr();
-
-  bool Init(int size_iv, byte* iv, int size_K, byte* K, bool use_aesni);
-  void EncryptBlock(uint64_t* in, uint64_t* out);
-  void Encrypt(int size, byte* in, byte* out);
-  void DecryptBlock(uint64_t* in, uint64_t* out);
-  void Decrypt(int size, byte* in, byte* out);
 
 private:
+  int direction_;
   bool use_aesni_;
   Aes aes_;
   AesNi aesni_;
@@ -47,30 +39,44 @@ private:
   int  size_partial_;
   uint64_t last_ctr_[2];
   uint32_t* ctr_;
+
+public:
+  GAesCtr();
+  ~GAesCtr();
+
+  bool Init(int size_iv, byte* iv, int size_K, byte* K,
+            int direction, bool use_aesni);
+  void EncryptBlock(uint64_t* in, uint64_t* out);
+  void Encrypt(int size, byte* in, byte* out);
+  void DecryptBlock(uint64_t* in, uint64_t* out);
+  void Decrypt(int size, byte* in, byte* out);
 };
 
 class AesGcm : public EncryptionAlgorithm {
- public:
+
+private:
+  int direction_;
+  bool output_verified_;
+  int size_tag_;
+
   GAesCtr aesctr_;
   Ghash ghash_;
 
-  int num_unprocessed_input_bytes_;
-  byte input_buf[Aes::BLOCKBYTESIZE];
-
-  bool output_verified_;
-
-  int size_iv_;
-  uint64_t iv_[4];
-  int size_key_;
-  uint64_t key_[4];
-  int size_tag_;
-
+ public:
+  enum {ENCRYPT = 0, DECRYPT = 1};
   AesGcm();
   ~AesGcm();
 
   bool Init(int size_key, byte* key, int size_tag,
-            int size_iv, byte* iv, bool use_aesni);
+            int size_iv, byte* iv,
+            int direction, bool use_aesni);
   void PrintEncryptionAlgorithm();
+  bool ProcessInput(int size_in, byte* in, int* size_out,
+                    byte* out) {return false;}
+  bool ProcessFinalInput(int size_in, byte* in, int* size_out,
+                         byte* out) {return false;}
+  int InputBytesProcessed() {return 0;}
+  int OutputBytesProduced() {return 0;}
 
   int GetComputedTag(int size, byte*);
   int GetReceivedTag(int size, byte*);

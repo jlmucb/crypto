@@ -32,6 +32,7 @@
 #include "encryption_algorithm.h"
 #include "aescbchmac256sympad.h"
 #include "aesctrhmac256sympad.h"
+#include "aesgcm.h"
 #include <cmath>
 
 uint64_t cycles_per_second = 10;
@@ -962,6 +963,57 @@ TEST(FirstCtrEncryptionAlgorithmTest, FirstEncryptionCtrAlgorithmTest) {
   EXPECT_TRUE(SimpleCtrEncryptionAlgorithmTest());
 }
 TEST(RunTestSuite, RunTestSuite) { EXPECT_TRUE(RunTestSuite()); }
+
+byte test_aesgcm_key_1[16]; //  = (byte*) "0123456789abcdef";
+byte test_aesgcm_iv_1[16]; //  = (byte*) "0123456789abcdef";
+
+/*
+00000000000000000000000000000000  // K
+000000000000000000000000  // IV
+66e94bd4ef8a2c3b884cfa59ca342b2e // H
+00000000000000000000000000000001 // Y0
+58e2fccefa7e3061367f1d57a4e7455a // E(K,Y0)
+00000000000000000000000000000000 // len(A)||len(C)
+00000000000000000000000000000000 // GHASH
+58e2fccefa7e3061367f1d57a4e7455a // T
+
+feffe9928665731c6d6a8f9467308308 // K
+d9313225f88406e5a55909c5aff5269a // P
+86a7a9531534f7da2e4c303d8a318a72 
+1c3c0c95956809532fcf0e2449a6b525 
+b16aedf5aa0de657ba637b391aafd255
+cafebabefacedbaddecaf888 //IV
+b83b533708bf535d0aa6e52980d53b78 // H
+cafebabefacedbaddecaf88800000001 // Y0
+3247184b3c4f69a44dbcd22887bbb418 // E(K,Y0)
+cafebabefacedbaddecaf88800000002 // Y1
+9bb22ce7d9f372c1ee2b28722b25f206 // E(K,Y1)
+cafebabefacedbaddecaf88800000003 // Y2
+650d887c3936533a1b8d4e1ea39d2b5c // E(K,Y2)
+cafebabefacedbaddecaf88800000004 // Y3
+3de91827c10e9a4f5240647ee5221f20 // E(K,Y3
+cafebabefacedbaddecaf88800000005  //Y4
+aac9e6ccc0074ac0873b9ba85d908bd0 // E(K,Y4)
+59ed3f2bb1a0aaa07c9f56c6a504647b // X1
+b714c9048389afd9f9bc5c1d4378e052 // X2
+47400c6577b1ee8d8f40b2721e86ff10 // X3
+4796cf49464704b5dd91f159bb1b7f95 // X4
+00000000000000000000000000000200 // len(A)||len(C )
+
+7f1b32b81b820d02614f8895ac1d4eac // GHASH(H, A, C)
+
+42831ec2217774244b7221b784d0d49c // C
+e3aa212f2c02a4e035c17e2329aca12e 
+21d514b25466931c7d8f6a5aac84aa05 
+1ba30b396a0aac973d58e091473f5985 
+4d5c2af327cd64a62cf35abd2ba6fab4 // T
+ */
+TEST(AesGcm, FirstAesGcmTest) {
+  AesGcm aes_obj;
+
+ EXPECT_TRUE(aes_obj.Init(sizeof(test_aesgcm_key_1), test_aesgcm_key_1, 128,
+             96, test_aesgcm_iv_1, AesGcm::ENCRYPT, true));
+}
 
 DEFINE_string(log_file, "symmetrictest.log", "symmetrictest file name");
 
