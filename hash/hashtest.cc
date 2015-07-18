@@ -30,6 +30,7 @@
 #include "hmac_sha256.h"
 #include "pkcs.h"
 #include "pbkdf.h"
+#include "ghash.h"
 #include <cmath>
 
 uint64_t cycles_per_second = 10;
@@ -662,6 +663,67 @@ TEST(FirstHmacSha256Case, FirstHmacSha256Test) {
 }
 TEST(FirstPkcsCase, FirstPkcsTest) { EXPECT_TRUE(pkcsTest()); }
 TEST(FirstKdfCase, FirstKdfTest) { EXPECT_TRUE(pbkdfTest()); }
+
+uint64_t test_min_poly[3] = {0x83, 0x0, 0x1};
+uint64_t test_poly_a1[2] = {0x1, 0x0};
+uint64_t test_poly_b[2] = {0x7, 0x3};
+uint64_t test_poly_a2[2] = {0x3, 0x0};
+uint64_t test_poly_a3[3] = {0x2, 0x0, 0x1};
+
+TEST(MultPoly, MultPolyTest) {
+  uint64_t c[4];
+  uint64_t d[4];
+  memset(d, 0, 4 * sizeof(uint64_t));
+  uint64_t d_expected[4] = {0x09, 0x05, 0x0, 0x0};
+
+  EXPECT_TRUE(MultPoly(2, test_poly_b, 2,  test_poly_a1, 4, c));
+  EXPECT_TRUE(memcmp(test_poly_b, c, 16) == 0);
+  EXPECT_TRUE(MultPoly(2, test_poly_b, 2, test_poly_a2, 4, d));
+  EXPECT_TRUE(memcmp(d_expected, d, 32) == 0);
+}
+
+TEST(Reduce, ReduceTest) {
+  uint64_t expected[4] = {0x81, 0x0, 0x0, 0x0};
+
+  Reduce(4, test_poly_a3, 3, test_min_poly);
+  EXPECT_TRUE(memcmp(expected, test_poly_a3, 32) == 0);
+}
+
+TEST(MultAndReduce, MultAndReduceTest) {
+// bool MultAndReduce(int size_a, uint64_t* a, int size_b, uint64_t* b,
+//                    int size_p, uint64_t* min_poly, int size_c, uint64_t* c);
+}
+
+/*
+  MultPoly(2, test_poly_b, 2, test_poly_a2, 4, d);
+  printf("test_poly_b: ");
+  PrintBytes(32, (byte*)test_poly_b);
+  printf("\n");
+  printf("test_poly_a2: ");
+  PrintBytes(32, (byte*)test_poly_a2);
+  printf("\n");
+  printf("c: ");
+  PrintBytes(32, (byte*)d);
+  printf("\n");
+
+TEST(Ghash, GhashTest1) {
+  Ghash hash;
+  uint64_t  H[2];
+
+  memset(H, 0, 16);
+  hash.Init(H);
+}
+
+TEST(Ghash, GhashTest2) {
+  Ghash hash;
+}
+
+void AddAHash(int size, byte* data);
+void AddCHash(int size, byte* data);
+void FinalA();
+void FinalC();
+bool GetHash(byte* out);
+ */
 
 DEFINE_string(log_file, "hashtest.log", "hashtest log file name");
 

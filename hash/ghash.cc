@@ -26,20 +26,26 @@ const int uint64_bit_size = sizeof(uint64_t) * NBITSINBYTE;
 
 bool BitOn(uint64_t* in, int pos) {
   int word_position = pos / uint64_bit_size;
-  int bit_position = pos - word_position*uint64_bit_size;
+  int bit_position = pos - word_position * uint64_bit_size;
 
-  return (in[word_position] & (0x1 >> bit_position)) != 0;
+  return (in[word_position] & (0x1ULL << bit_position)) != 0;
 }
 
 void Shift(int size_in, uint64_t* in, int shift, int size_out, uint64_t* out) {
   int word_shift = shift / uint64_bit_size;
   int bit_shift = shift - word_shift * uint64_bit_size;
 
+  memset((byte*) out, 0, size_out * sizeof(uint64_t));
   uint64_t bottom;
   uint64_t top;
+  int top_shift;
   for (int i = 0; i < size_in; i++) {
-    bottom = in[i] >> bit_shift;
-    top = in[i] << (sizeof(uint64_t) * NBITSINBYTE - bit_shift);
+    bottom = in[i] << bit_shift;
+    top_shift = (sizeof(uint64_t) * NBITSINBYTE) - bit_shift;
+    if (top_shift != (sizeof(uint64_t) * NBITSINBYTE))
+      top = in[i] >> top_shift;
+    else
+      top = 0ULL;
     out[word_shift + i] |= bottom;
     out[word_shift + i + 1] |= top;
   }
@@ -47,7 +53,7 @@ void Shift(int size_in, uint64_t* in, int shift, int size_out, uint64_t* out) {
 
 void XorPolyTo(int size_a, uint64_t* a, int size_b, uint64_t* b) {
   for (int i = 0; i < size_a; i++)
-    b[i] |= a[i];
+    b[i] ^= a[i];
 }
 
 bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
@@ -62,16 +68,15 @@ bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
 
   memset(accum, 0, sizeof(uint64_t) * 8);
   memset(c, 0, sizeof(uint64_t) * size_c);
-  memset(t, 0, sizeof(uint64_t) * 8);
+  memset(t, 0, sizeof(uint64_t) * 4);
 
-  for (int i = 0; i < size_a; i++) {
-    for (int j = 0; j< (uint64_bit_size * size_b); j++) {
-      if (BitOn(b, j)) {
-        Shift(size_a, a, j, 8, t);
-        XorPolyTo(size_c, t, size_c, accum);
-      }
+  for (int j = 0; j < (uint64_bit_size * size_b); j++) {
+    if (BitOn(b, j)) {
+      Shift(size_a, a, j, 4, t);
+      XorPolyTo(size_c, t, size_c, accum);
     }
   }
+  memcpy(c, accum, sizeof(uint64_t)*4);
   return true;
 }
 
@@ -83,13 +88,13 @@ bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly) {
   int k;
 
   for (k = top_bit_p; k >= 128; k--) {
-    if (BitOn(min_poly, k))
+    if (!BitOn(min_poly, k))
       top_bit_p--;
     else
       break;
   }
-  for (k = top_bit_a; k >= 256; k--) {
-    if (BitOn(a, k))
+  for (k = top_bit_a; k >= 128; k--) {
+    if (!BitOn(a, k))
       top_bit_a--;
     else
       break;
@@ -98,8 +103,8 @@ bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly) {
   for (k = top_bit_a; k >= top_bit_p; k--) {
     memset(t, 0, sizeof(uint64_t) * 8);
     if (BitOn(a, k)) {
-    Shift(size_p, min_poly, k - top_bit_p, 8, t);
-    XorPolyTo(8, t, size_a, a);
+      Shift(size_p, min_poly, k - top_bit_p, 8, t);
+      XorPolyTo(size_a, t, size_a, a);
     }
   }
   return true;

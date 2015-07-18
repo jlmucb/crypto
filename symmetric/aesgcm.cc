@@ -33,11 +33,25 @@ GAesCtr::GAesCtr() {
 GAesCtr::~GAesCtr() {
 }
 
-void GAesCtr::Init(int size_iv, uint64_t* iv, int size_K, byte* K) {
+bool GAesCtr::Init(int size_iv, byte* iv, int size_K, byte* K,
+                   bool use_aesni) {
   // initialize iv and key
+  use_aesni_ = use_aesni;
+  if (use_aesni_) {
+    if (!aesni_.Init(128, K, Aes::ENCRYPT))
+      return false;
+  } else {
+    if (!aes_.Init(128, K, Aes::ENCRYPT))
+      return false;
+  }
+  memcpy(last_ctr_, iv, 16);
+  ctr_ = (uint32_t*)&last_ctr_[1];
+  size_partial_ = 0;
+  memset(partial_, 0, 16);
+  return true;
 }
 
-void GAesCtr::NextBlock(uint64_t* in, uint64_t* out) {
+void GAesCtr::EncryptBlock(uint64_t* in, uint64_t* out) {
   uint64_t t[2];
 
   if (use_aesni_)
@@ -48,6 +62,46 @@ void GAesCtr::NextBlock(uint64_t* in, uint64_t* out) {
     in[i] = out[i] ^ t[i];
   }
   (*ctr_)++;
+}
+
+void GAesCtr::DecryptBlock(uint64_t* in, uint64_t* out) {
+  EncryptBlock(in, out);
+}
+
+void GAesCtr::Encrypt(int size, byte* in, byte* out) {
+  byte* next = in;
+
+  if (size_partial_ > 0) {
+    if ((size_partial_+size) >= 16) {
+      int n = 16 - size_partial_;
+      memcpy(next, &partial_[size_partial_], n);
+      EncryptBlock((uint64_t*)partial_, (uint64_t*)out);
+      size_partial_ = 0;
+      memset(partial_, 0, 16);
+      next += n;
+      size -= n;
+      out += n;
+    } else {
+      memcpy(partial_, &partial_[size_partial_], size);
+      size_partial_ += size;
+      return;
+    }
+  }
+
+  while (size >= 16) {
+    EncryptBlock((uint64_t*)next, (uint64_t*)out);
+    next += 16;
+    out += 16;
+    size -= 16;
+  }
+  if (size > 0) {
+    memcpy(partial_, next, size);
+    size_partial_ = size;
+  }
+}
+
+void GAesCtr::Decrypt(int size, byte* in, byte* out) {
+  Encrypt(size, in, out);
 }
 
 AesGcm::AesGcm() {
@@ -63,65 +117,52 @@ AesGcm::~AesGcm() {
   initialized_ = false;
 }
 
-bool AesGcm::Init(int size_key, byte*, int size_block, int size_tag,
+bool AesGcm::Init(int size_key, byte* key, int size_tag,
                   int size_iv, byte* iv, bool use_aesni) {
-  use_aesni_ = use_aesni;
-  byte zero[16];
-  memset(zero, 0, 16);
-  // aesni_.EncryptBlock(zero, (byte*)H_);
-  // s = 128*ceiling(size_iv/128) - size_iv
-  // J = GHash(iv || 0 || size_iv_64)
-  // u = 128*ceiling(len(C)/128) - len(C)
-  // v = 128*ceiling(len(A)/128) - len())
-  // S Ghash_H(A || O^v ||| C || 0^u || len(A)_64 || len(c)_64)
-  // T =  MSB_t(GCtr(J, S))
-  // return (C, T)
+  if (!aesctr_.Init(size_iv, iv, size_key, key, use_aesni))
+    return false;
+  size_tag_ = size_tag;
   initialized_ = true;
+  return true;
+}
+
+bool AesGcm::AuthenticatedIn(int size_in, byte* in) {
+  ghash_.AddAHash(size_in, in);
+  return true;
+}
+
+bool AesGcm::FinalAuthenticatedIn(int size_in, byte* in) {
+  ghash_.AddAHash(size_in, in);
+  ghash_.FinalA();
   return true;
 }
 
 bool AesGcm::FinalPlainIn(int size_in, byte* in, int* size_out,
                           byte* out) {
-  return true;
-}
-
-bool AesGcm::FinalCipherIn(int size_in, byte* in, int* size_out,
-                           byte* out) {
-  return true;
-}
-
-bool AesGcm::ProcessFinalInput(int size_in, byte* in,
-                               int* size_out, byte* out) {
-  return true;
-}
-
-void AesGcm::GcmEncryptBlock(byte* in, byte* out) {
-}
-
-void AesGcm::GcmDecryptBlock(byte* in, byte* out) {
-}
-
-bool AesGcm::AuthenticatedIn(int size_in, byte* in, int* size_out, byte* out) {
-  return true;
-}
-
-bool AesGcm::FinalAuthenticatedIn(int size_in, byte* in, int* size_out, byte* out) {
+  PlainIn(size_in, in, size_out, out);
+  ghash_.AddCHash(size_in, in);
+  ghash_.FinalC();
   return true;
 }
 
 bool AesGcm::PlainIn(int size_in, byte* in, int* size_out,
                      byte* out) {
+  aesctr_.Encrypt(size_in, in, out);
+  ghash_.AddCHash(*size_out, out);
+  return true;
+}
+
+bool AesGcm::FinalCipherIn(int size_in, byte* in, int* size_out,
+                           byte* out) {
+  CipherIn(size_in, in, size_out, out);
+  ghash_.FinalC();
   return true;
 }
 
 bool AesGcm::CipherIn(int size_in, byte* in, int* size_out,
                       byte* out) {
-  return true;
-}
-
-bool AesGcm::ProcessInput(int size_in, byte* in, int* size_out,
-                          byte* out) {
-  if (!initialized_) return false;
+  aesctr_.Decrypt(size_in, in, out);
+  ghash_.AddCHash(size_in, in);
   return true;
 }
 
@@ -131,13 +172,6 @@ void AesGcm::PrintEncryptionAlgorithm() {
     return;
   }
   printf("aes128-gcm128\n");
-  if (use_aesni_) {
-    printf("using aesni\n");
-    // aesni_obj_.PrintSymmetricKey();
-  } else {
-    // aes_obj_.PrintSymmetricKey();
-    printf("not using aesni\n");
-  }
 }
 
 int AesGcm::DecryptInputQuantum() { return Aes::BLOCKBYTESIZE; }
@@ -155,14 +189,6 @@ int AesGcm::MinimumFinalDecryptIn() {
 }
 
 int AesGcm::MinimumFinalEncryptIn() { return 1; }
-
-int AesGcm::InputBytesProcessed() {
-  return input_bytes_processed_;
-}
-
-int AesGcm::OutputBytesProduced() {
-  return output_bytes_produced_;
-}
 
 bool AesGcm::MessageValid() { return output_verified_; }
 

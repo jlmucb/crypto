@@ -56,7 +56,7 @@ endif
 LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
 
 dobj=	$(O)/hashtest.o $(O)/hash.o $(O)/sha1.o $(O)/util.o $(O)/sha256.o \
-	$(O)/sha3.o $(O)/hmac_sha256.o $(O)/pkcs.o $(O)/pbkdf2.o
+	$(O)/sha3.o $(O)/hmac_sha256.o $(O)/pkcs.o $(O)/pbkdf2.o $(O)/ghash.o
 
 all:	hashtest.exe
 clean:
@@ -104,4 +104,8 @@ $(O)/pkcs.o: $(S)/pkcs.cc
 $(O)/pbkdf2.o: $(S)/pbkdf2.cc
 	@echo "compiling pbkdf2.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/pbkdf2.o $(S)/pbkdf2.cc
+
+$(O)/ghash.o: $(S)/ghash.cc
+	@echo "compiling ghash.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/ghash.o $(S)/ghash.cc
 

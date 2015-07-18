@@ -33,47 +33,50 @@ public:
   GAesCtr();
   ~GAesCtr();
 
-  void Init(int size_iv, uint64_t* iv, int size_K, byte* K);
-  void NextBlock(uint64_t* in, uint64_t* out);
+  bool Init(int size_iv, byte* iv, int size_K, byte* K, bool use_aesni);
+  void EncryptBlock(uint64_t* in, uint64_t* out);
+  void Encrypt(int size, byte* in, byte* out);
+  void DecryptBlock(uint64_t* in, uint64_t* out);
+  void Decrypt(int size, byte* in, byte* out);
 
 private:
   bool use_aesni_;
   Aes aes_;
   AesNi aesni_;
-  uint64_t  last_ctr_[2];
+  byte partial_[16];
+  int  size_partial_;
+  uint64_t last_ctr_[2];
   uint32_t* ctr_;
 };
 
 class AesGcm : public EncryptionAlgorithm {
  public:
-  bool use_aesni_;
+  GAesCtr aesctr_;
+  Ghash ghash_;
 
   int num_unprocessed_input_bytes_;
   byte input_buf[Aes::BLOCKBYTESIZE];
 
   bool output_verified_;
-  int block_size_;
 
   int size_iv_;
   uint64_t iv_[4];
   int size_key_;
   uint64_t key_[4];
+  int size_tag_;
 
   AesGcm();
   ~AesGcm();
 
-  bool Init(int size_key, byte*, int size_block, int size_tag,
+  bool Init(int size_key, byte* key, int size_tag,
             int size_iv, byte* iv, bool use_aesni);
   void PrintEncryptionAlgorithm();
 
   int GetComputedTag(int size, byte*);
   int GetReceivedTag(int size, byte*);
 
-  void GcmEncryptBlock(byte* in, byte* out);
-  void GcmDecryptBlock(byte* in, byte* out);
-
-  bool AuthenticatedIn(int size_in, byte* in, int* size_out, byte* out);
-  bool FinalAuthenticatedIn(int size_in, byte* in, int* size_out, byte* out);
+  bool AuthenticatedIn(int size_in, byte* in);
+  bool FinalAuthenticatedIn(int size_in, byte* in);
 
   bool PlainIn(int size_in, byte* in, int* size_out, byte* out);
   bool CipherIn(int size_in, byte* in, int* size_out, byte* out);
@@ -86,13 +89,8 @@ class AesGcm : public EncryptionAlgorithm {
   int MinimumFinalEncryptIn();
   int MaxAdditionalOutput();
   int MaxAdditionalFinalOutput();
-  bool ProcessInput(int size_in, byte* in, int* size_out, byte* out);
-  bool ProcessFinalInput(int size_in, byte* in, int* size_out, byte* out);
-  int InputBytesProcessed();
-  int OutputBytesProduced();
 
   bool MessageValid();
-
   bool GenerateScheme(const char* name, int num_bits);
   bool MakeScheme(const char* name, int num_key_bits,
                   byte* key, byte* iv);
