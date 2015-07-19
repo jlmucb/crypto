@@ -150,8 +150,12 @@ Ghash::~Ghash() {
 }
 
 void Ghash::Init(uint64_t* H) {
-printf("H                : "); PrintBytes(16, (byte*)H); printf("\n");
-  memcpy(H_, H, 16);
+  uint64_t HH[2];
+  ReverseCpy(8, (byte*)&H[1], (byte*)&HH[1]);
+  ReverseCpy(8, (byte*)&H[0], (byte*)&HH[0]);
+  H_[0] = HH[1];
+  H_[1] = HH[0];
+printf("H            : %016llx%016llx\n", H_[1], H_[0]); 
   finalized_A_ = false;
   finalized_C_ = false;
   size_partial_ = 0;
@@ -163,15 +167,19 @@ printf("H                : "); PrintBytes(16, (byte*)H); printf("\n");
 }
 
 void Ghash::AddBlock(uint64_t* block) {
-printf("Ghash::AddBlock: "); PrintBytes(16, (byte*)block); printf("\n");
-printf("Before            : "); PrintBytes(16, (byte*)last_x_); printf("\n");
+printf("Before            : %016llx%016llx\n", last_x_[1], last_x_[0]);
+  uint64_t newblock[2];
+  ReverseCpy(8, (byte*)&block[1], (byte*)&newblock[0]);
+  ReverseCpy(8, (byte*)&block[0], (byte*)&newblock[1]);
+printf("NewBlock          : %016llx%016llx\n", newblock[1], newblock[0]);
   uint64_t t[2];
 
   for (int i = 0; i < 2; i++) 
-    last_x_[i] ^= block[i];
+    last_x_[i] ^= newblock[i];
   MultAndReduce(2, last_x_, 2, H_, 3, min_poly_, 4, t);
-  memcpy(last_x_, t, 32);
-printf("After             : "); PrintBytes(16, (byte*)last_x_); printf("\n");
+  last_x_[0] = t[0];
+  last_x_[1] = t[1];
+printf("After             : %016llx%016llx\n", last_x_[1], last_x_[0]); 
 }
 
 void Ghash::AddToHash(int size, byte* data) {

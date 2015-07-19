@@ -38,7 +38,7 @@ private:
   byte partial_[16];
   int  size_partial_;
   uint64_t last_ctr_[2];
-  uint32_t* ctr_;
+  uint64_t* ctr_;
 
 public:
   GAesCtr();
@@ -59,7 +59,7 @@ private:
   int direction_;
   bool output_verified_;
   int size_tag_;
-  byte encrypted_initial_iv_[16];
+  uint64_t encrypted_iv_[2];
 
   GAesCtr aesctr_;
   Ghash ghash_;

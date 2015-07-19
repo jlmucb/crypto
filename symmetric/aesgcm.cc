@@ -42,7 +42,14 @@ bool GAesCtr::Init(int size_iv, byte* iv, int bit_size_K, byte* K,
   direction_ = direction;
   use_aesni_ = use_aesni;
   memcpy(last_ctr_, iv, 16);
-  ctr_ = (uint32_t*)last_ctr_;
+  ctr_ = &last_ctr_[1];
+
+  uint64_t x =  *ctr_;
+  uint64_t y;
+  ReverseCpy(8, (byte*)&x, (byte*)&y);
+  y++;
+  ReverseCpy(8, (byte*)&y, (byte*)ctr_);
+
   size_partial_ = 0;
   memset(partial_, 0, 16);
   if (use_aesni_) {
@@ -63,9 +70,13 @@ void GAesCtr::EncryptBlock(uint64_t* in, uint64_t* out) {
   else
     aes_.EncryptBlock((byte*)last_ctr_, (byte*)t);
   for (int i = 0; i < 2; i++) {
-    in[i] = out[i] ^ t[i];
+    out[i] = in[i] ^ t[i];
   }
-  (*ctr_)++;
+  uint64_t x =  *ctr_;
+  uint64_t y;
+  ReverseCpy(8, (byte*)&x, (byte*)&y);
+  y++;
+  ReverseCpy(8, (byte*)&y, (byte*)ctr_);
 }
 
 void GAesCtr::DecryptBlock(uint64_t* in, uint64_t* out) {
@@ -141,18 +152,25 @@ bool AesGcm::Init(int bit_size_key, byte* key, int size_tag,
                     direction, use_aesni)) {
     return false;
   }
-  aesctr_.GetCtr(initial_iv);
+  uint64_t tt[2];
+  uint64_t rr[2];
+  ReverseCpy(8, iv, (byte*)&tt[1]);
+  ReverseCpy(8, &iv[8], (byte*)&tt[0]);
+printf("IN           : %016llx%016llx\n", tt[1], tt[0]);
   if (use_aesni) {
     if (!aesni.Init(128, key, AesNi::ENCRYPT))
       return false;
      aesni.EncryptBlock(zero, (byte*)H);
-     aesni.EncryptBlock(initial_iv, encrypted_initial_iv_);
+     aesni.EncryptBlock(iv, (byte*)rr);
   } else {
     if (!aes.Init(128, key, Aes::ENCRYPT))
       return false;
      aes.EncryptBlock(zero, (byte*)H);
-     aes.EncryptBlock(initial_iv, encrypted_initial_iv_);
+     aes.EncryptBlock(iv, (byte*)rr);
   }
+  ReverseCpy(8, (byte*)&rr[0], (byte*)&encrypted_iv_[1]);
+  ReverseCpy(8, (byte*)&rr[1], (byte*)&encrypted_iv_[0]);
+  printf("Y0*          : %016llx%016llx\n", encrypted_iv_[1], encrypted_iv_[0]);
   ghash_.Init(H);
   size_tag_ = size_tag;
   direction_ = direction;
@@ -173,6 +191,7 @@ bool AesGcm::FinalAuthenticatedIn(int size_in, byte* in) {
 
 bool AesGcm::FinalPlainIn(int size_in, byte* in, int* size_out,
                           byte* out) {
+printf("FinalPlainIn      : "); PrintBytes(16, in);printf("\n");
   PlainIn(size_in, in, size_out, out);
   ghash_.AddCHash(size_in, in);
   ghash_.FinalC();
@@ -229,9 +248,12 @@ bool AesGcm::MessageValid() { return output_verified_; }
 int AesGcm::GetComputedTag(int size, byte* out) {
   byte the_hash[16];
   ghash_.GetHash(the_hash);
+  byte a[16];
+  ReverseCpy(8, (byte*)&encrypted_iv_[1], a);
+  ReverseCpy(8, (byte*)&encrypted_iv_[0], &a[8]);
 printf("GHASH             : ");PrintBytes(16, the_hash);printf("\n");
   for (int i = 0; i<16; i++)
-    out[i] = encrypted_initial_iv_[i] ^ the_hash[i];
+    out[i] = a[i] ^ the_hash[i];
 printf("TAG               : ");PrintBytes(16, the_hash);printf("\n");
   return size;
 }
