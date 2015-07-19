@@ -1004,54 +1004,73 @@ TEST(AesGcm, FirstAesGcmTest) {
 }
 
 /*
-feffe9928665731c6d6a8f9467308308 // K
-d9313225f88406e5a55909c5aff5269a // P
-86a7a9531534f7da2e4c303d8a318a72 
-1c3c0c95956809532fcf0e2449a6b525 
-b16aedf5aa0de657ba637b391aafd255
-cafebabefacedbaddecaf888 //IV
-b83b533708bf535d0aa6e52980d53b78 // H
-cafebabefacedbaddecaf88800000001 // Y0
-3247184b3c4f69a44dbcd22887bbb418 // E(K,Y0)
-cafebabefacedbaddecaf88800000002 // Y1
-9bb22ce7d9f372c1ee2b28722b25f206 // E(K,Y1)
-cafebabefacedbaddecaf88800000003 // Y2
-650d887c3936533a1b8d4e1ea39d2b5c // E(K,Y2)
-cafebabefacedbaddecaf88800000004 // Y3
-3de91827c10e9a4f5240647ee5221f20 // E(K,Y3
-cafebabefacedbaddecaf88800000005  //Y4
-aac9e6ccc0074ac0873b9ba85d908bd0 // E(K,Y4)
-59ed3f2bb1a0aaa07c9f56c6a504647b // X1
-b714c9048389afd9f9bc5c1d4378e052 // X2
-47400c6577b1ee8d8f40b2721e86ff10 // X3
-4796cf49464704b5dd91f159bb1b7f95 // X4
-00000000000000000000000000000200 // len(A)||len(C )
-
-7f1b32b81b820d02614f8895ac1d4eac // GHASH(H, A, C)
-
-42831ec2217774244b7221b784d0d49c // C
-e3aa212f2c02a4e035c17e2329aca12e 
-21d514b25466931c7d8f6a5aac84aa05 
-1ba30b396a0aac973d58e091473f5985 
-4d5c2af327cd64a62cf35abd2ba6fab4 // T
+    cafebabefacedbaddecaf88800000001 // Y0
+    3247184b3c4f69a44dbcd22887bbb418 // E(K,Y0)
+    cafebabefacedbaddecaf88800000002 // Y1
+    9bb22ce7d9f372c1ee2b28722b25f206 // E(K,Y1)
+    cafebabefacedbaddecaf88800000003 // Y2
+    650d887c3936533a1b8d4e1ea39d2b5c // E(K,Y2)
+    cafebabefacedbaddecaf88800000004 // Y3
+    3de91827c10e9a4f5240647ee5221f20 // E(K,Y3
+    cafebabefacedbaddecaf88800000005  //Y4
+    aac9e6ccc0074ac0873b9ba85d908bd0 // E(K,Y4)
+    59ed3f2bb1a0aaa07c9f56c6a504647b // X1
+    b714c9048389afd9f9bc5c1d4378e052 // X2
+    47400c6577b1ee8d8f40b2721e86ff10 // X3
+    4796cf49464704b5dd91f159bb1b7f95 // X4
+    00000000000000000000000000000200 // len(A)||len(C )
  */
+
+byte test_P_2[64] = {
+  0xd9,0x31,0x32,0x25,0xf8,0x84,0x06,0xe5,0xa5,0x59,0x09,0xc5,0xaf,0xf5,0x26,0x9a,
+  0x86,0xa7,0xa9,0x53,0x15,0x34,0xf7,0xda,0x2e,0x4c,0x30,0x3d,0x8a,0x31,0x8a,0x72,
+  0x1c,0x3c,0x0c,0x95,0x95,0x68,0x09,0x53,0x2f,0xcf,0x0e,0x24,0x49,0xa6,0xb5,0x25,
+  0xb1,0x6a,0xed,0xf5,0xaa,0x0d,0xe6,0x57,0xba,0x63,0x7b,0x39,0x1a,0xaf,0xd2,0x55,
+};
+byte test_C_2[64] = {
+  0x42,0x83,0x1e,0xc2,0x21,0x77,0x74,0x24,0x4b,0x72,0x21,0xb7,0x84,0xd0,0xd4,0x9c,
+  0xe3,0xaa,0x21,0x2f,0x2c,0x02,0xa4,0xe0,0x35,0xc1,0x7e,0x23,0x29,0xac,0xa1,0x2e,
+  0x21,0xd5,0x14,0xb2,0x54,0x66,0x93,0x1c,0x7d,0x8f,0x6a,0x5a,0xac,0x84,0xaa,0x05,
+  0x1b,0xa3,0x0b,0x39,0x6a,0x0a,0xac,0x97,0x3d,0x58,0xe0,0x91,0x47,0x3f,0x59,0x85,
+};
+byte test_aesgcm_K_2[16] = {
+  0xfe,0xff,0xe9,0x92,0x86,0x65,0x73,0x1c,0x6d,0x6a,0x8f,0x94,0x67,0x30,0x83,0x08,
+};
+byte test_aesgcm_iv_2[16] = {
+  0xca,0xfe,0xba,0xbe,0xfa,0xce,0xdb,0xad,0xde,0xca,0xf8,0x88,0x00,0x00,0x00,0x01,
+};
+byte test_aesgcm_H_2[16] = {
+  0xb8,0x3b,0x53,0x37,0x08,0xbf,0x53,0x5d,0x0a,0xa6,0xe5,0x29,0x80,0xd5,0x3b,0x78,
+};
+byte test_aesgcm_Ghash_2[16] = {
+  0x7f,0x1b,0x32,0xb8,0x1b,0x82,0x0d,0x02,0x61,0x4f,0x88,0x95,0xac,0x1d,0x4e,0xac,
+};
+byte test_aesgcm_T_2[16] = {
+  0x4d,0x5c,0x2a,0xf3,0x27,0xcd,0x64,0xa6,0x2c,0xf3,0x5a,0xbd,0x2b,0xa6,0xfa,0xb4,
+};
+
 TEST(AesGcm, SecondAesGcmTest) {
-/*
   AesGcm aesgcm_obj;
 
-  ReverseInPlace(16, test_aesgcm_K_1);
-  EXPECT_TRUE(aesgcm_obj.Init(NBITSINBYTE * sizeof(test_aesgcm_K_1), test_aesgcm_K_1, 128,
-             16, test_aesgcm_iv_1, AesGcm::ENCRYPT, false));
-  int size_out = 16;
-  byte test_out[16];
-  EXPECT_TRUE(aesgcm_obj.FinalCipherIn(0, 0, &size_out, test_out));
+  ReverseInPlace(16, test_aesgcm_K_2);
+  ReverseInPlace(16, test_aesgcm_iv_2);
+  EXPECT_TRUE(aesgcm_obj.Init(NBITSINBYTE * sizeof(test_aesgcm_K_2), test_aesgcm_K_2, 128,
+             16, test_aesgcm_iv_2, AesGcm::ENCRYPT, false));
+  int size_out = 128;
+  byte test_out[128];
+  EXPECT_TRUE(aesgcm_obj.FinalCipherIn(sizeof(test_P_2), test_P_2, &size_out, test_out));
   byte tag[32];
   aesgcm_obj.GetComputedTag(16, tag);
-  EXPECT_TRUE(memcmp(tag, test_aesgcm_T_1, 16) ==0);
-  printf("test_aesgcm_H_1 should be : "); PrintBytes(16, test_aesgcm_H_1); printf("\n");
-  printf("test_aesgcm_Ghash_1 should be : "); PrintBytes(16, test_aesgcm_Ghash_1); printf("\n");
-  printf("test_aesgcm_EY0_1 should be : "); PrintBytes(16, test_aesgcm_EY0_1); printf("\n");
-*/
+  // EXPECT_TRUE(memcmp(tag, test_aesgcm_T_2, 16) ==0);
+  printf("Key               : "); PrintBytes(16, test_aesgcm_K_2); printf("\n");
+  printf("IV                : "); PrintBytes(16, test_aesgcm_iv_2); printf("\n");
+  printf("Plain             : "); PrintBytes(64, test_P_2); printf("\n");
+  printf("Cipher            : "); PrintBytes(64, test_out); printf("\n");
+  printf("Cipher should be  : "); PrintBytes(64, test_C_2); printf("\n");
+  printf("tag               : "); PrintBytes(16, tag); printf("\n");
+  printf("tag should be     : "); PrintBytes(16, test_aesgcm_T_2); printf("\n");
+  printf("H should be       : "); PrintBytes(16, test_aesgcm_H_2); printf("\n");
+  printf("Ghash should be   : "); PrintBytes(16, test_aesgcm_Ghash_2); printf("\n");
   printf("Done\n");
 }
 
