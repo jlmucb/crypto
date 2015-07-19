@@ -58,7 +58,7 @@ void XorPolyTo(int size_a, uint64_t* a, int size_b, uint64_t* b) {
 
 bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
               int size_c, uint64_t* c) {
-// printf("MultPoly %d %d %d\n", size_a, size_b, size_c);
+printf("MultPoly %016llx%016llx x %016llx%016llx\n", a[1], a[0], b[1], b[0]);
   if ((size_a + size_b) > 4)
     return false;
   if (size_c < 4)
@@ -70,13 +70,13 @@ bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
   memset(accum, 0, sizeof(uint64_t) * 8);
   memset(c, 0, sizeof(uint64_t) * size_c);
   memset(t, 0, sizeof(uint64_t) * 8);
-// printf("accum(  0): "); PrintBytes(16, (byte*)accum); printf("\n");
 
   for (int j = 0; j < (uint64_bit_size * size_b); j++) {
     if (BitOn(b, j)) {
       Shift(size_a, a, j, 4, t);
       XorPolyTo(size_c, t, size_c, accum);
-// printf("accum %d): ", j); PrintBytes(16, (byte*)accum); printf("\n");
+printf("accum %d: %016llx%016llx%016llx%16llx\n", j,
+       accum[3], accum[2], accum[1], accum[0]); 
     }
   }
   memcpy(c, accum, sizeof(uint64_t)*4);
@@ -86,7 +86,9 @@ bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
 bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly) {
   uint64_t t[8];
 
-// printf("Reduce %d %d\n", size_a, size_p);
+printf("Reduce, accum %016llx%016llx%016llx%016llx\n", a[3], a[2], a[1], a[0]);
+printf("Reduce, p(x)  %016llx%016llx%016llx\n",
+       min_poly[2], min_poly[1], min_poly[0]);
   int top_bit_a = size_a * uint64_bit_size - 1;
   int top_bit_p = size_p * uint64_bit_size - 1;
   int k;
@@ -109,6 +111,8 @@ bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly) {
     if (BitOn(a, k)) {
       Shift(size_p, min_poly, k - top_bit_p, 8, t);
       XorPolyTo(size_a, t, size_a, a);
+printf("Reduce after: %016llx%016llx%016llx%016llx\n",
+       a[3], a[2], a[1], a[0]);
     }
   }
   return true;
@@ -167,19 +171,19 @@ printf("H            : %016llx%016llx\n", H_[1], H_[0]);
 }
 
 void Ghash::AddBlock(uint64_t* block) {
-printf("Before            : %016llx%016llx\n", last_x_[1], last_x_[0]);
+printf("\nBefore            : %016llx%016llx\n", last_x_[1], last_x_[0]);
   uint64_t newblock[2];
+  uint64_t t[2];
   ReverseCpy(8, (byte*)&block[1], (byte*)&newblock[0]);
   ReverseCpy(8, (byte*)&block[0], (byte*)&newblock[1]);
 printf("NewBlock          : %016llx%016llx\n", newblock[1], newblock[0]);
-  uint64_t t[2];
 
   for (int i = 0; i < 2; i++) 
     last_x_[i] ^= newblock[i];
   MultAndReduce(2, last_x_, 2, H_, 3, min_poly_, 4, t);
-  last_x_[0] = t[0];
   last_x_[1] = t[1];
-printf("After             : %016llx%016llx\n", last_x_[1], last_x_[0]); 
+  last_x_[0] = t[0];
+printf("After             : %016llx%016llx\n\n", last_x_[1], last_x_[0]); 
 }
 
 void Ghash::AddToHash(int size, byte* data) {
