@@ -994,9 +994,9 @@ TEST(AesGcm, FirstAesGcmTest) {
              16, test_aesgcm_iv_1, AesGcm::ENCRYPT, false));
   int size_out = 16;
   byte test_out[16];
-  EXPECT_TRUE(aesgcm_obj.FinalCipherIn(0, 0, &size_out, test_out));
+  EXPECT_TRUE(aesgcm_obj.FinalPlainIn(0, 0, &size_out, test_out));
   byte tag[32];
-  aesgcm_obj.GetComputedTag(8, tag);
+  aesgcm_obj.GetComputedTag(16, tag);
   printf("Computed tag   : "); PrintBytes(16, tag); printf("\n");
   printf("test_aesgcm_T_1: "); PrintBytes(16, test_aesgcm_T_1); printf("\n");
   EXPECT_TRUE(memcmp(tag, test_aesgcm_T_1, 16) == 0);
@@ -1055,7 +1055,6 @@ TEST(AesGcm, SecondAesGcmTest) {
   AesGcm aesgcm_obj;
 
   ReverseInPlace(16, test_aesgcm_iv_2);
-  // ReverseInPlace(64, test_C_2);
   EXPECT_TRUE(aesgcm_obj.Init(NBITSINBYTE * sizeof(test_aesgcm_K_2), test_aesgcm_K_2, 128,
              16, test_aesgcm_iv_2, AesGcm::ENCRYPT, false));
   int size_out = 128;

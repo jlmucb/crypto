@@ -145,7 +145,6 @@ bool AesGcm::Init(int bit_size_key, byte* key, int size_tag,
   AesNi aesni;
   byte zero[16];
   uint64_t H[4];
-  byte initial_iv[16];
   memset(zero, 0, 16);
 
   if (!aesctr_.Init(size_iv, iv, bit_size_key, key,
@@ -184,16 +183,15 @@ bool AesGcm::AuthenticatedIn(int size_in, byte* in) {
 }
 
 bool AesGcm::FinalAuthenticatedIn(int size_in, byte* in) {
-  ghash_.AddAHash(size_in, in);
   ghash_.FinalA();
   return true;
 }
 
 bool AesGcm::FinalPlainIn(int size_in, byte* in, int* size_out,
                           byte* out) {
-printf("FinalPlainIn      : "); PrintBytes(16, in);printf("\n");
-  PlainIn(size_in, in, size_out, out);
-  ghash_.AddCHash(size_in, in);
+printf("FinalPlainIn\n");
+  if (size_in > 0)
+    PlainIn(size_in, in, size_out, out);
   ghash_.FinalC();
   return true;
 }
@@ -201,7 +199,8 @@ printf("FinalPlainIn      : "); PrintBytes(16, in);printf("\n");
 bool AesGcm::PlainIn(int size_in, byte* in, int* size_out,
                      byte* out) {
   aesctr_.Encrypt(size_in, in, out);
-  ghash_.AddCHash(*size_out, out);
+  ghash_.AddCHash(size_in, out);
+  *size_out = size_in;
   return true;
 }
 
@@ -216,6 +215,7 @@ bool AesGcm::CipherIn(int size_in, byte* in, int* size_out,
                       byte* out) {
   aesctr_.Decrypt(size_in, in, out);
   ghash_.AddCHash(size_in, in);
+  *size_out = size_in;
   return true;
 }
 
@@ -246,15 +246,19 @@ int AesGcm::MinimumFinalEncryptIn() { return 1; }
 bool AesGcm::MessageValid() { return output_verified_; }
 
 int AesGcm::GetComputedTag(int size, byte* out) {
-  byte the_hash[16];
+printf("GetComputedTag\n");
+  uint64_t the_hash[2];
   ghash_.GetHash(the_hash);
-  byte a[16];
-  ReverseCpy(8, (byte*)&encrypted_iv_[1], a);
-  ReverseCpy(8, (byte*)&encrypted_iv_[0], &a[8]);
-printf("GHASH             : ");PrintBytes(16, the_hash);printf("\n");
-  for (int i = 0; i<16; i++)
-    out[i] = a[i] ^ the_hash[i];
-printf("TAG               : ");PrintBytes(16, the_hash);printf("\n");
+
+  uint64_t final[2];
+  final[0] = the_hash[0] ^ encrypted_iv_[0];
+  final[1] = the_hash[1] ^ encrypted_iv_[1];
+
+printf("GHASH             : %016llx%016llx\n", the_hash[1], the_hash[0]);
+printf("TAG               : %016llx%016llx\n", final[1], final[0]);
+
+  ReverseCpy(8, (byte*)&final[1], out);
+  ReverseCpy(8, (byte*)&final[0], &out[8]);
   return size;
 }
 

@@ -40,7 +40,7 @@ public:
   void AddCHash(int size, byte* data);
   void FinalA();
   void FinalC();
-  bool GetHash(byte* out); 
+  bool GetHash(uint64_t* out); 
 
 private:
   bool finalized_A_;
@@ -51,8 +51,8 @@ private:
   uint64_t size_C_;
   uint64_t last_x_[4];
   int size_partial_;
-  byte partial_[32];
-  byte digest_[32];
+  byte partial_[16];
+  uint64_t digest_[2];
 
   void AddBlock(uint64_t* block);
   void AddToHash(int size, byte* data);

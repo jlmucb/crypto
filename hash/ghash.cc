@@ -136,17 +136,17 @@ Ghash::Ghash() {
   finalized_A_ = false;
   finalized_C_ = false;
   size_partial_ = 0;
-  memset(partial_, 0, 32);
-  memset(last_x_, 0, 32);
-  memset(digest_, 0, 32);
+  memset(partial_, 0, 16);
+  memset(last_x_, 0, 16);
+  memset(digest_, 0, 16);
   size_A_ = 0;
   size_C_ = 0;
 }
 
 Ghash::~Ghash() {
-  memset(H_, 0, 32);
-  memset(last_x_, 0, 32);
-  memset(digest_, 0, 32);
+  memset(H_, 0, 16);
+  memset(last_x_, 0, 16);
+  memset(digest_, 0, 16);
 }
 
 void Ghash::Init(uint64_t* H) {
@@ -159,9 +159,9 @@ printf("H            : %016llx%016llx\n", H_[1], H_[0]);
   finalized_A_ = false;
   finalized_C_ = false;
   size_partial_ = 0;
-  memset(partial_, 0, 32);
-  memset(last_x_, 0, 32);
-  memset(digest_, 0, 32);
+  memset(partial_, 0, 16);
+  memset(last_x_, 0, 16);
+  memset(digest_, 0, 16);
   size_A_ = 0;
   size_C_ = 0;
 }
@@ -235,7 +235,7 @@ printf("Ghash::FinalA()\n");
 }
 
 void Ghash::FinalC() {
-printf("Ghash::FinalC()\n");
+printf("Ghash::FinalC() %d\n", size_partial_);
   if (size_partial_ > 0) {
     AddBlock((uint64_t*)partial_);
     size_partial_ = 0;
@@ -245,14 +245,16 @@ printf("Ghash::FinalC()\n");
   *count = size_A_;
   *(++count) = size_C_;
   AddBlock((uint64_t*)partial_);
-  memcpy(digest_, last_x_, 16);
+  digest_[1] = last_x_[1];
+  digest_[0] = last_x_[0];
   finalized_C_ = true;
 }
 
-bool Ghash::GetHash(byte* out)  {
+bool Ghash::GetHash(uint64_t* out)  {
   if (!finalized_C_)
     return false;
-  memcpy(out, (byte*)digest_, 16);
+  out[0] = digest_[0];
+  out[1] = digest_[1];
   return true;
 }
 
