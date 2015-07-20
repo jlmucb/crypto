@@ -73,13 +73,7 @@ bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
 
   for (int j = 0; j < (uint64_bit_size * size_b); j++) {
     if (BitOn(b, j)) {
-         Shift(size_a, a, j, 4, t);
-// printf("MultPoly in %016llx%016llx\n", a[1], a[0]);
-// printf("shifted %d : ", j);
-// printf("%016llx%016llx%016llx%016llx\n",
-//        t[3], t[2], t[1], t[0]);
-// printf("MultPoly result %016llx%016llx%016llx%016llx\n\n",
-//        accum[3], accum[2], accum[1], accum[0]);
+      Shift(size_a, a, j, 4, t);
       XorPolyTo(size_c, t, size_c, accum);
     }
   }
@@ -95,15 +89,9 @@ bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly) {
   uint64_t t[8];
 
   int top_bit_a = size_a * uint64_bit_size - 1;
-  int top_bit_p = size_p * uint64_bit_size - 1;
+  int top_bit_p = 128;
   int k;
 
-  for (k = top_bit_p; k >= 128; k--) {
-    if (!BitOn(min_poly, k))
-      top_bit_p--;
-    else
-      break;
-  }
   for (k = top_bit_a; k >= 128; k--) {
     if (!BitOn(a, k))
       top_bit_a--;
@@ -111,7 +99,7 @@ bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly) {
       break;
   }
 
-  for (k = top_bit_a; k >= top_bit_p; k--) {
+  for (k = top_bit_a; k >= 128; k--) {
     memset(t, 0, sizeof(uint64_t) * 8);
     if (BitOn(a, k)) {
       Shift(size_p, min_poly, k - top_bit_p, 8, t);
@@ -123,21 +111,24 @@ bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly) {
 
 bool MultAndReduce(int size_a, uint64_t* a, int size_b, uint64_t* b,
                    int size_p, uint64_t* min_poly, int size_c, uint64_t* c) {
-  uint64_t t[8];
+  uint64_t t[4];
 
-  memset(t, 0, sizeof(uint64_t) * 8);
-  if (!MultPoly(size_a, a, size_b, b, size_c, t))
+  memset(t, 0, sizeof(uint64_t) * 4);
+  if (!MultPoly(size_a, a, size_b, b, 4, t))
       return false;
   if (!Reduce(4, t, 3, min_poly))
     return false;
-  memcpy(c, t, 4 * sizeof(uint64_t));
+  c[3] = t[3];
+  c[2] = t[2];
+  c[1] = t[1];
+  c[0] = t[0];
   return true;
 }
 
 Ghash::Ghash() {
-  // x^128 + x^7+x^2+x+1
-  min_poly_[2] = 0x1ULL;
-  min_poly_[1] = 0x0ULL;
+  // x^128+x^7+x^2+x+1
+  min_poly_[2] = 0x01ULL;
+  min_poly_[1] = 0x00ULL;
   min_poly_[0] = 0x87ULL;
   finalized_A_ = false;
   finalized_C_ = false;
