@@ -1038,9 +1038,6 @@ byte test_aesgcm_K_2[16] = {
 uint64_t ivx[2]= { 0xdecaf88800000001ULL, 0xcafebabefacedbadULL
 };
 byte* test_aesgcm_iv_2 = (byte*) ivx;
-// = {
-//   0xca,0xfe,0xba,0xbe,0xfa,0xce,0xdb,0xad,0xde,0xca,0xf8,0x88,0x00,0x00,0x00,0x01,
-// };
 byte test_aesgcm_H_2[16] = {
   0xb8,0x3b,0x53,0x37,0x08,0xbf,0x53,0x5d,0x0a,0xa6,0xe5,0x29,0x80,0xd5,0x3b,0x78,
 };
@@ -1072,6 +1069,71 @@ TEST(AesGcm, SecondAesGcmTest) {
   printf("tag should be     : "); PrintBytes(16, test_aesgcm_T_2); printf("\n");
   printf("H should be       : "); PrintBytes(16, test_aesgcm_H_2); printf("\n");
   printf("Ghash should be   : "); PrintBytes(16, test_aesgcm_Ghash_2); printf("\n");
+  printf("Done\n");
+}
+
+/*
+  00000000000000000000000000000000
+  00000000000000000000000000000000
+  00000000000000000000000000000001
+  66e94bd4ef8a2c3b884cfa59ca342b2e
+  00000000000000000000000000000001
+  58e2fccefa7e3061367f1d57a4e7455a
+  00000000000000000000000000000002
+  0388dace60b6a392f328c2b971b2fe78
+  5e2ec746917062882c85b0685353deb7
+  00000000000000000000000000000080
+  f38cbb1ad69223dcc3457ae5b6b0f885
+  0388dace60b6a392f328c2b971b2fe78
+  ab6e47d42cec13bdf53a67b21257bddf
+ */
+
+byte test_P_3[16] = {
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+byte test_C_3[16] = {
+  0x03,0x88,0xda,0xce,0x60,0xb6,0xa3,0x92,0xf3,0x28,0xc2,0xb9,0x71,0xb2,0xfe,0x78
+};
+byte test_aesgcm_K_3[16] = {
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+byte test_aesgcm_iv_3[16] = {
+  0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+byte test_aesgcm_H_3[16] = {
+  0x66,0xe9,0x4b,0xd4,0xef,0x8a,0x2c,0x3b,0x88,0x4c,0xfa,0x59,0xca,0x34,0x2b,0x2e
+};
+byte test_aesgcm_Ghash_3[16] = {
+  0xf3,0x8c,0xbb,0x1a,0xd6,0x92,0x23,0xdc,0xc3,0x45,0x7a,0xe5,0xb6,0xb0,0xf8,0x85
+};
+byte test_aesgcm_T_3[16] = {
+  0xab,0x6e,0x47,0xd4,0x2c,0xec,0x13,0xbd,0xf5,0x3a,0x67,0xb2,0x12,0x57,0xbd,0xdf
+};
+
+TEST(AesGcm, ThirdAesGcmTest) {
+  AesGcm aesgcm_obj;
+
+  ReverseInPlace(16, test_aesgcm_iv_3);
+  EXPECT_TRUE(aesgcm_obj.Init(NBITSINBYTE * sizeof(test_aesgcm_K_3), test_aesgcm_K_3, 128,
+             16, test_aesgcm_iv_3, AesGcm::ENCRYPT, false));
+  int size_out = 128;
+  byte test_out[128];
+  EXPECT_TRUE(aesgcm_obj.FinalPlainIn(sizeof(test_P_3), test_P_3, &size_out, test_out));
+  byte tag[32];
+  aesgcm_obj.GetComputedTag(16, tag);
+  // EXPECT_TRUE(memcmp(tag, test_aesgcm_T_3, 16) ==0);
+  printf("Key               : "); PrintBytes(16, test_aesgcm_K_3); printf("\n");
+  printf("IV                : "); PrintBytes(16, test_aesgcm_iv_3); printf("\n");
+  printf("Plain             : "); PrintBytes(16, test_P_3); printf("\n");
+  printf("Cipher            : "); PrintBytes(16, test_out); printf("\n");
+  printf("Cipher should be  : "); PrintBytes(16, test_C_3); printf("\n");
+  printf("tag               : "); PrintBytes(16, tag); printf("\n");
+  printf("tag should be     : "); PrintBytes(16, test_aesgcm_T_3); printf("\n");
+  printf("H should be       : "); PrintBytes(16, test_aesgcm_H_3); printf("\n");
+  printf("Ghash should be   : "); PrintBytes(16, test_aesgcm_Ghash_3); printf("\n");
   printf("Done\n");
 }
 
