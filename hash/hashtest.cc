@@ -769,8 +769,8 @@ TEST(Ghash, GhashTest1) {
   byte AA[64];
   byte XX[64];
 
-  ReverseCpy(8, (byte*)&A[1], &AA[0]);
-  ReverseCpy(8, (byte*)&A[0], &AA[8]);
+  ReverseCpy(8, (byte*)&A[0], &AA[0]);
+  ReverseCpy(8, (byte*)&A[1], &AA[8]);
   ReverseCpy(8, (byte*)&A[2], &AA[16]);
   ReverseCpy(8, (byte*)&A[3], &AA[24]);
   ReverseCpy(8, (byte*)&A[4], &AA[32]);
