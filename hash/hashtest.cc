@@ -690,40 +690,116 @@ TEST(Reduce, ReduceTest) {
 }
 
 TEST(MultAndReduce, MultAndReduceTest) {
-// bool MultAndReduce(int size_a, uint64_t* a, int size_b, uint64_t* b,
-//                    int size_p, uint64_t* min_poly, int size_c, uint64_t* c);
+  uint64_t A[3] = {0x0087ULL, 0x0ULL, 0x1ULL};
+  uint64_t B[2] = {0x07ULL, 0ULL };
+  uint64_t C[4];
+  uint64_t p[3] = {0x87ULL, 0ULL, 1ULL};
+
+  EXPECT_TRUE(MultAndReduce(3, A, 1, B, 3, p, 4, C));
+  printf("%016llx%016llx%016llx x %016llx\n",
+         A[2], A[1], A[0], B[0]);
+  printf("%016llx%016llx%016llx%016llx\n",
+         C[3], C[2], C[1], C[0]);
+  EXPECT_TRUE(C[3] == 0ULL && C[2] == 0ULL &&
+              C[1] == 0ULL && C[0] == 0ULL);
+
+  A[0] = 0x86ULL;
+  A[1] = 0ULL;
+  A[2] = 1ULL;
+  B[0] = 1ULL;
+  C[0] = 0ULL; C[1] = 0ULL; C[2] = 0ULL; C[3] = 0ULL;
+  EXPECT_TRUE(MultAndReduce(3, A, 1, B, 3, p, 4, C));
+  printf("%016llx%016llx%016llx x %016llx\n",
+         A[2], A[1], A[0], B[0]);
+  printf("%016llx%016llx%016llx%016llx\n",
+         C[3], C[2], C[1], C[0]);
+  EXPECT_TRUE(C[3] == 0ULL && C[2] == 0ULL &&
+              C[1] == 0ULL && C[0] == 1ULL);
+
+  A[0] = 0x0ULL;
+  A[1] = 0x1ULL;
+  B[0] = 0ULL;
+  B[1] = 1ULL;
+  C[0] = 0ULL; C[1] = 0ULL; C[2] = 0ULL; C[3] = 0ULL;
+  EXPECT_TRUE(MultAndReduce(2, A, 2, B, 3, p, 4, C));
+  printf("%016llx%016llx x %016llx%016llx\n",
+         A[1], A[0], B[1], B[0]);
+  printf("%016llx%016llx%016llx%016llx\n",
+         C[3], C[2], C[1], C[0]);
+  EXPECT_TRUE(C[3] == 0ULL && C[2] == 0ULL &&
+              C[1] == 0ULL && C[0] == 0x87ULL);
+
+  A[0] = 0x0ULL;
+  A[1] = 0x2ULL;
+  B[0] = 0ULL;
+  B[1] = 1ULL;
+  C[0] = 0ULL; C[1] = 0ULL; C[2] = 0ULL; C[3] = 0ULL;
+  EXPECT_TRUE(MultAndReduce(2, A, 2, B, 3, p, 4, C));
+  printf("%016llx%016llx x %016llx%016llx\n",
+         A[1], A[0], B[1], B[0]);
+  printf("%016llx%016llx%016llx%016llx\n",
+         C[3], C[2], C[1], C[0]);
+  EXPECT_TRUE(C[3] == 0ULL && C[2] == 0ULL &&
+              C[1] == 0ULL && C[0] == 0x10eULL);
 }
 
-/*
-  MultPoly(2, test_poly_b, 2, test_poly_a2, 4, d);
-  printf("test_poly_b: ");
-  PrintBytes(32, (byte*)test_poly_b);
-  printf("\n");
-  printf("test_poly_a2: ");
-  PrintBytes(32, (byte*)test_poly_a2);
-  printf("\n");
-  printf("c: ");
-  PrintBytes(32, (byte*)d);
-  printf("\n");
+uint64_t A[8] = {
+  0xD609B1F056637A0DULL,
+  0x46DF998D88E5222AULL,
+  0xB2C2846512153524ULL,
+  0xC0895E8108000F10ULL,
+  0x1112131415161718ULL,
+  0x191A1B1C1D1E1F20ULL,
+  0x2122232425262728ULL,
+  0x292A2B2C2D2E2F30ULL,
+};
+
+uint64_t X[8] = {
+  0xEF7998E399C01CA4ULL,
+  0x6B0BE68D67C6EE03ULL,
+  0xCCCB028441197B22ULL,
+  0x5AABADF6D7806EC0ULL,
+  0xD7FDB0687192D293ULL,
+  0xFE072BFE2811A68AULL,
+  0xFB356E435DBB4CD0ULL,
+  0xA47252D1A7E09B49ULL,
+};
 
 TEST(Ghash, GhashTest1) {
-  Ghash hash;
-  uint64_t  H[2];
+  byte AA[64];
+  byte XX[64];
 
-  memset(H, 0, 16);
-  hash.Init(H);
+  ReverseCpy(8, (byte*)&A[1], &AA[0]);
+  ReverseCpy(8, (byte*)&A[0], &AA[8]);
+  ReverseCpy(8, (byte*)&A[2], &AA[16]);
+  ReverseCpy(8, (byte*)&A[3], &AA[24]);
+  ReverseCpy(8, (byte*)&A[4], &AA[32]);
+  ReverseCpy(8, (byte*)&A[5], &AA[40]);
+  ReverseCpy(8, (byte*)&A[6], &AA[48]);
+  ReverseCpy(8, (byte*)&A[7], &AA[56]);
+
+  ReverseCpy(8, (byte*)&X[0], &XX[8]);
+  ReverseCpy(8, (byte*)&X[1], &XX[0]);
+  ReverseCpy(8, (byte*)&X[2], &XX[24]);
+  ReverseCpy(8, (byte*)&X[3], &XX[16]);
+  ReverseCpy(8, (byte*)&X[4], &XX[40]);
+  ReverseCpy(8, (byte*)&X[5], &XX[32]);
+  ReverseCpy(8, (byte*)&X[6], &XX[56]);
+  ReverseCpy(8, (byte*)&X[7], &XX[48]);
+
+  uint64_t  H[2] = {
+    0xA850253FCF43120E,
+    0x73A23D80121DE2D5
+  };
+  uint64_t HH[2];
+  ReverseCpy(8, (byte*)&H[0], (byte*)&HH[1]);
+  ReverseCpy(8, (byte*)&H[1], (byte*)&HH[0]);
+
+  Ghash hash;
+  hash.Init((uint64_t*)HH);
+  hash.AddAHash(64, (byte*)AA);
 }
 
-TEST(Ghash, GhashTest2) {
-  Ghash hash;
-}
-
-void AddAHash(int size, byte* data);
-void AddCHash(int size, byte* data);
-void FinalA();
-void FinalC();
-bool GetHash(byte* out);
- */
 
 DEFINE_string(log_file, "hashtest.log", "hashtest log file name");
 

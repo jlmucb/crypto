@@ -186,7 +186,7 @@ printf("Ghash::AddToHash(%d)\n", size);
   if (size_partial_ > 0) {
     if ((size_partial_+size) >= 16) {
       int n = 16 - size_partial_;
-      memcpy(next, &partial_[size_partial_], n);
+      memcpy(&partial_[size_partial_], next, n);
       ReverseCpy(8, partial_, (byte*)&in[1]);
       ReverseCpy(8, &partial_[8], (byte*)&in[0]);
       AddBlock(in);
