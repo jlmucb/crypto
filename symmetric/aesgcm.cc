@@ -156,6 +156,7 @@ bool AesGcm::Init(int bit_size_key, byte* key, int size_tag,
   ReverseCpy(8, iv, (byte*)&tt[1]);
   ReverseCpy(8, &iv[8], (byte*)&tt[0]);
 printf("IN           : %016llx%016llx\n", tt[1], tt[0]);
+printf("key          : "); PrintBytes(16, key); printf("\n");
   if (use_aesni) {
     if (!aesni.Init(128, key, AesNi::ENCRYPT))
       return false;
