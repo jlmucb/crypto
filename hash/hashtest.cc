@@ -709,10 +709,12 @@ TEST(MultAndReduce, MultAndReduceTest) {
   B[0] = 1ULL;
   C[0] = 0ULL; C[1] = 0ULL; C[2] = 0ULL; C[3] = 0ULL;
   EXPECT_TRUE(MultAndReduce(3, A, 1, B, 3, p, 4, C));
-  printf("%016llx%016llx%016llx x %016llx\n",
+#if 0
+  printf("MultAndReduce %016llx%016llx%016llx x %016llx\n",
          A[2], A[1], A[0], B[0]);
   printf("%016llx%016llx%016llx%016llx\n",
          C[3], C[2], C[1], C[0]);
+#endif
   EXPECT_TRUE(C[3] == 0ULL && C[2] == 0ULL &&
               C[1] == 0ULL && C[0] == 1ULL);
 
@@ -722,10 +724,12 @@ TEST(MultAndReduce, MultAndReduceTest) {
   B[1] = 1ULL;
   C[0] = 0ULL; C[1] = 0ULL; C[2] = 0ULL; C[3] = 0ULL;
   EXPECT_TRUE(MultAndReduce(2, A, 2, B, 3, p, 4, C));
+#if 0
   printf("%016llx%016llx x %016llx%016llx\n",
          A[1], A[0], B[1], B[0]);
   printf("%016llx%016llx%016llx%016llx\n",
          C[3], C[2], C[1], C[0]);
+#endif
   EXPECT_TRUE(C[3] == 0ULL && C[2] == 0ULL &&
               C[1] == 0ULL && C[0] == 0x87ULL);
 
@@ -735,10 +739,12 @@ TEST(MultAndReduce, MultAndReduceTest) {
   B[1] = 1ULL;
   C[0] = 0ULL; C[1] = 0ULL; C[2] = 0ULL; C[3] = 0ULL;
   EXPECT_TRUE(MultAndReduce(2, A, 2, B, 3, p, 4, C));
+#if 0
   printf("%016llx%016llx x %016llx%016llx\n",
          A[1], A[0], B[1], B[0]);
   printf("%016llx%016llx%016llx%016llx\n",
          C[3], C[2], C[1], C[0]);
+#endif
   EXPECT_TRUE(C[3] == 0ULL && C[2] == 0ULL &&
               C[1] == 0ULL && C[0] == 0x10eULL);
 }
@@ -765,7 +771,100 @@ uint64_t X[8] = {
   0xA47252D1A7E09B49ULL,
 };
 
+TEST(Ghash, GhashTest0) {
+  uint64_t  HH[2] = {0x8000000000000000ULL, 0x8000000000000000ULL};
+  uint64_t  H[2];
+  byte      AA[16] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                      0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2};
+
+  ReverseCpy(8, (byte*)&HH[0], (byte*)&H[1]);
+  ReverseCpy(8, (byte*)&HH[1], (byte*)&H[0]);
+  Ghash hash;
+  hash.Init(H);
+  hash.AddCHash(16, (byte*)AA);
+}
+
 TEST(Ghash, GhashTest1) {
+  uint64_t  HH[2] = {0xc000000000000000ULL, 0x8000000000000000ULL};
+  uint64_t  H[2];
+  byte      AA[16] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                      0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4};
+
+  ReverseCpy(8, (byte*)&HH[0], (byte*)&H[1]);
+  ReverseCpy(8, (byte*)&HH[1], (byte*)&H[0]);
+  Ghash hash;
+  hash.Init(H);
+  hash.AddCHash(16, (byte*)AA);
+}
+
+TEST(Ghash, GhashTest2) {
+  uint64_t  HH[2] = {0xc000000000000000ULL, 0x8000000000000000ULL};
+  uint64_t  H[2];
+  byte      AA[16] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                      0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x6};
+
+  ReverseCpy(8, (byte*)&HH[0], (byte*)&H[1]);
+  ReverseCpy(8, (byte*)&HH[1], (byte*)&H[0]);
+  Ghash hash;
+  hash.Init(H);
+  hash.AddCHash(16, (byte*)AA);
+}
+
+TEST(Ghash, GhashTest3) {
+  uint64_t  HH[2] = {0xc000000000000000ULL, 0x8000000000000000ULL};
+  uint64_t  H[2];
+  byte      AA[16] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4,
+                      0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+
+  ReverseCpy(8, (byte*)&HH[0], (byte*)&H[1]);
+  ReverseCpy(8, (byte*)&HH[1], (byte*)&H[0]);
+  Ghash hash;
+  hash.Init(H);
+  hash.AddCHash(16, (byte*)AA);
+}
+
+TEST(Ghash, GhashTest4) {
+  uint64_t  HH[2] = {0xc000000000000000ULL, 0x8000000000000000ULL};
+  uint64_t  H[2];
+  byte      AA[16] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4,
+                      0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x6};
+
+  ReverseCpy(8, (byte*)&HH[0], (byte*)&H[1]);
+  ReverseCpy(8, (byte*)&HH[1], (byte*)&H[0]);
+  Ghash hash;
+  hash.Init(H);
+  hash.AddCHash(16, (byte*)AA);
+}
+
+TEST(Ghash, GhashTest5) {
+  uint64_t  HH[2] = {0xc000000000000000ULL, 0x8000000000000000ULL};
+  uint64_t  H[2];
+  byte      AA[16] = {0x8, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                      0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4};
+
+  ReverseCpy(8, (byte*)&HH[0], (byte*)&H[1]);
+  ReverseCpy(8, (byte*)&HH[1], (byte*)&H[0]);
+  Ghash hash;
+  hash.Init(H);
+  hash.AddCHash(16, (byte*)AA);
+}
+
+TEST(Ghash, GhashTest6) {
+  uint64_t  HH[2] = {0x8000000077777777ULL, 0x8000000077777777ULL};
+  uint64_t  H[2];
+  byte      AA[16] = {0x8, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                      0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4};
+
+  ReverseCpy(8, (byte*)&HH[0], (byte*)&H[1]);
+  ReverseCpy(8, (byte*)&HH[1], (byte*)&H[0]);
+  Ghash hash;
+  hash.Init(H);
+  hash.AddCHash(16, (byte*)AA);
+}
+
+
+TEST(Ghash, GhashTestx) {
+/*
   byte AA[64];
   byte XX[64];
 
@@ -798,6 +897,7 @@ TEST(Ghash, GhashTest1) {
   Ghash hash;
   hash.Init((uint64_t*)HH);
   hash.AddAHash(64, (byte*)AA);
+ */
 }
 
 

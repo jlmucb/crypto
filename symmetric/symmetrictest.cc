@@ -1047,6 +1047,9 @@ byte test_aesgcm_Ghash_2[16] = {
 byte test_aesgcm_T_2[16] = {
   0x4d,0x5c,0x2a,0xf3,0x27,0xcd,0x64,0xa6,0x2c,0xf3,0x5a,0xbd,0x2b,0xa6,0xfa,0xb4,
 };
+byte test_aesgcm_X1_2[16] = {
+  0x59, 0xed, 0x3f, 0x2b, 0xb1, 0xa0, 0xaa, 0xa0, 0x7c, 0x9f, 0x56, 0xc6, 0xa5, 0x04, 0x64, 0x7b
+};
 
 TEST(AesGcm, SecondAesGcmTest) {
   AesGcm aesgcm_obj;
@@ -1067,6 +1070,7 @@ TEST(AesGcm, SecondAesGcmTest) {
   printf("Cipher should be  : "); PrintBytes(64, test_C_2); printf("\n");
   printf("tag               : "); PrintBytes(16, tag); printf("\n");
   printf("tag should be     : "); PrintBytes(16, test_aesgcm_T_2); printf("\n");
+  printf("X1  should be     : "); PrintBytes(16, test_aesgcm_X1_2); printf("\n");
   printf("H should be       : "); PrintBytes(16, test_aesgcm_H_2); printf("\n");
   printf("Ghash should be   : "); PrintBytes(16, test_aesgcm_Ghash_2); printf("\n");
   printf("Done\n");
@@ -1112,6 +1116,9 @@ byte test_aesgcm_Ghash_3[16] = {
 byte test_aesgcm_T_3[16] = {
   0xab,0x6e,0x47,0xd4,0x2c,0xec,0x13,0xbd,0xf5,0x3a,0x67,0xb2,0x12,0x57,0xbd,0xdf
 };
+byte test_aesgcm_X1_3[16] = {
+  0x5e, 0x2e, 0xc7, 0x46, 0x91, 0x70, 0x62, 0x88, 0x2c, 0x85, 0xb0, 0x68, 0x53, 0x53, 0xde, 0xb7
+};
 
 TEST(AesGcm, ThirdAesGcmTest) {
   AesGcm aesgcm_obj;
@@ -1132,6 +1139,7 @@ TEST(AesGcm, ThirdAesGcmTest) {
   printf("Cipher should be  : "); PrintBytes(16, test_C_3); printf("\n");
   printf("tag               : "); PrintBytes(16, tag); printf("\n");
   printf("tag should be     : "); PrintBytes(16, test_aesgcm_T_3); printf("\n");
+  printf("X1  should be     : "); PrintBytes(16, test_aesgcm_X1_3); printf("\n");
   printf("H should be       : "); PrintBytes(16, test_aesgcm_H_3); printf("\n");
   printf("Ghash should be   : "); PrintBytes(16, test_aesgcm_Ghash_3); printf("\n");
   printf("Done\n");

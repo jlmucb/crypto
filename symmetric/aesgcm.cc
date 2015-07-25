@@ -155,8 +155,10 @@ bool AesGcm::Init(int bit_size_key, byte* key, int size_tag,
   uint64_t rr[2];
   ReverseCpy(8, iv, (byte*)&tt[1]);
   ReverseCpy(8, &iv[8], (byte*)&tt[0]);
-printf("IN           : %016llx%016llx\n", tt[1], tt[0]);
-printf("key          : "); PrintBytes(16, key); printf("\n");
+#if 0
+  printf("IN           : %016llx%016llx\n", tt[1], tt[0]);
+  printf("key          : "); PrintBytes(16, key); printf("\n");
+#endif
   if (use_aesni) {
     if (!aesni.Init(128, key, AesNi::ENCRYPT))
       return false;
@@ -170,7 +172,7 @@ printf("key          : "); PrintBytes(16, key); printf("\n");
   }
   ReverseCpy(8, (byte*)&rr[0], (byte*)&encrypted_iv_[1]);
   ReverseCpy(8, (byte*)&rr[1], (byte*)&encrypted_iv_[0]);
-  printf("Y0*          : %016llx%016llx\n", encrypted_iv_[1], encrypted_iv_[0]);
+  printf("E(Y0)        : %016llx%016llx\n", encrypted_iv_[1], encrypted_iv_[0]);
   ghash_.Init(H);
   size_tag_ = size_tag;
   direction_ = direction;
