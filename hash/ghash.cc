@@ -50,7 +50,7 @@ void Shift(int size_in, uint64_t* in, int shift, int size_out, uint64_t* out) {
   uint64_t bottom;
   uint64_t top;
   int top_shift;
-  for (int i = size_in - 1; i >= 0; i--) {
+  for (int i = (size_in - 1); i >= 0; i--) {
     bottom = in[i] << bit_shift;
     top_shift = (sizeof(uint64_t) * NBITSINBYTE) - bit_shift;
     if (top_shift != (sizeof(uint64_t) * NBITSINBYTE))
@@ -93,7 +93,7 @@ bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
   memset((byte*)accum, 0, sizeof(uint64_t) * 4);
   memset((byte*)c, 0, sizeof(uint64_t) * size_c);
 
-  for (int j = (uint64_bit_size * size_b) - 1 ; j >= 0; j--) {
+  for (int j = (uint64_bit_size * size_b - 1) ; j >= 0; j--) {
     if (BitOn(b, j)) {
 #if 1
       printf("MultPoly biton %d\n", j);
@@ -139,7 +139,7 @@ bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly) {
   int top_bit_p = 128;
   int k;
 
-  for (k = top_bit_a; k > 0; k--) {
+  for (k = top_bit_a; k >= 0; k--) {
     if (BitOn(a, k))
       break;
     top_bit_a--;
@@ -274,7 +274,7 @@ void Ghash::AddToHash(int size, byte* data) {
 
 
   if (size_partial_ > 0) {
-    if ((size_partial_+size) >= 16) {
+    if ((size_partial_ + size) >= 16) {
       int n = 16 - size_partial_;
       memcpy(&partial_[size_partial_], next, n);
       ReverseCpy(8, partial_, (byte*)&in[1]);
@@ -324,8 +324,12 @@ void Ghash::FinalA() {
 #if 0
   printf("Ghash::FinalA()\n");
 #endif
+  uint64_t in[2];
+
   if (size_partial_ > 0) {
-    AddBlock((uint64_t*)partial_);
+    ReverseCpy(8, partial_, (byte*)&in[1]);
+    ReverseCpy(8, &partial_[8], (byte*)&in[0]);
+    AddBlock(in);
     size_partial_ = 0;
   }
   finalized_A_ = true;
@@ -335,15 +339,18 @@ void Ghash::FinalC() {
 #if 0
   printf("Ghash::FinalC() %d\n", size_partial_);
 #endif
+  uint64_t in[2];
+
   if (size_partial_ > 0) {
-    AddBlock((uint64_t*)partial_);
+    memset(&partial_[size_partial_], 0, 16 - size_partial_);
+    ReverseCpy(8, partial_, (byte*)&in[1]);
+    ReverseCpy(8, &partial_[8], (byte*)&in[0]);
+    AddBlock(in);
     size_partial_ = 0;
   }
-  memset(partial_, 0, 16);
-  uint64_t* count = (uint64_t*) partial_;
-  *count = size_C_;
-  *(++count) = size_A_;
-  AddBlock((uint64_t*)partial_);
+  in[0] = size_C_;
+  in[1] = size_A_;
+  AddBlock(in);
   digest_[1] = last_x_[1];
   digest_[0] = last_x_[0];
   finalized_C_ = true;
