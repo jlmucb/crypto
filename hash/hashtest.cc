@@ -664,12 +664,6 @@ TEST(FirstHmacSha256Case, FirstHmacSha256Test) {
 TEST(FirstPkcsCase, FirstPkcsTest) { EXPECT_TRUE(pkcsTest()); }
 TEST(FirstKdfCase, FirstKdfTest) { EXPECT_TRUE(pbkdfTest()); }
 
-uint64_t test_min_poly[3] = {0x83, 0x0, 0x1};
-uint64_t test_poly_a1[2] = {0x1, 0x0};
-uint64_t test_poly_b[2] = {0x7, 0x3};
-uint64_t test_poly_a2[2] = {0x3, 0x0};
-uint64_t test_poly_a3[3] = {0x2, 0x0, 0x1};
-
 TEST(Shift, ShiftTest) {
   uint64_t a[2] = {0xffffffULL, 0xffff000000000000ULL};
   uint64_t c[4];
@@ -682,14 +676,16 @@ TEST(Shift, ShiftTest) {
 }
 
 TEST(MultPoly, MultPolyTest1) {
-  uint64_t c[4];
-  uint64_t d[4];
-  memset(d, 0, 4 * sizeof(uint64_t));
-  uint64_t d_expected[4] = {0x09, 0x05, 0x0, 0x0};
+  uint64_t a[2] = {0x1ULL, 0x0ULL};
+  uint64_t b[2] = {7ULL, 3ULL};
+  uint64_t c[4] = {0ULL, 0ULL, 0ULL, 0ULL};
+  uint64_t d[4] = {0ULL, 0ULL, 0ULL, 0ULL};
+  uint64_t d_expected[4] = {0x0eULL, 0x06ULL, 0ULL, 0ULL};
 
-  EXPECT_TRUE(MultPoly(2, test_poly_b, 2,  test_poly_a1, 4, c));
-  EXPECT_TRUE(memcmp(test_poly_b, c, 16) == 0);
-  EXPECT_TRUE(MultPoly(2, test_poly_b, 2, test_poly_a2, 4, d));
+  EXPECT_TRUE(MultPoly(2, a, 2,  b, 4, c));
+  EXPECT_TRUE(memcmp(b, c, 16) == 0);
+  a[0] = 2ULL;
+  EXPECT_TRUE(MultPoly(2, a, 2, b, 4, d));
   EXPECT_TRUE(memcmp(d_expected, d, 32) == 0);
 }
 
@@ -704,70 +700,27 @@ TEST(MultPoly, MultPolyTest2) {
 }
 
 TEST(Reduce, ReduceTest) {
-  uint64_t expected[4] = {0x81, 0x0, 0x0, 0x0};
+  uint64_t expected[4] = {0x85, 0x0, 0x0, 0x0};
+  uint64_t a[4] = {0x2ULL, 0x0, 0x1ULL, 0ULL};
+  uint64_t test_min_poly[3] = {0x87ULL, 0x0, 0x1ULL};
 
-  Reduce(4, test_poly_a3, 3, test_min_poly);
-  EXPECT_TRUE(memcmp(expected, test_poly_a3, 32) == 0);
+  Reduce(4, a, 3, test_min_poly);
+  EXPECT_TRUE(memcmp(expected, a, 16) == 0);
 }
 
 TEST(MultAndReduce, MultAndReduceTest1) {
-  uint64_t A[3] = {0x0087ULL, 0x0ULL, 0x1ULL};
-  uint64_t B[2] = {0x07ULL, 0ULL };
+  uint64_t A[2] = {0x00ULL, 0x8000000000000000ULL};
+  uint64_t B[2] = {0x02ULL, 0ULL};
   uint64_t C[4];
   uint64_t p[3] = {0x87ULL, 0ULL, 1ULL};
 
-  EXPECT_TRUE(MultAndReduce(3, A, 1, B, 3, p, 4, C));
-  printf("%016llx%016llx%016llx x %016llx\n",
-         A[2], A[1], A[0], B[0]);
-  printf("%016llx%016llx%016llx%016llx\n",
-         C[3], C[2], C[1], C[0]);
-  EXPECT_TRUE(C[3] == 0ULL && C[2] == 0ULL &&
-              C[1] == 0ULL && C[0] == 0ULL);
-
-  A[0] = 0x86ULL;
-  A[1] = 0ULL;
-  A[2] = 1ULL;
-  B[0] = 1ULL;
-  C[0] = 0ULL; C[1] = 0ULL; C[2] = 0ULL; C[3] = 0ULL;
-  EXPECT_TRUE(MultAndReduce(3, A, 1, B, 3, p, 4, C));
-#if 0
-  printf("MultAndReduce %016llx%016llx%016llx x %016llx\n",
-         A[2], A[1], A[0], B[0]);
-  printf("%016llx%016llx%016llx%016llx\n",
-         C[3], C[2], C[1], C[0]);
-#endif
-  EXPECT_TRUE(C[3] == 0ULL && C[2] == 0ULL &&
-              C[1] == 0ULL && C[0] == 1ULL);
-
-  A[0] = 0x0ULL;
-  A[1] = 0x1ULL;
-  B[0] = 0ULL;
-  B[1] = 1ULL;
-  C[0] = 0ULL; C[1] = 0ULL; C[2] = 0ULL; C[3] = 0ULL;
   EXPECT_TRUE(MultAndReduce(2, A, 2, B, 3, p, 4, C));
-#if 0
-  printf("%016llx%016llx x %016llx%016llx\n",
-         A[1], A[0], B[1], B[0]);
+  printf("%016llx%016llx x %016llx%016llx = \n",
+          A[1], A[0], B[1], B[0]);
   printf("%016llx%016llx%016llx%016llx\n",
          C[3], C[2], C[1], C[0]);
-#endif
-  EXPECT_TRUE(C[3] == 0ULL && C[2] == 0ULL &&
-              C[1] == 0ULL && C[0] == 0x87ULL);
-
-  A[0] = 0x0ULL;
-  A[1] = 0x2ULL;
-  B[0] = 0ULL;
-  B[1] = 1ULL;
-  C[0] = 0ULL; C[1] = 0ULL; C[2] = 0ULL; C[3] = 0ULL;
-  EXPECT_TRUE(MultAndReduce(2, A, 2, B, 3, p, 4, C));
-#if 0
-  printf("%016llx%016llx x %016llx%016llx\n",
-         A[1], A[0], B[1], B[0]);
-  printf("%016llx%016llx%016llx%016llx\n",
-         C[3], C[2], C[1], C[0]);
-#endif
-  EXPECT_TRUE(C[3] == 0ULL && C[2] == 0ULL &&
-              C[1] == 0ULL && C[0] == 0x10eULL);
+  EXPECT_TRUE(C[0] == 0x87ULL && C[2] == 0ULL &&
+              C[1] == 0ULL && C[3] == 0ULL);
 }
 
 TEST(MultAndReduce, MultAndReduceTest2) {
@@ -887,11 +840,20 @@ TEST(Ghash, GhashTest7) {
     0x5e, 0x2e, 0xc7, 0x46, 0x91, 0x70, 0x62, 0x88,
     0x2c, 0x85, 0xb0, 0x68, 0x53, 0x53, 0xde, 0xb7
   };
+#ifndef XXX
+  uint64_t test[2];
+  test[0] = *((uint64_t*)&X1[0]);
+  test[1] = *((uint64_t*)&X1[8]);
+#endif
 
   Ghash hash;
   hash.Init(HH);
   hash.AddCHash(16, AA);
+#ifndef XXX
   printf("X1        : "); PrintBytes(16, X1); printf("\n");
+#else
+  printf("X1        : %016llx%016llx\n", test[1], test[0]);
+#endif
 }
 
 TEST(Ghash, GhashTest8) {

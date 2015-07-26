@@ -226,8 +226,13 @@ Ghash::~Ghash() {
 }
 
 void Ghash::Init(byte* H) {
+#ifdef XXX
   ReverseCpy(8, &H[8], (byte*)&H_[0]);
   ReverseCpy(8, &H[0], (byte*)&H_[1]);
+#else
+  H_[0] = *((uint64_t*)&H[0]);
+  H_[1] = *((uint64_t*)&H[8]);
+#endif
 #if 1
   printf("H         : %016llx%016llx\n", H_[1], H_[0]); 
 #endif
@@ -260,6 +265,7 @@ void Ghash::AddBlock(uint64_t* block) {
   last_x_[0] = t[0];
 #if 1
   printf("After     : %016llx%016llx\n", last_x_[1], last_x_[0]); 
+  printf("After lo to hi : "); PrintBytes(16, (byte*)last_x_);printf("\n");
 #endif
 }
 
@@ -274,8 +280,13 @@ void Ghash::AddToHash(int size, byte* data) {
     if ((size_partial_ + size) >= 16) {
       int n = 16 - size_partial_;
       memcpy(&partial_[size_partial_], next, n);
+#ifdef XXX
       ReverseCpy(8, partial_, (byte*)&in[1]);
       ReverseCpy(8, &partial_[8], (byte*)&in[0]);
+#else
+      in[0] = *((uint64_t*)&partial_[0]);
+      in[1] = *((uint64_t*)&partial_[8]);
+#endif
       AddBlock(in);
       size_partial_ = 0;
       memset(partial_, 0, 16);
@@ -289,8 +300,13 @@ void Ghash::AddToHash(int size, byte* data) {
   }
 
   while (size >= 16) {
+#ifdef XXX
     ReverseCpy(8, next, (byte*)&in[1]);
     ReverseCpy(8, &next[8], (byte*)&in[0]);
+#else
+    in[0] = *((uint64_t*)&next[0]);
+    in[1] = *((uint64_t*)&next[8]);
+#endif
     AddBlock(in);
     next += 16;
     size -= 16;
@@ -318,8 +334,13 @@ void Ghash::FinalA() {
   uint64_t in[2];
 
   if (size_partial_ > 0) {
+#ifdef XXX
     ReverseCpy(8, partial_, (byte*)&in[1]);
     ReverseCpy(8, &partial_[8], (byte*)&in[0]);
+#else
+    in[0] = *((uint64_t*)&partial_[0]);
+    in[1] = *((uint64_t*)&partial_[8]);
+#endif
     AddBlock(in);
     size_partial_ = 0;
   }
@@ -334,8 +355,13 @@ void Ghash::FinalC() {
 
   if (size_partial_ > 0) {
     memset(&partial_[size_partial_], 0, 16 - size_partial_);
+#ifdef XXX
     ReverseCpy(8, partial_, (byte*)&in[1]);
     ReverseCpy(8, &partial_[8], (byte*)&in[0]);
+#else
+    in[0] = *((uint64_t*)&partial_[0]);
+    in[1] = *((uint64_t*)&partial_[8]);
+#endif
     AddBlock(in);
     size_partial_ = 0;
   }
