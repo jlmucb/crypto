@@ -144,15 +144,15 @@ bool AesGcm::Init(int bit_size_key, byte* key, int size_tag,
   Aes aes;
   AesNi aesni;
   byte zero[16];
-  uint64_t H[4];
+  byte HH[16];
+  uint64_t tt[2];
+  byte RR[16];
   memset(zero, 0, 16);
 
   if (!aesctr_.Init(size_iv, iv, bit_size_key, key,
                     direction, use_aesni)) {
     return false;
   }
-  uint64_t tt[2];
-  uint64_t rr[2];
   ReverseCpy(8, iv, (byte*)&tt[1]);
   ReverseCpy(8, &iv[8], (byte*)&tt[0]);
 #if 0
@@ -162,18 +162,18 @@ bool AesGcm::Init(int bit_size_key, byte* key, int size_tag,
   if (use_aesni) {
     if (!aesni.Init(128, key, AesNi::ENCRYPT))
       return false;
-     aesni.EncryptBlock(zero, (byte*)H);
-     aesni.EncryptBlock(iv, (byte*)rr);
+     aesni.EncryptBlock(zero, HH);
+     aesni.EncryptBlock(iv, RR);
   } else {
     if (!aes.Init(128, key, Aes::ENCRYPT))
       return false;
-     aes.EncryptBlock(zero, (byte*)H);
-     aes.EncryptBlock(iv, (byte*)rr);
+     aes.EncryptBlock(zero, HH);
+     aes.EncryptBlock(iv, RR);
   }
-  ReverseCpy(8, (byte*)&rr[0], (byte*)&encrypted_iv_[1]);
-  ReverseCpy(8, (byte*)&rr[1], (byte*)&encrypted_iv_[0]);
+  ReverseCpy(8, &RR[0], (byte*)&encrypted_iv_[1]);
+  ReverseCpy(8, (byte*)&RR[8], (byte*)&encrypted_iv_[0]);
   printf("E(Y0)     : %016llx%016llx\n", encrypted_iv_[1], encrypted_iv_[0]);
-  ghash_.Init(H);
+  ghash_.Init(HH);
   size_tag_ = size_tag;
   direction_ = direction;
   initialized_ = true;
