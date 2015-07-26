@@ -710,7 +710,7 @@ TEST(Reduce, ReduceTest) {
   EXPECT_TRUE(memcmp(expected, test_poly_a3, 32) == 0);
 }
 
-TEST(MultAndReduce, MultAndReduceTest) {
+TEST(MultAndReduce, MultAndReduceTest1) {
   uint64_t A[3] = {0x0087ULL, 0x0ULL, 0x1ULL};
   uint64_t B[2] = {0x07ULL, 0ULL };
   uint64_t C[4];
@@ -769,6 +769,18 @@ TEST(MultAndReduce, MultAndReduceTest) {
   EXPECT_TRUE(C[3] == 0ULL && C[2] == 0ULL &&
               C[1] == 0ULL && C[0] == 0x10eULL);
 }
+
+TEST(MultAndReduce, MultAndReduceTest2) {
+  uint64_t c[4] = {0x9999999999999999ULL, 0x9999999999999999ULL};
+  uint64_t p[3] = {0x3ULL, 0ULL, 0x1ULL};
+  uint64_t d[4];
+  memset(d, 0, 4 * sizeof(uint64_t));
+
+  EXPECT_TRUE(MultAndReduce(2, c, 2, c, 3, p, 4, d));
+  printf("%016llx%016llx**2 (mod %016llx%016llx%016llx) = %016llx%016llx%016llx%016llx\n",
+         c[1],c[0], p[2], p[1],p[0], d[3],d[2], d[1],d[0]);
+}
+
 
 uint64_t A[8] = {
   0xD609B1F056637A0DULL,
