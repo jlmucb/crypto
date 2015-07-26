@@ -35,7 +35,6 @@ int RealSize(int size, uint64_t* x) {
 bool BitOn(uint64_t* in, int pos) {
   int word_position = pos / uint64_bit_size;
   int bit_position = pos - word_position * uint64_bit_size;
-
 #if 0
   printf("BitOn pos: %d word_position: %d bit_position: %d\n",
           pos, word_position, bit_position);
@@ -91,15 +90,14 @@ bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
   uint64_t t[4];
   uint64_t accum[4];
 
-  memset(accum, 0, sizeof(uint64_t) * 4);
-  memset(c, 0, sizeof(uint64_t) * size_c);
+  memset((byte*)accum, 0, sizeof(uint64_t) * 4);
+  memset((byte*)c, 0, sizeof(uint64_t) * size_c);
 
   for (int j = (uint64_bit_size * size_b) - 1 ; j >= 0; j--) {
     if (BitOn(b, j)) {
 #if 1
       printf("MultPoly biton %d\n", j);
 #endif
-      memset(t, 0, sizeof(uint64_t) * 4);
       Shift(size_a, a, j, 4, t);
 #if 1
       printf("accum in  : %016llx%016llx%016llx%016llx\n",
@@ -152,7 +150,6 @@ bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly) {
 #if 1
       printf("Reduce biton %d\n", k);
 #endif
-      memset(t, 0, 4*sizeof(uint64_t));
       Shift(size_p, min_poly, k - top_bit_p, 4, t);
 #if 1
       printf("a in      : %016llx%016llx%016llx%016llx\n",
@@ -181,8 +178,8 @@ bool MultAndReduce(int size_a, uint64_t* a, int size_b, uint64_t* b,
 
   if ((size_a + size_b) > 4)
     return false;
-  memset(t, 0, sizeof(uint64_t) * 4);
-  memset(c, 0, sizeof(uint64_t) * size_c);
+  memset((byte*)t, 0, sizeof(uint64_t) * 4);
+  memset((byte*)c, 0, sizeof(uint64_t) * size_c);
   if (!MultPoly(size_b, b, size_a, a, 4, t))
       return false;
   if (!Reduce(4, t, 3, min_poly))
@@ -211,16 +208,23 @@ Ghash::Ghash() {
   finalized_C_ = false;
   size_partial_ = 0;
   memset(partial_, 0, 16);
-  memset(last_x_, 0, 16);
-  memset(digest_, 0, 16);
+  last_x_[0] = 0ULL;
+  last_x_[1] = 0ULL;
+  digest_[0] = 0ULL;
+  digest_[1] = 0ULL;
+  H_[0] = 0ULL;
+  H_[1] = 0ULL;
   size_A_ = 0;
   size_C_ = 0;
 }
 
 Ghash::~Ghash() {
-  memset(H_, 0, 16);
-  memset(last_x_, 0, 16);
-  memset(digest_, 0, 16);
+  last_x_[0] = 0ULL;
+  last_x_[1] = 0ULL;
+  digest_[0] = 0ULL;
+  digest_[1] = 0ULL;
+  H_[0] = 0ULL;
+  H_[1] = 0ULL;
 }
 
 void Ghash::Init(byte* H) {
@@ -233,8 +237,10 @@ void Ghash::Init(byte* H) {
   finalized_C_ = false;
   size_partial_ = 0;
   memset(partial_, 0, 16);
-  memset(last_x_, 0, 16);
-  memset(digest_, 0, 16);
+  last_x_[0] = 0ULL;
+  last_x_[1] = 0ULL;
+  digest_[0] = 0ULL;
+  digest_[1] = 0ULL;
   size_A_ = 0;
   size_C_ = 0;
 }
@@ -251,11 +257,11 @@ void Ghash::AddBlock(uint64_t* block) {
   for (int i = 0; i < 2; i++) 
     last_x_[i] ^= block[i];
   if (!MultAndReduce(2, last_x_, 2, H_, 3, min_poly_, 4, t))
-    LOG(ERROR) << "GHash AddBlock failed";
+    LOG(ERROR) << "GHash AddBlock failed at MultAndReduce";
   last_x_[1] = t[1];
   last_x_[0] = t[0];
 #if 1
-  printf("After     : %016llx%016llx\n\n", last_x_[1], last_x_[0]); 
+  printf("After     : %016llx%016llx\n", last_x_[1], last_x_[0]); 
 #endif
 }
 

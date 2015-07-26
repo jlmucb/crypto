@@ -46,11 +46,11 @@ public:
 private:
   bool finalized_A_;
   bool finalized_C_;
-  uint64_t min_poly_[4];
-  uint64_t H_[4];
+  uint64_t min_poly_[3];
+  uint64_t H_[2];
   uint64_t size_A_;
   uint64_t size_C_;
-  uint64_t last_x_[4];
+  uint64_t last_x_[2];
   int size_partial_;
   byte partial_[16];
   uint64_t digest_[2];
