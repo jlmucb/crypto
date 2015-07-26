@@ -156,8 +156,8 @@ bool AesGcm::Init(int bit_size_key, byte* key, int size_tag,
   ReverseCpy(8, iv, (byte*)&tt[1]);
   ReverseCpy(8, &iv[8], (byte*)&tt[0]);
 #if 0
-  printf("IN           : %016llx%016llx\n", tt[1], tt[0]);
-  printf("key          : "); PrintBytes(16, key); printf("\n");
+  printf("IN        : %016llx%016llx\n", tt[1], tt[0]);
+  printf("key       : "); PrintBytes(16, key); printf("\n");
 #endif
   if (use_aesni) {
     if (!aesni.Init(128, key, AesNi::ENCRYPT))
@@ -172,7 +172,7 @@ bool AesGcm::Init(int bit_size_key, byte* key, int size_tag,
   }
   ReverseCpy(8, (byte*)&rr[0], (byte*)&encrypted_iv_[1]);
   ReverseCpy(8, (byte*)&rr[1], (byte*)&encrypted_iv_[0]);
-  printf("E(Y0)        : %016llx%016llx\n", encrypted_iv_[1], encrypted_iv_[0]);
+  printf("E(Y0)     : %016llx%016llx\n", encrypted_iv_[1], encrypted_iv_[0]);
   ghash_.Init(H);
   size_tag_ = size_tag;
   direction_ = direction;
@@ -224,7 +224,7 @@ bool AesGcm::CipherIn(int size_in, byte* in, int* size_out,
 
 void AesGcm::PrintEncryptionAlgorithm() {
   if (strcmp(alg_name_->c_str(), "aes128-gcm128") != 0) {
-    printf("Unknown encryption algorithm\n");
+    LOG(ERROR) << "Unknown encryption algorithm";
     return;
   }
   printf("aes128-gcm128\n");
@@ -249,17 +249,17 @@ int AesGcm::MinimumFinalEncryptIn() { return 1; }
 bool AesGcm::MessageValid() { return output_verified_; }
 
 int AesGcm::GetComputedTag(int size, byte* out) {
-printf("GetComputedTag\n");
+printf("          GetComputedTag\n");
   uint64_t the_hash[2];
   ghash_.GetHash(the_hash);
 
   uint64_t final[2];
   final[0] = the_hash[0] ^ encrypted_iv_[0];
   final[1] = the_hash[1] ^ encrypted_iv_[1];
-
-printf("GHASH             : %016llx%016llx\n", the_hash[1], the_hash[0]);
-printf("TAG               : %016llx%016llx\n", final[1], final[0]);
-
+#if 1
+  printf("GHASH     : %016llx%016llx\n", the_hash[1], the_hash[0]);
+  printf("TAG       : %016llx%016llx\n", final[1], final[0]);
+#endif
   ReverseCpy(8, (byte*)&final[1], out);
   ReverseCpy(8, (byte*)&final[0], &out[8]);
   return size;

@@ -36,7 +36,7 @@ public:
   Ghash();
   ~Ghash();
 
-  void Init(uint64_t* H);
+  void Init(byte* H);
   void AddAHash(int size, byte* data);
   void AddCHash(int size, byte* data);
   void FinalA();
