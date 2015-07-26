@@ -92,11 +92,11 @@ bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
 
   for (int j = (uint64_bit_size * size_b - 1) ; j >= 0; j--) {
     if (BitOn(b, j)) {
-#if 1
+#if 0
       printf("         MultPoly biton %d\n", j);
 #endif
       Shift(size_a, a, j, 4, t);
-#if 1
+#if 0
       printf("accum in  : %016llx%016llx%016llx%016llx\n",
              accum[3], accum[2], accum[1], accum[0]);
       printf("a shifted : %016llx%016llx%016llx%016llx\n",
@@ -105,7 +105,7 @@ bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
       if (!XorPolyTo(4, t, 4, accum)) {
         return false;
       }
-#if 1
+#if 0
       printf("accum out : %016llx%016llx%016llx%016llx\n",
              accum[3], accum[2], accum[1], accum[0]);
 #endif
@@ -144,17 +144,17 @@ bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly) {
 
   for (k = top_bit_a; k >= 128; k--) {
     if (BitOn(a, k)) {
-#if 1
+#if 0
       printf("         Reduce biton %d\n", k);
 #endif
       Shift(size_p, min_poly, k - top_bit_p, 4, t);
-#if 1
+#if 0
       printf("a in      : %016llx%016llx%016llx%016llx\n",
              a[3], a[2], a[1], a[0]);
 #endif
       if (!XorPolyTo(4, t, size_a, a))
         return false;
-#if 1
+#if 0
       printf("t         : %016llx%016llx%016llx%016llx\n",
              t[3], t[2], t[1], t[0]);
       printf("a out     : %016llx%016llx%016llx%016llx\n",
