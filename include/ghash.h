@@ -23,6 +23,7 @@
 #ifndef _CRYPTO_GHASH_H__
 #define _CRYPTO_GHASH_H__
 
+void Shift(int size_in, uint64_t* in, int shift, int size_out, uint64_t* out);
 bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
               int size_c, uint64_t* c);
 bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly);

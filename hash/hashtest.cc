@@ -670,7 +670,18 @@ uint64_t test_poly_b[2] = {0x7, 0x3};
 uint64_t test_poly_a2[2] = {0x3, 0x0};
 uint64_t test_poly_a3[3] = {0x2, 0x0, 0x1};
 
-TEST(MultPoly, MultPolyTest) {
+TEST(Shift, ShiftTest) {
+  uint64_t a[2] = {0xffffffULL, 0xffff000000000000ULL};
+  uint64_t c[4];
+
+  for (int i = 0; i < 128; i++) {
+    Shift(2, a, i, 4, c) ;
+    printf("%016llx%016llx << %03d = %016llx%016llx%016llx%016llx\n",
+           a[1], a[0], i, c[3], c[2], c[1], c[0]);
+  }
+}
+
+TEST(MultPoly, MultPolyTest1) {
   uint64_t c[4];
   uint64_t d[4];
   memset(d, 0, 4 * sizeof(uint64_t));
@@ -680,6 +691,16 @@ TEST(MultPoly, MultPolyTest) {
   EXPECT_TRUE(memcmp(test_poly_b, c, 16) == 0);
   EXPECT_TRUE(MultPoly(2, test_poly_b, 2, test_poly_a2, 4, d));
   EXPECT_TRUE(memcmp(d_expected, d, 32) == 0);
+}
+
+TEST(MultPoly, MultPolyTest2) {
+  uint64_t c[4] = {0x9999999999999999ULL, 0x9999999999999999ULL};
+  uint64_t d[4];
+  memset(d, 0, 4 * sizeof(uint64_t));
+
+  EXPECT_TRUE(MultPoly(2, c, 2, c, 4, d));
+  printf("%016llx%016llx**2 = %016llx%016llx%016llx%016llx\n",
+         c[1],c[0], d[3],d[2], d[1],d[0]);
 }
 
 TEST(Reduce, ReduceTest) {
