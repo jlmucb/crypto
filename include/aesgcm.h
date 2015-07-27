@@ -38,7 +38,6 @@ private:
   byte partial_[16];
   int  size_partial_;
   uint64_t last_ctr_[2];
-  uint64_t* ctr_;
 
 public:
   GAesCtr();

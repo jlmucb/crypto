@@ -840,7 +840,8 @@ TEST(Ghash, GhashTest7) {
     0x5e, 0x2e, 0xc7, 0x46, 0x91, 0x70, 0x62, 0x88,
     0x2c, 0x85, 0xb0, 0x68, 0x53, 0x53, 0xde, 0xb7
   };
-#ifndef XXX
+
+#ifdef XXX
   uint64_t test[2];
   test[0] = *((uint64_t*)&X1[0]);
   test[1] = *((uint64_t*)&X1[8]);
@@ -849,13 +850,14 @@ TEST(Ghash, GhashTest7) {
   Ghash hash;
   hash.Init(HH);
   hash.AddCHash(16, AA);
-#ifndef XXX
-  printf("X1        : "); PrintBytes(16, X1); printf("\n");
-#else
+#ifdef XXX
   printf("X1        : %016llx%016llx\n", test[1], test[0]);
+#else
+  printf("X1        : "); PrintBytes(16, X1); printf("\n");
 #endif
 }
 
+/*
 TEST(Ghash, GhashTest8) {
   byte HH[16] = {
     0x66, 0xe9, 0x4b, 0xd4, 0xef, 0x8a, 0x2c, 0x3b, 
@@ -912,6 +914,7 @@ TEST(Ghash, GhashTest10) {
   hash.AddAHash(16, AA);
   printf("X1        : "); PrintBytes(16, X1); printf("\n");
 }
+ */
 
 
 TEST(Ghash, GhashTestx) {

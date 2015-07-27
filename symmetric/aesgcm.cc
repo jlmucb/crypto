@@ -42,13 +42,12 @@ bool GAesCtr::Init(int size_iv, byte* iv, int bit_size_K, byte* K,
   direction_ = direction;
   use_aesni_ = use_aesni;
   memcpy(last_ctr_, iv, 16);
-  ctr_ = &last_ctr_[1];
 
-  uint64_t x =  *ctr_;
+  uint64_t x =  last_ctr_[1];
   uint64_t y;
   ReverseCpy(8, (byte*)&x, (byte*)&y);
   y++;
-  ReverseCpy(8, (byte*)&y, (byte*)ctr_);
+  ReverseCpy(8, (byte*)&y, (byte*)&last_ctr_[1]);
 
   size_partial_ = 0;
   memset(partial_, 0, 16);
@@ -72,11 +71,12 @@ void GAesCtr::EncryptBlock(uint64_t* in, uint64_t* out) {
   for (int i = 0; i < 2; i++) {
     out[i] = in[i] ^ t[i];
   }
-  uint64_t x =  *ctr_;
+
+  uint64_t x =  last_ctr_[1];
   uint64_t y;
   ReverseCpy(8, (byte*)&x, (byte*)&y);
   y++;
-  ReverseCpy(8, (byte*)&y, (byte*)ctr_);
+  ReverseCpy(8, (byte*)&y, (byte*)&last_ctr_[1]);
 }
 
 void GAesCtr::DecryptBlock(uint64_t* in, uint64_t* out) {
@@ -144,36 +144,34 @@ bool AesGcm::Init(int bit_size_key, byte* key, int size_tag,
   Aes aes;
   AesNi aesni;
   byte zero[16];
-  byte HH[16];
-  uint64_t tt[2];
-  byte RR[16];
+  byte H[16];
   memset(zero, 0, 16);
 
   if (!aesctr_.Init(size_iv, iv, bit_size_key, key,
                     direction, use_aesni)) {
     return false;
   }
-  ReverseCpy(8, iv, (byte*)&tt[1]);
-  ReverseCpy(8, &iv[8], (byte*)&tt[0]);
 #if 0
-  printf("IN        : %016llx%016llx\n", tt[1], tt[0]);
   printf("key       : "); PrintBytes(16, key); printf("\n");
+  printf("iv        : "); PrintBytes(16, key); printf("\n");
 #endif
   if (use_aesni) {
     if (!aesni.Init(128, key, AesNi::ENCRYPT))
       return false;
-     aesni.EncryptBlock(zero, HH);
-     aesni.EncryptBlock(iv, RR);
+     aesni.EncryptBlock(zero, H);
+     aesni.EncryptBlock(iv, (byte*)encrypted_iv_);
   } else {
     if (!aes.Init(128, key, Aes::ENCRYPT))
       return false;
-     aes.EncryptBlock(zero, HH);
-     aes.EncryptBlock(iv, RR);
+     aes.EncryptBlock(zero, H);
+     aes.EncryptBlock(iv, (byte*)encrypted_iv_);
   }
+#ifdef XXX
   ReverseCpy(8, &RR[0], (byte*)&encrypted_iv_[1]);
   ReverseCpy(8, (byte*)&RR[8], (byte*)&encrypted_iv_[0]);
+#endif
   printf("E(Y0)     : %016llx%016llx\n", encrypted_iv_[1], encrypted_iv_[0]);
-  ghash_.Init(HH);
+  ghash_.Init(H);
   size_tag_ = size_tag;
   direction_ = direction;
   initialized_ = true;
@@ -260,8 +258,12 @@ printf("          GetComputedTag\n");
   printf("GHASH     : %016llx%016llx\n", the_hash[1], the_hash[0]);
   printf("TAG       : %016llx%016llx\n", final[1], final[0]);
 #endif
+#ifdef XXX
   ReverseCpy(8, (byte*)&final[1], out);
   ReverseCpy(8, (byte*)&final[0], &out[8]);
+#else
+  memcpy(out, (byte*)final, 16);
+#endif
   return size;
 }
 

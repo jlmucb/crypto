@@ -1035,9 +1035,11 @@ byte test_C_2[64] = {
 byte test_aesgcm_K_2[16] = {
   0xfe,0xff,0xe9,0x92,0x86,0x65,0x73,0x1c,0x6d,0x6a,0x8f,0x94,0x67,0x30,0x83,0x08,
 };
-uint64_t ivx[2]= { 0xdecaf88800000001ULL, 0xcafebabefacedbadULL
+byte test_aesgcm_iv_2[16] = {
+  0xca, 0xfe, 0xba, 0xbe, 
+  0xfa, 0xce, 0xdb, 0xad, 0xde, 0xca, 0xf8, 0x88,
+  0x00, 0x00, 0x00, 0x01
 };
-byte* test_aesgcm_iv_2 = (byte*) ivx;
 byte test_aesgcm_H_2[16] = {
   0xb8,0x3b,0x53,0x37,0x08,0xbf,0x53,0x5d,0x0a,0xa6,0xe5,0x29,0x80,0xd5,0x3b,0x78,
 };
@@ -1054,13 +1056,13 @@ byte test_aesgcm_X1_2[16] = {
 TEST(AesGcm, SecondAesGcmTest) {
   AesGcm aesgcm_obj;
 
-  ReverseInPlace(16, test_aesgcm_iv_2);
+  // ReverseInPlace(16, test_aesgcm_iv_2);
   EXPECT_TRUE(aesgcm_obj.Init(NBITSINBYTE * sizeof(test_aesgcm_K_2), test_aesgcm_K_2, 128,
              16, test_aesgcm_iv_2, AesGcm::ENCRYPT, false));
   int size_out = 128;
   byte test_out[128];
   EXPECT_TRUE(aesgcm_obj.FinalPlainIn(sizeof(test_P_2), test_P_2, &size_out, test_out));
-  byte tag[32];
+  byte tag[16];
   aesgcm_obj.GetComputedTag(16, tag);
   // EXPECT_TRUE(memcmp(tag, test_aesgcm_T_2, 16) ==0);
   printf("Key               : "); PrintBytes(16, test_aesgcm_K_2); printf("\n");

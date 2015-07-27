@@ -253,8 +253,8 @@ void Ghash::AddBlock(uint64_t* block) {
 
 #if 1
   printf("\n");
-  printf("Before    : %016llx%016llx\n", last_x_[1], last_x_[0]);
-  printf("Block     : %016llx%016llx\n", block[1], block[0]);
+  printf("Before         : %016llx%016llx\n", last_x_[1], last_x_[0]);
+  printf("Block          : %016llx%016llx\n", block[1], block[0]);
 #endif
 
   for (int i = 0; i < 2; i++) 
@@ -264,7 +264,7 @@ void Ghash::AddBlock(uint64_t* block) {
   last_x_[1] = t[1];
   last_x_[0] = t[0];
 #if 1
-  printf("After     : %016llx%016llx\n", last_x_[1], last_x_[0]); 
+  printf("After          : %016llx%016llx\n", last_x_[1], last_x_[0]); 
   printf("After lo to hi : "); PrintBytes(16, (byte*)last_x_);printf("\n");
 #endif
 }
