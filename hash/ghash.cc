@@ -145,6 +145,37 @@ void printPolyLR(int nbits, uint64_t* p) {
   printf("\n");
 }
 
+byte BitReverse(byte a) {
+  return  ((a<<7) & 0x80) | ((a<<5) & 0x40) |
+          ((a<<3) & 0x20) | ((a<<1) & 0x10) |
+          ((a>>1) & 0x8) | ((a>>3) & 0x4) |
+          ((a>>5) & 0x2) | ((a>>7) & 0x1);
+}
+
+bool bit_reverse_table_initialized = false;
+byte bit_reverse_table[256];
+
+void InitBitReverseTable() {
+  for (int i = 0; i < 256; i++)
+    bit_reverse_table[i] = BitReverse((byte)i);
+  bit_reverse_table_initialized = true;
+}
+
+byte ReverseBitsInByte(byte a) {
+  return bit_reverse_table[a];
+}
+
+void Transform(uint64_t* block) {
+  uint64_t newblock[2];
+  byte* p= (byte*)block;
+  byte* q= (byte*)newblock;
+
+  for (int i = 0; i < 16; i++) {
+    *(q++) = ReverseBitsInByte(*(p++));
+  }
+  block[0] = newblock[0];
+  block[1] = newblock[1];
+}
 
 Ghash::Ghash() {
   // x^128+x^7+x^2+x+1
@@ -174,18 +205,15 @@ Ghash::~Ghash() {
   H_[1] = 0ULL;
 }
 
-byte BitReverse(byte a) {
-  return  ((a<<7) & 0x80) | ((a<<5) & 0x40) |
-          ((a<<3) & 0x20) | ((a<<1) & 0x10) |
-          ((a>>1) & 0x8) | ((a>>3) & 0x4) |
-          ((a>>5) & 0x2) | ((a>>7) & 0x1);
-}
-
 void Ghash::Init(byte* H) {
+  if (!bit_reverse_table_initialized)
+    InitBitReverseTable();
+    
   H_[0] = *((uint64_t*)&H[0]);
   H_[1] = *((uint64_t*)&H[8]);
-  finalized_A_ = false;
-  finalized_C_ = false;
+  bit_reversed_H_[0] = H_[0];
+  bit_reversed_H_[1] = H_[1];
+  Transform(bit_reversed_H_);
   size_partial_ = 0;
   memset(partial_, 0, 16);
   last_x_[0] = 0ULL;
@@ -194,17 +222,8 @@ void Ghash::Init(byte* H) {
   digest_[1] = 0ULL;
   size_A_ = 0ULL;
   size_C_ = 0ULL;
-}
-
-void Transform(uint64_t* block) {
-  uint64_t newblock[2];
-  byte* p= (byte*)block;
-  byte* q= (byte*)newblock;
-
-  for (int i = 0; i < 16; i++)
-    *(q++) = BitReverse(*(p++));
-  block[0] = newblock[0];
-  block[1] = newblock[1];
+  finalized_A_ = false;
+  finalized_C_ = false;
 }
 
 void Ghash::AddBlock(uint64_t* block) {
@@ -213,8 +232,7 @@ void Ghash::AddBlock(uint64_t* block) {
   for (int i = 0; i < 2; i++) 
     last_x_[i] ^= block[i];
   Transform(last_x_);
-  Transform(H_);
-  if (!MultAndReduce(2, last_x_, 2, H_, 3, min_poly_, 4, t))
+  if (!MultAndReduce(2, last_x_, 2, bit_reversed_H_, 3, min_poly_, 4, t))
     LOG(ERROR) << "GHash AddBlock failed at MultAndReduce";
   last_x_[1] = t[1];
   last_x_[0] = t[0];
@@ -305,3 +323,7 @@ bool Ghash::GetHash(uint64_t* out)  {
   return true;
 }
 
+void Ghash::get_last_x(uint64_t* out) {
+  out[0] = last_x_[0];
+  out[1] = last_x_[1];
+}

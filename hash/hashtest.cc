@@ -844,11 +844,12 @@ TEST(Ghash, GhashTest7) {
   Ghash hash;
   hash.Init(HH);
   hash.AddCHash(16, AA);
-#ifdef XXX
-  printf("X1        : %016llx%016llx\n", test[1], test[0]);
-#else
-  printf("X1        : "); PrintBytes(16, X1); printf("\n");
-#endif
+  uint64_t out[2];
+  hash.get_last_x(out);
+  
+  printf("X1        : "); PrintBytes(16, (byte*)out); printf("\n");
+  printf("Correct X1: "); PrintBytes(16, X1); printf("\n");
+  EXPECT_TRUE(memcmp(X1, (byte*) out, 16) == 0);
 }
 
 /*

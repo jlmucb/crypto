@@ -42,12 +42,15 @@ public:
   void FinalA();
   void FinalC();
   bool GetHash(uint64_t* out); 
+  // test only
+  void get_last_x(uint64_t* out);
 
 private:
   bool finalized_A_;
   bool finalized_C_;
   uint64_t min_poly_[3];
   uint64_t H_[2];
+  uint64_t bit_reversed_H_[2];
   uint64_t size_A_;
   uint64_t size_C_;
   uint64_t last_x_[2];
