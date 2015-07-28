@@ -1056,7 +1056,6 @@ byte test_aesgcm_X1_2[16] = {
 TEST(AesGcm, SecondAesGcmTest) {
   AesGcm aesgcm_obj;
 
-  // ReverseInPlace(16, test_aesgcm_iv_2);
   EXPECT_TRUE(aesgcm_obj.Init(NBITSINBYTE * sizeof(test_aesgcm_K_2), test_aesgcm_K_2, 128,
              16, test_aesgcm_iv_2, AesGcm::ENCRYPT, false));
   int size_out = 128;
@@ -1064,7 +1063,7 @@ TEST(AesGcm, SecondAesGcmTest) {
   EXPECT_TRUE(aesgcm_obj.FinalPlainIn(sizeof(test_P_2), test_P_2, &size_out, test_out));
   byte tag[16];
   aesgcm_obj.GetComputedTag(16, tag);
-  // EXPECT_TRUE(memcmp(tag, test_aesgcm_T_2, 16) ==0);
+  EXPECT_TRUE(memcmp(test_aesgcm_T_2, tag, 16)==0);
   printf("Key               : "); PrintBytes(16, test_aesgcm_K_2); printf("\n");
   printf("IV                : "); PrintBytes(16, test_aesgcm_iv_2); printf("\n");
   printf("Plain             : "); PrintBytes(64, test_P_2); printf("\n");
@@ -1133,7 +1132,7 @@ TEST(AesGcm, ThirdAesGcmTest) {
   EXPECT_TRUE(aesgcm_obj.FinalPlainIn(sizeof(test_P_3), test_P_3, &size_out, test_out));
   byte tag[32];
   aesgcm_obj.GetComputedTag(16, tag);
-  // EXPECT_TRUE(memcmp(tag, test_aesgcm_T_3, 16) ==0);
+  EXPECT_TRUE(memcmp(tag, test_aesgcm_T_3, 16) ==0);
   printf("Key               : "); PrintBytes(16, test_aesgcm_K_3); printf("\n");
   printf("IV                : "); PrintBytes(16, test_aesgcm_iv_3); printf("\n");
   printf("Plain             : "); PrintBytes(16, test_P_3); printf("\n");

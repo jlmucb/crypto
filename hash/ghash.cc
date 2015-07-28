@@ -35,10 +35,6 @@ int RealSize(int size, uint64_t* x) {
 bool BitOn(uint64_t* in, int pos) {
   int word_position = pos / uint64_bit_size;
   int bit_position = pos - word_position * uint64_bit_size;
-#if 0
-  printf("BitOn pos: %d word_position: %d bit_position: %d\n",
-          pos, word_position, bit_position);
-#endif
   return (in[word_position] & (0x1ULL << bit_position)) != 0;
 }
 
@@ -61,11 +57,6 @@ void Shift(int size_in, uint64_t* in, int shift, int size_out, uint64_t* out) {
     if ((word_shift + i + 1) < size_out )
       out[word_shift + i + 1] |= top;
   }
-#if 0
-  printf("word: %d, bit: %d\n", word_shift, bit_shift);
-  printf("Shift  %03d: %016llx%016llx%016llx%016llx\n",
-         shift, out[3], out[2], out[1], out[0]);
-#endif
 }
 
 bool XorPolyTo(int size_a, uint64_t* a, int size_b, uint64_t* b) {
@@ -82,33 +73,16 @@ bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
     return false;
   if (size_c < 4)
     return false;
-#if 1
-  printf("MultPoly <: %016llx%016llx x %016llx%016llx\n",
-         a[1], a[0], b[1], b[0]);
-#endif
 
   uint64_t t[4] = {0ULL, 0ULL, 0ULL, 0ULL};
   uint64_t accum[4] = {0ULL, 0ULL, 0ULL, 0ULL};
 
   for (int j = (uint64_bit_size * size_b - 1) ; j >= 0; j--) {
     if (BitOn(b, j)) {
-#if 0
-      printf("         MultPoly biton %d\n", j);
-#endif
       Shift(size_a, a, j, 4, t);
-#if 0
-      printf("accum in  : %016llx%016llx%016llx%016llx\n",
-             accum[3], accum[2], accum[1], accum[0]);
-      printf("a shifted : %016llx%016llx%016llx%016llx\n",
-             t[3], t[2], t[1], t[0]);
-#endif
       if (!XorPolyTo(4, t, 4, accum)) {
         return false;
       }
-#if 0
-      printf("accum out : %016llx%016llx%016llx%016llx\n",
-             accum[3], accum[2], accum[1], accum[0]);
-#endif
     }
   }
   int n = RealSize(4, accum);
@@ -116,20 +90,12 @@ bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,
     return false;
   for (int i = 0; i < n; i++)
     c[i] = accum[i];
-#if 1
-  printf("MultPoly >: %016llx%016llx%016llx%016llx\n",
-         c[3], c[2], c[1], c[0]);
-#endif
   return true;
 }
 
 bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly) {
   uint64_t t[4] = {0ULL, 0ULL, 0ULL, 0ULL};
 
-#if 1
-  printf("Reduce in : %016llx%016llx%016llx%016llx\n",
-         a[3], a[2], a[1], a[0]);
-#endif
   if (RealSize(size_a, a) > 4 || size_a < 4 || RealSize(size_p, min_poly) > 4)
     return false;
   int top_bit_a = size_a * uint64_bit_size - 1;
@@ -144,28 +110,11 @@ bool Reduce(int size_a, uint64_t* a, int size_p, uint64_t* min_poly) {
 
   for (k = top_bit_a; k >= 128; k--) {
     if (BitOn(a, k)) {
-#if 0
-      printf("         Reduce biton %d\n", k);
-#endif
       Shift(size_p, min_poly, k - top_bit_p, 4, t);
-#if 0
-      printf("a in      : %016llx%016llx%016llx%016llx\n",
-             a[3], a[2], a[1], a[0]);
-#endif
       if (!XorPolyTo(4, t, size_a, a))
         return false;
-#if 0
-      printf("t         : %016llx%016llx%016llx%016llx\n",
-             t[3], t[2], t[1], t[0]);
-      printf("a out     : %016llx%016llx%016llx%016llx\n",
-             a[3], a[2], a[1], a[0]);
-#endif
     }
   }
-#if 1
-  printf("Reduce out: %016llx%016llx%016llx%016llx\n",
-         a[3], a[2], a[1], a[0]);
-#endif
   return true;
 }
 
@@ -199,8 +148,8 @@ void printPolyLR(int nbits, uint64_t* p) {
 
 Ghash::Ghash() {
   // x^128+x^7+x^2+x+1
-  min_poly_[2] = 0x01ULL;
-  min_poly_[1] = 0x00ULL;
+  min_poly_[2] = 1ULL;
+  min_poly_[1] = 0x0000000000000000ULL;
   min_poly_[0] = 0x87ULL;
   finalized_A_ = false;
   finalized_C_ = false;
@@ -225,17 +174,16 @@ Ghash::~Ghash() {
   H_[1] = 0ULL;
 }
 
+byte BitReverse(byte a) {
+  return  ((a<<7) & 0x80) | ((a<<5) & 0x40) |
+          ((a<<3) & 0x20) | ((a<<1) & 0x10) |
+          ((a>>1) & 0x8) | ((a>>3) & 0x4) |
+          ((a>>5) & 0x2) | ((a>>7) & 0x1);
+}
+
 void Ghash::Init(byte* H) {
-#ifdef XXX
-  ReverseCpy(8, &H[8], (byte*)&H_[0]);
-  ReverseCpy(8, &H[0], (byte*)&H_[1]);
-#else
   H_[0] = *((uint64_t*)&H[0]);
   H_[1] = *((uint64_t*)&H[8]);
-#endif
-#if 1
-  printf("H         : %016llx%016llx\n", H_[1], H_[0]); 
-#endif
   finalized_A_ = false;
   finalized_C_ = false;
   size_partial_ = 0;
@@ -248,31 +196,33 @@ void Ghash::Init(byte* H) {
   size_C_ = 0ULL;
 }
 
+void Transform(uint64_t* block) {
+  uint64_t newblock[2];
+  byte* p= (byte*)block;
+  byte* q= (byte*)newblock;
+
+  for (int i = 0; i < 16; i++)
+    *(q++) = BitReverse(*(p++));
+  block[0] = newblock[0];
+  block[1] = newblock[1];
+}
+
 void Ghash::AddBlock(uint64_t* block) {
   uint64_t t[4] = {0ULL, 0ULL, 0ULL, 0ULL};
 
-#if 1
-  printf("\n");
-  printf("Before         : %016llx%016llx\n", last_x_[1], last_x_[0]);
-  printf("Block          : %016llx%016llx\n", block[1], block[0]);
-#endif
-
   for (int i = 0; i < 2; i++) 
     last_x_[i] ^= block[i];
+  Transform(last_x_);
+  Transform(H_);
   if (!MultAndReduce(2, last_x_, 2, H_, 3, min_poly_, 4, t))
     LOG(ERROR) << "GHash AddBlock failed at MultAndReduce";
   last_x_[1] = t[1];
   last_x_[0] = t[0];
-#if 1
-  printf("After          : %016llx%016llx\n", last_x_[1], last_x_[0]); 
-  printf("After lo to hi : "); PrintBytes(16, (byte*)last_x_);printf("\n");
-#endif
+  Transform(last_x_);
+  Transform(H_);
 }
 
 void Ghash::AddToHash(int size, byte* data) {
-#if 1
-  printf("Ghash::AddToHash(%d)\n", size);
-#endif
   byte* next = data;
   uint64_t in[2];
 
@@ -280,13 +230,8 @@ void Ghash::AddToHash(int size, byte* data) {
     if ((size_partial_ + size) >= 16) {
       int n = 16 - size_partial_;
       memcpy(&partial_[size_partial_], next, n);
-#ifdef XXX
-      ReverseCpy(8, partial_, (byte*)&in[1]);
-      ReverseCpy(8, &partial_[8], (byte*)&in[0]);
-#else
       in[0] = *((uint64_t*)&partial_[0]);
       in[1] = *((uint64_t*)&partial_[8]);
-#endif
       AddBlock(in);
       size_partial_ = 0;
       memset(partial_, 0, 16);
@@ -300,13 +245,8 @@ void Ghash::AddToHash(int size, byte* data) {
   }
 
   while (size >= 16) {
-#ifdef XXX
-    ReverseCpy(8, next, (byte*)&in[1]);
-    ReverseCpy(8, &next[8], (byte*)&in[0]);
-#else
     in[0] = *((uint64_t*)&next[0]);
     in[1] = *((uint64_t*)&next[8]);
-#endif
     AddBlock(in);
     next += 16;
     size -= 16;
@@ -328,19 +268,11 @@ void Ghash::AddCHash(int size, byte* data) {
 }
 
 void Ghash::FinalA() {
-#if 0
-  printf("Ghash::FinalA()\n");
-#endif
   uint64_t in[2];
 
   if (size_partial_ > 0) {
-#ifdef XXX
-    ReverseCpy(8, partial_, (byte*)&in[1]);
-    ReverseCpy(8, &partial_[8], (byte*)&in[0]);
-#else
     in[0] = *((uint64_t*)&partial_[0]);
-    in[1] = *((uint64_t*)&partial_[8]);
-#endif
+    in[1] = *((uint64_t*)&partial_[sizeof(uint64_t)]);
     AddBlock(in);
     size_partial_ = 0;
   }
@@ -348,25 +280,17 @@ void Ghash::FinalA() {
 }
 
 void Ghash::FinalC() {
-#if 0
-  printf("Ghash::FinalC() %d\n", size_partial_);
-#endif
   uint64_t in[2];
 
   if (size_partial_ > 0) {
     memset(&partial_[size_partial_], 0, 16 - size_partial_);
-#ifdef XXX
-    ReverseCpy(8, partial_, (byte*)&in[1]);
-    ReverseCpy(8, &partial_[8], (byte*)&in[0]);
-#else
     in[0] = *((uint64_t*)&partial_[0]);
-    in[1] = *((uint64_t*)&partial_[8]);
-#endif
+    in[1] = *((uint64_t*)&partial_[sizeof(uint64_t)]);
     AddBlock(in);
     size_partial_ = 0;
   }
-  in[0] = size_C_;
-  in[1] = size_A_;
+  ReverseCpy(sizeof(uint64_t), (byte*)&size_A_, (byte*)&in[0]);
+  ReverseCpy(sizeof(uint64_t), (byte*)&size_C_, (byte*)&in[1]);
   AddBlock(in);
   digest_[1] = last_x_[1];
   digest_[0] = last_x_[0];

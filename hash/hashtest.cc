@@ -841,12 +841,6 @@ TEST(Ghash, GhashTest7) {
     0x2c, 0x85, 0xb0, 0x68, 0x53, 0x53, 0xde, 0xb7
   };
 
-#ifdef XXX
-  uint64_t test[2];
-  test[0] = *((uint64_t*)&X1[0]);
-  test[1] = *((uint64_t*)&X1[8]);
-#endif
-
   Ghash hash;
   hash.Init(HH);
   hash.AddCHash(16, AA);
