@@ -152,15 +152,19 @@ bool AesGcm::Init(int bit_size_key, byte* key, int size_tag,
     return false;
   }
   if (use_aesni) {
-    if (!aesni.Init(128, key, AesNi::ENCRYPT))
+    if (!aesni.Init(128, key, AesNi::ENCRYPT)) {
+      LOG(ERROR) << "AesGcm::Init, aesni.Init failed";
       return false;
-     aesni.EncryptBlock(zero, H);
+    }
+   aesni.EncryptBlock(zero, H);
      aesni.EncryptBlock(iv, (byte*)encrypted_iv_);
   } else {
-    if (!aes.Init(128, key, Aes::ENCRYPT))
+    if (!aes.Init(128, key, Aes::ENCRYPT)) {
+      LOG(ERROR) << "AesGcm::Init, aesni.Init failed";
       return false;
-     aes.EncryptBlock(zero, H);
-     aes.EncryptBlock(iv, (byte*)encrypted_iv_);
+    }
+   aes.EncryptBlock(zero, H);
+   aes.EncryptBlock(iv, (byte*)encrypted_iv_);
   }
   ghash_.Init(H);
   size_tag_ = size_tag;

@@ -1077,22 +1077,6 @@ TEST(AesGcm, SecondAesGcmTest) {
   printf("Done\n");
 }
 
-/*
-  00000000000000000000000000000000
-  00000000000000000000000000000000
-  00000000000000000000000000000001
-  66e94bd4ef8a2c3b884cfa59ca342b2e
-  00000000000000000000000000000001
-  58e2fccefa7e3061367f1d57a4e7455a
-  00000000000000000000000000000002
-  0388dace60b6a392f328c2b971b2fe78
-  5e2ec746917062882c85b0685353deb7
-  00000000000000000000000000000080
-  f38cbb1ad69223dcc3457ae5b6b0f885
-  0388dace60b6a392f328c2b971b2fe78
-  ab6e47d42cec13bdf53a67b21257bddf
- */
-
 byte test_P_3[16] = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -1144,6 +1128,30 @@ TEST(AesGcm, ThirdAesGcmTest) {
   printf("H should be       : "); PrintBytes(16, test_aesgcm_H_3); printf("\n");
   printf("Ghash should be   : "); PrintBytes(16, test_aesgcm_Ghash_3); printf("\n");
   printf("Done\n");
+}
+
+TEST(AesGcm, FourthAesGcmTest) {
+  AesGcm aesgcm_obj_enc;
+  AesGcm aesgcm_obj_dec;
+  byte computed_tag[16];
+  byte computed_C[64];
+  byte computed_P[64];
+  int size_out;
+
+  EXPECT_TRUE(aesgcm_obj_enc.Init(128, test_aesgcm_K_2, 16,
+            16, test_aesgcm_iv_2, AesGcm::ENCRYPT, false));
+  size_out = 128;
+  EXPECT_TRUE(aesgcm_obj_enc.FinalPlainIn(64, test_P_2, &size_out, computed_C));
+  EXPECT_TRUE(memcmp(computed_C, test_C_2, 64)==0);
+  aesgcm_obj_enc.GetComputedTag(16, computed_tag);
+
+  EXPECT_TRUE(aesgcm_obj_dec.Init(128, test_aesgcm_K_2, 16,
+            16, test_aesgcm_iv_2, AesGcm::ENCRYPT, false));
+  aesgcm_obj_dec.SetReceivedTag(16, test_aesgcm_T_3);
+  size_out = 128;
+  EXPECT_TRUE(aesgcm_obj_dec.FinalCipherIn(64, computed_C, &size_out, computed_P));
+  EXPECT_TRUE(memcmp(computed_P, test_P_2, 64)==0);
+  EXPECT_TRUE(aesgcm_obj_dec.MessageValid());
 }
 
 DEFINE_string(log_file, "symmetrictest.log", "symmetrictest file name");
