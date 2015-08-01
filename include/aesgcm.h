@@ -59,6 +59,7 @@ private:
   bool output_verified_;
   int size_tag_;
   uint64_t encrypted_iv_[2];
+  byte received_tag_[16];
 
   GAesCtr aesctr_;
   Ghash ghash_;

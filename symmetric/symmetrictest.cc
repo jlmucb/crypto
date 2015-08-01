@@ -1144,10 +1144,15 @@ TEST(AesGcm, FourthAesGcmTest) {
   EXPECT_TRUE(aesgcm_obj_enc.FinalPlainIn(64, test_P_2, &size_out, computed_C));
   EXPECT_TRUE(memcmp(computed_C, test_C_2, 64)==0);
   aesgcm_obj_enc.GetComputedTag(16, computed_tag);
+  printf("P          :"); PrintBytes(64, test_P_2); printf("\n");
+  printf("Key        :"); PrintBytes(16, test_aesgcm_K_2); printf("\n");
+  printf("IV         :"); PrintBytes(16, test_aesgcm_iv_2); printf("\n");
+  printf("Tag        :"); PrintBytes(16, test_aesgcm_T_2); printf("\n");
+  printf("C          :"); PrintBytes(64, test_C_2); printf("\n");
 
   EXPECT_TRUE(aesgcm_obj_dec.Init(128, test_aesgcm_K_2, 16,
             16, test_aesgcm_iv_2, AesGcm::ENCRYPT, false));
-  aesgcm_obj_dec.SetReceivedTag(16, test_aesgcm_T_3);
+  aesgcm_obj_dec.SetReceivedTag(16, test_aesgcm_T_2);
   size_out = 128;
   EXPECT_TRUE(aesgcm_obj_dec.FinalCipherIn(64, computed_C, &size_out, computed_P));
   EXPECT_TRUE(memcmp(computed_P, test_P_2, 64)==0);

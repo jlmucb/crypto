@@ -127,6 +127,8 @@ bool GAesCtr::GetCtr(byte* out) {
 AesGcm::AesGcm() {
   alg_name_ = new string("aes128-gcm128");
   message_id_ = nullptr;
+  memset(received_tag_, 0, 16);
+  output_verified_ = false;
 }
 
 AesGcm::~AesGcm() {
@@ -238,7 +240,19 @@ int AesGcm::MinimumFinalDecryptIn() {
 
 int AesGcm::MinimumFinalEncryptIn() { return 1; }
 
-bool AesGcm::MessageValid() { return output_verified_; }
+bool AesGcm::MessageValid() {
+  if (output_verified_)
+    return true;
+  byte tag[16];
+  if (!GetComputedTag(16, tag))
+    return false;
+  if (memcmp(received_tag_, tag, 16) == 0) {
+    output_verified_ = true;
+    return true;
+  } else {
+    return false;
+  }
+}
 
 int AesGcm::GetComputedTag(int size, byte* out) {
   uint64_t the_hash[2];
@@ -251,7 +265,8 @@ int AesGcm::GetComputedTag(int size, byte* out) {
   return size;
 }
 
-int AesGcm::SetReceivedTag(int size, byte* out) {
+int AesGcm::SetReceivedTag(int size, byte* in) {
+  memcpy(received_tag_, in, 16);
   return 0;
 }
 
