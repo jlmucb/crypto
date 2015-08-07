@@ -16,7 +16,10 @@
 
 #include <gflags/gflags.h>
 #include <stdio.h>
+#include <string.h>
 #include <string>
+#include <memory>
+
 #include "pwutil.pb.h"
 #include "tokenizer.h"
 #include "cryptotypes.h"

@@ -37,26 +37,26 @@ S= $(SRC_DIR)/pwutil
 O= $(OBJ_DIR)/pwutil
 INCLUDE= -I$(SRC_DIR)/include -I$(SRC_DIR)/keys -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE)
 
-CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -stdlib=libc++
-CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -stdlib=libc++
 CRYPTOLIB= $(OBJ_DIR)/jlmcryptolib.a
 
 include ../OSName
-ifdef YOSEMITE
-	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
-else
-	LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a $(LOCAL_LIB)/libgflags.a -lpthread
-endif
 ifdef YOSEMITE
 	CC=clang++
 	LINK=clang++
 	PROTO=protoc
 	AR=ar
+	CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
+	CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
+	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
 else
 	CC=g++
 	LINK=g++
 	PROTO=protoc
 	AR=ar
+	export LD_LIBRARY_PATH=/usr/local/lib
+	CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
+	CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
+	LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 endif
 
 dobj=	$(O)/pwutil.o $(O)/pwutil.pb.o $(O)/tokenizer.o

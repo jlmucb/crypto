@@ -18,9 +18,10 @@
 #include "util.h"
 #include "conversions.h"
 #include "ghash.h"
-#include <string>
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 
 const int uint64_bit_size = sizeof(uint64_t) * NBITSINBYTE;
 

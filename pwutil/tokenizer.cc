@@ -14,15 +14,16 @@
 // Project: New Cloudproxy Crypto
 // File: tokenizer.cc
 
-#include "tokenizer.h"
-#include <string>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
+#include <string>
+#include <memory>
+
+#include "tokenizer.h"
 #include <iostream>
 #include <fstream>
 #include <istream>
-
-using namespace std;
 
 // string  delimiters_
 Tokenizer::Tokenizer() {
@@ -42,8 +43,8 @@ void Tokenizer::SetDelim(const char* delim) {
 
 char* Tokenizer::NextToken(char* start, bool first) {
   if (first)
-    return std::strtok(start, delimiters_.c_str());
-  return std::strtok(nullptr, delimiters_.c_str());
+    return strtok(start, delimiters_.c_str());
+  return strtok(nullptr, delimiters_.c_str());
 }
 
 ReadLines::ReadLines() {

@@ -41,16 +41,14 @@ CFLAGS1=$(INCLUDE) -O3 -g -Wall -std=c++11
 
 include ../OSName
 ifdef YOSEMITE
-	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
-else
-	LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a $(LOCAL_LIB)/libgflags.a -lpthread
-endif
-ifdef YOSEMITE
 	CC=clang++
 	LINK=clang++
+	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
 else
 	CC=g++
 	LINK=g++
+	export LD_LIBRARY_PATH=/usr/local/lib
+	LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 endif
 CRYPTOLIB= $(OBJ_DIR)/jlmcryptolib.a
 

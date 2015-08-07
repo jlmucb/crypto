@@ -23,9 +23,11 @@
 #include "sha256.h"
 #include "hmac_sha256.h"
 #include "aescbchmac256sympad.h"
-#include <string>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
+
+#include <string>
 
 AesCbcHmac256Sympad::AesCbcHmac256Sympad() {
   alg_name_ = new string("aes128-cbc-hmacsha256-sympad");

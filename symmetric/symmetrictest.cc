@@ -14,13 +14,14 @@
 // Project: New Cloudproxy Crypto
 // File: symmetric.cc
 
-#include "cryptotypes.h"
-#include <gtest/gtest.h>
-#include <gflags/gflags.h>
 #include <stdio.h>
 #include <string.h>
 #include <string>
+
 #include "util.h"
+#include "cryptotypes.h"
+#include <gtest/gtest.h>
+#include <gflags/gflags.h>
 #include "conversions.h"
 #include "symmetric_cipher.h"
 #include "keys.h"
@@ -33,6 +34,8 @@
 #include "aescbchmac256sympad.h"
 #include "aesctrhmac256sympad.h"
 #include "aesgcm.h"
+
+#include <memory>
 #include <cmath>
 
 uint64_t cycles_per_second = 10;

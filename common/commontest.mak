@@ -37,22 +37,20 @@ S= $(SRC_DIR)/common
 O= $(OBJ_DIR)/common
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE)
 
-CFLAGS=$(INCLUDE) -O3 -g -Wall
+CFLAGS=$(INCLUDE) -std=c++11 -O3 -g -Wall
 
 include ../OSName
-ifdef YOSEMITE
-	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
-else
-	LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a $(LOCAL_LIB)/libgflags.a -lpthread
-endif
 ifdef YOSEMITE
 	CC=clang++
 	LINK=clang++
 	AR=ar
+	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgflags -lprotobuf -lpthread
 else
 	CC=g++
 	LINK=g++
 	AR=ar
+	export LD_LIBRARY_PATH=/usr/local/lib
+	LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 endif
 
 dobj=	$(O)/commontest.o $(O)/conversions.o $(O)/util.o

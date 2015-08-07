@@ -37,25 +37,24 @@ S= $(SRC_DIR)/keys
 O= $(OBJ_DIR)/keys
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE)
 
-CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -stdlib=libc++
-CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -stdlib=libc++
-
 include ../OSName
 ifdef YOSEMITE
-	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
-else
-	LDFLAGS= $(LOCAL_LIB)/libgtest.a  $(LOCAL_LIB)/libprotobuf.a $(LOCAL_LIB)/libgflags.a -lpthread
-endif
-ifdef YOSEMITE
+	CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -stdlib=libc++
+	CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -stdlib=libc++
 	CC=clang++
 	LINK=clang++
 	PROTO=protoc
 	AR=ar
+	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
 else
+	CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
+	CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
 	CC=g++
 	LINK=g++
 	PROTO=protoc
 	AR=ar
+	export LD_LIBRARY_PATH=/usr/local/lib
+	LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 endif
 
 dobj=	$(O)/keytest.o $(O)/keys.o $(O)/keys.pb.o $(O)/util.o $(O)/conversions.o \
