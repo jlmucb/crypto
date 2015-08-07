@@ -14,16 +14,21 @@
 // Project: New Cloudproxy Crypto
 // File: bignum.h
 
-#include "cryptotypes.h"
-#include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <memory>
 #include <iostream>
-using namespace std;
+
+#include "cryptotypes.h"
 #include "bignum.h"
 
 #ifndef _CRYPTO_INDETERMINATE_H__
 #define _CRYPTO_INDETERMINATE_H__
+
+using std::string;
 
 class Polynomial {
  public:

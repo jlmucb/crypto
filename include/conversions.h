@@ -16,9 +16,17 @@
 
 #ifndef _CRYPTO_CONVERSIONS_H__
 #define _CRYPTO_CONVERSIONS_H__
-#include "cryptotypes.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <string>
-using namespace std;
+#include <memory>
+
+#include "cryptotypes.h"
+
+using std::string;
 
 void PrintBytes(int n, byte* in);
 char ValueToHex(byte x);

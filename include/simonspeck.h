@@ -14,17 +14,20 @@
 // Project: New Cloudproxy Crypto
 // File: simonspeck.h
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <memory>
+#include <iostream>
+
 #include "cryptotypes.h"
 #include "util.h"
 #include "symmetric_cipher.h"
-#include <string>
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
 
 #ifndef _CRYPTO_SIMON_SPECK_H__
 #define _CRYPTO_SIMON_SPECK_H__
-using namespace std;
 
 class Simon128 : public SymmetricCipher {
  private:

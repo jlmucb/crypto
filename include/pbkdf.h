@@ -14,15 +14,19 @@
 // Project: New Cloudproxy Crypto
 // File: pbkdf.h
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <memory>
+
 #include "cryptotypes.h"
 #include "hash.h"
 #include "sha256.h"
-#include <string>
-#include <stdio.h>
 
 #ifndef _CRYPTO_PBKDF_H__
 #define _CRYPTO_PBKDF_H__
-using namespace std;
 
 bool pbkdf2(const char* pass, int saltLen, byte* salt, int iter, int out_size,
             byte* out);

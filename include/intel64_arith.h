@@ -14,11 +14,15 @@
 // Project: New Cloudproxy Crypto
 // File: intel64_arith.h
 
-#include "cryptotypes.h"
-#include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <memory>
 #include <iostream>
+
+#include "cryptotypes.h"
 #include "util.h"
 #include "bignum.h"
 

@@ -14,10 +14,15 @@
 // Project: New Cloudproxy Crypto
 // File: sha3.h
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <memory>
+
 #include "cryptotypes.h"
 #include "hash.h"
-#include <string>
-#include <stdio.h>
 
 #ifndef _CRYPTO_SHA3__H
 #define _CRYPTO_SHA3__H

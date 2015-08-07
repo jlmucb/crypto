@@ -14,19 +14,24 @@
 // Project: New Cloudproxy Crypto
 // File: aesgcm.h
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <memory>
+
 #include "cryptotypes.h"
 #include "util.h"
 #include "symmetric_cipher.h"
 #include "encryption_algorithm.h"
 #include "ghash.h"
 #include "aes.h"
-#include <string>
-#include <stdio.h>
-#include <stdlib.h>
 
 #ifndef _CRYPTO_AESGCM_H__
 #define _CRYPTO_AESGCM_H__
-using namespace std;
+
+using std::string;
 
 class GAesCtr {
 

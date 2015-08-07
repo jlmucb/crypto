@@ -14,15 +14,21 @@
 // Project: New Cloudproxy Crypto
 // File: hmac_sha256.h
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <memory>
+
 #include "cryptotypes.h"
 #include "hash.h"
 #include "sha256.h"
-#include <string>
-#include <stdio.h>
 
 #ifndef _CRYPTO_HMAC_SHA256_H__
 #define _CRYPTO_HMAC_SHA256_H__
-using namespace std;
+
+using std::string;
 
 class HmacSha256 {
  public:

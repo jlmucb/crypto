@@ -14,18 +14,23 @@
 // Project: New Cloudproxy Crypto
 // File: crypto_scheme.h
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <memory>
+#include <iostream>
+
 #include "cryptotypes.h"
 #include "util.h"
 #include "symmetric_cipher.h"
 #include "keys.pb.h"
-#include <string>
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
 
 #ifndef _CRYPTO_ENCRYPTION_ALGORITHM_H__
 #define _CRYPTO_ENCRYPTION_ALGORITHM_H__
-using namespace std;
+
+using std::string;
 
 class EncryptionAlgorithm {
  public:

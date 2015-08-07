@@ -14,19 +14,27 @@
 // Project: New Cloudproxy Crypto
 // File: keys.h
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <memory>
+
+#include <cmath>
+#include <iostream>
+#include <fstream>
+
 #include "cryptotypes.h"
 #include "ecc.h"
 #include "keys.pb.h"
 #include "util.h"
-#include <cmath>
-#include <string>
-#include <iostream>
-#include <fstream>
 #include "bignum.h"
 
 #ifndef _CRYPTO_KEYS_H__
 #define _CRYPTO_KEYS_H__
-using namespace std;
+
+using std::string;
 
 class CryptoKey {
  public:

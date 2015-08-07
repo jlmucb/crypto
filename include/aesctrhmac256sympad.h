@@ -14,6 +14,13 @@
 // Project: New Cloudproxy Crypto
 // File: aesctrhmac256sympad.h
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <memory>
+
 #include "cryptotypes.h"
 #include "util.h"
 #include "symmetric_cipher.h"
@@ -21,13 +28,11 @@
 #include "aes.h"
 #include "sha256.h"
 #include "hmac_sha256.h"
-#include <string>
-#include <stdio.h>
-#include <stdlib.h>
 
 #ifndef _CRYPTO_AESCTRHMAC256SYMPAD_H__
 #define _CRYPTO_AESCTRHMAC256SYMPAD_H__
-using namespace std;
+
+using std::string;
 
 class AesCtrHmac256Sympad : public EncryptionAlgorithm {
  public:

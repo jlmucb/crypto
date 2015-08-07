@@ -14,15 +14,20 @@
 // Project: New Cloudproxy Crypto
 // File: bignum.h
 
-#include "cryptotypes.h"
-#include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <memory>
 #include <iostream>
-using namespace std;
+
+#include "cryptotypes.h"
 
 #ifndef _CRYPTO_BIGNUM_H__
 #define _CRYPTO_BIGNUM_H__
+
+using std::string;
 
 //  num= value_[0]+ 2^64 value_[1] + ... + 2^(64n) value_[n]
 class BigNum {

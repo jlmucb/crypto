@@ -14,15 +14,19 @@
 // Project: New Cloudproxy Crypto
 // File: pkcs.h
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <memory>
+
 #include "cryptotypes.h"
 #include "hash.h"
 #include "sha256.h"
-#include <string>
-#include <stdio.h>
 
 #ifndef _CRYPTO_PKCS_H__
 #define _CRYPTO_PKCS_H__
-using namespace std;
 
 bool PkcsEncode(const char* hash_alg, byte* hash, int out_size, byte* out);
 bool PkcsVerify(const char* hash_alg, byte* hash, int in_size, byte* in);

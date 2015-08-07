@@ -14,14 +14,20 @@
 // Project: New Cloudproxy Crypto
 // File: ghash.h
 
-#include "cryptotypes.h"
-#include "util.h"
-#include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <memory>
+
+#include "cryptotypes.h"
+#include "util.h"
 
 #ifndef _CRYPTO_GHASH_H__
 #define _CRYPTO_GHASH_H__
+
+using std::string;
 
 void Shift(int size_in, uint64_t* in, int shift, int size_out, uint64_t* out);
 bool MultPoly(int size_a, uint64_t* a, int size_b, uint64_t* b,

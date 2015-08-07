@@ -14,14 +14,18 @@
 // Project: New Cloudproxy Crypto
 // File: sha256.h
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <memory>
+
 #include "cryptotypes.h"
 #include "hash.h"
-#include <string>
-#include <stdio.h>
 
 #ifndef _CRYPTO_SHA256_H__
 #define _CRYPTO_SHA256_H__
-using namespace std;
 
 class Sha256 : public CryptographicHash {
  public:

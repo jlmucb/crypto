@@ -14,15 +14,18 @@
 // Project: New Cloudproxy Crypto
 // File: rc4.h
 
-#include "cryptotypes.h"
-#include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <memory>
 #include <iostream>
+
+#include "cryptotypes.h"
 
 #ifndef _CRYPTO_RC4_H__
 #define _CRYPTO_RC4_H__
-using namespace std;
 
 class Rc4 {
  public:

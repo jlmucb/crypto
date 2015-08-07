@@ -17,17 +17,24 @@
 #ifndef _CRYPTO_UTIL_H__
 #define _CRYPTO_UTIL_H__
 
-#include <iostream>
-#include <fstream>
-#include "cryptotypes.h"
-#include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <memory>
+#include <iostream>
+#include <fstream>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-using namespace std;
+
+#include "cryptotypes.h"
+
+using std::ofstream;
+using std::string;
 
 extern ofstream logging_descriptor;
 #define INFO "INFO: "

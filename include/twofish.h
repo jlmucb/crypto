@@ -22,17 +22,20 @@
 // use this code for any purpose as long as the copyright message is included
 // in the source code of this or any derived work.
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <memory>
+#include <iostream>
+
 #include "cryptotypes.h"
 #include "util.h"
 #include "symmetric_cipher.h"
-#include <string>
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
 
 #ifndef _CRYPTO_TWOFISH_H__
 #define _CRYPTO_TWOFISH_H__
-using namespace std;
 
 class TwofishKey {
  public:
