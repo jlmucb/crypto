@@ -14,13 +14,16 @@
 // Project: New Cloudproxy Crypto
 // File: tea.cc
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <string>
+#include <iostream>
+
 #include "cryptotypes.h"
 #include "util.h"
 #include "symmetric_cipher.h"
-#include <string>
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
 #include "tea.h"
 
 Tea::Tea() { initialized_ = false; }
