@@ -882,7 +882,10 @@ TEST(Rc4, Simple) {
   EXPECT_TRUE(memcmp(out, rc4_test_out, 16) == 0);
 }
 
-byte tea_test_key[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+byte tea_test_key[16] = {
+  0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0
+};
 byte tea_test_in[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 byte tea_test_out[8] = {0x0a, 0x3a, 0xea, 0x41, 0x40, 0xa9, 0xba, 0x94};
 TEST(Tea, Simple) {
@@ -890,10 +893,10 @@ TEST(Tea, Simple) {
   byte out[16];
   Tea tea;
 
-  EXPECT_TRUE(tea.Init(64, tea_test_key, 0));
+  EXPECT_TRUE(tea.Init(128, tea_test_key, 0));
   printf("Tea test\n");
   printf("\tKey            : ");
-  PrintBytes(8, tea_test_key);
+  PrintBytes(16, tea_test_key);
   printf("\n");
   printf("\tin             : ");
   PrintBytes(8, tea_test_in);

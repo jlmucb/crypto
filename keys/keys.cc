@@ -14,13 +14,15 @@
 // Project: New Cloudproxy Crypto
 // File: keys.cc
 
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+
 #include <string>
 #include <iostream>
 #include <type_traits>
 #include <fstream>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
+
 #include "cryptotypes.h"
 #include "conversions.h"
 #include "util.h"

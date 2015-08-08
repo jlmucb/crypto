@@ -43,6 +43,7 @@ private:
   byte partial_[16];
   int  size_partial_;
   uint64_t last_ctr_[2];
+  byte iv_[16];
 
 public:
   GAesCtr();
@@ -55,6 +56,10 @@ public:
   void DecryptBlock(uint64_t* in, uint64_t* out);
   void Decrypt(int size, byte* in, byte* out);
   bool GetCtr(byte* out);
+  byte* GetIv(){return iv_;}
+  AesNi* GetAesNi() { return &aesni_; }
+  Aes* GetAes() { return &aes_; }
+  bool UseNi() { return use_aesni_; }
 };
 
 class AesGcm : public EncryptionAlgorithm {
@@ -77,6 +82,11 @@ private:
   bool Init(int size_key, byte* key, int size_tag,
             int size_iv, byte* iv,
             int direction, bool use_aesni);
+  byte* GetIv(){return aesctr_.GetIv();}
+  AesNi* GetAesNi() { return aesctr_.GetAesNi(); }
+  Aes* GetAes() { return aesctr_.GetAes(); }
+  bool UseNi() { return aesctr_.UseNi(); }
+
   void PrintEncryptionAlgorithm();
   bool ProcessInput(int size_in, byte* in, int* size_out,
                     byte* out) {return false;}

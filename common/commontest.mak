@@ -44,13 +44,13 @@ ifdef YOSEMITE
 	CC=clang++
 	LINK=clang++
 	AR=ar
-	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgflags -lprotobuf -lpthread
+	LDFLAGS= -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
 else
 	CC=g++
 	LINK=g++
 	AR=ar
 	export LD_LIBRARY_PATH=/usr/local/lib
-	LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
+	LDFLAGS= -L$(LD_LIBRARY_PATH) -lprotobuf -lgtest -lgflags -lpthread
 endif
 
 dobj=	$(O)/commontest.o $(O)/conversions.o $(O)/util.o

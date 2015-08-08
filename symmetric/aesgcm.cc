@@ -41,7 +41,8 @@ bool GAesCtr::Init(int size_iv, byte* iv, int bit_size_K, byte* K,
   // initialize iv and key
   direction_ = direction;
   use_aesni_ = use_aesni;
-  memcpy(last_ctr_, iv, 16);
+  memcpy(last_ctr_, iv, size_iv);
+  memcpy(iv_, iv, size_iv);
 
   uint64_t x =  last_ctr_[1];
   uint64_t y;
@@ -217,11 +218,28 @@ bool AesGcm::CipherIn(int size_in, byte* in, int* size_out,
 }
 
 void AesGcm::PrintEncryptionAlgorithm() {
-  if (strcmp(alg_name_->c_str(), "aes128-gcm128") != 0) {
-    LOG(ERROR) << "Unknown encryption algorithm";
+  if (alg_name_ == nullptr) {
+    printf("No encryption algorithm\n");
+    return;
+  }
+  if (message_id_ != nullptr) {
+    printf("message id: %s\n", message_id_->c_str());
+  }
+  if (*alg_name_ != "aes128-gcm128") {
+    printf("Unknown encryption algorithm\n");
     return;
   }
   printf("aes128-gcm128\n");
+  if (UseNi()) {
+    printf("using aesni\n");
+    GetAesNi()->PrintSymmetricKey();
+  } else {
+    GetAes()->PrintSymmetricKey();
+    printf("not using aesni\n");
+  }
+  printf("iv      : ");
+  PrintBytes(Aes::BLOCKBYTESIZE, GetIv());
+  printf("\n");
 }
 
 int AesGcm::DecryptInputQuantum() { return Aes::BLOCKBYTESIZE; }
@@ -271,10 +289,34 @@ int AesGcm::SetReceivedTag(int size, byte* in) {
 }
 
 bool AesGcm::GenerateScheme(const char* name, int num_bits) {
-  return true;
+  byte enc_key[64];
+  byte iv[64];
+
+  if (num_bits != 128 && num_bits != 256) {
+    LOG(ERROR) << "AesGcm::GenerateScheme: unsupported key size\n";
+    return false;
+  }
+  if (!GetCryptoRand(12 * NBITSINBYTE, iv)) {
+    LOG(ERROR) << "GenerateScheme: can't get key bits\n";
+    return false;
+  }
+  if (!GetCryptoRand(Aes::BLOCKBYTESIZE * NBITSINBYTE, enc_key)) {
+    LOG(ERROR) << "GenerateScheme: can't get key bits\n";
+    return false;
+  }
+  return MakeScheme(name, num_bits, enc_key, iv);
 }
 
 bool AesGcm::MakeScheme(const char* id, int num_bits,
                         byte* enc_key, byte* iv) {
+  if (!aesctr_.Init(96, iv, num_bits, enc_key, 
+                    Aes::ENCRYPT, false)) {
+    LOG(ERROR) << "AesGcm::MakeScheme: Init fails\n";
+    return false;
+  }
+
+  alg_name_ = new string("aes128-gcm128");
+  message_id_ = new string(id);
+  initialized_ = true;
   return true;
 }

@@ -26,15 +26,18 @@
 #include "symmetric_cipher.h"
 #include "tea.h"
 
-Tea::Tea() { initialized_ = false; }
+Tea::Tea() {
+  initialized_ = false;
+}
 
 Tea::~Tea() {}
 
 bool Tea::Init(int key_bit_size, byte* key, int direction) {
-  if (key_bit_size != 64)
+  if (key_bit_size != 128)
     return false;
   uint32_t* kp = (uint32_t*)key;
-  for (int i = 0; i < 4; i++) key_[i] = kp[i];
+  for (int i = 0; i < 4; i++)
+    key_[i] = kp[i];
   initialized_ = true;
   return true;
 }
