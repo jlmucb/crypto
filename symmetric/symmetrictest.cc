@@ -912,7 +912,7 @@ TEST(Tea, Simple) {
   printf("\tDecrypted      : ");
   PrintBytes(8, in);
   printf("\n");
-  // EXPECT_TRUE(memcmp(out, tea_test_out, 8) == 0);
+  EXPECT_TRUE(memcmp(out, tea_test_out, 8) == 0);
   EXPECT_TRUE(memcmp(in, tea_test_in, 8) == 0);
 }
 
