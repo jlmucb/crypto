@@ -35,7 +35,7 @@ using namespace std;
 const int num_cryptoalgs = 12;
 string cryptoalgs[] = {
     "undefined", "aes128",     "aes256",     "aesni128", "aesni256", "rsa1024",
-    "rsa2048",   "twofish128", "twofish256", "simon128", "rc4128",   "tea64",
+    "rsa2048",   "twofish128", "twofish256", "simon128", "rc4128",   "tea128",
 };
 
 const int num_cryptoschemes = 5;
@@ -514,7 +514,7 @@ bool SymmetricKey::GenerateTeaKey(const char* name, const char* usage,
                                   double secondstolive) {
   byte my_key[32];
 
-  if (num_bits != 64) {
+  if (num_bits != 128) {
     LOG(ERROR) << "SymmetricKey::GenerateTeaKey: unsupported key size "
                << num_bits << "\n";
     return false;
@@ -537,13 +537,13 @@ bool SymmetricKey::MakeTeaKey(const char* name, const char* usage,
   not_after_ = new TimePoint();
   not_before_->TimePointNow();
   not_after_->TimePointLaterBySeconds(*not_before_, secondstolive);
-  if (num_bits != 64) {
-    LOG(ERROR) << "SymmetricKey::MakeTeaKey: only 64 bit keys supported\n";
+  if (num_bits != 128) {
+    LOG(ERROR) << "SymmetricKey::MakeTeaKey: only 128 bit keys supported\n";
     return false;
   }
   symmetric_key_bit_size_ = num_bits;
   symmetric_key_bytes_ = new byte[32];
-  symmetric_algorithm_type_ = new string("tea-64");
+  symmetric_algorithm_type_ = new string("tea-128");
   memcpy(symmetric_key_bytes_, key, num_bits / NBITSINBYTE);
   key_valid_ = true;
   return true;
