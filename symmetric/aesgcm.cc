@@ -28,6 +28,7 @@
 
 GAesCtr::GAesCtr() {
   use_aesni_ = false;
+  size_partial_ = 0;
 }
 
 GAesCtr::~GAesCtr() {
@@ -88,7 +89,7 @@ void GAesCtr::Encrypt(int size, byte* in, byte* out) {
   byte* next = in;
 
   if (size_partial_ > 0) {
-    if ((size_partial_+size) >= 16) {
+    if ((size_partial_ + size) >= 16) {
       int n = 16 - size_partial_;
       memcpy(next, &partial_[size_partial_], n);
       EncryptBlock((uint64_t*)partial_, (uint64_t*)out);

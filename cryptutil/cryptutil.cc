@@ -557,7 +557,7 @@ AesGcm* GetAesGcm128(int size, byte* in) {
   }
   byte enc_key[16];
   byte iv[16];
-  new_scheme->Init(16, enc_key, 128, 96, iv, Aes::ENCRYPT, false);
+  new_scheme->Init(128, enc_key, 128, 96, iv, Aes::ENCRYPT, false);
   return new_scheme;
 }
 
@@ -1331,7 +1331,7 @@ bool AesGcmEncrypt(AesGcm* scheme, const char* inFile,
     printf("AesGcmEncrypt: can't open %s\n", outFile);
     return false;
   }
-  
+
   int k, m, n;
   byte in_buf[BUFSIZE];
   byte out_buf[BUFSIZE];
@@ -1361,9 +1361,7 @@ bool AesGcmEncrypt(AesGcm* scheme, const char* inFile,
         break;
       }
       size = BUFSIZE;
-printf("AesGcmEncrypt 4 %d\n", n);
       scheme->PlainIn(n, in_buf, &size, out_buf);
-printf("AesGcmEncrypt 5 %d\n", size);
       writer.Write(size, out_buf);
     }
     if (final) break;
@@ -2052,7 +2050,6 @@ int main(int an, char** av) {
       printf("DecryptWithScheme: bad buffer\n");
       return 1;
     }
-printf("aes128-gcm128 9\n");
     if (FLAGS_algorithm == "aes128-cbc-hmacsha256-sympad") {
       AesCbcHmac256Sympad* new_scheme = GetAesCbcHmac256SymPad(size, out);
       if (new_scheme == nullptr) {

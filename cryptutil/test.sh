@@ -110,6 +110,6 @@ echo ""
 echo ""
 ./cryptutil.exe --operation=ReadScheme --algorithm=aes128-gcm128 --input_file=aes128-gcm128-schemefile1
 echo ""
-./cryptutil.exe --operation=EncryptWithScheme --key_file=aes128-gcm128-schemefile1 --algorithm=aes128-gcm128 --input_file=jlmTestSave1 --output_file=jlmTestSave5.enc
+./cryptutil.exe --operation=EncryptWithScheme --key_file=aes128-gcm128-schemefile1 --algorithm=aes128-gcm128 --input_file=aesgcm.in --output_file=jlmTestSave5.enc
 echo ""
 ./cryptutil.exe --operation=DecryptWithScheme --key_file=cbcschemefile1 --algorithm=aes128-gcm128 --input_file=jlmTestSave5.enc --output_file=jlmTestSave5.dec
