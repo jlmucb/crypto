@@ -510,11 +510,6 @@ AesCtrHmac256Sympad* GetAesCtrHmac256SymPad(int size, byte* in) {
            ->DeserializeEncryptionAlgorithmFromMessage(*message)) {
     return nullptr;
   }
-  byte enc_key[16];
-  byte int_key[512];
-  byte nonce[4];
-  byte iv[8];
-  new_scheme->Init(16, enc_key, 16, int_key, 4, nonce, 8, iv, true);
   return new_scheme;
 }
 
@@ -555,9 +550,6 @@ AesGcm* GetAesGcm128(int size, byte* in) {
     printf("GetAesGcm128, can't deserialize\n");
     return nullptr;
   }
-  byte enc_key[16];
-  byte iv[16];
-  new_scheme->Init(128, enc_key, 128, 96, iv, Aes::ENCRYPT, false);
   return new_scheme;
 }
 

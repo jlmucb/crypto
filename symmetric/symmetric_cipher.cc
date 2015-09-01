@@ -50,11 +50,11 @@ bool SymmetricCipher::SerializeSymmetricCipherToMessage(
     LOG(ERROR) << "SerializeSymmetricCipherToMessage: no key type\n";
     return false;
   }
-  message.set_key_type(cipher_name_->c_str());
   if (strcmp(cipher_name_->c_str(), "aes-128") != 0) {
     LOG(ERROR) << "SerializeSymmetricCipherToMessage: unhandled alg\n";
     return false;
   }
+  message.set_key_type(*cipher_name_);
   message.set_key_bit_size(128);
   string* s = ByteToBase64LeftToRight(Aes::BLOCKBYTESIZE, key_);
   if (s == nullptr) {

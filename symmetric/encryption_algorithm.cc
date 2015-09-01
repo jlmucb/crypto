@@ -226,7 +226,8 @@ bool EncryptionAlgorithm::DeserializeEncryptionAlgorithmFromMessage(
       LOG(ERROR) << "DeserializeEncryptionAlgorithmFromMessage no iv\n";
       return false;
     }
-    n = Base64ToByteLeftToRight((char*)message.encryption_algorithm_iv().c_str(),
+    n = Base64ToByteLeftToRight((char*)
+                                message.encryption_algorithm_iv().c_str(),
                                 Aes::BLOCKBYTESIZE,
                                 ((AesGcm*)this)->GetIv());
     if (n < 0) {
@@ -269,7 +270,8 @@ bool EncryptionAlgorithm::DeserializeEncryptionAlgorithmFromMessage(
       LOG(ERROR) << "DeserializeEncryptionAlgorithmFromMessage no iv\n";
       return false;
     }
-    n = Base64ToByteLeftToRight((char*)message.encryption_algorithm_iv().c_str(),
+    n = Base64ToByteLeftToRight((char*)
+                                 message.encryption_algorithm_iv().c_str(),
                                 Aes::BLOCKBYTESIZE,
                                 ((AesCtrHmac256Sympad*)this)->iv_);
     if (n < 0) {

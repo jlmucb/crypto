@@ -161,7 +161,7 @@ bool AesGcm::Init(int bit_size_key, byte* key, int size_tag,
       return false;
     }
    aesni.EncryptBlock(zero, H);
-     aesni.EncryptBlock(iv, (byte*)encrypted_iv_);
+   aesni.EncryptBlock(iv, (byte*)encrypted_iv_);
   } else {
     if (!aes.Init(128, key, Aes::ENCRYPT)) {
       LOG(ERROR) << "AesGcm::Init, aesni.Init failed";
@@ -230,13 +230,12 @@ void AesGcm::PrintEncryptionAlgorithm() {
     printf("Unknown encryption algorithm\n");
     return;
   }
-  printf("aes128-gcm128\n");
   if (UseNi()) {
     printf("using aesni\n");
-    GetAesNi()->PrintSymmetricKey();
-  } else {
     GetAes()->PrintSymmetricKey();
+  } else {
     printf("not using aesni\n");
+    GetAesNi()->PrintSymmetricKey();
   }
   printf("iv      : ");
   PrintBytes(Aes::BLOCKBYTESIZE, GetIv());
@@ -297,7 +296,7 @@ bool AesGcm::GenerateScheme(const char* name, int num_bits) {
     LOG(ERROR) << "AesGcm::GenerateScheme: unsupported key size\n";
     return false;
   }
-  if (!GetCryptoRand(12 * NBITSINBYTE, iv)) {
+  if (!GetCryptoRand(128, iv)) {
     LOG(ERROR) << "GenerateScheme: can't get key bits\n";
     return false;
   }
@@ -310,14 +309,14 @@ bool AesGcm::GenerateScheme(const char* name, int num_bits) {
 
 bool AesGcm::MakeScheme(const char* id, int num_bits,
                         byte* enc_key, byte* iv) {
-  if (!aesctr_.Init(96, iv, num_bits, enc_key, 
-                    Aes::ENCRYPT, false)) {
+  if (!Init(num_bits, enc_key, 128,
+                  96, iv, Aes::ENCRYPT, false)) {
     LOG(ERROR) << "AesGcm::MakeScheme: Init fails\n";
     return false;
   }
-
   alg_name_ = new string("aes128-gcm128");
   message_id_ = new string(id);
   initialized_ = true;
+  GetAes()->cipher_name_ = new string("aes-128");
   return true;
 }
