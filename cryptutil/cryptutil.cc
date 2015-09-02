@@ -2085,7 +2085,7 @@ int main(int an, char** av) {
         return 1;
       }
       if (!AesGcmDecrypt(new_scheme, FLAGS_input_file.c_str(),
-                      FLAGS_output_file.c_str(), true)) {
+                      FLAGS_output_file.c_str(), false)) {
         printf("Decryption failed\n");
         return 1;
       } else {
@@ -2143,7 +2143,7 @@ int main(int an, char** av) {
         return 1;
       }
       if (!AesGcmEncrypt(new_scheme, FLAGS_input_file.c_str(),
-                      FLAGS_output_file.c_str(), true)) {
+                      FLAGS_output_file.c_str(), false)) {
         printf("Encryption failed\n");
         return 1;
       } else {
