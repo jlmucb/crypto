@@ -92,6 +92,8 @@ void SymmetricCipher::PrintSymmetricKey() {
   if (cipher_name_ == nullptr) {
     printf("no cipher name\n");
     return;
+  } else {
+    printf("cipher name: %s\n", cipher_name_->c_str());
   }
   if (direction_ == ENCRYPT) {
     printf("encrypt\n");

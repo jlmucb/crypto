@@ -40,8 +40,18 @@ bool GAesCtr::Init(int size_iv, byte* iv, int bit_size_K, byte* K,
     return false;
 
   // initialize iv and key
-  direction_ = direction;
-  use_aesni_ = use_aesni;
+  direction_ = Aes::BOTH;
+  if (use_aesni) {
+    if (!aesni_.Init(bit_size_K, K, Aes::ENCRYPT)) {
+      LOG(ERROR) << "GAesCtr::Init aesni init fails";
+      return false;
+    }
+  } else {
+    if (!aes_.Init(bit_size_K, K, Aes::ENCRYPT)) {
+      LOG(ERROR) << "GAesCtr::Init aes init fails";
+      return false;
+    }
+  }
   memcpy(last_ctr_, iv, size_iv);
   memcpy(iv_, iv, size_iv);
 
@@ -53,13 +63,6 @@ bool GAesCtr::Init(int size_iv, byte* iv, int bit_size_K, byte* K,
 
   size_partial_ = 0;
   memset(partial_, 0, 16);
-  if (use_aesni_) {
-    if (!aesni_.Init(128, K, Aes::ENCRYPT))
-      return false;
-  } else {
-    if (!aes_.Init(128, K, Aes::ENCRYPT))
-      return false;
-  }
   return true;
 }
 
@@ -229,13 +232,15 @@ void AesGcm::PrintEncryptionAlgorithm() {
   if (*alg_name_ != "aes128-gcm128") {
     printf("Unknown encryption algorithm\n");
     return;
+  } else {
+    printf("encryption algorithm: aes128-gcm128\n");
   }
   if (UseNi()) {
     printf("using aesni\n");
-    GetAes()->PrintSymmetricKey();
+    GetAesNi()->PrintSymmetricKey();
   } else {
     printf("not using aesni\n");
-    GetAesNi()->PrintSymmetricKey();
+    GetAes()->PrintSymmetricKey();
   }
   printf("iv      : ");
   PrintBytes(Aes::BLOCKBYTESIZE, GetIv());
@@ -309,13 +314,13 @@ bool AesGcm::GenerateScheme(const char* name, int num_bits) {
 
 bool AesGcm::MakeScheme(const char* id, int num_bits,
                         byte* enc_key, byte* iv) {
+  alg_name_ = new string("aes128-gcm128");
+  message_id_ = new string(id);
   if (!Init(num_bits, enc_key, 128,
-                  96, iv, Aes::ENCRYPT, false)) {
+                  96, iv, Aes::BOTH, false)) {
     LOG(ERROR) << "AesGcm::MakeScheme: Init fails\n";
     return false;
   }
-  alg_name_ = new string("aes128-gcm128");
-  message_id_ = new string(id);
   initialized_ = true;
   GetAes()->cipher_name_ = new string("aes-128");
   return true;

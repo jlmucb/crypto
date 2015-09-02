@@ -550,6 +550,14 @@ AesGcm* GetAesGcm128(int size, byte* in) {
     printf("GetAesGcm128, can't deserialize\n");
     return nullptr;
   }
+printf("Test GetAesGcm128, iv: ");
+PrintBytes(16,  new_scheme->GetIv());
+printf("\n");
+  if (!new_scheme-> Init(128, new_scheme->GetAes()->key_, 128,
+            12, new_scheme->GetIv(), Aes::BOTH, false)) {
+    printf("GetAesGcm128, can't Init\n");
+    return nullptr;
+  }
   return new_scheme;
 }
 
