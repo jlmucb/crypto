@@ -670,7 +670,7 @@ TEST(Shift, ShiftTest) {
 
   for (int i = 0; i < 128; i++) {
     Shift(2, a, i, 4, c) ;
-    printf("%016llx%016llx << %03d = %016llx%016llx%016llx%016llx\n",
+    printf("%016lx%016lx << %03d = %016lx%016lx%016lx%016lx\n",
            a[1], a[0], i, c[3], c[2], c[1], c[0]);
   }
 }
@@ -695,7 +695,7 @@ TEST(MultPoly, MultPolyTest2) {
   memset(d, 0, 4 * sizeof(uint64_t));
 
   EXPECT_TRUE(MultPoly(2, c, 2, c, 4, d));
-  printf("%016llx%016llx**2 = %016llx%016llx%016llx%016llx\n",
+  printf("%016lx%016lx**2 = %016lx%016lx%016lx%016lx\n",
          c[1],c[0], d[3],d[2], d[1],d[0]);
 }
 
@@ -715,9 +715,9 @@ TEST(MultAndReduce, MultAndReduceTest1) {
   uint64_t p[3] = {0x87ULL, 0ULL, 1ULL};
 
   EXPECT_TRUE(MultAndReduce(2, A, 2, B, 3, p, 4, C));
-  printf("%016llx%016llx x %016llx%016llx = \n",
+  printf("%016lx%016lx x %016lx%016lx = \n",
           A[1], A[0], B[1], B[0]);
-  printf("%016llx%016llx%016llx%016llx\n",
+  printf("%016lx%016lx%016lx%016lx\n",
          C[3], C[2], C[1], C[0]);
   EXPECT_TRUE(C[0] == 0x87ULL && C[2] == 0ULL &&
               C[1] == 0ULL && C[3] == 0ULL);
@@ -730,7 +730,7 @@ TEST(MultAndReduce, MultAndReduceTest2) {
   memset(d, 0, 4 * sizeof(uint64_t));
 
   EXPECT_TRUE(MultAndReduce(2, c, 2, c, 3, p, 4, d));
-  printf("%016llx%016llx**2 (mod %016llx%016llx%016llx) = %016llx%016llx%016llx%016llx\n",
+  printf("%016lx%016lx**2 (mod %016lx%016lx%016lx) = %016lx%016lx%016lx%016lx\n",
          c[1],c[0], p[2], p[1],p[0], d[3],d[2], d[1],d[0]);
 }
 
@@ -959,7 +959,7 @@ int main(int an, char** av) {
     return 1;
   }
   cycles_per_second = CalibrateRdtsc();
-  printf("Cycles per second on this machine: %lld\n\n", cycles_per_second);
+  printf("Cycles per second on this machine: %ld\n\n", cycles_per_second);
   InitHashData();
   int result = RUN_ALL_TESTS();
   CloseUtilities();

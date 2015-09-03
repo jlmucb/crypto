@@ -841,7 +841,7 @@ bool raw_arith_tests() {
     if (DigitArrayComputedSize(size_c, c) != (i + 1)) {
       printf("DigitComputedSizeTest test %d failed (value: %d)\n", i,
              DigitArrayComputedSize(size_c, c));
-      printf("c[%d]= %llx\n", i, (uint64_t)c[i]);
+      printf("c[%d]= %lx\n", i, (uint64_t)c[i]);
       return false;
     }
     c[i] = 0ULL;
@@ -3447,7 +3447,7 @@ bool mont_arith_tests() {
   uint64_t r = BigHighBit(m);
 
 #if 0
-  printf("r: %lld\n", r);
+  printf("r: %ld\n", r);
 #endif
   if (!BigMontParams(m, r, m_prime)) {
     printf("BigMontParams fails\n");
@@ -4227,7 +4227,7 @@ int main(int an, char** av) {
     return 1;
   }
   cycles_per_second = CalibrateRdtsc();
-  printf("This computer has %llu cycles per second\n", cycles_per_second);
+  printf("This computer has %lu cycles per second\n", cycles_per_second);
   int result = RUN_ALL_TESTS();
   printf("\nTESTS ENDED\n");
   CloseUtilities();

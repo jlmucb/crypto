@@ -50,13 +50,9 @@ bool SymmetricCipher::SerializeSymmetricCipherToMessage(
     LOG(ERROR) << "SerializeSymmetricCipherToMessage: no key type\n";
     return false;
   }
-  if (strcmp(cipher_name_->c_str(), "aes-128") != 0) {
-    LOG(ERROR) << "SerializeSymmetricCipherToMessage: unhandled alg\n";
-    return false;
-  }
   message.set_key_type(*cipher_name_);
-  message.set_key_bit_size(128);
-  string* s = ByteToBase64LeftToRight(Aes::BLOCKBYTESIZE, key_);
+  message.set_key_bit_size(num_key_bits_);
+  string* s = ByteToBase64LeftToRight(num_key_bits_ / NBITSINBYTE, key_);
   if (s == nullptr) {
     LOG(ERROR) << "SerializeSymmetricCipherToMessage: can't build base64 key\n";
     return false;
@@ -78,9 +74,9 @@ bool SymmetricCipher::DeserializeSymmetricCipherFromMessage(
     LOG(ERROR) << "DeserializeSymmetricCipherToMessage: no key\n";
     return false;
   }
-  key_ = new byte[Aes::BLOCKBYTESIZE];
+  key_ = new byte[num_key_bits_ / NBITSINBYTE];
   if (Base64ToByteLeftToRight((char*)message.value().c_str(),
-                              Aes::BLOCKBYTESIZE, key_) < 0) {
+                              num_key_bits_ / NBITSINBYTE, key_) < 0) {
     LOG(ERROR)
         << "DeserializeSymmetricCipherToMessage: can't base64 encode key\n";
     return false;
