@@ -34,6 +34,19 @@ GAesCtr::GAesCtr() {
 GAesCtr::~GAesCtr() {
 }
 
+void GAesCtr::ProcessIv(int size_iv, byte* iv) {
+  size_iv = 12;
+  memset(last_ctr_, 0, 16);
+  memcpy(last_ctr_, iv, size_iv);
+  memcpy(iv_, iv, size_iv);
+
+  uint64_t x =  last_ctr_[1];
+  uint64_t y;
+  ReverseCpy(8, (byte*)&x, (byte*)&y);
+  y += 2;
+  ReverseCpy(8, (byte*)&y, (byte*)&last_ctr_[1]);
+}
+
 bool GAesCtr::Init(int size_iv, byte* iv, int bit_size_K, byte* K,
                    int direction, bool use_aesni) {
   if (bit_size_K != 128)
@@ -52,14 +65,7 @@ bool GAesCtr::Init(int size_iv, byte* iv, int bit_size_K, byte* K,
       return false;
     }
   }
-  memcpy(last_ctr_, iv, size_iv);
-  memcpy(iv_, iv, size_iv);
-
-  uint64_t x =  last_ctr_[1];
-  uint64_t y;
-  ReverseCpy(8, (byte*)&x, (byte*)&y);
-  y++;
-  ReverseCpy(8, (byte*)&y, (byte*)&last_ctr_[1]);
+  ProcessIv(size_iv, iv);
 
   size_partial_ = 0;
   memset(partial_, 0, 16);
@@ -180,6 +186,10 @@ bool AesGcm::Init(int bit_size_key, byte* key, int size_tag,
   return true;
 }
 
+void AesGcm::ProcessIv(int size_iv, byte* iv) {
+  aesctr_.ProcessIv(size_iv, iv);
+}
+
 bool AesGcm::AuthenticatedIn(int size_in, byte* in) {
   ghash_.AddAHash(size_in, in);
   return true;
@@ -269,6 +279,9 @@ bool AesGcm::MessageValid() {
   byte tag[16];
   if (!GetComputedTag(16, tag))
     return false;
+printf("Test Message valid\n");
+printf("Tag:         : "); PrintBytes(16, tag);printf("\n");
+printf("Received tag : "); PrintBytes(16, received_tag_);printf("\n");
   if (memcmp(received_tag_, tag, 16) == 0) {
     output_verified_ = true;
     return true;

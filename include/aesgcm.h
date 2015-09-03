@@ -51,6 +51,7 @@ public:
 
   bool Init(int size_iv, byte* iv, int bit_size_K, byte* K,
             int direction, bool use_aesni);
+  void ProcessIv(int size_iv, byte* iv);
   void EncryptBlock(uint64_t* in, uint64_t* out);
   void Encrypt(int size, byte* in, byte* out);
   void DecryptBlock(uint64_t* in, uint64_t* out);
@@ -83,6 +84,7 @@ private:
             int size_iv, byte* iv,
             int direction, bool use_aesni);
   byte* GetIv(){return aesctr_.GetIv();}
+  void ProcessIv(int size_iv, byte* iv);
   AesNi* GetAesNi() { return aesctr_.GetAesNi(); }
   Aes* GetAes() { return aesctr_.GetAes(); }
   bool UseNi() { return aesctr_.UseNi(); }

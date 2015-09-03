@@ -1332,40 +1332,41 @@ bool AesGcmEncrypt(AesGcm* scheme, const char* inFile,
     return false;
   }
 
-  int k, m, n;
+  writer.Write(12, scheme->GetIv());
+  int k, n;
   byte in_buf[BUFSIZE];
   byte out_buf[BUFSIZE];
   bool final = false;
   int size = 0;
 
+printf("Test AesGcmEncrypt\n");
+printf("Iv               : "); PrintBytes(12, in_buf);
+printf("\n");
   for (;;) {
     k = reader.BytesLeftInFile();
-    if (k <= 0) {
-      m = reader.BytesLeftInFile();
-      n = reader.Read(m, in_buf);
+    if (k < BUFSIZE) {
+      n = reader.Read(k, in_buf);
       size = BUFSIZE;
       if (!scheme->FinalPlainIn(n, in_buf, &size, out_buf)) {
         printf("AesGcmEncrypt: encrypt_obj.FinalPlainIn failed\n");
         return false;
       }
-      writer.Write(size, out_buf);
       final = true;
     } else {
-      if (k < BUFSIZE)
-        m = k;
-      else
-        m = BUFSIZE;
-      n = reader.Read(m, in_buf);
+      n = reader.Read(BUFSIZE, in_buf);
       if (n < 0) {
         printf("AesGcmEncrypt: error reading file\n");
         break;
       }
       size = BUFSIZE;
       scheme->PlainIn(n, in_buf, &size, out_buf);
-      writer.Write(size, out_buf);
     }
+    writer.Write(size, out_buf);
     if (final) break;
   }
+  byte tag[16];
+  scheme->GetComputedTag(16, tag);
+  writer.Write(16, tag);
   reader.Close();
   writer.Close();
   return true;
@@ -1373,8 +1374,7 @@ bool AesGcmEncrypt(AesGcm* scheme, const char* inFile,
 
 bool AesGcmDecrypt(AesGcm* scheme, const char* inFile,
                 const char* outFile, bool aes_ni) {
-  printf("AesGcmDecrypt %s %s\n", inFile, outFile);
-
+printf("Test AesGcmDecrypt %s %s\n", inFile, outFile);
   ReadFile reader;
   WriteFile writer;
 
@@ -1387,43 +1387,48 @@ bool AesGcmDecrypt(AesGcm* scheme, const char* inFile,
     return false;
   }
 
-  int k, m, n;
+  int k, n;
   int size = 0;
   byte in_buf[BUFSIZE];
   byte out_buf[BUFSIZE];
   bool final = false;
 
-  int decrypt_min_final = scheme->MinimumFinalDecryptIn();
-
+  memset(in_buf, 0, 16);
+  n = reader.Read(12, in_buf);
+  if (n != 12) {
+    printf("AesGcmDecrypt: can't read iv\n");
+    return false;
+  }
+  scheme->ProcessIv(12, in_buf);
+printf("Test AesGcmDecrypt "); PrintBytes(12, in_buf);
   for (;;) {
-    k = reader.BytesLeftInFile() - decrypt_min_final;
-    if (k < Aes::BLOCKBYTESIZE) {
-      m = reader.BytesLeftInFile();
-      n = reader.Read(m, in_buf);
+    k = reader.BytesLeftInFile()-16;
+    if (k <= BUFSIZE) {
+      n = reader.Read(k, in_buf);
       size = BUFSIZE;
       final = true;
       if (!scheme->FinalCipherIn(n, in_buf, &size, out_buf)) {
         printf("AesGcmDecrypt: decrypt_obj.FinalCipherIn failed\n");
         return false;
       }
-      writer.Write(size, out_buf);
     } else {
-      if (k < BUFSIZE) {
-        m = (k / Aes::BLOCKBYTESIZE) * Aes::BLOCKBYTESIZE;
-      } else {
-        m = BUFSIZE;
-      }
-      n = reader.Read(m, in_buf);
+      n = reader.Read(BUFSIZE, in_buf);
       if (n < 0) {
         printf("AesGcmDecrypt: error reading file\n");
         break;
       }
       size = BUFSIZE;
       scheme->CipherIn(n, in_buf, &size, out_buf);
-      writer.Write(size, out_buf);
     }
+    writer.Write(size, out_buf);
     if (final) break;
   }
+  n = reader.Read(16, in_buf);
+  if (n != 16) {
+    printf("AesGcmDecrypt: can't read hash\n");
+    return false;
+  }
+  scheme->SetReceivedTag(16, in_buf);
   reader.Close();
   writer.Close();
 
