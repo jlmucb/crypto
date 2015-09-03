@@ -1339,9 +1339,6 @@ bool AesGcmEncrypt(AesGcm* scheme, const char* inFile,
   bool final = false;
   int size = 0;
 
-printf("Test AesGcmEncrypt\n");
-printf("Iv               : "); PrintBytes(12, in_buf);
-printf("\n");
   for (;;) {
     k = reader.BytesLeftInFile();
     if (k < BUFSIZE) {
@@ -1374,7 +1371,6 @@ printf("\n");
 
 bool AesGcmDecrypt(AesGcm* scheme, const char* inFile,
                 const char* outFile, bool aes_ni) {
-printf("Test AesGcmDecrypt %s %s\n", inFile, outFile);
   ReadFile reader;
   WriteFile writer;
 
@@ -1400,7 +1396,6 @@ printf("Test AesGcmDecrypt %s %s\n", inFile, outFile);
     return false;
   }
   scheme->ProcessIv(12, in_buf);
-printf("Test AesGcmDecrypt "); PrintBytes(12, in_buf);
   for (;;) {
     k = reader.BytesLeftInFile()-16;
     if (k <= BUFSIZE) {
