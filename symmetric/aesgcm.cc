@@ -202,6 +202,7 @@ bool AesGcm::FinalAuthenticatedIn(int size_in, byte* in) {
 
 bool AesGcm::FinalPlainIn(int size_in, byte* in, int* size_out,
                           byte* out) {
+  // TODO(jlm): fix partial buffer
   if (size_in > 0)
     PlainIn(size_in, in, size_out, out);
   ghash_.FinalC();
@@ -218,6 +219,7 @@ bool AesGcm::PlainIn(int size_in, byte* in, int* size_out,
 
 bool AesGcm::FinalCipherIn(int size_in, byte* in, int* size_out,
                            byte* out) {
+  // TODO(jlm): fix partial buffer
   CipherIn(size_in, in, size_out, out);
   ghash_.FinalC();
   return true;
