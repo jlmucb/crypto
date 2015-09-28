@@ -84,10 +84,15 @@ string* BigConvertToHex(BigNum& a) {
 
 BigNum* BigConvertFromHex(const char* in) {
   int k = strlen(in);
-  int m = ((k + 31) / 16) * 16 + 1;
+  int m = ((k + 31) / 16) + 1;
   BigNum* n = new BigNum(m);
 
   n->size_ = DigitArrayConvertFromHex(in, n->capacity_, n->value_);
+  if (n->size_ < 0) {
+    LOG(ERROR) << "DigitArrayConvertFromHex failed in BigConvertFromHex";
+    delete n;
+    return nullptr;
+  }
   return n;
 }
 

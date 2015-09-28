@@ -52,7 +52,7 @@
 
 using std::string;
 
-int num_cryptutil_ops = 26;
+int num_cryptutil_ops = 28;
 std::string cryptutil_ops[] = {
     "--operation=ToBase64 --direction=[left-right|right-left] " \
     "--input_file=file --output_file=file",
@@ -100,6 +100,10 @@ std::string cryptutil_ops[] = {
     "--pass=password --input_file=file --output_file=file",
     "--operation=VerifyMac --algorithm=alg --keyfile=file --input_file=file " \
     "--input2_file=file",
+    "--operation=ToHexBuf --direction=[left-right|right-left] --input_file=file " \
+    "--output_file=file",
+    "--operation=FromHexBuf --direction=[left-right|right-left] --input_file=file " \
+    "--output_file=file",
 };
 
 const int num_cryptutil_algs = 23;
@@ -336,7 +340,7 @@ bool keysFromPassPhrase(const char* phrase, int* size, byte* key) {
 
 const char* extractString(int size, byte* in) {
   int i;
-  char out[size + 1];
+  char* out = new char[size + 1];
 
   memset(out, 0, size + 1);
   for (i = 0; i < size; i++) {
@@ -344,10 +348,15 @@ const char* extractString(int size, byte* in) {
     if (in[i] == (byte)'\n' || in[i] == (byte)'\r' || in[i] == (byte)'\t' ||
         in[i] == 0) {
       in[i] = 0;
-      return strdup(out);
+      char* str = strdup(out);
+      delete out;
+      return str;
     }
   }
-  return strdup(out);
+  in[i] = 0;
+  char* str = strdup(out);
+  delete out;
+  return str;
 }
 
 double convertDuration(const char* code) {
@@ -1770,6 +1779,32 @@ int main(int an, char** av) {
     printf("Decimal: %s\n", str->c_str());
     delete out;
     if (str != nullptr) delete str;
+  } else if ("FromHexBuf" == FLAGS_operation) {
+    int size = 0;
+    byte* in = nullptr;
+
+    if (!ReadaFile(FLAGS_input_file.c_str(), &size, &in)) {
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
+      return 1;
+    }
+    if (in == nullptr) {
+      printf("bad buffer\n");
+      return 1;
+    }
+    const char* str = extractString(size, in);
+    byte* out = new byte [(size + 1) / 2];
+    byte b1, b2;
+    const char* p = str;
+    int i = 0;
+    while (*p != '\0' && *p != '\n') {
+      b1 = HexToValue(*(p++));
+      b2 = HexToValue(*(p++));
+      out[i++] = (b1 << 4) | b2;
+    }
+    WriteaFile(FLAGS_output_file.c_str(), i, out);
+    delete in;
+    delete out;
+  } else if ("ToHexBuf" == FLAGS_operation) {
   } else if ("FromHex" == FLAGS_operation) {
     int size = 0;
     byte* out = nullptr;
@@ -1782,10 +1817,23 @@ int main(int an, char** av) {
       printf("bad buffer\n");
       return 1;
     }
+
+    if (FLAGS_direction == "right-to-left") {
+      byte* tmp = new byte[size];
+      memset(tmp, 0, size);
+      if (out[size-1] =='\n') {
+        ReverseCpy(size-1, out, tmp);
+        tmp[size-1]= '\n';
+      } else
+        ReverseCpy(size, out, tmp);
+      memcpy(out, tmp, size);
+      delete tmp;
+    }
+
     const char* str = extractString(size, out);
     BigNum* n = BigConvertFromHex(str);
     n->Normalize();
-    WriteaFile(FLAGS_input_file.c_str(), sizeof(uint64_t) * n->size_,
+    WriteaFile(FLAGS_output_file.c_str(), sizeof(uint64_t) * n->size_,
                (byte*)n->value_);
     delete n;
   } else if ("FromDecimal" == FLAGS_operation) {

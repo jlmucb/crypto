@@ -889,14 +889,16 @@ int DigitArrayConvertFromHex(const char* s, int size_a, uint64_t* a) {
   uint64_t x;
   int real_size_a;
 
-  if (16 * size_a < n)
+  if (16 * size_a < n) {
+    LOG(ERROR) << "number size too small for hex";
     return -1;
+  }
   DigitArrayZeroNum(size_a, a);
   while (n > 0) {
     b = HexToValue(*(p++));
     x = (uint64_t)b;
     real_size_a = DigitArrayComputedSize(size_a, a);
-    DigitArrayMultBy(size_a, real_size_a, a, x);
+    DigitArrayMultBy(size_a, real_size_a, a, 16ULL);
     real_size_a = DigitArrayComputedSize(size_a, a);
     DigitArrayAddTo(size_a, real_size_a, a, 1, &x);
     n--;

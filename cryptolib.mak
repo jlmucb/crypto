@@ -37,7 +37,7 @@ O= $(OBJ_DIR)/cryptolib
 INCLUDE= -I$(SRC_DIR)/include -I/usr/local/include -I$(SRC_DIR)/keys -I$(GOOGLE_INCLUDE) 
 
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
-CFLAGS1=$(INCLUDE) -O3 -g -Wall -std=c++11
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
 
 #include OSName
 ifdef YOSEMITE

@@ -438,6 +438,7 @@ bool ReadaFile(const char* filename, int* size, byte** out) {
     return false;
   int num_bytes = file_desc.BytesInFile();
   byte* buf = new byte[num_bytes];
+  memset(buf, 0, num_bytes);
   if (file_desc.Read(num_bytes, buf) != num_bytes) {
     delete buf;
     return false;
