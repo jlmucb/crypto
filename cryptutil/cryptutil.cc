@@ -1792,7 +1792,7 @@ int main(int an, char** av) {
       return 1;
     }
     const char* str = extractString(size, in);
-    byte* out = new byte [(size + 1) / 2];
+    byte* out = new byte [strlen(str) / 2];
     byte b1, b2;
     const char* p = str;
     int i = 0;
