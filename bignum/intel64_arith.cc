@@ -565,7 +565,13 @@ int DigitArrayMultBy(int capacity_a, int size_a, uint64_t* a, uint64_t x) {
       "\t.balign  16\n"
       "1:\n"
       "\tmovq   (%%rcx), %%rax\n"
+#if 1
+      "\tmovq   %[x], %%r9\n"
+      "\tmulq   %%r9\n"
+#else
+      // OSX has a problem with this.
       "\tmulq   %[x]\n"
+#endif
       "\taddq   %%r8,%%rax\n"
       "\tmovq   $0, %%r8\n"
       "\tjnc    2f\n"
@@ -580,7 +586,7 @@ int DigitArrayMultBy(int capacity_a, int size_a, uint64_t* a, uint64_t x) {
       "\tjg     1b\n"
       "\tmovq   %%r8,(%%rcx)\n"
       ::[a] "g"(a), [x] "g"(x), [size_a] "g"(size_a)
-      : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx", "%r8");
+      : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9");
 
   return DigitArrayComputedSize(size_a, a);
 }
