@@ -327,7 +327,13 @@ bool keysFromPassPhrase(const char* phrase, int* size, byte* key) {
   if (*size < 32) {
     printf("keysFromPassPhrase (%d): buffer too small, %s\n", *size, phrase);
   }
-  // TODO: change to hkdf later
+#if 0
+  const char* salt = "JLM1";
+  if (!pbkdf2(phrase, strlen(salt), (byte*)salt, 32, *size, key)) {
+    printf("Can't pbkdf2 failed\n");
+    return false;
+  }
+#else
   the_hash.Init();
   const char* salt = "JLM1";
   the_hash.AddToHash(strlen(salt), (byte*)salt);
@@ -335,6 +341,7 @@ bool keysFromPassPhrase(const char* phrase, int* size, byte* key) {
   the_hash.Final();
   the_hash.GetDigest(the_hash.DIGESTBYTESIZE, key);
   *size = the_hash.DIGESTBYTESIZE;
+#endif
   return true;
 }
 
@@ -559,9 +566,9 @@ AesGcm* GetAesGcm128(int size, byte* in) {
     printf("GetAesGcm128, can't deserialize\n");
     return nullptr;
   }
-printf("Test GetAesGcm128, iv: ");
-PrintBytes(16,  new_scheme->GetIv());
-printf("\n");
+  printf("Test GetAesGcm128, iv: ");
+  PrintBytes(16,  new_scheme->GetIv());
+  printf("\n");
   if (!new_scheme-> Init(128, new_scheme->GetAes()->key_, 128,
             12, new_scheme->GetIv(), Aes::BOTH, false)) {
     printf("GetAesGcm128, can't Init\n");
@@ -2685,11 +2692,31 @@ int main(int an, char** av) {
       printf("unsupported alg\n");
     }
   } else if ("SignDigestWithKey" == FLAGS_operation) {
-    int size = 0;
-    byte* out = nullptr;
-    if (!ReadaFile(FLAGS_key_file.c_str(), &size, &out)) {
+    int key_size = 0;
+    byte* key_in= nullptr;
+    if (!ReadaFile(FLAGS_key_file.c_str(), &key_size, &key_in)) {
       return 1;
     }
+    RsaKey* key = GetRsaKey(key_size, key_in);
+    if (key == nullptr) {
+      printf("Can't new rsa-key\n");
+      return 1;
+    }
+
+    int size_hash = 32;
+    byte hash[128];
+
+    // hash file
+    hashFile(FLAGS_input_file.c_str(), "sha-256", &size_hash, hash);
+   
+    int size_sig = 256;
+    byte signature[256];
+ 
+    if (!RsaSign(key, "sha-256", hash, signature)) {
+      printf("signing fails\n");
+      return 1;
+    }
+    WriteaFile(FLAGS_output_file.c_str(), size_sig, signature);
   } else if ("VerifyDigestWithKey" == FLAGS_operation) {
     int size = 0;
     byte* out = nullptr;
@@ -2697,8 +2724,29 @@ int main(int an, char** av) {
     if (!ReadaFile(FLAGS_key_file.c_str(), &size, &out)) {
       return 1;
     }
+    RsaKey* key = GetRsaKey(size, out);
+    if (key == nullptr) {
+      printf("Can't new rsa-key\n");
+      return 1;
+    }
+    // read hash
+    byte* hash = nullptr;
+    int size_hash = 32;
+    if (!ReadaFile(FLAGS_input2_file.c_str(), &size_hash, &hash)) {
+      return 1;
+    }
+    // read input
+    byte* input = nullptr;
+    int size_in = 0;
+    if (!ReadaFile(FLAGS_input_file.c_str(), &size_in, &input)) {
+      return 1;
+    }
 
-    // bool RsaVerify(RsaKey* key, const char* hashalg, byte* hash, byte* input)
+    if(RsaVerify(key, FLAGS_algorithm.c_str(), hash, input)) {
+      printf("Signature verifies\n");
+    } else {
+      printf("Signature does not verify\n");
+    }
   } else {
     printf("%s: unsupported operation\n", FLAGS_operation.c_str());
   }
