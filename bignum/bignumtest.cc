@@ -3696,13 +3696,16 @@ bool rsa_tests() {
   memset(out, 0, 256);
   memset(new_out, 0, 256);
   in[0] = 2;
+
+  printf("Slow encrypt\n");
+
   int size_out = 256;
-  if (!rsa_key2->Encrypt(128, in, &size_out, out)) {
+  if (!rsa_key2->Encrypt(128, in, &size_out, out, 0)) {
     printf("rsa Encrypt failed\n");
     return false;
   }
   size_out = 256;
-  if (!rsa_key2->Decrypt(128, out, &size_out, new_out)) {
+  if (!rsa_key2->Decrypt(128, out, &size_out, new_out, 0)) {
     printf("rsa Decrypt failed\n");
     return false;
   }
@@ -3712,7 +3715,7 @@ bool rsa_tests() {
   printf("out: ");
   PrintBytes(size_out, out);
   printf("\n");
-  printf("new_out: ");
+  printf("new_out (%d): ", size_out);
   PrintBytes(size_out, new_out);
   printf("\n");
   if (memcmp(in, new_out, size_out) != 0) {
