@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// Project: New Cloudproxy Crypto
 // File: hashtest.cc
 
 #include "cryptotypes.h"
@@ -32,6 +31,9 @@
 #include "pbkdf.h"
 #include "ghash.h"
 #include <cmath>
+
+DEFINE_bool(printall, false, "printall flag");
+
 
 uint64_t cycles_per_second = 10;
 
@@ -170,15 +172,18 @@ bool SimpleSha1Test1() {
   if (!my_hash.GetDigest(20, (byte*)test1_digest)) {
     return false;
   }
-  printf("\tInput        : ");
-  PrintBytes(sha1_test1_sizetoHash, (byte*)sha1_test1_toHash);
-  printf("\n");
-  printf("\tComputed hash: ");
-  PrintBytes(20, (byte*)test1_digest);
-  printf("\n");
-  printf("\tCorrect hash:  ");
-  PrintBytes(20, (byte*)sha1_test1_answer);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("\tInput        : ");
+    PrintBytes(sha1_test1_sizetoHash, (byte*)sha1_test1_toHash);
+    printf("\n");
+    printf("\tComputed hash: ");
+    PrintBytes(20, (byte*)test1_digest);
+    printf("\n");
+    printf("\tCorrect hash:  ");
+    PrintBytes(20, (byte*)sha1_test1_answer);
+    printf("\n");
+    printf("\n");
+  }
   if (memcmp((byte*)test1_digest, (byte*)sha1_test1_answer, 20) != 0)
     return false;
 
@@ -190,15 +195,18 @@ bool SimpleSha1Test1() {
   if (!my_hash.GetDigest(20, (byte*)test2_digest)) {
     return false;
   }
-  printf("\tInput        : ");
-  PrintBytes(sha1_test2_sizetoHash, (byte*)sha1_test2_toHash);
-  printf("\n");
-  printf("\tComputed hash: ");
-  PrintBytes(20, (byte*)test2_digest);
-  printf("\n");
-  printf("\tCorrect hash:  ");
-  PrintBytes(20, (byte*)sha1_test2_answer);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("\tInput        : ");
+    PrintBytes(sha1_test2_sizetoHash, (byte*)sha1_test2_toHash);
+    printf("\n");
+    printf("\tComputed hash: ");
+    PrintBytes(20, (byte*)test2_digest);
+    printf("\n");
+    printf("\tCorrect hash:  ");
+    PrintBytes(20, (byte*)sha1_test2_answer);
+    printf("\n");
+    printf("\n");
+  }
   if (memcmp((byte*)test2_digest, (byte*)sha1_test2_answer, 20) != 0)
     return false;
   return true;
@@ -219,15 +227,18 @@ bool SimpleSha3Test() {
   if (!my_hash.GetDigest(128, digest)) {
     return false;
   }
-  printf("\tInput        : ");
-  PrintBytes(sizeof(sha3_input1), (byte*)sha3_input1);
-  printf("\n");
-  printf("\tComputed hash: ");
-  PrintBytes(128, digest);
-  printf("\n");
-  printf("\tCorrect hash:  ");
-  PrintBytes(128, (byte*)sha3_output1);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("\tInput        : ");
+    PrintBytes(sizeof(sha3_input1), (byte*)sha3_input1);
+    printf("\n");
+    printf("\tComputed hash: ");
+    PrintBytes(128, digest);
+    printf("\n");
+    printf("\tCorrect hash:  ");
+    PrintBytes(128, (byte*)sha3_output1);
+    printf("\n");
+    printf("\n");
+  }
   if (memcmp((byte*)sha3_output1, digest, 128) != 0) return false;
 
   memset(digest, 0, 128);
@@ -239,15 +250,18 @@ bool SimpleSha3Test() {
   if (!my_hash.GetDigest(128, digest)) {
     return false;
   }
-  printf("\tInput        : ");
-  PrintBytes(sizeof(sha3_input128), (byte*)sha3_input128);
-  printf("\n");
-  printf("\tComputed hash: ");
-  PrintBytes(128, digest);
-  printf("\n");
-  printf("\tCorrect hash:  ");
-  PrintBytes(128, (byte*)sha3_output128);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("\tInput        : ");
+    PrintBytes(sizeof(sha3_input128), (byte*)sha3_input128);
+    printf("\n");
+    printf("\tComputed hash: ");
+    PrintBytes(128, digest);
+    printf("\n");
+    printf("\tCorrect hash:  ");
+    PrintBytes(128, (byte*)sha3_output128);
+    printf("\n");
+    printf("\n");
+  }
   if (memcmp((byte*)sha3_output128, digest, 128) != 0) return false;
 
   memset(digest, 0, 128);
@@ -259,15 +273,17 @@ bool SimpleSha3Test() {
   if (!my_hash.GetDigest(128, digest)) {
     return false;
   }
-  printf("\tInput        : ");
-  PrintBytes(sizeof(sha3_input255), (byte*)sha3_input255);
-  printf("\n");
-  printf("\tComputed hash: ");
-  PrintBytes(128, digest);
-  printf("\n");
-  printf("\tCorrect hash:  ");
-  PrintBytes(128, (byte*)sha3_output255);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("\tInput        : ");
+    PrintBytes(sizeof(sha3_input255), (byte*)sha3_input255);
+    printf("\n");
+    printf("\tComputed hash: ");
+    PrintBytes(128, digest);
+    printf("\n");
+    printf("\tCorrect hash:  ");
+    PrintBytes(128, (byte*)sha3_output255);
+    printf("\n");
+  }
   if (memcmp((byte*)sha3_output255, digest, 128) != 0) return false;
 
   return true;
@@ -283,22 +299,24 @@ bool SimpleSha256Test1() {
   if (!my_hash.Init()) {
     return false;
   }
-  printf("SimpleSha256Test1 initialized\n");
   my_hash.AddToHash(sha256_test1_sizetoHash, sha256_test1_toHash);
   my_hash.Final();
   if (!my_hash.GetDigest(32, (byte*)test1_digest)) {
     printf("GetDigest SimpleSha256Test1 failed\n");
     return false;
   }
-  printf("\tInput        : ");
-  PrintBytes(sha256_test1_sizetoHash, (byte*)sha256_test1_toHash);
-  printf("\n");
-  printf("\tComputed hash: ");
-  PrintBytes(32, (byte*)test1_digest);
-  printf("\n");
-  printf("\tCorrect hash:  ");
-  PrintBytes(32, (byte*)sha256_test1_answer);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("\tInput        : ");
+    PrintBytes(sha256_test1_sizetoHash, (byte*)sha256_test1_toHash);
+    printf("\n");
+    printf("\tComputed hash: ");
+    PrintBytes(32, (byte*)test1_digest);
+    printf("\n");
+    printf("\tCorrect hash:  ");
+    PrintBytes(32, (byte*)sha256_test1_answer);
+    printf("\n");
+    printf("\n");
+  }
   if (memcmp((byte*)test1_digest, (byte*)sha256_test1_answer, 32) != 0) {
     printf("SimpleSha256Test1 comparison failed\n");
     return false;
@@ -312,15 +330,18 @@ bool SimpleSha256Test1() {
   if (!my_hash.GetDigest(32, (byte*)test2_digest)) {
     return false;
   }
-  printf("\tInput        : ");
-  PrintBytes(sha256_test2_sizetoHash, (byte*)sha256_test2_toHash);
-  printf("\n");
-  printf("\tComputed hash: ");
-  PrintBytes(32, (byte*)test2_digest);
-  printf("\n");
-  printf("\tCorrect hash:  ");
-  PrintBytes(32, (byte*)sha256_test2_answer);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("\tInput        : ");
+    PrintBytes(sha256_test2_sizetoHash, (byte*)sha256_test2_toHash);
+    printf("\n");
+    printf("\tComputed hash: ");
+    PrintBytes(32, (byte*)test2_digest);
+    printf("\n");
+    printf("\tCorrect hash:  ");
+    PrintBytes(32, (byte*)sha256_test2_answer);
+    printf("\n");
+    printf("\n");
+  }
   if (memcmp((byte*)test2_digest, (byte*)sha256_test2_answer, 32) != 0)
     return false;
 
@@ -332,15 +353,18 @@ bool SimpleSha256Test1() {
   if (!my_hash.GetDigest(32, (byte*)test3_digest)) {
     return false;
   }
-  printf("\tInput        : ");
-  PrintBytes(sha256_test3_sizetoHash, (byte*)sha256_test3_toHash);
-  printf("\n");
-  printf("\tComputed hash: ");
-  PrintBytes(32, (byte*)test3_digest);
-  printf("\n");
-  printf("\tCorrect hash:  ");
-  PrintBytes(32, (byte*)sha256_test3_answer);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("\tInput        : ");
+    PrintBytes(sha256_test3_sizetoHash, (byte*)sha256_test3_toHash);
+    printf("\n");
+    printf("\tComputed hash: ");
+    PrintBytes(32, (byte*)test3_digest);
+    printf("\n");
+    printf("\tCorrect hash:  ");
+    PrintBytes(32, (byte*)sha256_test3_answer);
+    printf("\n");
+    printf("\n");
+  }
   if (memcmp((byte*)test3_digest, (byte*)sha256_test3_answer, 32) != 0)
     return false;
 
@@ -358,9 +382,11 @@ bool pkcsTest() {
     printf("PkcsEncode failed\n");
     return false;
   }
-  printf("encoded hash: ");
-  PrintBytes(256, out);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("encoded hash: ");
+    PrintBytes(256, out);
+    printf("\n");
+  }
   if (!PkcsVerify("sha-256", in, 256, out)) {
     printf("PkcsVerify failed\n");
     return false;
@@ -371,16 +397,20 @@ bool pkcsTest() {
     printf("PkcsEmbed failed\n");
     return false;
   }
-  printf("embedded message: ");
-  PrintBytes(256, out);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("embedded message: ");
+    PrintBytes(256, out);
+    printf("\n");
+  }
   if (!PkcsExtract(256, out, &new_out_size, new_out)) {
     printf("PkcsExtract failed\n");
     return false;
   }
-  printf("retrieved message: ");
-  PrintBytes(new_out_size, new_out);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("retrieved message: ");
+    PrintBytes(new_out_size, new_out);
+    printf("\n");
+  }
   if (new_out_size != 64 || memcmp(new_out, in, new_out_size) != 0)
     return false;
   return true;
@@ -504,9 +534,11 @@ bool pbkdfTest() {
     printf("pbkdf2 failed\n");
     return false;
   }
-  printf("password derived key: ");
-  PrintBytes(80, out);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("password derived key: ");
+    PrintBytes(80, out);
+    printf("\n");
+  }
   return true;
 }
 
@@ -566,23 +598,25 @@ bool SimpleHmacSha256Test1() {
     printf("gethmac failed\n");
     return false;
   }
-  printf("\tMac key     : ");
-  PrintBytes(hmacsha256_test1_keysize, (byte*)hmacsha256_test1_key);
-  printf("\n");
-  printf("\tMac input   : ");
-  PrintBytes(hmacsha256_test1_size_input, hmacsha256_test1_input);
-  printf("\n");
-  printf("\tComputed mac: ");
-  PrintBytes(32, (byte*)test1_hmac);
-  printf("\n");
-  printf("\tCorrect mac : ");
-  PrintBytes(32, (byte*)hmacsha256_test1_mac);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("\tMac key     : ");
+    PrintBytes(hmacsha256_test1_keysize, (byte*)hmacsha256_test1_key);
+    printf("\n");
+    printf("\tMac input   : ");
+    PrintBytes(hmacsha256_test1_size_input, hmacsha256_test1_input);
+    printf("\n");
+    printf("\tComputed mac: ");
+    PrintBytes(32, (byte*)test1_hmac);
+    printf("\n");
+    printf("\tCorrect mac : ");
+    PrintBytes(32, (byte*)hmacsha256_test1_mac);
+    printf("\n");
+    printf("\n");
+  }
   if (memcmp((byte*)test1_hmac, (byte*)hmacsha256_test1_mac, 32) != 0) {
     printf("SimpleHmacSha256Test1 comparison failed\n");
     fRet = false;
   }
-  printf("\n");
 
   printf("SimpleHmacSha256Test2\n");
   if (!my_mac.Init(hmacsha256_test2_keysize, hmacsha256_test2_key)) {
@@ -595,18 +629,21 @@ bool SimpleHmacSha256Test1() {
     printf("gethmac failed\n");
     return false;
   }
-  printf("\tMac key     : ");
-  PrintBytes(hmacsha256_test2_keysize, (byte*)hmacsha256_test2_key);
-  printf("\n");
-  printf("\tMac input   : ");
-  PrintBytes(hmacsha256_test2_size_input, hmacsha256_test2_input);
-  printf("\n");
-  printf("\tComputed mac: ");
-  PrintBytes(32, (byte*)test2_hmac);
-  printf("\n");
-  printf("\tCorrect mac : ");
-  PrintBytes(32, (byte*)hmacsha256_test2_mac);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("\tMac key     : ");
+    PrintBytes(hmacsha256_test2_keysize, (byte*)hmacsha256_test2_key);
+    printf("\n");
+    printf("\tMac input   : ");
+    PrintBytes(hmacsha256_test2_size_input, hmacsha256_test2_input);
+    printf("\n");
+    printf("\tComputed mac: ");
+    PrintBytes(32, (byte*)test2_hmac);
+    printf("\n");
+    printf("\tCorrect mac : ");
+    PrintBytes(32, (byte*)hmacsha256_test2_mac);
+    printf("\n");
+    printf("\n");
+  }
   if (memcmp((byte*)test2_hmac, (byte*)hmacsha256_test2_mac, 32) != 0) {
     printf("SimpleHmacSha256Test1 comparison failed\n");
     fRet = false;
@@ -624,18 +661,21 @@ bool SimpleHmacSha256Test1() {
     printf("gethmac failed\n");
     return false;
   }
-  printf("\tMac key     : ");
-  PrintBytes(hmacsha256_test3_keysize, (byte*)hmacsha256_test3_key);
-  printf("\n");
-  printf("\tMac input   : ");
-  PrintBytes(hmacsha256_test3_size_input, hmacsha256_test3_input);
-  printf("\n");
-  printf("\tComputed mac: ");
-  PrintBytes(32, (byte*)test3_hmac);
-  printf("\n");
-  printf("\tCorrect mac : ");
-  PrintBytes(32, (byte*)hmacsha256_test3_mac);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("\tMac key     : ");
+    PrintBytes(hmacsha256_test3_keysize, (byte*)hmacsha256_test3_key);
+    printf("\n");
+    printf("\tMac input   : ");
+    PrintBytes(hmacsha256_test3_size_input, hmacsha256_test3_input);
+    printf("\n");
+    printf("\tComputed mac: ");
+    PrintBytes(32, (byte*)test3_hmac);
+    printf("\n");
+    printf("\tCorrect mac : ");
+    PrintBytes(32, (byte*)hmacsha256_test3_mac);
+    printf("\n");
+    printf("\n");
+  }
   if (memcmp((byte*)test3_hmac, (byte*)hmacsha256_test3_mac, 32) != 0) {
     printf("SimpleHmacSha256Test1 comparison failed\n");
     fRet = false;
@@ -670,8 +710,10 @@ TEST(Shift, ShiftTest) {
 
   for (int i = 0; i < 128; i++) {
     Shift(2, a, i, 4, c) ;
-    printf("%016llx%016llx << %03d = %016llx%016llx%016llx%016llx\n",
+    if (FLAGS_printall) {
+      printf("%016llx%016llx << %03d = %016llx%016llx%016llx%016llx\n",
            a[1], a[0], i, c[3], c[2], c[1], c[0]);
+    }
   }
 }
 
@@ -695,8 +737,10 @@ TEST(MultPoly, MultPolyTest2) {
   memset(d, 0, 4 * sizeof(uint64_t));
 
   EXPECT_TRUE(MultPoly(2, c, 2, c, 4, d));
-  printf("%016llx%016llx**2 = %016llx%016llx%016llx%016llx\n",
+  if (FLAGS_printall) {
+    printf("%016llx%016llx**2 = %016llx%016llx%016llx%016llx\n",
          c[1],c[0], d[3],d[2], d[1],d[0]);
+  }
 }
 
 TEST(Reduce, ReduceTest) {
@@ -715,10 +759,12 @@ TEST(MultAndReduce, MultAndReduceTest1) {
   uint64_t p[3] = {0x87ULL, 0ULL, 1ULL};
 
   EXPECT_TRUE(MultAndReduce(2, A, 2, B, 3, p, 4, C));
-  printf("%016llx%016llx x %016llx%016llx = \n",
+  if (FLAGS_printall) {
+    printf("%016llx%016llx x %016llx%016llx = \n",
           A[1], A[0], B[1], B[0]);
-  printf("%016llx%016llx%016llx%016llx\n",
+    printf("%016llx%016llx%016llx%016llx\n",
          C[3], C[2], C[1], C[0]);
+  }
   EXPECT_TRUE(C[0] == 0x87ULL && C[2] == 0ULL &&
               C[1] == 0ULL && C[3] == 0ULL);
 }
@@ -730,8 +776,10 @@ TEST(MultAndReduce, MultAndReduceTest2) {
   memset(d, 0, 4 * sizeof(uint64_t));
 
   EXPECT_TRUE(MultAndReduce(2, c, 2, c, 3, p, 4, d));
-  printf("%016llx%016llx**2 (mod %016llx%016llx%016llx) = %016llx%016llx%016llx%016llx\n",
+  if (FLAGS_printall) {
+    printf("%016llx%016llx**2 (mod %016llx%016llx%016llx) = %016llx%016llx%016llx%016llx\n",
          c[1],c[0], p[2], p[1],p[0], d[3],d[2], d[1],d[0]);
+  }
 }
 
 
@@ -847,8 +895,10 @@ TEST(Ghash, GhashTest7) {
   uint64_t out[2];
   hash.get_last_x(out);
   
-  printf("X1        : "); PrintBytes(16, (byte*)out); printf("\n");
-  printf("Correct X1: "); PrintBytes(16, X1); printf("\n");
+  if (FLAGS_printall) {
+    printf("X1        : "); PrintBytes(16, (byte*)out); printf("\n");
+    printf("Correct X1: "); PrintBytes(16, X1); printf("\n");
+  }
   EXPECT_TRUE(memcmp(X1, (byte*) out, 16) == 0);
 }
 
@@ -954,6 +1004,11 @@ DEFINE_string(log_file, "hashtest.log", "hashtest log file name");
 
 int main(int an, char** av) {
   ::testing::InitGoogleTest(&an, av);
+#ifdef __linux__
+  gflags::ParseCommandLineFlags(&an, &av, true);
+#else
+  google::ParseCommandLineFlags(&an, &av, true);
+#endif
   if (!InitUtilities(FLAGS_log_file.c_str())) {
     printf("InitUtilities() failed\n");
     return 1;
