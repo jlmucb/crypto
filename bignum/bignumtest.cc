@@ -235,7 +235,7 @@ bool simpletest() {
     printf("\n");
   }
   if (DigitArrayCompare(4, test_r2, 4, test_c) != 0) {
-    printf("Add21 failed\n");
+    printf("Add2 failed\n");
     return false;
   }
 
@@ -307,10 +307,9 @@ bool simpletest() {
   }
   if (FLAGS_printall) {
     TempPrintNum(real_size_test_t, test_t);
-    printf("/ %lx= \n", (unsigned long)b);
+    printf(" / %lx= ", (unsigned long)b);
     TempPrintNum(n, test_c);
-    printf(" remainder: %lx\n", (unsigned long)t);
-    printf("\n");
+    printf(", remainder: %lx\n", (unsigned long)t);
     printf("\n");
   }
   if (DigitArrayCompare(3, test_r4, 3, test_c) != 0 || t != 0x01ULL) {
@@ -326,7 +325,7 @@ bool simpletest() {
   uint64_t est = 0ULL;
   EstimateQuotient(a1, a2, a3, b1, b2, &est);
   if (FLAGS_printall) {
-    printf("\nEstimateQuotient\n");
+    printf("EstimateQuotient\n");
     printf("a1: %016lx, a2: %016lx, a3: %016lx\n", (unsigned long)a1,
            (unsigned long)a2, (unsigned long)a3);
     printf("b1: %016lx, b2: %016lx\n", (unsigned long)b1, (unsigned long)b2);
@@ -354,9 +353,7 @@ bool simpletest() {
     printf("DigitArrayShortDivisionAlgorithm failed\n");
     return false;
   }
-  if (DigitArrayComputedSize(size_test_c, test_c) != 3 || test_c[0] != 1ULL ||
-      test_c[1] != 0ULL || test_c[2] != 1ULL ||
-      DigitArrayComputedSize(size_test_z, test_z) != 1 || test_z[0] != 0ULL) {
+  if (FLAGS_printall) {
     TempPrintNum(real_size_d2, test_d2);
     printf("\n");
     printf("/ ");
@@ -369,6 +366,11 @@ bool simpletest() {
     TempPrintNum(m, test_z);
     printf("\n");
     printf("\n");
+  }
+  if (DigitArrayComputedSize(size_test_c, test_c) != 3 || test_c[0] != 1ULL ||
+      test_c[1] != 0ULL || test_c[2] != 1ULL ||
+      DigitArrayComputedSize(size_test_z, test_z) != 1 || test_z[0] != 0ULL) {
+    printf("DigitArrayShortDivisionAlgorithm\n");
     return false;
   }
 
@@ -412,8 +414,7 @@ bool simpletest() {
 
   DigitArrayZeroNum(size_test_c, test_c);
   m = size_test_c;
-  DigitArrayShortDivisionAlgorithm(real_size_test_x, test_x, a1, &m, test_c,
-                                   &a2);
+  DigitArrayShortDivisionAlgorithm(real_size_test_x, test_x, a1, &m, test_c, &a2);
   if (FLAGS_printall) {
     TempPrintNum(real_size_test_x, test_x);
     printf(" /  %016lx=\n", (unsigned long)a1);
@@ -507,7 +508,7 @@ bool simpletest() {
   }
   if (FLAGS_printall) {
     TempPrintNum(real_size_test_b, test_b);
-    printf(">> %d = ", shift);
+    printf(" >> %d = ", shift);
     TempPrintNum(m, test_c);
     printf("\n");
     printf("\n");
@@ -521,13 +522,12 @@ bool simpletest() {
   } 
   if (FLAGS_printall) {
     TempPrintNum(real_size_test_b, test_b);
-    printf(">> %d = ", shift);
+    printf(" >> %d = ", shift);
     TempPrintNum(m, test_c);
     printf("\n");
     printf("\n");
   }
   printf("\nEND_SIMPLETEST\n\n");
-
   return true;
 }
 
@@ -710,20 +710,25 @@ bool convert_tests() {
 
   string* s = BigConvertToDecimal(p);
   const char* s1 =
-      "(11579208921035624876269744694940757353008614341529031419553363130886709"
-      "7853951)";
+      "11579208921035624876269744694940757353008614341529031419553363130886709" \
+      "7853951";
   BigNum* t = BigConvertFromDecimal(s->c_str());
-  PrintNumToConsole(p, 10);
-  printf("\n");
-  printf("s: %s\n", s->c_str());
-  PrintNumToConsole(*t, 10);
-  printf("\n");
+  if (FLAGS_printall) {
+    PrintNumToConsole(p, 10);
+    printf("\n");
+    printf("s: %s\n", s->c_str());
+    PrintNumToConsole(*t, 10);
+    printf("\n");
+    printf("\n");
+  }
   if (strcmp(s1, s->c_str()) != 0) {
-    // ret= false;
+    ret= false;
+    printf("BigConvertToDecimal, wrong value\n");
     goto done;
   }
   if (BigCompare(p, *t) != 0) {
-    // ret= false;
+    ret= false;
+    printf("BigConvertFromDecimal, wrong value\n");
     goto done;
   }
 
