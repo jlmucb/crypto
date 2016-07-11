@@ -1,4 +1,4 @@
-//
+/unprotecedkeyfili/
 // Copyright 2014 John Manferdelli, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -146,6 +146,8 @@ DEFINE_string(hash_alg, "sha-256", "hash alg");
 DEFINE_string(sig_file, "", "signature");
 DEFINE_string(protecedkeyfile, "", "protected key file");
 DEFINE_string(unprotecedkeyfile, "", "unprotected key file");
+
+DEFINE_bool(printall, false, "printall flag");
 
 #define BUFSIZE 2048
 #define MAXMACSIZE 512
