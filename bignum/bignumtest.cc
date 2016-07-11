@@ -27,6 +27,10 @@
 
 using namespace std;
 
+
+DEFINE_bool(printall, false, "printall flag");
+
+
 EccKey* ext_ecc_key = nullptr;
 
 class BigNumTest : public ::testing::Test {
@@ -100,8 +104,7 @@ uint64_t test_x[4] = {0xffffffffffffffffULL, 0xffffffffffffffffULL, 0ULL, 0ULL};
 uint64_t test_y[8] = {0x1ULL, 0ULL, 0ULL, 0ULL};
 uint64_t test_t[8] = {0x1ULL, 0x222ULL, 9ULL, 0ULL};
 
-uint64_t test_d1[8] = {0xffffffffffffffffULL, 0xffffffffffffffffULL, 0ULL,
-                       0ULL};
+uint64_t test_d1[8] = {0xffffffffffffffffULL, 0xffffffffffffffffULL, 0ULL, 0ULL};
 uint64_t test_d2[8] = {
     0xffffffffffffffffULL, 0xffffffffffffffffULL, 0xffffffffffffffffULL,
     0xffffffffffffffffULL,
@@ -110,6 +113,11 @@ uint64_t test_d3[8] = {0ULL, 0xffffffffffffffffULL, 0xffffffffffffffffULL,
                        0xffffffffffffffffULL, 0xffffffffffffffffULL};
 uint64_t test_c[8];
 uint64_t test_z[8];
+
+uint64_t test_r1[4] = {0x00000001fffffffeULL, 0x0000000000000008ULL, 0xfffffffffffffffeULL, 0x000000000000000cULL};
+uint64_t test_r2[4] = {0x00000001fffffffeULL, 0x0000000000000008ULL, 0xfffffffffffffffeULL, 0x000000000000000cULL};
+uint64_t test_r3[3] = {0xffffffffffffffff, 0xffffffffffffffff, 0xffffffffffffffff};
+uint64_t test_r4[3] = {0x0000000000000000ULL, 0x8000000000000111ULL, 0x0000000000000004};
 
 bool simpletest() {
   uint64_t a, b, result, carry;
@@ -197,43 +205,60 @@ bool simpletest() {
   DigitArrayZeroNum(sizeof(test_c) / sizeof(uint64_t), test_c);
   int k = DigitArrayAdd(real_size_test_a, test_a, real_size_test_b, test_b,
                         size_test_c, test_c);
-  printf("   ");
-  TempPrintNum(real_size_test_a, test_a);
-  printf("\n + ");
-  TempPrintNum(real_size_test_b, test_b);
-  printf("\n");
-  printf(" = ");
-  TempPrintNum(k, test_c);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("   ");
+    TempPrintNum(real_size_test_a, test_a);
+    printf(" + ");
+    TempPrintNum(real_size_test_b, test_b);
+    printf(" = ");
+    TempPrintNum(k, test_c);
+    printf("\n");
+    printf("\n");
+  }
+  if (DigitArrayCompare(4, test_r1, 4, test_c) != 0) {
+    printf("Add 1 failed\n");
+    return false;
+  }
 
-  printf("\n");
   DigitArrayZeroNum(sizeof(test_c) / sizeof(uint64_t), test_c);
   k = DigitArrayAdd(real_size_test_b, test_b, real_size_test_a, test_a,
                     size_test_c, test_c);
-  printf("   ");
-  TempPrintNum(4, test_a);
-  printf("\n + ");
-  TempPrintNum(real_size_test_b, test_b);
-  printf("\n");
-  printf(" = ");
-  TempPrintNum(k, test_c);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("   ");
+    TempPrintNum(4, test_a);
+    printf("\n + ");
+    TempPrintNum(real_size_test_b, test_b);
+    printf("\n");
+    printf(" = ");
+    TempPrintNum(k, test_c);
+    printf("\n");
+    printf("\n");
+  }
+  if (DigitArrayCompare(4, test_r2, 4, test_c) != 0) {
+    printf("Add21 failed\n");
+    return false;
+  }
 
-  printf("\n");
   DigitArrayZeroNum(sizeof(test_c) / sizeof(uint64_t), test_c);
   test_a[0] = 0x100000000;
   k = DigitArraySub(real_size_test_b, test_b, real_size_test_a, test_a,
                     size_test_c, test_c);
-  printf("   ");
-  TempPrintNum(real_size_test_b, test_b);
-  printf("\n - ");
-  TempPrintNum(real_size_test_a, test_a);
-  printf("\n");
-  printf(" = ");
-  TempPrintNum(k, test_c);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("   ");
+    TempPrintNum(real_size_test_b, test_b);
+    printf("\n - ");
+    TempPrintNum(real_size_test_a, test_a);
+    printf("\n");
+    printf(" = ");
+    TempPrintNum(k, test_c);
+    printf("\n");
+    printf("\n");
+  }
+  if (DigitArrayCompare(3, test_r3, 3, test_c) != 0) {
+    printf("Sub1 failed\n");
+    return false;
+  }
 
-  printf("\n");
   DigitArrayZeroNum(sizeof(test_c) / sizeof(uint64_t), test_c);
   k = DigitArrayMult(real_size_test_y, test_y, real_size_test_x1, test_x1,
                      size_test_c, test_c);
@@ -242,7 +267,6 @@ bool simpletest() {
     return false;
   }
 
-  printf("\n");
   DigitArrayZeroNum(sizeof(test_c) / sizeof(uint64_t), test_c);
   k = DigitArrayMult(real_size_test_y, test_y, real_size_test_x, test_x,
                      size_test_c, test_c);
@@ -251,7 +275,6 @@ bool simpletest() {
     return false;
   }
 
-  printf("\n");
   DigitArrayZeroNum(sizeof(test_c) / sizeof(uint64_t), test_c);
   k = DigitArrayMult(real_size_test_x, test_x, real_size_test_y, test_y,
                      size_test_c, test_c);
@@ -282,12 +305,18 @@ bool simpletest() {
     printf("DigitArrayShortDivisionAlgorithm failed\n");
     return false;
   }
-  printf("Test 11: ");
-  TempPrintNum(real_size_test_t, test_t);
-  printf("/ %lx= \n", (unsigned long)b);
-  TempPrintNum(n, test_c);
-  printf(" remainder: %lx\n", (unsigned long)t);
-  printf("\n");
+  if (FLAGS_printall) {
+    TempPrintNum(real_size_test_t, test_t);
+    printf("/ %lx= \n", (unsigned long)b);
+    TempPrintNum(n, test_c);
+    printf(" remainder: %lx\n", (unsigned long)t);
+    printf("\n");
+    printf("\n");
+  }
+  if (DigitArrayCompare(3, test_r4, 3, test_c) != 0 || t != 0x01ULL) {
+    printf("DigitArrayShortDivisionAlgorithm failed 2\n");
+    return false;
+  }
 
   uint64_t a1 = 0x33ULL;
   uint64_t a2 = 0x7070707066666666ULL;
@@ -296,13 +325,16 @@ bool simpletest() {
   uint64_t b2 = 0x5555555555555555ULL;
   uint64_t est = 0ULL;
   EstimateQuotient(a1, a2, a3, b1, b2, &est);
-  if (est != 0x004d28cf3d103821) {
+  if (FLAGS_printall) {
     printf("\nEstimateQuotient\n");
     printf("a1: %016lx, a2: %016lx, a3: %016lx\n", (unsigned long)a1,
            (unsigned long)a2, (unsigned long)a3);
     printf("b1: %016lx, b2: %016lx\n", (unsigned long)b1, (unsigned long)b2);
     printf("est: %016lx, est*b1: %016lx\n\n", (unsigned long)est,
            (unsigned long)(est * b1));
+  }
+  if (est != 0x004d28cf3d103821) {
+    printf("EstimateQuotient fails\n");
     return false;
   }
 
@@ -350,41 +382,47 @@ bool simpletest() {
     printf("DigitArrayShortDivisionAlgorithm failed\n");
     return false;
   }
-  TempPrintNum(real_size_d3, test_d3);
-  printf("\n");
-  printf("/ ");
-  TempPrintNum(real_size_d1, test_d1);
-  printf("\n");
-  printf("quotient: ");
-  TempPrintNum(n, test_c);
-  printf("\n");
-  printf("remainder: ");
-  TempPrintNum(m, test_z);
-  printf("\n");
-  printf("\n");
+  if (FLAGS_printall) {
+    TempPrintNum(real_size_d3, test_d3);
+    printf("\n");
+    printf("/ ");
+    TempPrintNum(real_size_d1, test_d1);
+    printf("\n");
+    printf("quotient: ");
+    TempPrintNum(n, test_c);
+    printf("\n");
+    printf("remainder: ");
+    TempPrintNum(m, test_z);
+    printf("\n");
+    printf("\n");
+  }
 
   a1 = 2ULL;
   DigitArrayZeroNum(size_test_c, test_c);
   DigitArrayZeroNum(sizeof(test_c) / sizeof(uint64_t), test_c);
   k = DigitArrayMult(real_size_test_x, test_x, 1, &a1, size_test_c, test_c);
-  TempPrintNum(real_size_test_x, test_x);
-  printf(" *  %016lx=\n", (unsigned long)a1);
-  printf(" = ");
-  TempPrintNum(k, test_c);
-  printf("\n");
-  printf("\n");
-  printf("\n");
+  if (FLAGS_printall) {
+    TempPrintNum(real_size_test_x, test_x);
+    printf(" *  %016lx=\n", (unsigned long)a1);
+    printf(" = ");
+    TempPrintNum(k, test_c);
+    printf("\n");
+    printf("\n");
+  }
 
   DigitArrayZeroNum(size_test_c, test_c);
   m = size_test_c;
   DigitArrayShortDivisionAlgorithm(real_size_test_x, test_x, a1, &m, test_c,
                                    &a2);
-  TempPrintNum(real_size_test_x, test_x);
-  printf(" /  %016lx=\n", (unsigned long)a1);
-  printf(" = ");
-  TempPrintNum(m, test_c);
-  printf(", rem: %016lx\n", (unsigned long)a2);
-  printf("\n");
+  if (FLAGS_printall) {
+    TempPrintNum(real_size_test_x, test_x);
+    printf(" /  %016lx=\n", (unsigned long)a1);
+    printf(" = ");
+    TempPrintNum(m, test_c);
+    printf(", rem: %016lx\n", (unsigned long)a2);
+    printf("\n");
+    printf("\n");
+  }
 
   char str[128];
   a1 = 29384ULL;
@@ -435,54 +473,58 @@ bool simpletest() {
   int shift;
 
   DigitArrayZeroNum(size_test_c, test_c);
-  printf("\n");
-  TempPrintNum(real_size_test_b, test_b);
   shift = 64;
-  printf("<< %d = \n", shift);
   m = DigitArrayShiftUp(real_size_test_b, test_b, shift, size_test_c, test_c);
   if (m < 0) {
     printf("error: %d\n", m);
-  } else {
+  } 
+  if (FLAGS_printall) {
+    TempPrintNum(real_size_test_b, test_b);
+    printf("<< %d = ", shift);
     TempPrintNum(m, test_c);
+    printf("\n");
+    printf("\n");
   }
-  printf("\n");
 
   DigitArrayZeroNum(size_test_c, test_c);
-  printf("\n");
-  TempPrintNum(real_size_test_b, test_b);
   shift = 72;
-  printf("<< %d = \n", shift);
   m = DigitArrayShiftUp(real_size_test_b, test_b, shift, size_test_c, test_c);
   if (m < 0) {
     printf("error: %d\n", m);
-  } else {
-    TempPrintNum(m, test_c);
   }
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("<< %d = \n", shift);
+    TempPrintNum(m, test_c);
+    printf("\n");
+    printf("\n");
+  }
 
   DigitArrayZeroNum(size_test_c, test_c);
-  printf("\n");
-  TempPrintNum(real_size_test_b, test_b);
   shift = 64;
-  printf(">> %d = \n", shift);
   m = DigitArrayShiftDown(real_size_test_b, test_b, shift, size_test_c, test_c);
   if (m < 0) {
     printf("error: %d\n", m);
-  } else {
-    TempPrintNum(m, test_c);
   }
-  printf("\n");
+  if (FLAGS_printall) {
+    TempPrintNum(real_size_test_b, test_b);
+    printf(">> %d = ", shift);
+    TempPrintNum(m, test_c);
+    printf("\n");
+    printf("\n");
+  }
 
   DigitArrayZeroNum(size_test_c, test_c);
-  printf("\n");
-  TempPrintNum(real_size_test_b, test_b);
   shift = 72;
-  printf(">> %d = \n", shift);
   m = DigitArrayShiftDown(real_size_test_b, test_b, shift, size_test_c, test_c);
   if (m < 0) {
     printf("error: %d\n", m);
-  } else {
+  } 
+  if (FLAGS_printall) {
+    TempPrintNum(real_size_test_b, test_b);
+    printf(">> %d = ", shift);
     TempPrintNum(m, test_c);
+    printf("\n");
+    printf("\n");
   }
   printf("\nEND_SIMPLETEST\n\n");
 
@@ -533,8 +575,7 @@ bool CompareEccAdd(EccCurve& c, CurvePoint& P, CurvePoint& Q) {
     printf("CompareEccAdd fails in ProjectiveToAffine\n");
     return false;
   }
-  if (BigCompare(*R1.x_, *R2.x_) != 0 || BigCompare(*R1.y_, *R2.y_) != 0) {
-    printf("CompareEccAdd results differ\n");
+  if (FLAGS_printall) {
     P.PrintPoint();
     printf(" + ");
     Q.PrintPoint();
@@ -543,6 +584,10 @@ bool CompareEccAdd(EccCurve& c, CurvePoint& P, CurvePoint& Q) {
     printf("\n");
     R2.PrintPoint();
     printf("\n");
+    printf("\n");
+  }
+  if (BigCompare(*R1.x_, *R2.x_) != 0 || BigCompare(*R1.y_, *R2.y_) != 0) {
+    printf("CompareEccAdd results differ\n");
     return false;
   }
   return true;
@@ -564,8 +609,7 @@ bool CompareEccMultiply(EccCurve& c, BigNum& x, CurvePoint& P) {
     printf("CompareEccMultiply fails in ProjectiveToAffine\n");
     return false;
   }
-  if (BigCompare(*R1.x_, *R2.x_) != 0 || BigCompare(*R1.y_, *R2.y_) != 0) {
-    printf("CompareEccMultiply results differ\n");
+  if (FLAGS_printall) {
     PrintNumToConsole(x, 10ULL);
     P.PrintPoint();
     printf("\n");
@@ -573,6 +617,10 @@ bool CompareEccMultiply(EccCurve& c, BigNum& x, CurvePoint& P) {
     printf("\n");
     R2.PrintPoint();
     printf("\n");
+    printf("\n");
+  }
+  if (BigCompare(*R1.x_, *R2.x_) != 0 || BigCompare(*R1.y_, *R2.y_) != 0) {
+    printf("CompareEccMultiply results differ\n");
     return false;
   }
   return true;
@@ -726,46 +774,70 @@ bool shift_tests() {
 
   printf("\nSHIFT_TESTS\n");
   int n = 64;
-  PrintNumToConsole(a, 16ULL);
-  printf(", shift %d= ", n);
+  if (FLAGS_printall) {
+    PrintNumToConsole(a, 16ULL);
+    printf(", shift %d= ", n);
+    PrintNumToConsole(r, 16ULL);
+    printf("\n");
+    printf("\n");
+  }
   if (!BigShift(a, n, r)) return false;
-  PrintNumToConsole(r, 16ULL);
-  printf("\n");
+
   r.ZeroNum();
   n = -64;
-  PrintNumToConsole(a, 16ULL);
-  printf(", shift %d= ", n);
   if (!BigShift(a, n, r)) return false;
-  PrintNumToConsole(r, 16ULL);
-  printf("\n");
+  if (FLAGS_printall) {
+    PrintNumToConsole(a, 16ULL);
+    printf(", shift %d= ", n);
+    PrintNumToConsole(r, 16ULL);
+    printf("\n");
+    printf("\n");
+  }
+
   r.ZeroNum();
   n = 2;
-  PrintNumToConsole(a, 16ULL);
-  printf(", shift %d= ", n);
+  if (FLAGS_printall) {
+    PrintNumToConsole(a, 16ULL);
+    printf(", shift %d= ", n);
+    PrintNumToConsole(r, 16ULL);
+    printf("\n");
+    printf("\n");
+  }
   if (!BigShift(a, n, r)) return false;
-  PrintNumToConsole(r, 16ULL);
-  printf("\n");
+
   r.ZeroNum();
   n = -2;
-  PrintNumToConsole(r, 16ULL);
-  printf("\n");
   if (!BigShift(a, n, r)) return false;
-  PrintNumToConsole(a, 16ULL);
-  printf(", shift %d= ", n);
+  if (FLAGS_printall) {
+    PrintNumToConsole(a, 16ULL);
+    printf(", shift %d= ", n);
+    PrintNumToConsole(r, 16ULL);
+    printf("\n");
+    printf("\n");
+  }
+
   r.ZeroNum();
   n = 66;
-  PrintNumToConsole(a, 16ULL);
-  printf(", shift %d= ", n);
   if (!BigShift(a, n, r)) return false;
-  PrintNumToConsole(r, 16ULL);
-  printf("\n");
+  if (FLAGS_printall) {
+    PrintNumToConsole(a, 16ULL);
+    printf(", shift %d= ", n);
+    PrintNumToConsole(r, 16ULL);
+    printf("\n");
+    printf("\n");
+  }
+
   r.ZeroNum();
   n = -66;
-  PrintNumToConsole(a, 16ULL);
-  printf(", shift %d", n);
   if (!BigShift(a, n, r)) return false;
-  PrintNumToConsole(r, 16ULL);
-  printf("\n");
+  if (FLAGS_printall) {
+    PrintNumToConsole(a, 16ULL);
+    printf(", shift %d= ", n);
+    PrintNumToConsole(r, 16ULL);
+    printf("\n");
+    printf("\n");
+  }
+
   r.ZeroNum();
 
   printf("END SHIFT_TESTS\n");
@@ -854,13 +926,16 @@ bool raw_arith_tests() {
   int n = DigitArrayComputedSize(size_a, a);
   int k;
   for (i = 0; i < 2; i++) {
-    if (DigitArrayShiftUp(size_a, a, 64 * i, size_d, d) < 0) {
+    if (FLAGS_printall) {
       printf("a: ");
       TempPrintNum(size_a, a);
       printf("\n");
       printf("d: ");
       TempPrintNum(size_d, d);
       printf("\n");
+    printf("\n");
+    }
+    if (DigitArrayShiftUp(size_a, a, 64 * i, size_d, d) < 0) {
       printf("DigitArrayShiftUp test failed\n (1)");
       return false;
     }
@@ -916,12 +991,17 @@ bool raw_arith_tests() {
   b2 = 1ULL;
   // (a1 a2)_b >= b1_b
   EstimateQuotient(a1, a2, a3, b1, b2, &x);
-  printf("%lx:%lx/%lx= %lx\n", (long unsigned)a1, (long unsigned)a2,
-         (long unsigned)b1, (long unsigned)x);
+  if (FLAGS_printall) {
+    printf("%lx:%lx/%lx= %lx\n", (long unsigned)a1, (long unsigned)a2,
+           (long unsigned)b1, (long unsigned)x);
+    printf("\n");
+  }
   b1 = 0xfffffffffffffffULL;
   EstimateQuotient(a1, a2, a3, b1, b2, &x);
-  printf("%lx:%lx/%lx= %lx\n", (long unsigned)a1, (long unsigned)a2,
+  if (FLAGS_printall) {
+    printf("%lx:%lx/%lx= %lx\n", (long unsigned)a1, (long unsigned)a2,
          (long unsigned)b1, (long unsigned)x);
+  }
 
   /*
     void    Uint64AddStep(uint64_t a, uint64_t b, uint64_t* result, uint64_t*
@@ -982,23 +1062,22 @@ bool square_test() {
 
   n = DigitArraySquare(size_a, a, size_r, r);
   k = DigitArrayMult(size_a, a, size_a, a, size_s, s);
-  printf("a: ");
-  TempPrintNum(size_a, a);
-  printf("\n");
-  printf("r: ");
-  TempPrintNum(n, r);
-  printf("\n");
-  printf("s: ");
-  TempPrintNum(k, s);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("a: ");
+    TempPrintNum(size_a, a);
+    printf("\n");
+    printf("r: ");
+    TempPrintNum(n, r);
+    printf("\n");
+    printf("s: ");
+    TempPrintNum(k, s);
+    printf("\n");
+    printf("\n");
+  }
   if (k != n || 0 != DigitArrayCompare(n, r, k, s)) {
     printf("square test doesnt match\n");
     return false;
-  } else {
-#if 0
-    printf("square test matches\n");
-#endif
-  }
+  } 
 
   for (i = 0; i < 6; i++) {
     memset(a, 0, sizeof(uint64_t) * size_a);
@@ -1013,14 +1092,12 @@ bool square_test() {
       printf("square test doesnt match\n");
       return false;
     }
-#if 0
-    else {
-      printf("square test matches\n");
+    if (FLAGS_printall) {
+      printf("a: ");TempPrintNum(size_a, a); printf("\n");
+      printf("r: ");TempPrintNum(k, r); printf("\n");
+      printf("s: ");TempPrintNum(k, s); printf("\n");
+      printf("\n");
     }
-    printf("a: ");TempPrintNum(size_a, a); printf("\n");
-    printf("r: ");TempPrintNum(k, r); printf("\n");
-    printf("s: ");TempPrintNum(k, s); printf("\n");
-#endif
   }
   return true;
 }
@@ -1031,26 +1108,22 @@ bool addto_subfrom_and_compare(BigNum& a, BigNum& b) {
   a.CopyTo(c);
   if (!BigUnsignedAddTo(a, b)) {
     printf("BigUnsignedAddTo failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("a: ");
     TempPrintNum(a.size_, a.value_);
-    printf("\n");
+    printf(" += ");
     printf("b: ");
     TempPrintNum(b.size_, b.value_);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (!BigUnsignedSubFrom(a, b)) {
     printf("BigUnsignedSub failed\n");
-    printf("c: ");
-    TempPrintNum(c.size_, c.value_);
-    printf("\n");
-    printf("b: ");
-    TempPrintNum(b.size_, b.value_);
-    printf("\n");
     return false;
   }
-  if (BigCompare(a, c) != 0) {
-    printf("Unsigned AddTo/SubFrom dont match\n\n");
+  if (FLAGS_printall) {
     printf("a: ");
     TempPrintNum(a.size_, a.value_);
     printf("\n");
@@ -1060,6 +1133,10 @@ bool addto_subfrom_and_compare(BigNum& a, BigNum& b) {
     printf("c: ");
     TempPrintNum(c.size_, c.value_);
     printf("\n");
+    printf("\n");
+  }
+  if (BigCompare(a, c) != 0) {
+    printf("Unsigned AddTo/SubFrom dont match\n\n");
     return false;
   }
   return true;
@@ -1071,29 +1148,29 @@ bool inc_dec_and_compare(BigNum& a) {
   a.CopyTo(c);
   if (!BigUnsignedInc(a)) {
     printf("BigUnsignedInc failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("a: ");
     TempPrintNum(a.size_, a.value_);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (!BigUnsignedDec(a)) {
     printf("BigUnsignedDec failed\n");
-    printf("c: ");
-    TempPrintNum(c.size_, c.value_);
-    printf("\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("a: ");
     TempPrintNum(a.size_, a.value_);
     printf("\n");
-    return false;
+    printf("c: ");
+    TempPrintNum(c.size_, c.value_);
+    printf("\n");
+    printf("\n");
   }
   if (BigCompare(a, c) != 0) {
     printf("Unsigned Inc/Dec dont match\n\n");
-    printf("a: ");
-    TempPrintNum(a.size_, a.value_);
-    printf("\n");
-    printf("c: ");
-    TempPrintNum(c.size_, c.value_);
-    printf("\n");
     return false;
   }
   return true;
@@ -1102,6 +1179,9 @@ bool inc_dec_and_compare(BigNum& a) {
 bool add_sub_and_compare(BigNum& a, BigNum& b, BigNum& c, BigNum& d) {
   if (!BigUnsignedAdd(a, b, c)) {
     printf("BigUnsignedAdd failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("a: ");
     TempPrintNum(a.size_, a.value_);
     printf("\n");
@@ -1111,10 +1191,13 @@ bool add_sub_and_compare(BigNum& a, BigNum& b, BigNum& c, BigNum& d) {
     printf("c: ");
     TempPrintNum(c.size_, c.value_);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (!BigUnsignedSub(c, a, d)) {
     printf("BigUnsignedSub failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("c: ");
     TempPrintNum(c.size_, c.value_);
     printf("\n");
@@ -1124,22 +1207,10 @@ bool add_sub_and_compare(BigNum& a, BigNum& b, BigNum& c, BigNum& d) {
     printf("d: ");
     TempPrintNum(d.size_, d.value_);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (BigCompare(b, d) != 0) {
     printf("Unsigned Add/Sub dont match\n\n");
-    printf("a: ");
-    TempPrintNum(a.size_, a.value_);
-    printf("\n");
-    printf("b: ");
-    TempPrintNum(b.size_, b.value_);
-    printf("\n");
-    printf("c: ");
-    TempPrintNum(c.size_, c.value_);
-    printf("\n");
-    printf("d: ");
-    TempPrintNum(d.size_, d.value_);
-    printf("\n");
     return false;
   }
   return true;
@@ -1151,6 +1222,9 @@ bool mult_div_and_compare(BigNum& a, BigNum& b, BigNum& c, BigNum& d) {
 
   if (!BigUnsignedMult(a, b, c)) {
     printf("BigUnsignedMult failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("a: ");
     TempPrintNum(a.size_, a.value_);
     printf("\n");
@@ -1160,10 +1234,13 @@ bool mult_div_and_compare(BigNum& a, BigNum& b, BigNum& c, BigNum& d) {
     printf("c: ");
     TempPrintNum(c.size_, c.value_);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (!BigUnsignedDiv(c, b, d)) {
     printf("BigUnsignedDiv failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("c: ");
     TempPrintNum(c.size_, c.value_);
     printf("\n");
@@ -1173,22 +1250,10 @@ bool mult_div_and_compare(BigNum& a, BigNum& b, BigNum& c, BigNum& d) {
     printf("d: ");
     TempPrintNum(d.size_, d.value_);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (BigCompare(a, d) != 0) {
     printf("Unsigned Mult/Div dont match\n\n");
-    printf("a: ");
-    TempPrintNum(a.size_, a.value_);
-    printf("\n");
-    printf("b: ");
-    TempPrintNum(b.size_, b.value_);
-    printf("\n");
-    printf("c: ");
-    TempPrintNum(c.size_, c.value_);
-    printf("\n");
-    printf("d: ");
-    TempPrintNum(d.size_, d.value_);
-    printf("\n");
     return false;
   }
   if (!BigUnsignedEuclid(c, b, q, r)) {
@@ -1199,6 +1264,9 @@ bool mult_div_and_compare(BigNum& a, BigNum& b, BigNum& c, BigNum& d) {
   }
   if (BigCompare(q, d) != 0) {
     printf("BigUnsignedEuclid quotient not dividend\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("c: ");
     TempPrintNum(c.size_, c.value_);
     printf("\n");
@@ -1214,7 +1282,7 @@ bool mult_div_and_compare(BigNum& a, BigNum& b, BigNum& c, BigNum& d) {
     printf("r: ");
     TempPrintNum(r.size_, r.value_);
     printf("\n");
-    return false;
+    printf("\n");
   }
   return true;
 }
@@ -1304,17 +1372,23 @@ bool unsigned_arith_tests() {
   AA.Normalize();
   AB.Normalize();
   BigUnsignedSub(AA, AB, AC);
-  PrintNumToConsole(AA, 16ULL);
-  printf(" - ");
-  PrintNumToConsole(AB, 16ULL);
-  printf(" = ");
-  PrintNumToConsole(AC, 16ULL);
-  printf("\n");
-  printf("should be: 740980a6262353f3\n");
+  if (FLAGS_printall) {
+    PrintNumToConsole(AA, 16ULL);
+    printf(" - ");
+    PrintNumToConsole(AB, 16ULL);
+    printf(" = ");
+    PrintNumToConsole(AC, 16ULL);
+    printf("\n");
+    printf("should be: 740980a6262353f3\n");
+    printf("\n");
+  }
   BigUnsignedSubFrom(AA, AB);
-  printf("Subfrom: ");
-  PrintNumToConsole(AA, 16ULL);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("Subfrom: ");
+    PrintNumToConsole(AA, 16ULL);
+    printf("\n");
+    printf("\n");
+  }
   printf("END UNSIGNED_ARITH_TESTS\n");
   return true;
 }
@@ -1344,8 +1418,7 @@ bool signed_arith_tests() {
       printf("Unsigned Sub failed\n");
       return false;
     }
-    if (BigCompare(c, d) != 0) {
-      printf("SignedAdd, UnsignedSub mismatch\n");
+    if (FLAGS_printall) {
       printf("a: ");
       TempPrintNum(a.size_, a.value_);
       printf("\n");
@@ -1358,6 +1431,10 @@ bool signed_arith_tests() {
       printf("d: ");
       TempPrintNum(d.size_, d.value_);
       printf("\n");
+      printf("\n");
+    }
+    if (BigCompare(c, d) != 0) {
+      printf("SignedAdd, UnsignedSub mismatch\n");
       return false;
     }
   }
@@ -1368,23 +1445,29 @@ bool signed_arith_tests() {
     printf("Signed Add failed\n");
     return false;
   }
-  if (!c.IsZero()) {
-    printf("Should be 0\n");
+  if (FLAGS_printall) {
     printf("c: ");
     TempPrintNum(c.size_, c.value_);
     printf("\n");
+    printf("\n");
+  }
+  if (!c.IsZero()) {
+    printf("BigAdd fails (should be 0\n");
     return false;
+  }
+  if (FLAGS_printall) {
+    printf("c: ");
+    TempPrintNum(c.size_, c.value_);
+    printf("\n");
+    printf("\n");
   }
   c.ZeroNum();  // why  do I have to zero?
   if (!BigSub(a, b, c)) {
     printf("Signed Sub failed\n");
-    printf("c: ");
-    TempPrintNum(c.size_, c.value_);
-    printf("\n");
     return false;
   }
   if (c.IsZero()) {
-    printf("Should be 0\n");
+    printf("Signed Sub failed: should be 0\n");
     return false;
   }
   printf("END SIGNED_ARITH_TESTS\n");
@@ -1409,6 +1492,9 @@ bool number_theory_tests() {
 
   if (!BigMod(s1, s2, s3)) {
     printf("BigMod failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("s1: ");
     PrintNumToConsole(s1, 10ULL);
     printf("\n");
@@ -1418,22 +1504,19 @@ bool number_theory_tests() {
     printf("s3: ");
     PrintNumToConsole(s3, 10ULL);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (s3.size_ != 1 || s3.value_[0] != 5ULL) {
-    printf("Mod: ");
-    PrintNumToConsole(s1, 10ULL);
-    printf(" (mod ");
-    PrintNumToConsole(s2, 10ULL);
-    printf(" )= ");
-    PrintNumToConsole(s3, 10ULL);
-    printf("\n");
+    printf("BigMod failed\n");
     return false;
   }
 
   s1.ToggleSign();
   if (!BigMod(s1, s2, s3)) {
     printf("BigMod failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("s1: ");
     PrintNumToConsole(s1, 10ULL);
     printf("\n");
@@ -1443,21 +1526,19 @@ bool number_theory_tests() {
     printf("s3: ");
     PrintNumToConsole(s3, 10ULL);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (s3.size_ != 1 || s3.value_[0] != 18ULL) {
-    PrintNumToConsole(s1, 10ULL);
-    printf(" (mod ");
-    PrintNumToConsole(s3, 10ULL);
-    printf(" )= ");
-    PrintNumToConsole(s3, 10ULL);
-    printf("\n");
+    printf("BigMod 2 failed\n");
     return false;
   }
   s1.ToggleSign();
 
   if (!BigModAdd(s4, s5, s2, s3)) {
     printf("BigModAdd failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("s4: ");
     PrintNumToConsole(s4, 10ULL);
     printf("\n");
@@ -1470,24 +1551,18 @@ bool number_theory_tests() {
     printf("s3: ");
     PrintNumToConsole(s3, 10ULL);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (s3.size_ != 1 || s3.value_[0] != 4ULL) {
-    printf("ModAdd: ");
-    PrintNumToConsole(s4, 10ULL);
-    printf(" + ");
-    PrintNumToConsole(s5, 10ULL);
-    printf(" (mod  ");
-    PrintNumToConsole(s2, 10ULL);
-    printf(" )= ");
-    PrintNumToConsole(s3, 10ULL);
-    printf("\n");
+    printf("ModAdd failed\n");
     return false;
   }
 
   if (!BigModSub(s4, s5, s2, s3)) {
     printf("BigModSub failed\n");
-    printf("s4: ");
+    return false;
+  }
+  if (FLAGS_printall) {
     PrintNumToConsole(s4, 10ULL);
     printf("\n");
     printf("s5: ");
@@ -1499,23 +1574,14 @@ bool number_theory_tests() {
     printf("s3: ");
     PrintNumToConsole(s3, 10ULL);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (s3.size_ != 1 || s3.value_[0] != 15ULL) {
-    printf("ModSub: ");
-    PrintNumToConsole(s4, 10ULL);
-    printf(" - ");
-    PrintNumToConsole(s5, 10ULL);
-    printf(" (mod  ");
-    PrintNumToConsole(s2, 10ULL);
-    printf(" )= ");
-    PrintNumToConsole(s3, 10ULL);
-    printf("\n");
+    printf("BigModSub 1 failed\n");
     return false;
   }
 
-  if (!BigModSub(s5, s4, s2, s3)) {
-    printf("BigModSub failed\n");
+  if (FLAGS_printall) {
     printf("s4: ");
     PrintNumToConsole(s4, 10ULL);
     printf("\n");
@@ -1528,23 +1594,22 @@ bool number_theory_tests() {
     printf("s3: ");
     PrintNumToConsole(s3, 10ULL);
     printf("\n");
+    printf("\n");
+  }
+  if (!BigModSub(s5, s4, s2, s3)) {
+    printf("BigModSub failed\n");
     return false;
   }
   if (s3.size_ != 1 || s3.value_[0] != 8ULL) {
-    printf("ModSub: ");
-    PrintNumToConsole(s5, 10ULL);
-    printf(" - ");
-    PrintNumToConsole(s4, 10ULL);
-    printf(" (mod  ");
-    PrintNumToConsole(s2, 10ULL);
-    printf(" )= ");
-    PrintNumToConsole(s3, 10ULL);
-    printf("\n");
+    printf("BigModSub 2 failed\n");
     return false;
   }
 
   if (!BigModMult(s4, s5, s2, s3)) {
     printf("BigModMult failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("s4: ");
     PrintNumToConsole(s4, 10ULL);
     printf("\n");
@@ -1557,47 +1622,37 @@ bool number_theory_tests() {
     printf("s3: ");
     PrintNumToConsole(s3, 10ULL);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (s3.size_ != 1 || s3.value_[0] != 11ULL) {
-    printf("ModMult: ");
-    PrintNumToConsole(s4, 10ULL);
-    printf(" * ");
-    PrintNumToConsole(s5, 10ULL);
-    printf(" (mod  ");
-    PrintNumToConsole(s2, 10ULL);
-    printf(" )= ");
-    PrintNumToConsole(s3, 10ULL);
-    printf("\n");
+    printf("BigModMult failed\n");
     return false;
   }
 
   if (!BigExtendedGCD(s4, s5, x, y, g)) {
     printf("BigExtendedGCD failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("s4: ");
     PrintNumToConsole(s4, 10ULL);
     printf("\n");
     printf("s5: ");
     PrintNumToConsole(s5, 10ULL);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (x.size_ != 1 || x.value_[0] != 1ULL || y.size_ != 1 ||
       y.value_[0] != 3ULL || !y.sign_ || g.size_ != 1 || g.value_[0] != 3ULL) {
-    printf("BigExtendedGCD : ");
-    PrintNumToConsole(s4, 10ULL);
-    PrintNumToConsole(x, 10ULL);
-    printf(" + ");
-    PrintNumToConsole(s5, 10ULL);
-    PrintNumToConsole(y, 10ULL);
-    printf("= ");
-    PrintNumToConsole(g, 10ULL);
-    printf("\n");
+    printf("BigExtendedGCD failed\n");
     return false;
   }
 
   if (!BigCRT(s4, s5, s2, s6, g)) {
     printf("BigCRT failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("s4: ");
     PrintNumToConsole(s4, 10ULL);
     printf("\n");
@@ -1610,25 +1665,18 @@ bool number_theory_tests() {
     printf("s6: ");
     PrintNumToConsole(s6, 10ULL);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (g.size_ != 1 || g.value_[0] != 90ULL) {
-    printf("BigCRT: ");
-    PrintNumToConsole(s4, 10ULL);
-    printf("(mod ");
-    PrintNumToConsole(s2, 10ULL);
-    printf(")\n");
-    PrintNumToConsole(s5, 10ULL);
-    printf("(mod ");
-    PrintNumToConsole(s6, 10ULL);
-    printf(")\n");
-    PrintNumToConsole(g, 10ULL);
-    printf("\n");
+    printf("BigCRT failed\n");
     return false;
   }
 
   if (!BigModExp(s6, s5, s2, s3)) {
     printf("BigModExp failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("s6: ");
     PrintNumToConsole(s6, 10ULL);
     printf("\n");
@@ -1641,67 +1689,64 @@ bool number_theory_tests() {
     printf("s3: ");
     PrintNumToConsole(s3, 10ULL);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (s3.size_ != 1 || s3.value_[0] != 4ULL) {
-    printf("BigModExp: ");
-    PrintNumToConsole(s6, 10ULL);
-    printf("**");
-    PrintNumToConsole(s5, 10ULL);
-    printf("(mod ");
-    PrintNumToConsole(s2, 10ULL);
-    printf(") = ");
-    PrintNumToConsole(s3, 10ULL);
-    printf("\n");
+    printf("BigModExp wrong result\n");
     return false;
   }
 
-  if (!BigModIsSquare(b, p)) {
-    printf("BigModExp failed\n");
+  if (FLAGS_printall) {
     printf("b: ");
     PrintNumToConsole(b, 10ULL);
     printf("\n");
     printf("p: ");
     PrintNumToConsole(p, 10ULL);
     printf("\n");
+    printf("\n");
+  }
+  if (!BigModIsSquare(b, p)) {
+    printf("BigModIsSquare 1 failed\n");
     return false;
   }
 
-  if (BigModIsSquare(e, p)) {
-    printf("BigModExp failed\n");
+  if (FLAGS_printall) {
     printf("e: ");
     PrintNumToConsole(e, 10ULL);
     printf("\n");
     printf("p: ");
     PrintNumToConsole(p, 10ULL);
     printf("\n");
+    printf("\n");
+  }
+  if (BigModIsSquare(e, p)) {
+    printf("BigModIsSquare 2 failed\n");
     return false;
   }
 
   if (!BigModInv(s6, s2, s3)) {
     printf("BigModInv failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("s6: ");
     PrintNumToConsole(s6, 10ULL);
     printf("\n");
     printf("s2: ");
     PrintNumToConsole(s2, 10ULL);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (s3.size_ != 1 || s3.value_[0] != 10ULL) {
-    printf("BigModInv: ");
-    PrintNumToConsole(s6, 10ULL);
-    printf("**(-1)");
-    printf("(mod ");
-    PrintNumToConsole(s2, 10ULL);
-    printf(") = ");
-    PrintNumToConsole(s3, 10ULL);
-    printf("\n");
+    printf("BigModInv wrong result\n");
     return false;
   }
 
   if (!BigModDiv(s5, s6, s2, s3)) {
     printf("BigModDiv failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("s5: ");
     PrintNumToConsole(s5, 10ULL);
     printf(" / ");
@@ -1711,112 +1756,95 @@ bool number_theory_tests() {
     printf("s2: ");
     PrintNumToConsole(s2, 10ULL);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (s3.size_ != 1 || s3.value_[0] != 14ULL) {
-    printf("BigModDiv: ");
-    PrintNumToConsole(s5, 10ULL);
-    printf(" / ");
-    PrintNumToConsole(s6, 10ULL);
-    printf("(mod ");
-    PrintNumToConsole(s2, 10ULL);
-    printf(") = ");
-    PrintNumToConsole(s3, 10ULL);
-    printf("\n");
+    printf("BigModDiv wrong result\n");
     return false;
   }
 
-  if (!BigIsPrime(s2)) {
-    printf("BigIsPrime failed\n");
+  if (FLAGS_printall) {
     printf("s2: ");
     PrintNumToConsole(s2, 10ULL);
     printf("\n");
+    printf("\n");
+  }
+  if (!BigIsPrime(s2)) {
+    printf("BigIsPrime failed\n");
     return false;
   }
 
   if (!BigModSquareRoot(b, p, s3)) {
     printf("BigModSquareRoot failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("b: ");
     PrintNumToConsole(b, 10ULL);
     printf("\n");
     printf("s3: ");
     PrintNumToConsole(s3, 10ULL);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (s3.size_ != 1 || s3.value_[0] != 3ULL) {
-    printf("sqrt(");
-    PrintNumToConsole(b, 10ULL);
-    printf(") (mod ");
-    PrintNumToConsole(p, 10ULL);
-    printf(")= ");
-    PrintNumToConsole(s3, 10ULL);
-    printf("\n");
+    printf("sqrt failed\n");
     return false;
   }
 
   if (!BigModTonelliShanks(b, p, s3)) {
     printf("BigModTonelliShanksfailed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("b: ");
     PrintNumToConsole(b, 10ULL);
     printf("\n");
     printf("s3: ");
     PrintNumToConsole(s2, 10ULL);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (s3.size_ != 1 || s3.value_[0] != 3ULL) {
-    printf("sqrt(");
-    PrintNumToConsole(b, 10ULL);
-    printf(") (mod ");
-    PrintNumToConsole(p, 10ULL);
-    printf(")= ");
-    PrintNumToConsole(s3, 10ULL);
-    printf("\n");
+    printf("BigModTonelliShanks failed\n");
     return false;
   }
 
   p.value_[0] = 31ULL;
   if (!BigModSquareRoot(b, p, s3)) {
     printf("BigModSquareRoot failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("b: ");
     PrintNumToConsole(b, 10ULL);
     printf("\n");
     printf("s3: ");
     PrintNumToConsole(s3, 10ULL);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (s3.size_ != 1 || s3.value_[0] != 28ULL) {
-    printf("sqrt(");
-    PrintNumToConsole(b, 10ULL);
-    printf(") (mod ");
-    PrintNumToConsole(p, 10ULL);
-    printf(")= ");
-    PrintNumToConsole(s3, 10ULL);
-    printf("\n");
+    printf("BigModSquareRoot failed\n");
     return false;
   }
 
   p.value_[0] = 29ULL;
   if (!BigModSquareRoot(b, p, s3)) {
     printf("BigModSquareRoot failed\n");
+    return false;
+  }
+  if (FLAGS_printall) {
     printf("b: ");
     PrintNumToConsole(b, 10ULL);
     printf("\n");
     printf("s3: ");
     PrintNumToConsole(s3, 10ULL);
     printf("\n");
-    return false;
+    printf("\n");
   }
   if (s3.size_ != 1 || s3.value_[0] != 26ULL) {
-    printf("sqrt(");
-    PrintNumToConsole(b, 10ULL);
-    printf(") (mod ");
-    PrintNumToConsole(p, 10ULL);
-    printf(")= ");
-    PrintNumToConsole(s3, 10ULL);
-    printf("\n");
+    printf("BigModSquareRoot failed\n");
     return false;
   }
 
@@ -1837,8 +1865,11 @@ bool number_theory_tests() {
   if (!BigGenPrime(test_q, 64)) {
     return false;
   }
-  PrintNumToConsole(test_q, 10ULL);
-  printf(" is proposed prime\n");
+  if (FLAGS_printall) {
+    PrintNumToConsole(test_q, 10ULL);
+    printf(" is proposed prime\n");
+    printf("\n");
+  }
   test_q.ZeroNum();
   if (!BigGenPrime(test_q, 128)) {
     printf("No prime found\n");
@@ -1883,15 +1914,21 @@ bool number_theory_tests() {
     printf("number_theory_tests: BigModExp 1 failed\n");
     return false;
   }
-  PrintNumToConsole(M, 10);
-  printf("**");
-  PrintNumToConsole(PM1, 10);
-  printf(" (mod ");
-  PrintNumToConsole(P, 10);
-  printf(")\n");
-  printf("Should be 1: ");
-  PrintNumToConsole(N, 10);
-  printf("\n");
+  if (FLAGS_printall) {
+    PrintNumToConsole(M, 10);
+    printf(" ** ");
+    PrintNumToConsole(PM1, 10);
+    printf(" (mod ");
+    PrintNumToConsole(P, 10);
+    printf(") = ");
+    PrintNumToConsole(N, 10);
+    printf("\n");
+    printf("\n");
+  }
+  if (!N.IsOne()) {
+    printf("BigModExp 9 failed\n");
+    return false;
+  }
   P.ZeroNum();
   N.ZeroNum();
 
@@ -1915,10 +1952,13 @@ bool number_theory_tests() {
   printf("\n");
   N.ZeroNum();
   BigModMult(B, B, P, N);
-  PrintNumToConsole(B, 10);
-  printf("**2= ");
-  PrintNumToConsole(N, 10);
-  printf("\n");
+  if (FLAGS_printall) {
+    PrintNumToConsole(B, 10);
+    printf("**2 = ");
+    PrintNumToConsole(N, 10);
+    printf("\n");
+    printf("\n");
+  }
   N.ZeroNum();
 
   T.value_[0] = 2;
@@ -1949,24 +1989,29 @@ bool number_theory_tests() {
     T.CopyFrom(U);
   }
 
-  printf("\n");
-  PrintNumToConsole(M, 10);
-  printf("**");
-  PrintNumToConsole(PM1, 10);
-  printf("(mod  ");
-  PrintNumToConsole(P, 10);
-  printf(")= \n");
   if (!BigModExp(M, PM1, P, N)) {
-    printf("number_theory_test: BigModExp 1 failed\n");
+    printf("BigModExp 1 failed\n");
     return false;
   }
   if (BigCompare(N, Big_One) != 0) {
     printf("Fermat fails on p\n");
     return false;
   }
-  printf("Should be 1: ");
-  PrintNumToConsole(N, 10);
-  printf("\n");
+  if (FLAGS_printall) {
+    PrintNumToConsole(M, 10);
+    printf(" ** ");
+    PrintNumToConsole(PM1, 10);
+    printf(" (mod  ");
+    PrintNumToConsole(P, 10);
+    printf(")= ");
+    PrintNumToConsole(N, 10);
+    printf("\n");
+    printf("\n");
+  }
+  if (!N.IsOne()) {
+    printf("BigModExp 11 failed\n");
+    return false;
+  }
 
   printf("END NUMBER_THEORY_TESTS\n");
   return true;
@@ -2012,12 +2057,15 @@ bool mult_time_test(const char* filename, int size, int num_tests) {
        num_tests_executed++) {
     if (!BigUnsignedMult(a, b, c)) {
       printf("BigUnsignedMult failed\n");
+      ret = false;
+      goto done;
+    }
+    if (FLAGS_printall) {
       PrintNumToConsole(a, 16);
       printf("\n");
       PrintNumToConsole(b, 16);
       printf("\n");
-      ret = false;
-      goto done;
+      printf("\n");
     }
   }
 
@@ -2156,7 +2204,9 @@ done:
 }
 
 bool div_time_test(const char* filename, int size, int num_tests) {
-  printf("\nDIV_TIME_TESTS\n");
+  if (FLAGS_printall) {
+    printf("\nDIV_TIME_TESTS\n");
+  }
   struct stat file_info;
   int k = stat(filename, &file_info);
   byte* buf = new byte[512];
@@ -2165,12 +2215,13 @@ bool div_time_test(const char* filename, int size, int num_tests) {
 
   if (k < 0) {
     if (!makeTestData(filename, size)) {
-      printf("Cant make test data file\n");
+      printf("Can't make test data file\n");
       delete buf;
       return false;
     }
   }
   if (!readTestData(filename, 512, buf)) {
+    printf("Can't read test data file\n");
     delete buf;
     return false;
   }
@@ -2195,14 +2246,16 @@ bool div_time_test(const char* filename, int size, int num_tests) {
   cycles_start_test = ReadRdtsc();
   for (num_tests_executed = 0; num_tests_executed < num_tests;
        num_tests_executed++) {
-    if (!BigUnsignedEuclid(a, b, q, r)) {
-      printf("BigUnsignedEuclid failed 2\n");
+    if (FLAGS_printall) {
       PrintNumToConsole(a, 16);
       printf("\n");
       PrintNumToConsole(b, 16);
       printf("\n");
+      printf("\n");
+    }
+    if (!BigUnsignedEuclid(a, b, q, r)) {
+      printf("BigUnsignedEuclid failed 2\n");
       ret = false;
-      ;
       goto done;
     }
   }
@@ -2967,8 +3020,10 @@ bool ecc_speed_tests(EccKey* key, const char* filename, int size,
       return false;
     }
   }
-  ((CryptoKey*)key)->PrintKey();
-  printf("\n");
+  if (FLAGS_printall) {
+    ((CryptoKey*)key)->PrintKey();
+    printf("\n");
+  }
 
   byte M[256];
   byte C[256];
@@ -3077,9 +3132,11 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
       return false;
     }
   }
-  ((CryptoKey*)key1)->PrintKey();
-  ((CryptoKey*)key2)->PrintKey();
-  printf("\n");
+  if (FLAGS_printall) {
+    ((CryptoKey*)key1)->PrintKey();
+    ((CryptoKey*)key2)->PrintKey();
+    printf("\n");
+  }
 
   byte M[512];
   byte C[512];
@@ -3446,19 +3503,10 @@ bool mont_arith_tests() {
   m.Normalize();
   uint64_t r = BigHighBit(m);
 
-#if 0
-  printf("r: %ld\n", r);
-#endif
   if (!BigMontParams(m, r, m_prime)) {
     printf("BigMontParams fails\n");
     return false;
   }
-#if 0
-  printf("a: "); PrintNumToConsole(a, 10); printf("\n");
-  printf("b: "); PrintNumToConsole(b, 10); printf("\n");
-  printf("m: "); PrintNumToConsole(m, 10); printf("\n");
-  printf("m_prime: "); PrintNumToConsole(m_prime, 10); printf("\n");
-#endif
   if (!BigMakeMont(a, r, m, aR)) {
     printf("BigMakeMont 1 fails\n");
     return false;
@@ -3479,9 +3527,12 @@ bool mont_arith_tests() {
     printf("BigModMult  fails\n");
     return false;
   }
-  printf("ab2: ");
-  PrintNumToConsole(ab2, 10);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("ab2: ");
+    PrintNumToConsole(ab2, 10);
+    printf("\n");
+    printf("\n");
+  }
   if (BigCompare(ab, ab2) != 0) {
     printf("Mont Mult compare fails\n");
     return false;
@@ -3492,20 +3543,26 @@ bool mont_arith_tests() {
     printf("BigMontExp fails\n");
     return false;
   }
-  PrintNumToConsole(Big_Two, 10);
-  printf("**");
-  PrintNumToConsole(e, 10);
-  printf("(mod ");
-  PrintNumToConsole(m, 10);
-  printf(") = ");
-  PrintNumToConsole(out, 10);
-  printf("\n");
+  if (FLAGS_printall) {
+    PrintNumToConsole(Big_Two, 10);
+    printf("**");
+    PrintNumToConsole(e, 10);
+    printf("(mod ");
+    PrintNumToConsole(m, 10);
+    printf(") = ");
+    PrintNumToConsole(out, 10);
+    printf("\n");
+    printf("\n");
+  }
+
   printf("END_MONT_ARITH_TESTS\n");
   return true;
 }
 
 bool key_format_tests() {
-  printf("\nKEY_FORMAT_TESTS\n");
+  if (FLAGS_printall) {
+    printf("\nKEY_FORMAT_TESTS\n");
+  }
   EccKey* ecc_key = new EccKey();
   extern EccKey P256_Key;
   extern bool P256_key_valid;
@@ -3533,15 +3590,19 @@ bool key_format_tests() {
     printf("Cant make ecc key\n");
     return false;
   }
-  ((CryptoKey*)ecc_key)->PrintKey();
+  if (FLAGS_printall) {
+    ((CryptoKey*)ecc_key)->PrintKey();
+  }
 
   // Save key and restore it
   EccKey* new_key = new EccKey();
   crypto_key_message message;
   ((CryptoKey*)ecc_key)->SerializeKeyToMessage(message);
   ((CryptoKey*)new_key)->DeserializeKeyFromMessage(message);
-  printf("Serialized and DeserializeKeyFromMessage:\n");
-  ((CryptoKey*)new_key)->PrintKey();
+  if (FLAGS_printall) {
+    printf("Serialized and DeserializeKeyFromMessage:\n");
+    ((CryptoKey*)new_key)->PrintKey();
+  }
 
   // Check equality
   printf("END_KEY_FORMAT_TESTS\n");
@@ -3574,19 +3635,25 @@ bool key_store_tests() {
     printf("Cant find key in store\n");
     return false;
   }
-  p_msg->PrintKey();
+  if (FLAGS_printall) {
+    p_msg->PrintKey();
+  }
   SymmetricKey* new_key = new SymmetricKey();
   crypto_key_message message;
   p_msg->SerializeKeyToMessage(message);
   ((CryptoKey*)new_key)->DeserializeKeyFromMessage(message);
-  printf("\nSerialize and DeserializeKeyFromMessage:\n");
-  ((CryptoKey*)new_key)->PrintKey();
+  if (FLAGS_printall) {
+    printf("\nSerialize and DeserializeKeyFromMessage:\n");
+    ((CryptoKey*)new_key)->PrintKey();
+  }
   printf("END KEY_STORE_TESTS\n");
   return true;
 }
 
 bool rsa_tests() {
-  printf("\nSTART RSA_TESTS\n");
+  if (FLAGS_printall) {
+    printf("\nSTART RSA_TESTS\n");
+  }
   int bit_size = 256;
   BigNum M(8);
   BigNum N(8);
@@ -3607,7 +3674,9 @@ bool rsa_tests() {
     printf("GenerateRsaKey failed\n");
     return false;
   }
-  ((CryptoKey*)rsa_key)->PrintKey();
+  if (FLAGS_printall) {
+    ((CryptoKey*)rsa_key)->PrintKey();
+  }
 
   PM1.CopyFrom(*rsa_key->p_);
   if (!BigUnsignedSubFrom(PM1, Big_One)) {
@@ -3625,14 +3694,17 @@ bool rsa_tests() {
     printf("rsa_tests: BigModExp 1 failed\n");
     return false;
   }
-  PrintNumToConsole(M, 16);
-  printf("**");
-  PrintNumToConsole(PM1, 16);
-  printf("(mod ");
-  PrintNumToConsole(*rsa_key->p_, 16);
-  printf(") = ");
-  PrintNumToConsole(N, 16);
-  printf("\n");
+  if (FLAGS_printall) {
+    PrintNumToConsole(M, 16);
+    printf("**");
+    PrintNumToConsole(PM1, 16);
+    printf("(mod ");
+    PrintNumToConsole(*rsa_key->p_, 16);
+    printf(") = ");
+    PrintNumToConsole(N, 16);
+    printf("\n");
+    printf("\n");
+  }
   if (BigCompare(N, Big_One) != 0) {
     printf("Fermat fails on p\n");
     return false;
@@ -3643,38 +3715,53 @@ bool rsa_tests() {
     printf("rsa_tests: BigModExp 1 failed\n");
     return false;
   }
-  PrintNumToConsole(M, 16);
-  printf("**");
-  PrintNumToConsole(QM1, 16);
-  printf("(mod ");
-  PrintNumToConsole(*rsa_key->q_, 16);
-  printf(") = ");
-  PrintNumToConsole(N, 16);
-  printf("\n");
-  printf("Should be 1\n");
+  if (FLAGS_printall) {
+    PrintNumToConsole(M, 16);
+    printf("**");
+    PrintNumToConsole(QM1, 16);
+    printf("(mod ");
+    PrintNumToConsole(*rsa_key->q_, 16);
+    printf(") = ");
+    PrintNumToConsole(N, 16);
+    printf("\n");
+    printf("\n");
+  }
+  if (!N.IsOne()) {
+    printf("BigModExp 12 failed\n");
+    return false;
+  }
   if (BigCompare(N, Big_One) != 0) {
     printf("Fermat fails on q\n");
     return false;
   }
   N.ZeroNum();
 
-  printf("Message: ");
-  PrintNumToConsole(M, 16);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("Message: ");
+    PrintNumToConsole(M, 16);
+    printf("\n");
+    printf("\n");
+  }
   if (!BigModExp(M, *rsa_key->e_, *rsa_key->m_, N)) {
     printf("rsa_tests: BigModExp 1 failed\n");
     return false;
   }
-  printf("Encrypted: ");
-  PrintNumToConsole(N, 16);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("Encrypted: ");
+    PrintNumToConsole(N, 16);
+    printf("\n");
+    printf("\n");
+  }
   if (!BigModExp(N, *rsa_key->d_, *rsa_key->m_, T)) {
     printf("rsa_tests: BigModExp 2 failed\n");
     return false;
   }
-  printf("Decrypted: ");
-  PrintNumToConsole(T, 16);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("Decrypted: ");
+    PrintNumToConsole(T, 16);
+    printf("\n");
+    printf("\n");
+  }
   if (BigCompare(M, T) != 0) {
     printf("cant recover ciphertext\n");
     return false;
@@ -3686,7 +3773,9 @@ bool rsa_tests() {
     printf("GenerateRsaKey failed\n");
     return false;
   }
-  ((CryptoKey*)rsa_key2)->PrintKey();
+  if (FLAGS_printall) {
+    ((CryptoKey*)rsa_key2)->PrintKey();
+  }
 
   byte in[256];
   byte out[256];
@@ -3696,8 +3785,6 @@ bool rsa_tests() {
   memset(out, 0, 256);
   memset(new_out, 0, 256);
   in[0] = 2;
-
-  printf("Slow encrypt\n");
 
   int size_out = 256;
   if (!rsa_key2->Encrypt(128, in, &size_out, out, 0)) {
@@ -3709,21 +3796,22 @@ bool rsa_tests() {
     printf("rsa Decrypt failed\n");
     return false;
   }
-  printf("in (%d): ", size_out);
-  PrintBytes(size_out, in);
-  printf("\n");
-  printf("out: ");
-  PrintBytes(size_out, out);
-  printf("\n");
-  printf("new_out (%d): ", size_out);
-  PrintBytes(size_out, new_out);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("in (%d): ", size_out);
+    PrintBytes(size_out, in);
+    printf("\n");
+    printf("out: ");
+    PrintBytes(size_out, out);
+    printf("\n");
+    printf("new_out (%d): ", size_out);
+    PrintBytes(size_out, new_out);
+    printf("\n");
+    printf("\n");
+  }
   if (memcmp(in, new_out, size_out) != 0) {
     printf("RSA-1024 input does not match decrypted encrypted version\n");
     return false;
   }
-
-  printf("Fast encrypt\n");
 
   size_out = 256;
   if (!rsa_key2->Encrypt(128, in, &size_out, out, 1)) {
@@ -3735,15 +3823,18 @@ bool rsa_tests() {
     printf("rsa Decrypt failed\n");
     return false;
   }
-  printf("in (%d): ", size_out);
-  PrintBytes(size_out, in);
-  printf("\n");
-  printf("out: ");
-  PrintBytes(size_out, out);
-  printf("\n");
-  printf("new_out: ");
-  PrintBytes(size_out, new_out);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("in (%d): ", size_out);
+    PrintBytes(size_out, in);
+    printf("\n");
+    printf("out: ");
+    PrintBytes(size_out, out);
+    printf("\n");
+    printf("new_out: ");
+    PrintBytes(size_out, new_out);
+    printf("\n");
+    printf("\n");
+  }
   if (memcmp(in, new_out, size_out) != 0) {
     printf("RSA-1024 input does not match decrypted encrypted version\n");
     return false;
@@ -3753,7 +3844,9 @@ bool rsa_tests() {
 }
 
 bool simple_ecc_tests() {
-  printf("\nSIMPLE_ECC_TESTS\n");
+  if (FLAGS_printall) {
+    printf("\nSIMPLE_ECC_TESTS\n");
+  }
   BigNum b(1, 4ULL);
   BigNum c(1, 4ULL);
   BigNum p(1, 5ULL);
@@ -3770,12 +3863,16 @@ bool simple_ecc_tests() {
   if (!EccAdd(curve_1, P1, P2, R1)) {
     return false;
   }
-  P1.PrintPoint();
-  printf(" + ");
-  P2.PrintPoint();
-  printf(" = ");
-  R1.PrintPoint();
-  printf("\n");
+
+  if (FLAGS_printall) {
+    P1.PrintPoint();
+    printf(" + ");
+    P2.PrintPoint();
+    printf(" = ");
+    R1.PrintPoint();
+    printf("\n");
+    printf("\n");
+  }
   if (R1.x_->value_[0] != 4ULL || R1.y_->value_[0] != 2ULL) {
     return false;
   }
@@ -3789,36 +3886,47 @@ bool simple_ecc_tests() {
   CurvePoint R2(9);
   // For y^2= x^3+4x+4 (mod 2773), 2(1,3)= (1771, 705)
 
-  printf("PrintCurve: ");
-  curve_2.PrintCurve();
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("PrintCurve: ");
+    curve_2.PrintCurve();
+    printf("\n");
+    printf("\n");
+  }
   if (!EccMult(curve_2, P3, t, R2)) {
     printf("cant Ecc Mult\n");
     return false;
   }
-  PrintNumToConsole(t, 10ULL);
-  printf(" * ");
-  P3.PrintPoint();
-  printf(" = ");
-  R2.PrintPoint();
-  printf("\n");
+  if (FLAGS_printall) {
+    PrintNumToConsole(t, 10ULL);
+    printf(" * ");
+    P3.PrintPoint();
+    printf(" = ");
+    R2.PrintPoint();
+    printf("\n");
+    printf("\n");
+  }
   if (R2.x_->value_[0] != 1771ULL || R2.y_->value_[0] != 705ULL) {
     return false;
   }
 
-  printf("PrintCurve: ");
-  curve_2.PrintCurve();
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("PrintCurve: ");
+    curve_2.PrintCurve();
+    printf("\n");
+  }
   if (!EccAdd(curve_2, P3, P3, R2)) {
     printf("cant Ecc Add\n");
     return false;
   }
-  P3.PrintPoint();
-  printf(" + ");
-  P3.PrintPoint();
-  printf(" = ");
-  R2.PrintPoint();
-  printf("\n");
+  if (FLAGS_printall) {
+    P3.PrintPoint();
+    printf(" + ");
+    P3.PrintPoint();
+    printf(" = ");
+    R2.PrintPoint();
+    printf("\n");
+    printf("\n");
+  }
   if (R2.x_->value_[0] != 1771ULL || R2.y_->value_[0] != 705ULL) {
     return false;
   }
@@ -3830,24 +3938,31 @@ bool simple_ecc_tests() {
     printf("cant Ecc Mult\n");
     return false;
   }
-  PrintNumToConsole(t, 10ULL);
-  printf(" * ");
-  z.PrintPoint();
-  printf(" = ");
-  w.PrintPoint();
-  printf("\n");
+  if (FLAGS_printall) {
+    PrintNumToConsole(t, 10ULL);
+    printf(" * ");
+    z.PrintPoint();
+    printf(" = ");
+    w.PrintPoint();
+    printf("\n");
+    printf("\n");
+  }
 
   CurvePoint R3(1);
   if (!EccSub(curve_2, P1, P1, R3)) {
     printf("cant EccSub\n");
     return false;
   }
-  P1.PrintPoint();
-  printf(" - ");
-  P1.PrintPoint();
-  printf(" = ");
-  R3.PrintPoint();
-  printf("\n");
+  if (FLAGS_printall) {
+    P1.PrintPoint();
+    printf(" - ");
+    P1.PrintPoint();
+    printf(" = ");
+    R3.PrintPoint();
+    printf("\n");
+    printf("\n");
+  }
+
   printf("END SIMPLE_ECC_TESTS\n");
 
   return true;
@@ -3869,25 +3984,34 @@ bool simple_projective_ecc_tests() {
   CurvePoint R1(9);
 
   // For y^2= x^3+4x+4 (mod 5), (1,2)+(4,3)= (4,2)
-  printf("PrintCurve: ");
-  curve_1.PrintCurve();
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("PrintCurve: ");
+    curve_1.PrintCurve();
+    printf("\n");
+    printf("\n");
+  }
   if (!ProjectiveAdd(curve_1, P1, P2, R1)) {
     return false;
   }
-  P1.PrintPoint();
-  printf(" + ");
-  P2.PrintPoint();
-  printf(" = ");
-  R1.PrintPoint();
-  printf("\n");
+  if (FLAGS_printall) {
+    P1.PrintPoint();
+    printf(" + ");
+    P2.PrintPoint();
+    printf(" = ");
+    R1.PrintPoint();
+    printf("\n");
+    printf("\n");
+  }
   if (!ProjectiveToAffine(curve_1, R1)) {
     printf("ProjectiveToAffine failed\n");
     return false;
   }
-  printf("Affine: ");
-  R1.PrintPoint();
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("Affine: ");
+    R1.PrintPoint();
+    printf("\n");
+    printf("\n");
+  }
   if (R1.x_->value_[0] != 4ULL || R1.y_->value_[0] != 2ULL) {
     return false;
   }
@@ -3901,25 +4025,34 @@ bool simple_projective_ecc_tests() {
   CurvePoint R2(9);
   // For y^2= x^3+4x+4 (mod 2773), 2(1,3)= (1771, 705)
 
-  printf("PrintCurve: ");
-  curve_2.PrintCurve();
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("PrintCurve: ");
+    curve_2.PrintCurve();
+    printf("\n");
+    printf("\n");
+  }
   if (!ProjectiveDouble(curve_2, P3, R2)) {
     printf("cant Ecc Mult\n");
     return false;
   }
-  printf("Double ");
-  P3.PrintPoint();
-  printf(" = ");
-  R2.PrintPoint();
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("Double ");
+    P3.PrintPoint();
+    printf(" = ");
+    R2.PrintPoint();
+    printf("\n");
+    printf("\n");
+  }
   if (!ProjectiveToAffine(curve_2, R2)) {
     printf("JacobianToAffine failed\n");
     return false;
   }
-  printf("Affine: ");
-  R2.PrintPoint();
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("Affine: ");
+    R2.PrintPoint();
+    printf("\n");
+    printf("\n");
+  }
   if (R2.x_->value_[0] != 1771ULL || R2.y_->value_[0] != 705ULL) {
     return false;
   }
@@ -3928,43 +4061,58 @@ bool simple_projective_ecc_tests() {
     printf("cant Ecc Mult\n");
     return false;
   }
-  P3.PrintPoint();
-  printf(" + ");
-  P3.PrintPoint();
-  printf(" = ");
-  R2.PrintPoint();
-  printf("\n");
+  if (FLAGS_printall) {
+    P3.PrintPoint();
+    printf(" + ");
+    P3.PrintPoint();
+    printf(" = ");
+    R2.PrintPoint();
+    printf("\n");
+    printf("\n");
+  }
   if (!ProjectiveToAffine(curve_2, R2)) {
     printf("JacobianToAffine failed\n");
   }
-  printf("Affine: ");
-  R2.PrintPoint();
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("Affine: ");
+    R2.PrintPoint();
+    printf("\n");
+    printf("\n");
+  }
 
   if (!ProjectivePointMult(curve_2, t, P3, R2)) {
     printf("cant Ecc Mult\n");
     return false;
   }
-  PrintNumToConsole(t, 10ULL);
-  printf(" * ");
-  P3.PrintPoint();
-  printf(" = ");
-  R2.PrintPoint();
-  printf("\n");
+  if (FLAGS_printall) {
+    PrintNumToConsole(t, 10ULL);
+    printf(" * ");
+    P3.PrintPoint();
+    printf(" = ");
+    R2.PrintPoint();
+    printf("\n");
+    printf("\n");
+  }
   if (!ProjectiveToAffine(curve_2, R2)) {
     printf("JacobianToAffine failed\n");
     return false;
   }
-  printf("Affine: ");
-  R2.PrintPoint();
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("Affine: ");
+    R2.PrintPoint();
+    printf("\n");
+    printf("\n");
+  }
   if (R2.x_->value_[0] != 1771ULL || R2.y_->value_[0] != 705ULL) {
     return false;
   }
 
-  printf("PrintCurve: ");
-  curve_2.PrintCurve();
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("PrintCurve: ");
+    curve_2.PrintCurve();
+    printf("\n");
+    printf("\n");
+  }
 
   CurvePoint z(1);
   CurvePoint w(1);
@@ -3973,15 +4121,19 @@ bool simple_projective_ecc_tests() {
     printf("cant Ecc Mult\n");
     return false;
   }
-  PrintNumToConsole(t, 10ULL);
-  printf(" * ");
-  z.PrintPoint();
-  printf(" = ");
-  w.PrintPoint();
-  printf("\n");
-  printf("Affine: ");
-  w.PrintPoint();
-  printf("\n");
+  if (FLAGS_printall) {
+    PrintNumToConsole(t, 10ULL);
+    printf(" * ");
+    z.PrintPoint();
+    printf(" = ");
+    w.PrintPoint();
+    printf("\n");
+    printf("Affine: ");
+    w.PrintPoint();
+    printf("\n");
+    printf("\n");
+  }
+
   printf("END SIMPLE_PROJECTIVE_ECC_TESTS\n");
   return true;
 }
@@ -4004,14 +4156,15 @@ bool ecc_tests() {
   extern EccKey P256_Key;
   ext_ecc_key = ecc_key;
 
-  printf("About to MakeEccKey\n");
   if (!ecc_key->MakeEccKey("JlmEccCode1", "key-exchange", "jlm", 256,
                            COMMON_YEAR_SECONDS, &P256_Key.c_, &P256_Key.g_,
                            nullptr, P256_Key.order_of_g_, &secret)) {
     printf("Cant MakeEccKey\n");
     return false;
   }
-  ((CryptoKey*)ecc_key)->PrintKey();
+  if (FLAGS_printall) {
+    ((CryptoKey*)ecc_key)->PrintKey();
+  }
 
   CurvePoint pt1(8);
   CurvePoint pt2(8);
@@ -4031,9 +4184,12 @@ bool ecc_tests() {
   }
 
   memset(decrypted, 0, 32);
-  printf("Plain bytes: ");
-  PrintBytes(32, plain);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("Plain bytes: ");
+    PrintBytes(32, plain);
+    printf("\n");
+    printf("\n");
+  }
   if (!ecc_key->Encrypt(32, plain, ksecret, pt1, pt2)) {
     printf("EccEncrypt fails\n");
     return false;
@@ -4042,15 +4198,18 @@ bool ecc_tests() {
     printf("Eccdecrypt fails\n");
     return false;
   }
-  printf("Encrypted Point 1: ");
-  pt1.PrintPoint();
-  printf("\n");
-  printf("Encrypted Point 2: ");
-  pt2.PrintPoint();
-  printf("\n");
-  printf("Decrypted bytes: ");
-  PrintBytes(32, decrypted);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("Encrypted Point 1: ");
+    pt1.PrintPoint();
+    printf("\n");
+    printf("Encrypted Point 2: ");
+    pt2.PrintPoint();
+    printf("\n");
+    printf("Decrypted bytes: ");
+    PrintBytes(32, decrypted);
+    printf("\n");
+    printf("\n");
+  }
   if (memcmp(plain, decrypted, size) != 0) {
     printf("plain and decrypted don't match\n");
     return false;
@@ -4225,6 +4384,11 @@ TEST_F(BigNumTest, RunTestSuite) {
 
 int main(int an, char** av) {
   ::testing::InitGoogleTest(&an, av);
+#ifdef __linux__
+  gflags::ParseCommandLineFlags(&an, &av, true);
+#else
+  google::ParseCommandLineFlags(&an, &av, true);
+#endif
   if (!InitUtilities("bignumtest.log")) {
     printf("InitUtilities() failed\n");
     return 1;
