@@ -52,23 +52,23 @@ bool makeTestData(const char* filename, int sizeBytes) {
   int randfile = creat(filename, S_IRWXU | S_IRWXG);
   if (randfd < 0 || randfile < 0) {
     printf("makeTestData: cant create test file\n");
-    delete buf;
+    delete []buf;
     return false;
   }
   int bytes_in_file = read(randfd, buf, sizeBytes);
   if (bytes_in_file != sizeBytes) {
     printf("makeTestData: Cant read %d bytes in data file\n", sizeBytes);
-    delete buf;
+    delete []buf;
     return false;
   }
   if (write(randfile, buf, sizeBytes) < 0) {
     printf("makeTestData: Cant write test file\n");
-    delete buf;
+    delete []buf;
     return false;
   }
   close(randfd);
   close(randfile);
-  delete buf;
+  delete []buf;
   return true;
 }
 
@@ -2032,12 +2032,12 @@ bool mult_time_test(const char* filename, int size, int num_tests) {
   if (k < 0) {
     if (!makeTestData(filename, 2048)) {
       printf("Cant make test data file\n");
-      delete buf;
+      delete []buf;
       return false;
     }
   }
   if (!readTestData(filename, 512, buf)) {
-    delete buf;
+    delete []buf;
     return false;
   }
 
@@ -2075,7 +2075,7 @@ bool mult_time_test(const char* filename, int size, int num_tests) {
   }
 
 done:
-  delete buf;
+  delete []buf;
   uint64_t cycles_end_test = ReadRdtsc();
   uint64_t cycles_diff = cycles_end_test - cycles_start_test;
   printf("mult_time_test number of successful tests: %d\n", num_tests_executed);
@@ -2099,12 +2099,12 @@ bool square_time_test(const char* filename, int size, int num_tests) {
   if (k < 0) {
     if (!makeTestData(filename, 2048)) {
       printf("Cant make test data file\n");
-      delete buf;
+      delete []buf;
       return false;
     }
   }
   if (!readTestData(filename, 128, buf)) {
-    delete buf;
+    delete []buf;
     return false;
   }
 
@@ -2132,7 +2132,7 @@ bool square_time_test(const char* filename, int size, int num_tests) {
   }
 
 done:
-  delete buf;
+  delete []buf;
   uint64_t cycles_end_test = ReadRdtsc();
   uint64_t cycles_diff = cycles_end_test - cycles_start_test;
   printf("mult_time_test number of successful tests: %d\n", num_tests_executed);
@@ -2156,12 +2156,12 @@ bool mult_div_stress(const char* filename, int size, int num_tests) {
   if (k < 0) {
     if (!makeTestData(filename, 2048)) {
       printf("Cant make test data file\n");
-      delete buf;
+      delete []buf;
       return false;
     }
   }
   if (!readTestData(filename, 128, buf)) {
-    delete buf;
+    delete []buf;
     return false;
   }
 
@@ -2197,7 +2197,7 @@ bool mult_div_stress(const char* filename, int size, int num_tests) {
   }
 
 done:
-  delete buf;
+  delete []buf;
   uint64_t cycles_end_test = ReadRdtsc();
   uint64_t cycles_diff = cycles_end_test - cycles_start_test;
   printf("mult_div_stress number of successful tests: %d\n",
@@ -2221,13 +2221,13 @@ bool div_time_test(const char* filename, int size, int num_tests) {
   if (k < 0) {
     if (!makeTestData(filename, size)) {
       printf("Can't make test data file\n");
-      delete buf;
+      delete []buf;
       return false;
     }
   }
   if (!readTestData(filename, 512, buf)) {
     printf("Can't read test data file\n");
-    delete buf;
+    delete []buf;
     return false;
   }
 
@@ -2266,7 +2266,7 @@ bool div_time_test(const char* filename, int size, int num_tests) {
   }
 
 done:
-  delete buf;
+  delete []buf;
   uint64_t cycles_end_test = ReadRdtsc();
   uint64_t cycles_diff = cycles_end_test - cycles_start_test;
   printf("div_time_test number of successful tests: %d\n", num_tests_executed);
@@ -2291,12 +2291,12 @@ bool exp_time_test(const char* filename, int size, int num_tests) {
   if (k < 0) {
     if (!makeTestData(filename, 2048)) {
       printf("Cant make test data file\n");
-      delete buf;
+      delete []buf;
       return false;
     }
   }
   if (!readTestData(filename, 2048, buf)) {
-    delete buf;
+    delete []buf;
     return false;
   }
 
@@ -2349,7 +2349,7 @@ bool exp_time_test(const char* filename, int size, int num_tests) {
   }
 
 done:
-  delete buf;
+  delete []buf;
   uint64_t cycles_end_test = ReadRdtsc();
   uint64_t cycles_diff = cycles_end_test - cycles_start_test;
   printf("exp_time_test number of successful tests: %d\n", num_tests_executed);
@@ -2373,12 +2373,12 @@ bool mont_exp_time_test(const char* filename, int size, int num_tests) {
   if (k < 0) {
     if (!makeTestData(filename, 2048)) {
       printf("Cant make test data file\n");
-      delete buf;
+      delete []buf;
       return false;
     }
   }
   if (!readTestData(filename, 2048, buf)) {
-    delete buf;
+    delete []buf;
     return false;
   }
 
@@ -2423,7 +2423,7 @@ bool mont_exp_time_test(const char* filename, int size, int num_tests) {
   }
 
 done:
-  delete buf;
+  delete []buf;
   cycles_start_test = ReadRdtsc();
   for (num_tests_executed = 0; num_tests_executed < num_tests;
        num_tests_executed++) {
@@ -2462,12 +2462,12 @@ bool square_root_time_test(const char* filename, int size, BigNum& p,
   if (k < 0) {
     if (!makeTestData(filename, 2048)) {
       printf("Cant make test data file\n");
-      delete buf;
+      delete []buf;
       return false;
     }
   }
   if (!readTestData(filename, 2048, buf)) {
-    delete buf;
+    delete []buf;
     return false;
   }
 
@@ -2517,7 +2517,7 @@ bool square_root_time_test(const char* filename, int size, BigNum& p,
          ((double)cycles_diff) /
              ((double)(num_tests_executed * cycles_per_second)));
 done:
-  delete buf;
+  delete []buf;
   printf("END_SQUARE_ROOT_TIME_TESTS\n");
   return ret;
 }
@@ -2885,13 +2885,13 @@ bool simple_mult_time_test(const char* filename, int size, int num_tests) {
   if (k < 0) {
     if (!makeTestData(filename, size)) {
       printf("Cant make test data file\n");
-      delete buf;
+      delete []buf;
       return false;
     }
   }
   if (!readTestData(filename, 128, buf)) {
     printf("Cant read  test data file %s\n", filename);
-    delete buf;
+    delete []buf;
     return false;
   }
 
@@ -2911,7 +2911,7 @@ bool simple_mult_time_test(const char* filename, int size, int num_tests) {
     Uint64MultStep(a, b, &r, &carry);
   }
 
-  delete buf;
+  delete []buf;
   uint64_t cycles_end_test = ReadRdtsc();
   uint64_t cycles_diff = cycles_end_test - cycles_start_test;
   printf("simple_mult_time_test number of successful tests: %d\n",
@@ -2939,12 +2939,12 @@ bool simple_div_time_test(const char* filename, int size, int num_tests) {
   if (k < 0) {
     if (!makeTestData(filename, size)) {
       printf("Cant make test data file\n");
-      delete buf;
+      delete []buf;
       return false;
     }
   }
   if (!readTestData(filename, 128, buf)) {
-    delete buf;
+    delete []buf;
     return false;
   }
 
@@ -2992,12 +2992,12 @@ bool ecc_speed_tests(EccKey* key, const char* filename, int size,
   if (k < 0) {
     if (!makeTestData(filename, size)) {
       printf("Cant make test data file\n");
-      delete buf;
+      delete []buf;
       return false;
     }
   }
   if (!readTestData(filename, 2048, buf)) {
-    delete buf;
+    delete []buf;
     return false;
   }
 
@@ -3088,7 +3088,7 @@ bool ecc_speed_tests(EccKey* key, const char* filename, int size,
              ((double)(num_tests_executed * cycles_per_second)));
 
 done:
-  delete buf;
+  delete []buf;
   printf("END_ECC_SPEED_TESTS\n");
   return ret;
 }
@@ -3109,12 +3109,12 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   if (k < 0) {
     if (!makeTestData(filename, size)) {
       printf("Cant make test data file\n");
-      delete buf;
+      delete []buf;
       return false;
     }
   }
   if (!readTestData(filename, 2048, buf)) {
-    delete buf;
+    delete []buf;
     return false;
   }
 
@@ -3482,7 +3482,7 @@ bool rsa_speed_tests(RsaKey* key1, RsaKey* key2, const char* filename, int size,
   printf("\n");
 
 done:
-  delete buf;
+  delete []buf;
   printf("END_RSA_SPEED_TESTS\n");
   return ret;
 }

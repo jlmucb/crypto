@@ -843,7 +843,7 @@ bool DigitArrayConvertToDecimal(int size_a, uint64_t* a, int* size_s, char* s) {
   s[i] = 0;
   delete t[0];
   delete t[1];
-  delete new_s;
+  delete []new_s;
 
   return true;
 }

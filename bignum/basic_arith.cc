@@ -42,14 +42,14 @@ string* BigConvertToDecimal(BigNum& a) {
 
   if (!DigitArrayConvertToDecimal(a.size_, a.value_, &k, str)) {
     if (str != nullptr) {
-      delete str;
+      delete []str;
       str = nullptr;
     }
     return nullptr;
   }
   string* s = new string(str);
   if (str != nullptr) {
-    delete str;
+    delete []str;
     str = nullptr;
   }
   return s;
@@ -69,14 +69,14 @@ string* BigConvertToHex(BigNum& a) {
 
   if (!DigitArrayConvertToHex(a.size_, a.value_, &k, str)) {
     if (str != nullptr) {
-      delete str;
+      delete []str;
       str = nullptr;
     }
     return nullptr;
   }
   string* s = new string(str);
   if (str != nullptr) {
-    delete str;
+    delete []str;
     str = nullptr;
   }
   return s;

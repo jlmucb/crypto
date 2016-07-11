@@ -1,4 +1,4 @@
-/unprotecedkeyfili/
+//
 // Copyright 2014 John Manferdelli, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -358,13 +358,13 @@ const char* extractString(int size, byte* in) {
         in[i] == 0) {
       in[i] = 0;
       char* str = strdup(out);
-      delete out;
+      delete []out;
       return str;
     }
   }
   in[i] = 0;
   char* str = strdup(out);
-  delete out;
+  delete []out;
   return str;
 }
 
@@ -405,8 +405,8 @@ bool EncryptKeyWithPassword(const char* pass, int size, byte* in,
     key_encrypt.Encrypt(size, in, encrypted_buf);
     WriteaFile(outFile, size, encrypted_buf);
   }
-  delete encrypted_buf;
-  delete decrypted_key;
+  delete []encrypted_buf;
+  delete []decrypted_key;
   return correct;
 }
 
@@ -1812,7 +1812,7 @@ int main(int an, char** av) {
     }
     WriteaFile(FLAGS_output_file.c_str(), i, out);
     delete in;
-    delete out;
+    delete []out;
   } else if ("ToHexBuf" == FLAGS_operation) {
   } else if ("FromHex" == FLAGS_operation) {
     int size = 0;
@@ -1836,7 +1836,7 @@ int main(int an, char** av) {
       } else
         ReverseCpy(size, out, tmp);
       memcpy(out, tmp, size);
-      delete tmp;
+      delete []tmp;
     }
 
     const char* str = extractString(size, out);
@@ -1896,7 +1896,7 @@ int main(int an, char** av) {
     printf("Out: ");
     PrintBytes(out_size, out_buf);
     printf("\n");
-    delete out_buf;
+    delete []out_buf;
     delete out;
   } else if ("Hash" == FLAGS_operation) {
     hashFile(FLAGS_input_file.c_str(), FLAGS_algorithm.c_str(), nullptr,
@@ -2376,14 +2376,14 @@ int main(int an, char** av) {
 
     if (rand_bytes == nullptr) return 1;
     if (!GetCryptoRand(size, rand_bytes)) {
-      delete rand_bytes;
+      delete []rand_bytes;
       return 1;
     }
     WriteaFile(FLAGS_output_file.c_str(), size, rand_bytes);
     printf("%d random bytes: ", num_bytes);
     PrintBytes(num_bytes, rand_bytes);
     printf("\n");
-    delete rand_bytes;
+    delete []rand_bytes;
   } else if ("ReadScheme" == FLAGS_operation) {
     int size = 0;
     byte* out = nullptr;

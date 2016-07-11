@@ -30,8 +30,8 @@
 #include "cert.pb.h"
 
 
-#ifndef _CRYPTO_AES_H__
-#define _CRYPTO_AES_H__
+#ifndef _CRYPTO_CERT_H__
+#define _CRYPTO_CERT_H__
 
 using std::string;
 
@@ -54,9 +54,11 @@ public:
   virtual ~proto_cert();
 
   string version_;
+  // list?
   name subject_name_[]; 
   string signature_algorithm_;
   string purpose_;
+  // list?
   property properties_[];
   string not_before_;
   string not_after_;
@@ -64,12 +66,15 @@ public:
   string canonical_;
   string revocation_address_;
   string date_signed_;
+  // list?
   name issuer_name_[]; 
   string signature_;
 
   bool FillProto(certificate_message* cert);
   bool FillSignerParameter();
-  bool FillSignature();
+  bool FillSignature(int size, byte* sig);
+
+  bool ReadFromProto(certificate_message& cert);
 
   string& getVersion();
   string& getPurpose();
@@ -92,5 +97,6 @@ public:
 }
 
 void PrintProto(certificate_message& cert);
+void ComputeCanonical(certificate_message* cert);
 
 #endif

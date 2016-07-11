@@ -440,7 +440,7 @@ bool ReadaFile(const char* filename, int* size, byte** out) {
   byte* buf = new byte[num_bytes];
   memset(buf, 0, num_bytes);
   if (file_desc.Read(num_bytes, buf) != num_bytes) {
-    delete buf;
+    delete []buf;
     return false;
   }
   *size = num_bytes;
