@@ -862,16 +862,19 @@ TEST(Rc4, Simple) {
 
   EXPECT_TRUE(rc4.Init(5, rc4_test_key));
   rc4.Encrypt(16, rc4_test_in, out);
-  printf("Rc4 test\n");
-  printf("\tKey            : ");
-  PrintBytes(5, rc4_test_key);
-  printf("\n");
-  printf("\tCorrect out : ");
-  PrintBytes(16, rc4_test_out);
-  printf("\n");
-  printf("\tout         : ");
-  PrintBytes(16, out);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("Rc4 test\n");
+    printf("\tKey            : ");
+    PrintBytes(5, rc4_test_key);
+    printf("\n");
+    printf("\tCorrect out : ");
+    PrintBytes(16, rc4_test_out);
+    printf("\n");
+    printf("\tout         : ");
+    PrintBytes(16, out);
+    printf("\n");
+    printf("\n");
+  }
   EXPECT_TRUE(memcmp(out, rc4_test_out, 16) == 0);
 }
 
@@ -931,18 +934,21 @@ TEST(Simon, Simple) {
   Simon128 simon;
 
   EXPECT_TRUE(simon.Init(128, simon_test_key, 0));
-  printf("Simon128 test\n");
-  printf("\tKey         : %016llx %016llx\n", t_k[0], t_k[1]);
-  printf("\tCorrect in  : %016llx %016llx\n", t_i[0], t_i[1]);
-  printf("\tCorrect out : %016llx %016llx\n", t_o[0], t_o[1]);
   uint64_t* o1 = (uint64_t*)out;
   uint64_t* o2 = (uint64_t*)(out + 8);
   uint64_t* i1 = (uint64_t*)in;
   uint64_t* i2 = (uint64_t*)(in + 8);
   simon.Encrypt(16, simon_test_in, out);
   simon.Decrypt(16, out, in);
-  printf("\tout         : %016llx %016llx\n", *o1, *o2);
-  printf("\tin          : %016llx %016llx\n", *i1, *i2);
+  if (FLAGS_printall) {
+    printf("Simon128 test\n");
+    printf("\tKey         : %016llx %016llx\n", t_k[0], t_k[1]);
+    printf("\tCorrect in  : %016llx %016llx\n", t_i[0], t_i[1]);
+    printf("\tCorrect out : %016llx %016llx\n", t_o[0], t_o[1]);
+    printf("\tin          : %016llx %016llx\n", *i1, *i2);
+    printf("\tout         : %016llx %016llx\n", *o1, *o2);
+    printf("\n");
+  }
   EXPECT_TRUE(memcmp(out, simon_test_out, 16) == 0);
   EXPECT_TRUE(memcmp(in, simon_test_in, 16) == 0);
 }
@@ -963,7 +969,7 @@ TEST(FirstCbcCase, FirstCbcTest) { EXPECT_TRUE(SimpleCbcTest()); }
 TEST(FirstCbcEncryptionAlgorithmTest, FirstEncryptionCbcAlgorithmTest) {
   EXPECT_TRUE(SimpleCbcEncryptionAlgorithmTest());
 }
-TEST(sirstCtrEncryptionAlgorithmTest, FirstEncryptionCtrAlgorithmTest) {
+TEST(FirstCtrEncryptionAlgorithmTest, FirstEncryptionCtrAlgorithmTest) {
   EXPECT_TRUE(SimpleCtrEncryptionAlgorithmTest());
 }
 

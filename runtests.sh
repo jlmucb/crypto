@@ -1,8 +1,8 @@
 #
-./bignumtest.exe
-./commontest.exe
-./cryptutil.exe
-./hashtest.exe
-./keytest.exe
-./schooftest.exe
-./symmetrictest.exe
+CRYPTOBIN=~/cryptobin
+$CRYPTOBIN/commontest.exe
+$CRYPTOBIN/keytest.exe
+$CRYPTOBIN/bignumtest.exe
+$CRYPTOBIN/hashtest.exe
+$CRYPTOBIN/symmetrictest.exe
+$CRYPTOBIN/schooftest.exe

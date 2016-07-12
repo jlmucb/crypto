@@ -24,6 +24,9 @@
 
 using namespace std;
 
+DEFINE_bool(printall, false, "printall flag");
+
+
 class Base64Test : public ::testing::Test {
  protected:
   virtual void SetUp();
@@ -45,15 +48,19 @@ string test1out("FPucA9k=");
 bool simpletest1() {
   string* s = ByteToBase64LeftToRight(sizeof(test1in), test1in);
   int n = Base64ToByteLeftToRight((char*)s->c_str(), 5, test1bufout);
-  cout << "    input: ";
-  PrintBytes(5, test1in);
-  cout << ", output: " << *s;
-  cout << ", ";
-  PrintBytes(5, test1bufout);
-  cout << "\n";
-  if (n == sizeof(test1in) && test1out == *s)
-    return true;
-  return false;
+  if (FLAGS_printall) {
+    cout << "    input: ";
+    PrintBytes(5, test1in);
+    cout << ", output: " << *s;
+    cout << ", ";
+    PrintBytes(5, test1bufout);
+    cout << "\n\n";
+  }
+  if (n != sizeof(test1in) || memcmp(test1bufout, test1in, 5) !=0) {
+    printf("ByteToBase64LeftToRight fails to match\n");
+    return false;
+  }
+  return true;
 }
 byte test2in[2] = {0x0c, 0x0d};
 bool simpletest2() {
@@ -61,11 +68,17 @@ bool simpletest2() {
   byte tmpout[128];
   int n = Base64ToByteLeftToRight((char*)s->c_str(), 128, tmpout);
 
-  cout << "    input: ";
-  PrintBytes(2, test2in);
-  cout << ", output: " << *s << ", ";
-  PrintBytes(n, tmpout);
-  cout << "\n";
+  if (FLAGS_printall) {
+    cout << "    input: ";
+    PrintBytes(2, test2in);
+    cout << ", output: " << *s << ", ";
+    PrintBytes(n, tmpout);
+    cout << "\n";
+  }
+  if (n != 2 || memcmp(tmpout, test2in, 2) !=0) {
+    printf("ByteToBase64LeftToRight fails 2 to match\n");
+    return false;
+  }
   return true;
 }
 
@@ -76,21 +89,19 @@ bool simpletest3() {
   if (s == nullptr)
     return false;
   int n = Base64ToByteRightToLeft((char*)s->c_str(), 5, tmpout);
-  cout << "    input: ";
-  PrintBytes(5, test1in);
-  cout << ", output: " << *s;
-  cout << ", ";
-  PrintBytes(5, tmpout);
-  cout << "\n";
-  if (n == sizeof(test1in) && test1out == *s) {
-    delete s;
-    return true;
+  if (FLAGS_printall) {
+    cout << "    input: ";
+    PrintBytes(5, test1in);
+    cout << ", output: " << *s;
+    cout << ", ";
+    PrintBytes(5, tmpout);
+    cout << "\n";
   }
   delete s;
-  return false;
-  cout << "    input: ";
-  PrintBytes(5, test1in);
-  cout << ", output: " << *s << "\n";
+  if (n != 5 || memcmp(tmpout, test3in, 5) !=0) {
+    printf("ByteToBase64RightToLeft fails to match\n");
+    return false;
+  }
   return true;
 }
 
@@ -99,12 +110,18 @@ bool simpletest4() {
   byte tmpout[128];
   int n = Base64ToByteRightToLeft((char*)s->c_str(), 128, tmpout);
 
-  cout << "    input: ";
-  PrintBytes(2, test2in);
-  cout << ", output: " << *s << ", ";
-  PrintBytes(n, tmpout);
-  cout << "\n";
+  if (FLAGS_printall) {
+    cout << "    input: ";
+    PrintBytes(2, test2in);
+    cout << ", output: " << *s << ", ";
+    PrintBytes(n, tmpout);
+    cout << "\n";
+  }
   delete s;
+  if (n != 2 || memcmp(tmpout, test2in, 2) !=0) {
+    printf("ByteToBase64RightToLeft 2 fails to match\n");
+    return false;
+  }
   return true;
 }
 
@@ -115,19 +132,21 @@ bool simpletest5() {
   if (s == nullptr)
     return false;
   int n = HexToByteLeftToRight((char*)s->c_str(), 128, tmpout);
-  cout << "    input: ";
-  PrintBytes(sizeof(test1in), test1in);
-  cout << ", hex output: " << *s;
-  cout << ", ";
-  PrintBytes(5, tmpout);
-  cout << ", size: " << n;
-  cout << "\n";
-  if (sizeof(test1in) == n && hexout == *s) {
-    delete s;
-    return true;
+  if (FLAGS_printall) {
+    cout << "    input: ";
+    PrintBytes(sizeof(test1in), test1in);
+    cout << ", hex output: " << *s;
+    cout << ", ";
+    PrintBytes(5, tmpout);
+    cout << ", size: " << n;
+    cout << "\n";
   }
   delete s;
-  return false;
+  if (sizeof(test1in) != n || hexout != *s) {
+    printf("ByteToHexLeftToRight fails to match\n");
+    return false;
+  }
+  return true;
 }
 
 bool AreBytesEqual(int n, byte* in1, byte* in2) {
@@ -144,13 +163,13 @@ bool HexComparisontestLeftToRight(int i, int j) {
   bool fRet = true;
 
   if (n != j) {
-    printf("    bytelen1: %d, bytelen2: %d\n", j, n);
+    printf("HexComparisontestLeftToRight fails bytelen1: %d, bytelen2: %d\n", j, n);
     printf("    ");
     PrintBytes(j, &mybytes[i]);
     printf("\n");
     fRet = false;
   } else if (!AreBytesEqual(j, &mybytes[i], tmpout)) {
-    printf("    Hex Comparison failure i: %d, j: %d\n", i, j);
+    printf("HexComparisontestLeftToRight fails i: %d, j: %d\n", i, j);
     printf("    ");
     PrintBytes(j, &mybytes[i]);
     printf(", ");
@@ -169,13 +188,13 @@ bool HexComparisontestRightToLeft(int i, int j) {
   int n = HexToByteRightToLeft((char*)s->c_str(), 256, tmpout);
 
   if (n != j) {
-    printf("    bytelen1: %d, bytelen2: %d\n", j, n);
+    printf("ByteToHexRightToLeft fauls, bytelen1: %d, bytelen2: %d\n", j, n);
     printf("    ");
     PrintBytes(j, &mybytes[i]);
     printf("\n");
     fRet = false;
   } else if (!AreBytesEqual(j, &mybytes[i], tmpout)) {
-    printf("    Hex Comparison failure i: %d, j: %d\n", i, j);
+    printf("fauls, Hex Comparison failure i: %d, j: %d\n", i, j);
     printf("    ");
     PrintBytes(j, &mybytes[i]);
     printf(", ");
@@ -194,13 +213,13 @@ bool Base64ComparisontestLeftToRight(int i, int j) {
   bool fRet = true;
 
   if (n != j) {
-    printf("    bytelen1: %d, bytelen2: %d\n", j, n);
+    printf("ByteToBase64LeftToRight fails, bytelen1: %d, bytelen2: %d\n", j, n);
     printf("    ");
     PrintBytes(j, &mybytes[i]);
     printf("\n");
     fRet = false;
   } else if (!AreBytesEqual(j, &mybytes[i], tmpout)) {
-    printf("    Comparison failure i: %d, j: %d\n", i, j);
+    printf("ByteToBase64LeftToRight comparison failure i: %d, j: %d\n", i, j);
     printf("    ");
     PrintBytes(j, &mybytes[i]);
     printf(", ");
@@ -219,13 +238,13 @@ bool Base64ComparisontestRightToLeft(int i, int j) {
   bool fRet = true;
 
   if (n != j) {
-    printf("    bytelen1: %d, bytelen2: %d\n", j, n);
+    printf("ByteToBase64RightToLeft fails, bytelen1: %d, bytelen2: %d\n", j, n);
     printf("    ");
     PrintBytes(j, &mybytes[i]);
     printf("\n");
     fRet = false;
   } else if (!AreBytesEqual(j, &mybytes[i], tmpout)) {
-    printf("    Comparison failure i: %d, j: %d\n", i, j);
+    printf("ByteToBase64RightToLeft fails, Comparison failure i: %d, j: %d\n", i, j);
     printf("    ");
     PrintBytes(j, &mybytes[i]);
     printf(", ");
@@ -270,14 +289,18 @@ bool simpletimetest() {
     printf("TimePointNow failed\n");
     return false;
   }
-  printf("\t");
-  time_now.PrintTime();
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("\t");
+    time_now.PrintTime();
+    printf("\n");
+  }
   TimePoint time_copy;
   time_copy.TimePointCopyFrom(time_now);
-  printf("\t");
-  time_now.PrintTime();
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("\t");
+    time_now.PrintTime();
+    printf("\n");
+  }
 
   double seconds = COMMON_YEAR_SECONDS;
   int years_later = 0;
@@ -289,17 +312,21 @@ bool simpletimetest() {
   if (!time_increment.AppxTimeIncrementFromSeconds(
           seconds, &years_later, &months_later, &days_later, &hours_later,
           &minutes_later, &seconds_later)) {
+    printf("time_increment.AppxTimeIncrementFromSeconds failed\n");
     return false;
   }
-  printf(
-      "\tseconds: %lf, years_later: %d, months_later: %d, days_later: %d"
+  if (FLAGS_printall) {
+    printf("\tseconds: %lf, years_later: %d, months_later: %d, days_later: %d"
       " hours_later: %d, minutes_later: %d, seconds_later: %lf\n",
       seconds, years_later, months_later, days_later, hours_later,
       minutes_later, seconds_later);
+  }
   time_later.TimePointLaterBySeconds(time_now, seconds);
-  printf("\tlater: ");
-  time_later.PrintTime();
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("\tlater: ");
+    time_later.PrintTime();
+    printf("\n");
+  }
   return true;
 }
 
@@ -323,6 +350,11 @@ int main(int an, char** av) {
   byte buf[20];
 
   ::testing::InitGoogleTest(&an, av);
+#ifdef __linux__
+  gflags::ParseCommandLineFlags(&an, &av, true);
+#else
+  google::ParseCommandLineFlags(&an, &av, true);
+#endif
   memset(buf, 0, sizeof(buf));
   if (!InitUtilities(FLAGS_log_file.c_str())) {
     printf("InitUtilities() failed\n");
@@ -332,9 +364,11 @@ int main(int an, char** av) {
     printf("GetCryptoRand() failed\n");
     return 1;
   }
-  printf("Rand: ");
-  PrintBytes(4, buf);
-  printf("\n");
+  if (FLAGS_printall) {
+    printf("Rand: ");
+    PrintBytes(4, buf);
+    printf("\n\n");
+  }
   int result = RUN_ALL_TESTS();
   CloseUtilities();
   return result;

@@ -669,12 +669,15 @@ bool basic_tests() {
   c.value_[1] = 0xaaaaaaaaULL;
   c.sign_ = true;
   c.Normalize();
-  PrintNumToConsole(a, 16ULL);
-  printf("\n");
-  PrintNumToConsole(b, 16ULL);
-  printf("\n");
-  PrintNumToConsole(c, 16ULL);
-  printf("\n");
+  if(FLAGS_printall) {
+    PrintNumToConsole(a, 16ULL);
+    printf("\n");
+    PrintNumToConsole(b, 16ULL);
+    printf("\n");
+    PrintNumToConsole(c, 16ULL);
+    printf("\n");
+    printf("\n");
+  }
   if (!Big_One.IsOne()) return false;
   if (!Big_Zero.IsZero()) return false;
   if (Big_Zero.IsOne()) return false;
