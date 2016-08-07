@@ -34,6 +34,7 @@
 #include "aescbchmac256sympad.h"
 #include "aesctrhmac256sympad.h"
 #include "aesgcm.h"
+#include "aessiv.h"
 
 #include <memory>
 #include <cmath>
@@ -1183,6 +1184,9 @@ TEST(AesGcm, FourthAesGcmTest) {
   EXPECT_TRUE(aesgcm_obj_dec.FinalCipherIn(64, computed_C, &size_out, computed_P));
   EXPECT_TRUE(memcmp(computed_P, test_P_2, 64)==0);
   EXPECT_TRUE(aesgcm_obj_dec.MessageValid());
+}
+
+TEST(AesSiv, AesSivTest) {
 }
 
 DEFINE_string(log_file, "symmetrictest.log", "symmetrictest file name");

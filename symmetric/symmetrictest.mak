@@ -61,7 +61,7 @@ dobj=	$(O)/symmetrictest.o $(O)/symmetric_cipher.o $(O)/aes.o $(O)/util.o \
 	$(O)/keys.o $(O)/keys.pb.o $(O)/rsa.o $(O)/ecc.o $(O)/intel64_arith.o \
 	$(O)/bignum.o $(O)/number_theory.o $(O)/smallprimes.o $(O)/globals.o \
 	$(O)/basic_arith.o $(O)/twofish.o $(O)/aesctrhmac256sympad.o $(O)/rc4.o \
-	$(O)/tea.o $(O)/simonspeck.o $(O)/ghash.o $(O)/aesgcm.o
+	$(O)/tea.o $(O)/simonspeck.o $(O)/ghash.o $(O)/aesgcm.o $(O)/aessiv.o
 
 all:	symmetrictest.exe
 clean:
@@ -105,6 +105,10 @@ $(O)/aesctrhmac256sympad.o: $(S)/aesctrhmac256sympad.cc
 $(O)/aesgcm.o: $(S)/aesgcm.cc
 	@echo "compiling aesgcm.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/aesgcm.o $(S)/aesgcm.cc
+
+$(O)/aessiv.o: $(S)/aessiv.cc
+	@echo "compiling aessiv.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/aessiv.o $(S)/aessiv.cc
 
 $(O)/twofish.o: $(S)/twofish.cc
 	@echo "compiling twofish.cc"
