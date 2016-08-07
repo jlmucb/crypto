@@ -11,7 +11,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License
 #    Project: New Cloudproxy Crypto
-#    File: symmetric.mak
+#    File: hashtest.mak
 
 #ifndef SRC_DIR
 SRC_DIR=$(HOME)/crypto
@@ -34,7 +34,7 @@ TARGET_MACHINE_TYPE= x64
 
 S= $(SRC_DIR)/hash
 O= $(OBJ_DIR)/hash
-INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE)
+INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE) -I$(SRC_DIR)/keys
 
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
 
@@ -53,7 +53,8 @@ else
 endif
 
 dobj=	$(O)/hashtest.o $(O)/hash.o $(O)/sha1.o $(O)/util.o $(O)/sha256.o \
-	$(O)/sha3.o $(O)/hmac_sha256.o $(O)/pkcs.o $(O)/pbkdf2.o $(O)/ghash.o
+	$(O)/sha3.o $(O)/hmac_sha256.o $(O)/pkcs.o $(O)/pbkdf2.o $(O)/ghash.o \
+	$(O)/conversions.o $(O)/aes.o $(O)/symmetric_cipher.o $(O)/cmac.o
 
 all:	hashtest.exe
 clean:
@@ -94,6 +95,10 @@ $(O)/util.o: $(SRC_DIR)/common/util.cc
 	@echo "compiling util.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/util.o $(SRC_DIR)/common/util.cc
 
+$(O)/conversions.o: $(SRC_DIR)/common/conversions.cc
+	@echo "compiling conversions.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/conversions.o $(SRC_DIR)/common/conversions.cc
+
 $(O)/pkcs.o: $(S)/pkcs.cc
 	@echo "compiling pkcs.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/pkcs.o $(S)/pkcs.cc
@@ -105,4 +110,16 @@ $(O)/pbkdf2.o: $(S)/pbkdf2.cc
 $(O)/ghash.o: $(S)/ghash.cc
 	@echo "compiling ghash.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/ghash.o $(S)/ghash.cc
+
+$(O)/symmetric_cipher.o: $(SRC_DIR)/symmetric/symmetric_cipher.cc
+	@echo "compiling symmetric_cipher.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/symmetric_cipher.o $(SRC_DIR)/symmetric/symmetric_cipher.cc
+
+$(O)/aes.o: $(SRC_DIR)/symmetric/aes.cc
+	@echo "compiling aes.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/aes.o $(SRC_DIR)/symmetric/aes.cc
+
+$(O)/cmac.o: $(S)/cmac.cc
+	@echo "compiling cmac.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/cmac.o $(S)/cmac.cc
 

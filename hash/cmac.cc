@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// File: sha3.cc
+// File: cmac.cc
 
 #include "cryptotypes.h"
 #include "util.h"
@@ -25,75 +25,75 @@ using namespace std;
 // This implementation assumes a little-endian platform.
 
 /*
- *  Algorithm SIV-EncryptH1,...,Ht (M)
- *  if t ≥ n−1 then return error
- *  IV ← CMAC∗ (H1,...,Ht,M)
- *  C ← CTRK2(IV,M)
- *  return IV || C
- *
- *  AlgorithmCMAC∗ (X1,...,Xm)
- *  S ← CMACK(0^n)
- *  fori←1tom−1doS←dbl(S)⊕CMACK(Xi)
- *  if |Xm| ≥ n return CMACK (S ^end Xm) else return CMACK (dbl(S) ^ Xm10*)
- *
- *  Algorithm CTRK(IV,M)
- *  Ctr←IV & 1^(n−64) 01^31 01^31
- *  Pad ← EK(Ctr) EK(Ctr+1) EK(Ctr+2) ···
- *  return M ^ Pad [1..|M |]
- *
- *  Algorithm SIV-DecryptH1,...,Ht (C)
- *   t ≥ n−1 or |C| < n then return error
- *  V ← C[1..n],
- *  C ← [n + 1..|C|]
- *  M ← CTRK2(IV, C)
- *  IV' ← CMAC∗ (H1,...,Ht,M)
- *  if IV = IV' then return M else return error
+ *  CMAC(M1,...,Mm)
+ *    if M_n* is complete M_n = M_n* ^ K1 else M_n = M_n*||0 ^ K2
+ *    for (i=1, i<n i++) C_i = E_K(C_(i-1) ^ M_i);
+ *    T = msb_(tlen)(Cn)
+ *    return T
  */
 
 /*
- Input:
-   Key: fffefdfc fbfaf9f8 f7f6f5f4 f3f2f1f0
-        f0f1f2f3 f4f5f6f7 f8f9fafb fcfdfeff
-   AD: 10111213 14151617 18191a1b 1c1d1e1f
-       20212223 24252627
-   Plaintext: 11223344 55667788 99aabbcc ddee
-
-   S2V-CMAC-AES
-
-   CMAC(zero): 0e04dfaf c1efbf04 01405828 59bf073a
-   double(): 1c09bf5f 83df7e08 0280b050 b37e0e74
-   CMAC(ad): f1f922b7 f5193ce6 4ff80cb4 7d93f23b
-   xor: edf09de8 76c642ee 4d78bce4 ceedfc4f
-   double(): dbe13bd0 ed8c85dc 9af179c9 9ddbf819
-   pad: 11223344 55667788 99aabbcc ddee8000
-   xor: cac30894 b8eaf254 035bc205 40357819
-   CMAC(final): 85632d07 c6e8f37f 950acd32 0a2ecc93
-
-   CTR-AES
-
-   CTR: 85632d07 c6e8f37f 150acd32 0a2ecc93
-   E(K,CTR): 51e218d2 c5a2ab8c 4345c4a6 23b2f08f
-   ciphertext: 40c02b96 90c4dc04 daef7f6a fe5c
-   output: 85632d07 c6e8f37f 950acd32 0a2ecc93 40c02b96 90c4dc04 daef7f6a fe5c
+ *  CMAC: test vectors
+ *
+ *  K: 2b7e1516 28aed2a6 abf71588 09cf4f3c.
+ *  Subkey Generation
+ *  CIPHK(0^128): 7df76b0c 1ab899b3 3e42f047 b91b546f
+ *  K1: fbeed618 35713366 7c85e08f 7236a8de
+ *  K2: f7ddac30 6ae266cc f90bc11e e46d513b
+ *  Example 2: Mlen = 128
+ *  M:  6bc1bee2 2e409f96 e93d7e11 7393172a
+ *  T:  070a16b4 6b4d4144 f79bdd9d d04a287c
+ *  Example 3: Mlen = 320
+ *  M:  6bc1bee2 2e409f96 e93d7e11 7393172a ae2d8a57 1e03ac9c 9eb76fac 45af8e51
+ *  30c81c46 a35ce411
+ *  T:  dfa66747 de9ae630 30ca3261 1497c827
+ *  Example 4: Mlen = 512
+ *  M:  6bc1bee2 2e409f96 e93d7e11 7393172a ae2d8a57 1e03ac9c 9eb76fac 45af8e51
+ *  30c81c46 a35ce411 e5fbc119 1a0a52ef f69f2445 df4f9b17 ad2b417b e66c3710
+ *  T:  51f0bebf 7e3b9d92 fc497417 79363cfe 
  */
 
-
-Cmac::Cmac(int num_bits) { num_out_bytes_ = num_bits / NBITSINBYTE; }
+Cmac::Cmac(int num_bits) { num_out_bytes_ = (num_bits + NBITSINBYTE - 1) / NBITSINBYTE; }
 
 Cmac::~Cmac() {}
 
-bool Cmac::Init() {
-  // aes_
-  // L = E_K(0^b)
-  // if (msb(L) == 0) K_1 = L <<1; else K_1 = L1<<1 ^ (R1 || R0)
-  // n = ceil(mlen/blen)
-  // M = M1 || M2 || ... || M(n-1) || Mn*
-  // C0 = 0^b
-  // if M_n* is complete M_n = M_n* ^ K1 else M_n = M_n*||0 ^ K2
-  // for (i=1, i<n i++) C_i = E_K(c_(i-1) ^ M_i;
-  // T = msb_(tlen)(Cn)
-  // return T
+bool Cmac::ComputeSubKeys(byte* K) {
+  byte in[Aes::BLOCKBYTESIZE];
+  byte L[Aes::BLOCKBYTESIZE];
+
+  memset(in, 0, Aes::BLOCKBYTESIZE);
+  memset(L, 0, Aes::BLOCKBYTESIZE);
+  if (!aes_.Init(128, K, Aes::ENCRYPT)) return false;
+  aes_.EncryptBlock(in, L);
+
+  // if (msb(L) == 0) K_1 = L <<1; else K_1 = L<<1 ^ R
+  for (int i = 0; i< 15; i++)
+    K1_[i] = (L[i] << 1) | L[i + 1] >> 7;
+  K1_[15] = (L[15] << 1);
+  if ((L[0]&0x80) !=0) {
+    for (int i = 0; i< 16; i++)
+      K1_[i] ^= R_[i];
+  }
+
+  // if (msb(K1) ==0) K2 = K1 << 1 else K2 = (K1<<1) ^ R
+  for (int i = 0; i< 15; i++)
+    K2_[i] = (K1_[i] << 1) | K1_[i + 1] >> 7;
+  K2_[15] = (K1_[15] << 1);
+  if ((K1_[0]&0x80) !=0) {
+    for (int i = 0; i< 16; i++)
+      K2_[i] ^= R_[i];
+  }
+  return true;
+}
+
+bool Cmac::Init(byte* K) {
   if (num_out_bytes_ > BLOCKBYTESIZE) return false;
+  if (!ComputeSubKeys(K)) return false;
+
+  printf("K :"); PrintBytes(16, K); printf("\n");
+  printf("K1:"); PrintBytes(16, K1_); printf("\n");
+  printf("K2:"); PrintBytes(16, K2_); printf("\n");
+
   memset((byte*)state_, 0, sizeof(state_));
   num_bytes_waiting_ = 0;
   num_bits_processed_ = 0;
@@ -102,6 +102,7 @@ bool Cmac::Init() {
 }
 
 void Cmac::AddToHash(int size, const byte* in) {
+  /*
   if (num_bytes_waiting_ > 0) {
     int needed = BLOCKBYTESIZE - num_bytes_waiting_;
     if (size < needed) {
@@ -127,6 +128,7 @@ void Cmac::AddToHash(int size, const byte* in) {
     num_bytes_waiting_ = size;
     memcpy(bytes_waiting_, in, size);
   }
+ */
 }
 
 bool Cmac::GetDigest(int size, byte* out) {
@@ -136,15 +138,8 @@ bool Cmac::GetDigest(int size, byte* out) {
   return true;
 }
 
-/*
-// padding
-    memcpy(temp, in, (size_t)inlen);
-    temp[inlen++]= 1;
-    memset(temp+inlen, 0, RSizeBytes-(size_t)inlen);
-    temp[RSizeBytes-1]|= 0x80;
-*/
-
 void Cmac::Final() {
+  /*
   bytes_waiting_[num_bytes_waiting_++] = 0x1;
   memset(&bytes_waiting_[num_bytes_waiting_], 0,
          BLOCKBYTESIZE - num_bytes_waiting_);
@@ -153,5 +148,6 @@ void Cmac::Final() {
                  BLOCKBYTESIZE / sizeof(uint64_t));
   memset(digest_, 0, 128);
   memcpy(digest_, state_, num_out_bytes_);
+  */
   finalized_ = true;
 }

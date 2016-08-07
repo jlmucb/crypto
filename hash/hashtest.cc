@@ -30,6 +30,7 @@
 #include "pkcs.h"
 #include "pbkdf.h"
 #include "ghash.h"
+#include "cmac.h"
 #include <cmath>
 
 DEFINE_bool(printall, false, "printall flag");
@@ -903,102 +904,53 @@ TEST(Ghash, GhashTest7) {
 }
 
 /*
-TEST(Ghash, GhashTest8) {
-  byte HH[16] = {
-    0x66, 0xe9, 0x4b, 0xd4, 0xef, 0x8a, 0x2c, 0x3b, 
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-  };
-  byte      AA[16] = {
-    0x03, 0x88, 0xda, 0xce, 0x60, 0xb6, 0xa3, 0x92,
-    0xf3, 0x28, 0xc2, 0xb9, 0x71, 0xb2, 0xfe, 0x78
-  };
-  byte X1[16] = {
-    0x5e, 0x2e, 0xc7, 0x46, 0x91, 0x70, 0x62, 0x88,
-    0x2c, 0x85, 0xb0, 0x68, 0x53, 0x53, 0xde, 0xb7
-  };
-
-  Ghash hash;
-  hash.Init(HH);
-  hash.AddCHash(16, AA);
-  printf("X1        : "); PrintBytes(16, X1); printf("\n");
-}
-
-TEST(Ghash, GhashTest9) {
-  byte HH[16] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0x88, 0x4c, 0xfa, 0x59, 0xca, 0x34, 0x2b, 0x2e
-  };
-  byte      AA[16] = {
-    0x03, 0x88, 0xda, 0xce, 0x60, 0xb6, 0xa3, 0x92,
-    0xf3, 0x28, 0xc2, 0xb9, 0x71, 0xb2, 0xfe, 0x78
-  };
-  byte X1[16] = {
-    0x5e, 0x2e, 0xc7, 0x46, 0x91, 0x70, 0x62, 0x88,
-    0x2c, 0x85, 0xb0, 0x68, 0x53, 0x53, 0xde, 0xb7
-  };
-
-  Ghash hash;
-  hash.Init(HH);
-  hash.AddCHash(16, AA);
-  printf("X1        : "); PrintBytes(16, X1); printf("\n");
-}
-
-TEST(Ghash, GhashTest10) {
-  byte HH[16] = {
-    0xb8, 0x3b, 0x53, 0x37, 0x08, 0xbf, 0x53, 0x5d, 0x0a, 0xa6, 0xe5, 0x29, 0x80, 0xd5, 0x3b, 0x78
-  };
-  byte      AA[16] = {
-    0xfe, 0xed, 0xfa, 0xce, 0xde, 0xad, 0xbe, 0xef, 0xfe, 0xed, 0xfa, 0xce, 0xde, 0xad, 0xbe, 0xef
-  };
-  byte X1[16] = {
-    0xed, 0x56, 0xaa, 0xf8, 0xa7, 0x2d, 0x67, 0x04, 0x9f, 0xdb, 0x92, 0x28, 0xed, 0xba, 0x13, 0x22
-  };
-
-  Ghash hash;
-  hash.Init(HH);
-  hash.AddAHash(16, AA);
-  printf("X1        : "); PrintBytes(16, X1); printf("\n");
-}
+ *  CMAC: test vectors
+ *
+ *  K: 2b7e1516 28aed2a6 abf71588 09cf4f3c.
+ *  CIPHK(0^128): 7df76b0c 1ab899b3 3e42f047 b91b546f
+ *  K1: fbeed618 35713366 7c85e08f 7236a8de
+ *  K2: f7ddac30 6ae266cc f90bc11e e46d513b
+ *  Example 2: Mlen = 128
+ *  M:  6bc1bee2 2e409f96 e93d7e11 7393172a
+ *  T:  070a16b4 6b4d4144 f79bdd9d d04a287c
+ *  Example 3: Mlen = 320
+ *  M:  6bc1bee2 2e409f96 e93d7e11 7393172a ae2d8a57 1e03ac9c 9eb76fac 45af8e51
+ *  30c81c46 a35ce411
+ *  T:  dfa66747 de9ae630 30ca3261 1497c827
+ *  Example 4: Mlen = 512
+ *  M:  6bc1bee2 2e409f96 e93d7e11 7393172a ae2d8a57 1e03ac9c 9eb76fac 45af8e51
+ *  30c81c46 a35ce411 e5fbc119 1a0a52ef f69f2445 df4f9b17 ad2b417b e66c3710
+ *  T:  51f0bebf 7e3b9d92 fc497417 79363cfe 
  */
 
-
-TEST(Ghash, GhashTestx) {
-/*
-  byte AA[64];
-  byte XX[64];
-
-  ReverseCpy(8, (byte*)&A[0], &AA[0]);
-  ReverseCpy(8, (byte*)&A[1], &AA[8]);
-  ReverseCpy(8, (byte*)&A[2], &AA[16]);
-  ReverseCpy(8, (byte*)&A[3], &AA[24]);
-  ReverseCpy(8, (byte*)&A[4], &AA[32]);
-  ReverseCpy(8, (byte*)&A[5], &AA[40]);
-  ReverseCpy(8, (byte*)&A[6], &AA[48]);
-  ReverseCpy(8, (byte*)&A[7], &AA[56]);
-
-  ReverseCpy(8, (byte*)&X[0], &XX[8]);
-  ReverseCpy(8, (byte*)&X[1], &XX[0]);
-  ReverseCpy(8, (byte*)&X[2], &XX[24]);
-  ReverseCpy(8, (byte*)&X[3], &XX[16]);
-  ReverseCpy(8, (byte*)&X[4], &XX[40]);
-  ReverseCpy(8, (byte*)&X[5], &XX[32]);
-  ReverseCpy(8, (byte*)&X[6], &XX[56]);
-  ReverseCpy(8, (byte*)&X[7], &XX[48]);
-
-  uint64_t  H[2] = {
-    0xA850253FCF43120E,
-    0x73A23D80121DE2D5
+TEST(Cmac, CmacTest1) {
+  byte K[16] = {
+    0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
   };
-  uint64_t HH[2];
-  ReverseCpy(8, (byte*)&H[0], (byte*)&HH[1]);
-  ReverseCpy(8, (byte*)&H[1], (byte*)&HH[0]);
+  byte K1[16] = {
+    0xfb, 0xee, 0xd6, 0x18, 0x35, 0x71, 0x33, 0x66, 0x7c, 0x85, 0xe0, 0x8f, 0x72, 0x36, 0xa8, 0xde
+  };
+  byte K2[16] = {
+    0xf7, 0xdd, 0xac, 0x30, 0x6a, 0xe2, 0x66, 0xcc, 0xf9, 0x0b, 0xc1, 0x1e, 0xe4, 0x6d, 0x51, 0x3b
+  };
+  byte M[16] = {
+    0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96, 0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a
+  };
+  byte T[16] = {
+    0x07, 0x0a, 0x16, 0xb4, 0x6b, 0x4d, 0x41, 0x44, 0xf7, 0x9b, 0xdd, 0x9d, 0xd0, 0x4a, 0x28, 0x7c
+  };
 
-  Ghash hash;
-  hash.Init((uint64_t*)HH);
-  hash.AddAHash(64, (byte*)AA);
- */
+  printf("K         : "); PrintBytes(16, K); printf("\n");
+  printf("K1        : "); PrintBytes(16, K1); printf("\n");
+  printf("K2        : "); PrintBytes(16, K2); printf("\n");
+  printf("M         : "); PrintBytes(16, M); printf("\n");
+  printf("T         : "); PrintBytes(16, T); printf("\n");
+  printf("\n");
+
+  Cmac hash(128);
+  EXPECT_TRUE(hash.Init(K));
+  // hash.AddHash(16, AA);
 }
-
 
 DEFINE_string(log_file, "hashtest.log", "hashtest log file name");
 
