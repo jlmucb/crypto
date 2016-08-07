@@ -1187,6 +1187,17 @@ TEST(AesGcm, FourthAesGcmTest) {
 }
 
 TEST(AesSiv, AesSivTest) {
+  AesSiv aes_siv;
+  byte K[16];
+  byte hdr[128];
+  byte msg[128];
+  int size_out =256;
+  byte out[256];
+  int size_decrypt_out =256;
+  byte decrypt_out[256];
+
+  // EXPECT_TRUE(aes_siv.Encrypt(K, sizeof(hdr), hdr, sizeof(msg), msg, &size_out, out));
+  // EXPECT_TRUE(aes_siv.Decrypt(K, sizeof(hdr), hdr, size_out, out, &size_decrypt_out, decrypt_out));
 }
 
 DEFINE_string(log_file, "symmetrictest.log", "symmetrictest file name");

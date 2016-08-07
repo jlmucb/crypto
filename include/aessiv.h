@@ -33,57 +33,30 @@
 
 using std::string;
 
-class AesSiv: public EncryptionAlgorithm {
- public:
-  bool use_aesni_;
-
-  Aes aes_obj_;
-  AesNi aesni_obj_;
-  // Cmac mac_(128);
+class AesSiv {
+private:
+  const byte R_[16]= {
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0x87,
+    };
+  bool initialized_;
+  Aes aes_;
   byte iv_[32];
   byte ctr_blk_[Aes::BLOCKBYTESIZE];
-
   int num_unprocessed_input_bytes_;
-  byte input_buf[Aes::BLOCKBYTESIZE];
+  byte K1_[16];
+  byte K2_[16];
 
-  unsigned* ctr_;
-
-  bool iv_processed_;
-  byte hmac_received_[128];
-  byte hmac_computed_[128];
-
-  bool output_verified_;
+ public:
 
   AesSiv();
   ~AesSiv();
 
-  void PrintEncryptionAlgorithm();
-
-  void CtrEncryptBlock(byte* in, byte* out, int);
-  void CtrDecryptBlock(byte* in, byte* out, int);
-
-  bool PlainIn(int size_in, byte* in, int* size_out, byte* out);
-  bool CipherIn(int size_in, byte* in, int* size_out, byte* out);
-  bool FinalPlainIn(int size_in, byte* in, int* size_out, byte* out);
-  bool FinalCipherIn(int size_in, byte* in, int* size_out, byte* out);
-
-  bool Init(int size_enc, byte* enc_key, int size_int, byte* int_key,
-            int size_nonce, byte* nonce, int size_iv, byte* iv, bool use_aesni);
-
-  int DecryptInputQuantum();
-  int EncryptInputQuantum();
-  int MinimumFinalDecryptIn();
-  int MinimumFinalEncryptIn();
-  int MaxAdditionalOutput();
-  int MaxAdditionalFinalOutput();
-  bool ProcessInput(int size_in, byte* in, int* size_out, byte* out);
-  bool ProcessFinalInput(int size_in, byte* in, int* size_out, byte* out);
-  int InputBytesProcessed();
-  int OutputBytesProduced();
-  bool MessageValid();
-
-  int GetComputedMac(int size, byte*);
-  int GetReceivedMac(int size, byte*);
+  bool ComputeSubKeys(byte* K);
+  bool Encrypt(byte* K, int hdr_size, byte* hdr,
+               int msg_size, byte* msg, int* size_out, byte* out);
+  bool Decrypt(byte* K, int hdr_size, byte* hdr,
+               int msg_size, byte* msg, int* size_out, byte* out);
 
   bool GenerateScheme(const char* name, int num_bits);
   bool MakeScheme(const char* name, int num_bits, byte* enc_key, byte* int_key,

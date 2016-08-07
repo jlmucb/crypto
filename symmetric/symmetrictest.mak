@@ -61,7 +61,7 @@ dobj=	$(O)/symmetrictest.o $(O)/symmetric_cipher.o $(O)/aes.o $(O)/util.o \
 	$(O)/keys.o $(O)/keys.pb.o $(O)/rsa.o $(O)/ecc.o $(O)/intel64_arith.o \
 	$(O)/bignum.o $(O)/number_theory.o $(O)/smallprimes.o $(O)/globals.o \
 	$(O)/basic_arith.o $(O)/twofish.o $(O)/aesctrhmac256sympad.o $(O)/rc4.o \
-	$(O)/tea.o $(O)/simonspeck.o $(O)/ghash.o $(O)/aesgcm.o $(O)/aessiv.o
+	$(O)/tea.o $(O)/simonspeck.o $(O)/ghash.o $(O)/cmac.o $(O)/aesgcm.o $(O)/aessiv.o
 
 all:	symmetrictest.exe
 clean:
@@ -145,6 +145,10 @@ $(O)/sha256.o: $(SRC_DIR)/hash/sha256.cc
 $(O)/ghash.o: $(SRC_DIR)/hash/ghash.cc
 	@echo "compiling ghash.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/ghash.o $(SRC_DIR)/hash/ghash.cc
+
+$(O)/cmac.o: $(SRC_DIR)/hash/cmac.cc
+	@echo "compiling cmac.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/cmac.o $(SRC_DIR)/hash/cmac.cc
 
 $(O)/hmac_sha256.o: $(SRC_DIR)/hash/hmac_sha256.cc
 	@echo "compiling hmac_sha256.cc"
