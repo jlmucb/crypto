@@ -23,6 +23,7 @@
 
 #include "cryptotypes.h"
 #include "hash.h"
+#include "aes.h"
 
 #ifndef _CRYPTO_CMAC__H
 #define _CRYPTO_CMAC__H
@@ -32,18 +33,29 @@ class Cmac : public CryptographicHash {
   enum {
     BLOCKBYTESIZE = 128,
   };
+private:
+  const byte R_[16]= {
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0x87,
+    };
   int num_out_bytes_;
   int num_bytes_waiting_;
   byte bytes_waiting_[BLOCKBYTESIZE];
-  uint64_t state_[5 * 5];
-  byte digest_[256];
+  byte K1_[16];
+  byte K2_[16];
+  byte state_[16];
+  byte digest_[16];
   uint64_t num_bits_processed_;
   bool finalized_;
+  Aes aes_;
 
+  bool ComputeSubKeys(byte* K);
+
+public:
   Cmac(int num_bits);
   ~Cmac();
 
-  bool Init();
+  bool Init(byte* K);
   void AddToHash(int size, const byte* in);
   bool GetDigest(int size, byte* out);
   void Final();
