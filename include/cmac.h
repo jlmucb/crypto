@@ -58,6 +58,6 @@ public:
   bool Init(byte* K);
   void AddToHash(int size, const byte* in);
   bool GetDigest(int size, byte* out);
-  void Final();
+  void Final(int size, byte* in);
 };
 #endif

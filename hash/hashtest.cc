@@ -947,9 +947,16 @@ TEST(Cmac, CmacTest1) {
   printf("T         : "); PrintBytes(16, T); printf("\n");
   printf("\n");
 
+  byte out[16];
   Cmac hash(128);
+
   EXPECT_TRUE(hash.Init(K));
-  // hash.AddHash(16, AA);
+  hash.AddToHash(sizeof(M) - 16, M);
+  hash.Final(16, &M[sizeof(M) - 16]);
+  EXPECT_TRUE(hash.GetDigest(16, out));
+  printf("\n");
+  printf("Hash      : "); PrintBytes(16, out); printf("\n");
+  EXPECT_TRUE(memcmp(out, T, 16) == 0);
 }
 
 DEFINE_string(log_file, "hashtest.log", "hashtest log file name");
