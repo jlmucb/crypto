@@ -1188,16 +1188,44 @@ TEST(AesGcm, FourthAesGcmTest) {
 
 TEST(AesSiv, AesSivTest) {
   AesSiv aes_siv;
-  byte K[16];
-  byte hdr[128];
-  byte msg[128];
-  int size_out =256;
+
+  int size_out = 256;
   byte out[256];
   int size_decrypt_out =256;
   byte decrypt_out[256];
 
-  // EXPECT_TRUE(aes_siv.Encrypt(K, sizeof(hdr), hdr, sizeof(msg), msg, &size_out, out));
-  // EXPECT_TRUE(aes_siv.Decrypt(K, sizeof(hdr), hdr, size_out, out, &size_decrypt_out, decrypt_out));
+  byte Test_Siv_Key[16] = {
+    0xff, 0xfe, 0xfd, 0xfc, 0xfb, 0xfa, 0xf9, 0xf8, 0xf7, 0xf6, 0xf5, 0xf4, 0xf3, 0xf2, 0xf1, 0xf0
+  };
+  byte Test_Siv_Hdr[24] = {
+    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+    0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27
+  };
+  byte Test_Siv_Plaintext[14] = {
+    0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee
+  };
+  byte Test_Siv_pad[16] = {
+    0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0x80, 0x00
+  };
+  byte Test_Siv_CMAC[16] = {
+    0x85, 0x63, 0x2d, 0x07, 0xc6, 0xe8, 0xf3, 0x7f, 0x95, 0x0a, 0xcd, 0x32, 0x0a, 0x2e, 0xcc, 0x93
+  };
+  byte Test_Siv_output[30] = {
+    0x85, 0x63, 0x2d, 0x07, 0xc6, 0xe8, 0xf3, 0x7f, 0x95, 0x0a, 0xcd, 0x32, 0x0a, 0x2e, 0xcc, 0x93,
+    0x40, 0xc0, 0x2b, 0x96, 0x90, 0xc4, 0xdc, 0x04, 0xda, 0xef, 0x7f, 0x6a, 0xfe, 0x5c
+  };
+  printf("Test_Siv_Key key: "); PrintBytes(sizeof(Test_Siv_Key), Test_Siv_Key); printf("\n");
+  printf("Test_Siv_Hdr key: "); PrintBytes(sizeof(Test_Siv_Hdr), Test_Siv_Hdr); printf("\n");
+  printf("Test_Siv_Plaintext key: "); PrintBytes(sizeof(Test_Siv_Plaintext), Test_Siv_Plaintext); printf("\n");
+  printf("Test_Siv_pad key: "); PrintBytes(sizeof(Test_Siv_pad), Test_Siv_pad); printf("\n");
+  printf("Test_Siv_CMAC key: "); PrintBytes(sizeof(Test_Siv_CMAC), Test_Siv_CMAC); printf("\n");
+  printf("Test_Siv_output key: "); PrintBytes(sizeof(Test_Siv_output), Test_Siv_output); printf("\n");
+
+  EXPECT_TRUE(aes_siv.Encrypt(Test_Siv_Key, sizeof(Test_Siv_Hdr), Test_Siv_Hdr,
+              sizeof(Test_Siv_Plaintext), Test_Siv_Plaintext, &size_out, out));
+  printf("Computed SIV Encrypt: "); PrintBytes(size_out, out); printf("\n");
+  // EXPECT_TRUE(aes_siv.Encrypt(Test_Siv_Key, sizeof(Test_Siv_Hdr), Test_Siv_Hdr,
+  //             size_out, out, &size_decrypt_out, decrypt_out));
 }
 
 DEFINE_string(log_file, "symmetrictest.log", "symmetrictest file name");

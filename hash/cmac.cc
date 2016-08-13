@@ -61,9 +61,11 @@ bool Cmac::Init(byte* K) {
   if (num_out_bytes_ > BLOCKBYTESIZE) return false;
   if (!ComputeSubKeys(K)) return false;
 
-  printf("K :"); PrintBytes(16, K); printf("\n");
-  printf("K1:"); PrintBytes(16, K1_); printf("\n");
-  printf("K2:"); PrintBytes(16, K2_); printf("\n");
+#ifdef DEBUG
+  printf("K : "); PrintBytes(16, K); printf("\n");
+  printf("K1: "); PrintBytes(16, K1_); printf("\n");
+  printf("K2: "); PrintBytes(16, K2_); printf("\n");
+#endif
 
   memset((byte*)state_, 0, sizeof(state_));
   num_bytes_waiting_ = 0;

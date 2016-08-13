@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// Project: New Cloudproxy Crypto
 // File: aescbchmac256sympad.cc
 
 #include "cryptotypes.h"
@@ -319,12 +318,14 @@ void AesCtrHmac256Sympad::PrintEncryptionAlgorithm() {
     aes_obj_.PrintSymmetricKey();
     printf("not using aesni\n");
   }
+#ifdef DEBUG
   printf("hmac-key: ");
   PrintBytes(HmacSha256::BLOCKBYTESIZE, hmac_.key_);
   printf("\n");
   printf("ctr_blk : ");
   PrintBytes(Aes::BLOCKBYTESIZE, ctr_blk_);
   printf("\n");
+#endif
 }
 
 int AesCtrHmac256Sympad::DecryptInputQuantum() { return Aes::BLOCKBYTESIZE; }
