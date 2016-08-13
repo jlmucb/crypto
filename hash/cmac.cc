@@ -121,7 +121,7 @@ void Cmac::Final(int size, byte* in) {
     for (int i = 0; i < size; i++)
       blk[i] = in[i] ^ K2_[i];
     for (int i = size; i < BLOCKBYTESIZE; i++)
-      blk[i] = K2_[i];
+      blk[i] = K2_[i] ^ 0xaa;
   }
   aes_.EncryptBlock(blk, digest_);
   finalized_ = true;

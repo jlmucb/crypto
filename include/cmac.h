@@ -31,7 +31,8 @@
 class Cmac : public CryptographicHash {
  public:
   enum {
-    BLOCKBYTESIZE = 128,
+    BLOCKBITSIZE = 128,
+    BLOCKBYTESIZE = 16,
   };
 private:
   const byte R_[16]= {
