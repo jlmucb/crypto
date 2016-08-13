@@ -37,35 +37,6 @@ AesSiv::~AesSiv() {
   initialized_ = false;
 }
 
-bool AesSiv::ComputeSubKeys(byte* K) {
-  byte in[Aes::BLOCKBYTESIZE];
-  byte L[Aes::BLOCKBYTESIZE];
-
-  memset(in, 0, Aes::BLOCKBYTESIZE);
-  memset(L, 0, Aes::BLOCKBYTESIZE);
-  if (!aes_.Init(128, K, Aes::ENCRYPT)) return false;
-  aes_.EncryptBlock(in, L);
-
-  // if (msb(L) == 0) K_1 = L <<1; else K_1 = L<<1 ^ R
-  for (int i = 0; i< 15; i++)
-    K1_[i] = (L[i] << 1) | L[i + 1] >> 7;
-  K1_[15] = (L[15] << 1);
-  if ((L[0]&0x80) !=0) {
-    for (int i = 0; i< 16; i++)
-      K1_[i] ^= R_[i];
-  }
-
-  // if (msb(K1) ==0) K2 = K1 << 1 else K2 = (K1<<1) ^ R
-  for (int i = 0; i< 15; i++)
-    K2_[i] = (K1_[i] << 1) | K1_[i + 1] >> 7;
-  K2_[15] = (K1_[15] << 1);
-  if ((K1_[0]&0x80) !=0) {
-    for (int i = 0; i< 16; i++)
-      K2_[i] ^= R_[i];
-  }
-  return true;
-}
-
 static void BumpCtr(byte* ctr) {
   uint64_t* add = (uint64_t*) ctr;
   *add += 1ULL;
@@ -93,15 +64,18 @@ static void Xor(byte* in, byte* to_xor, byte* out, int size) {
 bool AesSiv::Encrypt(byte* K, int hdr_size, byte* hdr, int msg_size, byte* msg, int* size_out, byte*out) {
   Cmac cmac(128);
 
-  if (!ComputeSubKeys(K)) {
-    LOG(ERROR) << "AesSiv::Encrypt: ComputeSubKeys fails\n";
-    return false;
-  }
+  memcpy(K1_, &K[0], Aes::BLOCKBYTESIZE);
+  memcpy(K2_, &K[16], Aes::BLOCKBYTESIZE);
+
 #ifdef DEBUG
+    printf("\n");
     printf("Siv-Encrypt, K1_: "); PrintBytes(Aes::BLOCKBYTESIZE, K1_); printf("\n");
     printf("Siv-Encrypt, K2_: "); PrintBytes(Aes::BLOCKBYTESIZE, K2_); printf("\n");
     printf("\n");
 #endif
+
+  *size_out = msg_size + Aes::BLOCKBYTESIZE;
+
   if (!cmac.Init(K1_)) {
     LOG(ERROR) << "AesSiv::Encrypt: cmac.Init fails\n";
     return false;
@@ -114,26 +88,31 @@ bool AesSiv::Encrypt(byte* K, int hdr_size, byte* hdr, int msg_size, byte* msg, 
   }
   memcpy(all, hdr, hdr_size);
   memcpy(&all[hdr_size], msg, msg_size);
+
   int first_size = (all_size/Aes::BLOCKBYTESIZE) * Aes::BLOCKBYTESIZE;
   int last_size;
+
   if (first_size == hdr_size) {
-    last_size = Aes::BLOCKBYTESIZE;
     first_size -= Aes::BLOCKBYTESIZE;
-  } else {
-    last_size = all_size - Aes::BLOCKBYTESIZE;
   }
+  last_size = all_size - first_size;
+
   cmac.AddToHash(first_size, all);
   cmac.Final(last_size, &all[first_size]);
-  free(all);
-  all = nullptr;
   if (!cmac.GetDigest(Aes::BLOCKBYTESIZE, iv_)) {
     LOG(ERROR) << "AesSiv::Encrypt: GetDigest fails\n";
     return false;
   }
+
 #ifdef DEBUG
+    printf("\n");
+    printf("Siv-Encrypt, to digest: "); PrintBytes(all_size, all); printf("\n");
     printf("Siv-Encrypt, after GetDigest: "); PrintBytes(Aes::BLOCKBYTESIZE, iv_); printf("\n");
     printf("\n");
 #endif
+
+  free(all);
+  all = nullptr;
 
   // Now encrypt with counter mode with key, K2 and ctr initialized to IV & 1^(n−64) 01^31 01^31
   if (!aes_.Init(128, K2_, Aes::ENCRYPT)) {
@@ -148,44 +127,42 @@ bool AesSiv::Encrypt(byte* K, int hdr_size, byte* hdr, int msg_size, byte* msg, 
   // out = iv_ || C
   memcpy(outptr, iv_, Aes::BLOCKBYTESIZE);
   outptr += Aes::BLOCKBYTESIZE;
-  int num_blocks = (msg_size + Aes::BLOCKBYTESIZE - 1) / Aes::BLOCKBYTESIZE;
   byte to_xor[Aes::BLOCKBYTESIZE];
 
-#ifdef DEBUG
-    printf("Siv-Encrypt, num_blocks: %d\n", num_blocks);
-    printf("\n");
-#endif
+  int bytes_to_process = msg_size;
+  int bytes_processed;
 
-  for (int i = 0; i < num_blocks; i++) {
+  while (bytes_to_process > 0) {
     aes_.EncryptBlock(ctr_blk_, to_xor);
-    Xor(inptr, to_xor, outptr, Aes::BLOCKBYTESIZE);
-#ifdef DEBUG
-    printf("Encrypt, ctr: "); PrintBytes(Aes::BLOCKBYTESIZE, ctr_blk_); printf("\n");
-    printf("Encrypt, in : "); PrintBytes(Aes::BLOCKBYTESIZE, inptr); printf("\n");
-    printf("Encrypt, out: "); PrintBytes(Aes::BLOCKBYTESIZE, outptr); printf("\n");
-    printf("\n");
-#endif
+    if (bytes_to_process >= Aes::BLOCKBYTESIZE) {
+	bytes_processed = Aes::BLOCKBYTESIZE;
+    } else {
+	bytes_processed = bytes_to_process;
+    }
+    Xor(inptr, to_xor, outptr, bytes_processed);
+    bytes_to_process -= bytes_processed;
+    outptr += bytes_processed;
+    inptr += bytes_processed;
     BumpCtr(ctr_blk_);
-    outptr += Aes::BLOCKBYTESIZE;
-    inptr += Aes::BLOCKBYTESIZE;
   }
 
-  *size_out = num_blocks * Aes::BLOCKBYTESIZE + Aes::BLOCKBYTESIZE;
   return true;
 }
 
 bool AesSiv::Decrypt(byte* K, int hdr_size, byte* hdr, int cipher_size, byte* cipher, int* size_out, byte* out) {
   Cmac cmac(128);
 
-  if (!ComputeSubKeys(K)) {
-    LOG(ERROR) << "AesSiv::Encrypt: ComputeSubKeys fails\n";
-    return false;
-  }
+  memcpy(K1_, &K[0], Aes::BLOCKBYTESIZE);
+  memcpy(K2_, &K[16], Aes::BLOCKBYTESIZE);
+
 #ifdef DEBUG
+    printf("\n");
     printf("Siv-Decrypt, K1_: "); PrintBytes(Aes::BLOCKBYTESIZE, K1_); printf("\n");
     printf("Siv-Decrypt, K2_: "); PrintBytes(Aes::BLOCKBYTESIZE, K2_); printf("\n");
     printf("\n");
 #endif
+
+  *size_out = cipher_size - Aes::BLOCKBYTESIZE;
 
   // Now decrypt with counter mode with key, K2 and ctr initialized to IV & 1^(n−64) 01^31 01^31
   if (!aes_.Init(128, K2_, Aes::ENCRYPT)) {
@@ -199,28 +176,23 @@ bool AesSiv::Decrypt(byte* K, int hdr_size, byte* hdr, int cipher_size, byte* ci
   inptr += Aes::BLOCKBYTESIZE;
   memcpy(ctr_blk_, iv_, Aes::BLOCKBYTESIZE);
 
-  int num_blocks = (cipher_size - 1) / Aes::BLOCKBYTESIZE;
+  int bytes_to_process = *size_out;
   byte to_xor[Aes::BLOCKBYTESIZE];
+  int bytes_processed;
 
-#ifdef DEBUG
-    printf("Siv-Decrypt, num_blocks: %d\n", num_blocks);
-    printf("\n");
-#endif
-
-  for (int i = 0; i < num_blocks; i++) {
+  while (bytes_to_process > 0) {
     aes_.EncryptBlock(ctr_blk_, to_xor);
-    Xor(inptr, to_xor, outptr, Aes::BLOCKBYTESIZE);
-#ifdef DEBUG
-    printf("Decrypt, ctr: "); PrintBytes(Aes::BLOCKBYTESIZE, ctr_blk_); printf("\n");
-    printf("Decrypt, in : "); PrintBytes(Aes::BLOCKBYTESIZE, inptr); printf("\n");
-    printf("Decrypt, out: "); PrintBytes(Aes::BLOCKBYTESIZE, outptr); printf("\n");
-    printf("\n");
-#endif
+    if (bytes_to_process >= Aes::BLOCKBYTESIZE) {
+	bytes_processed = Aes::BLOCKBYTESIZE;
+    } else {
+	bytes_processed = bytes_to_process;
+    }
+    bytes_to_process -= bytes_processed;
+    Xor(inptr, to_xor, outptr, bytes_processed);
+    outptr += bytes_processed;
+    inptr += bytes_processed;
     BumpCtr(ctr_blk_);
-    outptr += Aes::BLOCKBYTESIZE;
-    inptr += Aes::BLOCKBYTESIZE;
   }
-  *size_out = num_blocks * Aes::BLOCKBYTESIZE;
 
   if (!cmac.Init(K1_)) {
     LOG(ERROR) << "AesSiv::Decrypt: cmac.Init fails\n";
@@ -234,29 +206,34 @@ bool AesSiv::Decrypt(byte* K, int hdr_size, byte* hdr, int cipher_size, byte* ci
   }
   memcpy(all, hdr, hdr_size);
   memcpy(&all[hdr_size], out, *size_out);
+
   int first_size = (all_size/Aes::BLOCKBYTESIZE) * Aes::BLOCKBYTESIZE;
   int last_size;
+
   if (first_size == hdr_size) {
-    last_size = Aes::BLOCKBYTESIZE;
     first_size -= Aes::BLOCKBYTESIZE;
-  } else {
-    last_size = all_size - Aes::BLOCKBYTESIZE;
   }
+  last_size = all_size - first_size;
+
   cmac.AddToHash(first_size, all);
   cmac.Final(last_size, &all[first_size]);
+
+#ifdef DEBUG
+    printf("Siv-Decrypt, to digest: "); PrintBytes(all_size, all); printf("\n");
+    printf("Siv-Decrypt, after GetDigest: "); PrintBytes(Aes::BLOCKBYTESIZE, iv_); printf("\n");
+    printf("\n");
+#endif
+
   free(all);
   all = nullptr;
+
   byte computed_iv[16];
   if (!cmac.GetDigest(Aes::BLOCKBYTESIZE, computed_iv)) {
     LOG(ERROR) << "AesSiv::Decrypt: GetDigest fails\n";
     return false;
   }
-#ifdef DEBUG
-    printf("Siv-Decrypt, after GetDigest: "); PrintBytes(Aes::BLOCKBYTESIZE, computed_iv); printf("\n");
-    printf("\n");
-#endif
 
-  return true;
+  return memcmp(computed_iv, iv_, Aes::BLOCKBYTESIZE) == 0;
 }
 
 bool AesSiv::GenerateScheme(const char* name, int num_bits) {

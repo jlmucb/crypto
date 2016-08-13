@@ -22,6 +22,8 @@
 #include <string.h>
 using namespace std;
 
+#define DEBUG
+
 // This implementation assumes a little-endian platform.
 
 Cmac::Cmac(int num_bits) { num_out_bytes_ = (num_bits + NBITSINBYTE - 1) / NBITSINBYTE; }
@@ -75,7 +77,7 @@ bool Cmac::Init(byte* K) {
 }
 
 void Cmac::AddToHash(int size, const byte* in) {
-  byte t[16];
+  byte t[BLOCKBYTESIZE];
 
   if (num_bytes_waiting_ > 0) {
     int needed = BLOCKBYTESIZE - num_bytes_waiting_;
@@ -86,7 +88,7 @@ void Cmac::AddToHash(int size, const byte* in) {
     }
     memcpy(&bytes_waiting_[num_bytes_waiting_], in, needed);
     // add to hash
-    for (int i = 0; i<16; i++)
+    for (int i = 0; i < BLOCKBYTESIZE; i++)
       t[i] = state_[i] ^ bytes_waiting_[i];
     aes_.EncryptBlock(t, state_);
     num_bits_processed_ += BLOCKBYTESIZE * NBITSINBYTE;
@@ -95,7 +97,7 @@ void Cmac::AddToHash(int size, const byte* in) {
     num_bytes_waiting_ = 0;
   }
   while (size >= BLOCKBYTESIZE) {
-      for (int i = 0; i<16; i++)
+      for (int i = 0; i < BLOCKBYTESIZE; i++)
         t[i] = state_[i] ^ in[i];
       aes_.EncryptBlock(t, state_);
     num_bits_processed_ += BLOCKBYTESIZE * NBITSINBYTE;
@@ -109,18 +111,16 @@ void Cmac::AddToHash(int size, const byte* in) {
 }
 
 void Cmac::Final(int size, byte* in) {
-  byte blk[16];
+  byte blk[BLOCKBYTESIZE];
 
-  memset(blk, 0, 16);
-  if (size > 16) {
-  }
-  if (size == 16) {
-    for (int i = 0; i < 16; i++)
+  memset(blk, 0, BLOCKBYTESIZE);
+  if (size == BLOCKBYTESIZE) {
+    for (int i = 0; i < BLOCKBYTESIZE; i++)
       blk[i] = in[i] ^ K1_[i];
   } else {
     for (int i = 0; i < size; i++)
       blk[i] = in[i] ^ K2_[i];
-    for (int i = size; i < 16; i++)
+    for (int i = size; i < BLOCKBYTESIZE; i++)
       blk[i] = K2_[i];
   }
   aes_.EncryptBlock(blk, digest_);

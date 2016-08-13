@@ -910,17 +910,15 @@ TEST(Ghash, GhashTest7) {
  *  CIPHK(0^128): 7df76b0c 1ab899b3 3e42f047 b91b546f
  *  K1: fbeed618 35713366 7c85e08f 7236a8de
  *  K2: f7ddac30 6ae266cc f90bc11e e46d513b
- *  Example 2: Mlen = 128
+ *
+ *  Example 1: Mlen = 128
  *  M:  6bc1bee2 2e409f96 e93d7e11 7393172a
  *  T:  070a16b4 6b4d4144 f79bdd9d d04a287c
- *  Example 3: Mlen = 320
+ *
+ *  Example 2: Mlen = 320
  *  M:  6bc1bee2 2e409f96 e93d7e11 7393172a ae2d8a57 1e03ac9c 9eb76fac 45af8e51
  *  30c81c46 a35ce411
  *  T:  dfa66747 de9ae630 30ca3261 1497c827
- *  Example 4: Mlen = 512
- *  M:  6bc1bee2 2e409f96 e93d7e11 7393172a ae2d8a57 1e03ac9c 9eb76fac 45af8e51
- *  30c81c46 a35ce411 e5fbc119 1a0a52ef f69f2445 df4f9b17 ad2b417b e66c3710
- *  T:  51f0bebf 7e3b9d92 fc497417 79363cfe 
  */
 
 TEST(Cmac, CmacTest1) {
@@ -939,17 +937,28 @@ TEST(Cmac, CmacTest1) {
   byte T[16] = {
     0x07, 0x0a, 0x16, 0xb4, 0x6b, 0x4d, 0x41, 0x44, 0xf7, 0x9b, 0xdd, 0x9d, 0xd0, 0x4a, 0x28, 0x7c
   };
+  byte M2[40] = {
+    0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96, 0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a,
+    0xae, 0x2d, 0x8a, 0x57, 0x1e, 0x03, 0xac, 0x9c, 0x9e, 0xb7, 0x6f, 0xac, 0x45, 0xaf, 0x8e, 0x51,
+    0x30, 0xc8, 0x1c, 0x46, 0xa3, 0x5c, 0xe4, 0x11
+  };
+  byte T2[16] = {
+    0xdf, 0xa6, 0x67, 0x47, 0xde, 0x9a, 0xe6, 0x30, 0x30, 0xca, 0x32, 0x61, 0x14, 0x97, 0xc8, 0x27
+  };
 
   printf("K         : "); PrintBytes(16, K); printf("\n");
   printf("K1        : "); PrintBytes(16, K1); printf("\n");
   printf("K2        : "); PrintBytes(16, K2); printf("\n");
   printf("M         : "); PrintBytes(16, M); printf("\n");
   printf("T         : "); PrintBytes(16, T); printf("\n");
+  printf("M2        : "); PrintBytes(40, M2); printf("\n");
+  printf("T2        : "); PrintBytes(16, T2); printf("\n");
   printf("\n");
 
   byte out[16];
   Cmac hash(128);
 
+  printf("\n");
   EXPECT_TRUE(hash.Init(K));
   hash.AddToHash(sizeof(M) - 16, M);
   hash.Final(16, &M[sizeof(M) - 16]);
@@ -957,6 +966,18 @@ TEST(Cmac, CmacTest1) {
   printf("\n");
   printf("Hash      : "); PrintBytes(16, out); printf("\n");
   EXPECT_TRUE(memcmp(out, T, 16) == 0);
+
+  byte out2[16];
+  Cmac hash2(128);
+
+  printf("\n");
+  EXPECT_TRUE(hash2.Init(K));
+  hash2.AddToHash(sizeof(M2) - 8, M2);
+  hash2.Final(8, &M2[sizeof(M2) - 8]);
+  EXPECT_TRUE(hash2.GetDigest(16, out2));
+  printf("\n");
+  printf("Hash      : "); PrintBytes(16, out2); printf("\n");
+  EXPECT_TRUE(memcmp(out2, T2, 16) == 0);
 }
 
 DEFINE_string(log_file, "hashtest.log", "hashtest log file name");
