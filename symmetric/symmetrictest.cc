@@ -1187,7 +1187,6 @@ TEST(AesGcm, FourthAesGcmTest) {
 }
 
 TEST(AesSiv, AesSivTest) {
-  AesSiv aes_siv;
 
   int size_out = 256;
   byte out[256];
@@ -1221,11 +1220,15 @@ TEST(AesSiv, AesSivTest) {
   printf("Test_Siv_CMAC key: "); PrintBytes(sizeof(Test_Siv_CMAC), Test_Siv_CMAC); printf("\n");
   printf("Test_Siv_output key: "); PrintBytes(sizeof(Test_Siv_output), Test_Siv_output); printf("\n");
 
-  EXPECT_TRUE(aes_siv.Encrypt(Test_Siv_Key, sizeof(Test_Siv_Hdr), Test_Siv_Hdr,
+  AesSiv aes_siv_encrypt;
+  EXPECT_TRUE(aes_siv_encrypt.Encrypt(Test_Siv_Key, sizeof(Test_Siv_Hdr), Test_Siv_Hdr,
               sizeof(Test_Siv_Plaintext), Test_Siv_Plaintext, &size_out, out));
   printf("Computed SIV Encrypt: "); PrintBytes(size_out, out); printf("\n");
-  // EXPECT_TRUE(aes_siv.Encrypt(Test_Siv_Key, sizeof(Test_Siv_Hdr), Test_Siv_Hdr,
-  //             size_out, out, &size_decrypt_out, decrypt_out));
+
+  AesSiv aes_siv_decrypt;
+  EXPECT_TRUE(aes_siv_decrypt.Decrypt(Test_Siv_Key, sizeof(Test_Siv_Hdr), Test_Siv_Hdr,
+              size_out, out, &size_decrypt_out, decrypt_out));
+  printf("Computed SIV Decrypt: "); PrintBytes(size_decrypt_out, decrypt_out); printf("\n");
 }
 
 DEFINE_string(log_file, "symmetrictest.log", "symmetrictest file name");
