@@ -68,6 +68,16 @@ static void setCtr(byte* in, byte* out) {
   Xor(&in[12], pad, &out[12], 4);
 }
 
+/*
+ * IV = CMAC∗ (X1,...,Xm)
+ * dbl(S) is S<<1 if msb(S) = 0 and dbl(S) = (S<<1) ^ 0**(120)10000111 if msb(S) = 1.
+ * CMAC∗ (X1,...,Xm)
+ *   S ← CMAC_K(0^n)
+ *   for i=1 i<= m−1  S=dbl(S)⊕CMACK(Xi)
+ *   if |Xm| ≥ n then return CMACK (S ⊕end Xm)
+ *   else return CMACK (dbl(S) ⊕ Xm10∗)
+ */
+
 #define DEBUG
 bool AesSiv::Encrypt(byte* K, int hdr_size, byte* hdr, int msg_size, byte* msg, int* size_out, byte*out) {
   Cmac cmac(128);
