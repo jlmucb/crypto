@@ -913,10 +913,10 @@ TEST(Cmac, CmacTest1) {
   byte K2[16] = {
     0xf7, 0xdd, 0xac, 0x30, 0x6a, 0xe2, 0x66, 0xcc, 0xf9, 0x0b, 0xc1, 0x1e, 0xe4, 0x6d, 0x51, 0x3b
   };
-  byte M[16] = {
+  byte M1[16] = {
     0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96, 0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a
   };
-  byte T[16] = {
+  byte T1[16] = {
     0x07, 0x0a, 0x16, 0xb4, 0x6b, 0x4d, 0x41, 0x44, 0xf7, 0x9b, 0xdd, 0x9d, 0xd0, 0x4a, 0x28, 0x7c
   };
   byte M2[40] = {
@@ -933,32 +933,35 @@ TEST(Cmac, CmacTest1) {
   printf("K2        : "); PrintBytes(16, K2); printf("\n");
   printf("\n");
 
-  byte out[16];
-  Cmac hash(128);
+  byte out1[16];
+  Cmac cmac1(128);
 
   printf("\n");
-  EXPECT_TRUE(hash.Init(K));
-  hash.AddToHash(sizeof(M) - 16, M);
-  hash.Final(16, &M[sizeof(M) - 16]);
-  EXPECT_TRUE(hash.GetDigest(16, out));
-  printf("M         : "); PrintBytes(16, M); printf("\n");
-  printf("T         : "); PrintBytes(16, T); printf("\n");
-  printf("Hash      : "); PrintBytes(16, out); printf("\n");
-  EXPECT_TRUE(memcmp(out, T, 16) == 0);
-  EXPECT_TRUE(memcmp(K1, hash.getK1(), 16) == 0);
-  EXPECT_TRUE(memcmp(K2, hash.getK2(), 16) == 0);
+  EXPECT_TRUE(cmac1.Init(K));
+  printf("init done\n");
+  cmac1.AddToHash(sizeof(M1) - 16, M1);
+  printf("AddToHash done\n");
+  cmac1.Final(16, (byte*)&M1[sizeof(M1) - 16]);
+  printf("Final\n");
+  EXPECT_TRUE(cmac1.GetDigest(16, out1));
+  printf("M1        : "); PrintBytes(16, M1); printf("\n");
+  printf("T1        : "); PrintBytes(16, T1); printf("\n");
+  printf("Hash out  : "); PrintBytes(16, out1); printf("\n");
+  EXPECT_TRUE(memcmp(out1, T1, 16) == 0);
+  EXPECT_TRUE(memcmp(K1, cmac1.getK1(), 16) == 0);
+  EXPECT_TRUE(memcmp(K2, cmac1.getK2(), 16) == 0);
   printf("\n");
 
   byte out2[16];
-  Cmac hash2(128);
+  Cmac cmac2(128);
 
-  EXPECT_TRUE(hash2.Init(K));
-  hash2.AddToHash(sizeof(M2) - 8, M2);
-  hash2.Final(8, &M2[sizeof(M2) - 8]);
-  EXPECT_TRUE(hash2.GetDigest(16, out2));
+  EXPECT_TRUE(cmac2.Init(K));
+  cmac2.AddToHash(sizeof(M2) - 8, M2);
+  cmac2.Final(8, (byte*)&M2[sizeof(M2) - 8]);
+  EXPECT_TRUE(cmac2.GetDigest(16, out2));
   printf("M2        : "); PrintBytes(40, M2); printf("\n");
   printf("T2        : "); PrintBytes(16, T2); printf("\n");
-  printf("Hash      : "); PrintBytes(16, out2); printf("\n");
+  printf("Hash out  : "); PrintBytes(16, out2); printf("\n");
   EXPECT_TRUE(memcmp(out2, T2, 16) == 0);
 }
 

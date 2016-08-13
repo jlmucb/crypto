@@ -30,27 +30,23 @@
 
 class Cmac : public CryptographicHash {
  public:
-  enum {
-    BLOCKBITSIZE = 128,
-    BLOCKBYTESIZE = 16,
-  };
 private:
-  const byte R_[16]= {
+  const byte R_[Aes::BLOCKBYTESIZE]= {
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0x87,
     };
   int num_out_bytes_;
   int num_bytes_waiting_;
-  byte bytes_waiting_[BLOCKBYTESIZE];
-  byte K1_[16];
-  byte K2_[16];
-  byte state_[16];
-  byte digest_[16];
+  byte bytes_waiting_[Aes::BLOCKBYTESIZE];
+  byte K1_[Aes::BLOCKBYTESIZE];
+  byte K2_[Aes::BLOCKBYTESIZE];
+  byte state_[Aes::BLOCKBYTESIZE];
+  byte digest_[Aes::BLOCKBYTESIZE];
   uint64_t num_bits_processed_;
   bool finalized_;
   Aes aes_;
 
-  bool ComputeSubKeys(byte* K);
+  bool ComputeSubKeys();
 
 public:
   Cmac(int num_bits);
@@ -62,6 +58,6 @@ public:
   bool Init(byte* K);
   void AddToHash(int size, const byte* in);
   bool GetDigest(int size, byte* out);
-  void Final(int size, byte* in);
+  void Final(int size, const byte* in);
 };
 #endif

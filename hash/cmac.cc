@@ -24,17 +24,23 @@ using namespace std;
 
 // This implementation assumes a little-endian platform.
 
-Cmac::Cmac(int num_bits) { num_out_bytes_ = (num_bits + NBITSINBYTE - 1) / NBITSINBYTE; }
+Cmac::Cmac(int num_bits) {
+  num_out_bytes_ = (num_bits + NBITSINBYTE - 1) / NBITSINBYTE;
+  hash_name_ = new string("AES-CMAC");
+}
 
-Cmac::~Cmac() {}
+Cmac::~Cmac() {
+  if (hash_name_)
+    delete hash_name_;
+  hash_name_ = nullptr;
+}
 
-bool Cmac::ComputeSubKeys(byte* K) {
+bool Cmac::ComputeSubKeys() {
   byte in[Aes::BLOCKBYTESIZE];
   byte L[Aes::BLOCKBYTESIZE];
 
   memset(in, 0, Aes::BLOCKBYTESIZE);
   memset(L, 0, Aes::BLOCKBYTESIZE);
-  if (!aes_.Init(128, K, Aes::ENCRYPT)) return false;
   aes_.EncryptBlock(in, L);
 
   // if (msb(L) == 0) K_1 = L <<1; else K_1 = L<<1 ^ R
@@ -58,27 +64,33 @@ bool Cmac::ComputeSubKeys(byte* K) {
 }
 
 bool Cmac::Init(byte* K) {
-  if (num_out_bytes_ > BLOCKBYTESIZE) return false;
-  if (!ComputeSubKeys(K)) return false;
+  if (num_out_bytes_ > Aes::BLOCKBYTESIZE) return false;
 
-#ifdef DEBUG
-  printf("K         : "); PrintBytes(16, K); printf("\n");
-  printf("K1        : "); PrintBytes(16, K1_); printf("\n");
-  printf("K2        : "); PrintBytes(16, K2_); printf("\n");
-#endif
-
-  memset((byte*)state_, 0, BLOCKBYTESIZE);
+  memset((byte*)state_, 0, Aes::BLOCKBYTESIZE);
+  memset((byte*)digest_, 0, Aes::BLOCKBYTESIZE);
   num_bytes_waiting_ = 0;
   num_bits_processed_ = 0;
   finalized_ = false;
+
+  if (!aes_.Init(128, K, Aes::ENCRYPT)) return false;
+  if (!ComputeSubKeys()) return false;
+
+#ifdef DEBUG
+  printf("\nInit %s\n", hash_name_->c_str());
+  printf("K         : "); PrintBytes(16, K); printf("\n");
+  printf("K1        : "); PrintBytes(16, K1_); printf("\n");
+  printf("K2        : "); PrintBytes(16, K2_); printf("\n");
+  printf("\n");
+#endif
+
   return true;
 }
 
 void Cmac::AddToHash(int size, const byte* in) {
-  byte t[BLOCKBYTESIZE];
+  byte t[Aes::BLOCKBYTESIZE];
 
   if (num_bytes_waiting_ > 0) {
-    int needed = BLOCKBYTESIZE - num_bytes_waiting_;
+    int needed = Aes::BLOCKBYTESIZE - num_bytes_waiting_;
     if (size < needed) {
       memcpy(&bytes_waiting_[num_bytes_waiting_], in, size);
       num_bytes_waiting_ += size;
@@ -86,21 +98,21 @@ void Cmac::AddToHash(int size, const byte* in) {
     }
     memcpy(&bytes_waiting_[num_bytes_waiting_], in, needed);
     // add to hash
-    for (int i = 0; i < BLOCKBYTESIZE; i++)
+    for (int i = 0; i < Aes::BLOCKBYTESIZE; i++)
       t[i] = state_[i] ^ bytes_waiting_[i];
     aes_.EncryptBlock(t, state_);
-    num_bits_processed_ += BLOCKBYTESIZE * NBITSINBYTE;
+    num_bits_processed_ += Aes::BLOCKBYTESIZE * NBITSINBYTE;
     size -= needed;
     in += needed;
     num_bytes_waiting_ = 0;
   }
-  while (size >= BLOCKBYTESIZE) {
-    for (int i = 0; i < BLOCKBYTESIZE; i++)
+  while (size >= Aes::BLOCKBYTESIZE) {
+    for (int i = 0; i < Aes::BLOCKBYTESIZE; i++)
       t[i] = state_[i] ^ in[i];
     aes_.EncryptBlock(t, state_);
-    num_bits_processed_ += BLOCKBYTESIZE * NBITSINBYTE;
-    size -= BLOCKBYTESIZE;
-    in += BLOCKBYTESIZE;
+    num_bits_processed_ += Aes::BLOCKBYTESIZE * NBITSINBYTE;
+    size -= Aes::BLOCKBYTESIZE;
+    in += Aes::BLOCKBYTESIZE;
   }
   if (size > 0) {
     num_bytes_waiting_ = size;
@@ -108,17 +120,17 @@ void Cmac::AddToHash(int size, const byte* in) {
   }
 }
 
-void Cmac::Final(int size, byte* in) {
-  byte blk[BLOCKBYTESIZE];
+void Cmac::Final(int size, const byte* in) {
+  byte blk[Aes::BLOCKBYTESIZE];
 
-  if (size == BLOCKBYTESIZE) {
-    for (int i = 0; i < BLOCKBYTESIZE; i++)
+  if (size == Aes::BLOCKBYTESIZE) {
+    for (int i = 0; i < Aes::BLOCKBYTESIZE; i++)
       blk[i] = state_[i] ^ in[i] ^ K1_[i];
   } else {
     for (int i = 0; i < size; i++)
       blk[i] = state_[i] ^ in[i] ^ K2_[i];
     blk[size] = state_[size] ^ K2_[size] ^ 0x80;
-    for (int i = (size + 1); i < BLOCKBYTESIZE; i++)
+    for (int i = (size + 1); i < Aes::BLOCKBYTESIZE; i++)
       blk[i] = state_[i] ^ K2_[i];
   }
   aes_.EncryptBlock(blk, digest_);
