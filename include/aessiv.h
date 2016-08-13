@@ -48,7 +48,7 @@ private:
   AesSiv();
   ~AesSiv();
 
-  // bool ComputeSubKeys(byte* K);
+  byte* getIV() {return iv_;};
   bool Encrypt(byte* K, int hdr_size, byte* hdr,
                int msg_size, byte* msg, int* size_out, byte* out);
   bool Decrypt(byte* K, int hdr_size, byte* hdr,

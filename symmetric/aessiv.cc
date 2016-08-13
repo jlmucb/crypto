@@ -60,6 +60,14 @@ static void Xor(byte* in, byte* to_xor, byte* out, int size) {
     out[i] = in[i] ^ to_xor[i];
 }
 
+static void setCtr(byte* in, byte* out) {
+  // ctr initialized to IV & 1^(n−64) 01^31 01^31
+  byte pad[4] = {0x7f, 0xff, 0xff, 0xff};
+  memcpy(out, in, 8);
+  Xor(&in[8], pad, &out[8], 4);
+  Xor(&in[12], pad, &out[12], 4);
+}
+
 #define DEBUG
 bool AesSiv::Encrypt(byte* K, int hdr_size, byte* hdr, int msg_size, byte* msg, int* size_out, byte*out) {
   Cmac cmac(128);
@@ -114,12 +122,12 @@ bool AesSiv::Encrypt(byte* K, int hdr_size, byte* hdr, int msg_size, byte* msg, 
   free(all);
   all = nullptr;
 
-  // Now encrypt with counter mode with key, K2 and ctr initialized to IV & 1^(n−64) 01^31 01^31
   if (!aes_.Init(128, K2_, Aes::ENCRYPT)) {
     LOG(ERROR) << "AesSiv::Encrypt: Aes::Init fails\n";
     return false;
   }
-  memcpy(ctr_blk_, iv_, Aes::BLOCKBYTESIZE);
+
+  setCtr(iv_, ctr_blk_);
 
   byte* outptr = out;
   byte* inptr = msg;
@@ -172,9 +180,11 @@ bool AesSiv::Decrypt(byte* K, int hdr_size, byte* hdr, int cipher_size, byte* ci
 
   byte* outptr = out;
   byte* inptr = cipher;
+
   memcpy(iv_, inptr, Aes::BLOCKBYTESIZE);
   inptr += Aes::BLOCKBYTESIZE;
-  memcpy(ctr_blk_, iv_, Aes::BLOCKBYTESIZE);
+
+  setCtr(iv_, ctr_blk_);
 
   int bytes_to_process = *size_out;
   byte to_xor[Aes::BLOCKBYTESIZE];

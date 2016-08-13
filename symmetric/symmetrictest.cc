@@ -1214,12 +1214,12 @@ TEST(AesSiv, AesSivTest) {
     0x85, 0x63, 0x2d, 0x07, 0xc6, 0xe8, 0xf3, 0x7f, 0x95, 0x0a, 0xcd, 0x32, 0x0a, 0x2e, 0xcc, 0x93,
     0x40, 0xc0, 0x2b, 0x96, 0x90, 0xc4, 0xdc, 0x04, 0xda, 0xef, 0x7f, 0x6a, 0xfe, 0x5c
   };
-  printf("Test_Siv_Key key: "); PrintBytes(sizeof(Test_Siv_Key), Test_Siv_Key); printf("\n");
-  printf("Test_Siv_Hdr key: "); PrintBytes(sizeof(Test_Siv_Hdr), Test_Siv_Hdr); printf("\n");
-  printf("Test_Siv_Plaintext key: "); PrintBytes(sizeof(Test_Siv_Plaintext), Test_Siv_Plaintext); printf("\n");
-  printf("Test_Siv_pad key: "); PrintBytes(sizeof(Test_Siv_pad), Test_Siv_pad); printf("\n");
-  printf("Test_Siv_CMAC key: "); PrintBytes(sizeof(Test_Siv_CMAC), Test_Siv_CMAC); printf("\n");
-  printf("Test_Siv_output key: "); PrintBytes(sizeof(Test_Siv_output), Test_Siv_output); printf("\n");
+  printf("Test_Siv_Key       : "); PrintBytes(sizeof(Test_Siv_Key), Test_Siv_Key); printf("\n");
+  printf("Test_Siv_Hdr       : "); PrintBytes(sizeof(Test_Siv_Hdr), Test_Siv_Hdr); printf("\n");
+  printf("Test_Siv_Plaintext : "); PrintBytes(sizeof(Test_Siv_Plaintext), Test_Siv_Plaintext); printf("\n");
+  printf("Test_Siv_pad       : "); PrintBytes(sizeof(Test_Siv_pad), Test_Siv_pad); printf("\n");
+  printf("Test_Siv_CMAC      : "); PrintBytes(sizeof(Test_Siv_CMAC), Test_Siv_CMAC); printf("\n");
+  printf("Test_Siv_output    : "); PrintBytes(sizeof(Test_Siv_output), Test_Siv_output); printf("\n");
 
   AesSiv aes_siv_encrypt;
   EXPECT_TRUE(aes_siv_encrypt.Encrypt(Test_Siv_Key, sizeof(Test_Siv_Hdr), Test_Siv_Hdr,
