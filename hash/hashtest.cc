@@ -903,24 +903,6 @@ TEST(Ghash, GhashTest7) {
   EXPECT_TRUE(memcmp(X1, (byte*) out, 16) == 0);
 }
 
-/*
- *  CMAC: test vectors
- *
- *  K: 2b7e1516 28aed2a6 abf71588 09cf4f3c.
- *  CIPHK(0^128): 7df76b0c 1ab899b3 3e42f047 b91b546f
- *  K1: fbeed618 35713366 7c85e08f 7236a8de
- *  K2: f7ddac30 6ae266cc f90bc11e e46d513b
- *
- *  Example 1: Mlen = 128
- *  M:  6bc1bee2 2e409f96 e93d7e11 7393172a
- *  T:  070a16b4 6b4d4144 f79bdd9d d04a287c
- *
- *  Example 2: Mlen = 320
- *  M:  6bc1bee2 2e409f96 e93d7e11 7393172a ae2d8a57 1e03ac9c 9eb76fac 45af8e51
- *  30c81c46 a35ce411
- *  T:  dfa66747 de9ae630 30ca3261 1497c827
- */
-
 TEST(Cmac, CmacTest1) {
   byte K[16] = {
     0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
@@ -949,10 +931,6 @@ TEST(Cmac, CmacTest1) {
   printf("K         : "); PrintBytes(16, K); printf("\n");
   printf("K1        : "); PrintBytes(16, K1); printf("\n");
   printf("K2        : "); PrintBytes(16, K2); printf("\n");
-  printf("M         : "); PrintBytes(16, M); printf("\n");
-  printf("T         : "); PrintBytes(16, T); printf("\n");
-  printf("M2        : "); PrintBytes(40, M2); printf("\n");
-  printf("T2        : "); PrintBytes(16, T2); printf("\n");
   printf("\n");
 
   byte out[16];
@@ -963,19 +941,23 @@ TEST(Cmac, CmacTest1) {
   hash.AddToHash(sizeof(M) - 16, M);
   hash.Final(16, &M[sizeof(M) - 16]);
   EXPECT_TRUE(hash.GetDigest(16, out));
-  printf("\n");
+  printf("M         : "); PrintBytes(16, M); printf("\n");
+  printf("T         : "); PrintBytes(16, T); printf("\n");
   printf("Hash      : "); PrintBytes(16, out); printf("\n");
   EXPECT_TRUE(memcmp(out, T, 16) == 0);
+  EXPECT_TRUE(memcmp(K1, hash.getK1(), 16) == 0);
+  EXPECT_TRUE(memcmp(K2, hash.getK2(), 16) == 0);
+  printf("\n");
 
   byte out2[16];
   Cmac hash2(128);
 
-  printf("\n");
   EXPECT_TRUE(hash2.Init(K));
   hash2.AddToHash(sizeof(M2) - 8, M2);
   hash2.Final(8, &M2[sizeof(M2) - 8]);
   EXPECT_TRUE(hash2.GetDigest(16, out2));
-  printf("\n");
+  printf("M2        : "); PrintBytes(40, M2); printf("\n");
+  printf("T2        : "); PrintBytes(16, T2); printf("\n");
   printf("Hash      : "); PrintBytes(16, out2); printf("\n");
   EXPECT_TRUE(memcmp(out2, T2, 16) == 0);
 }

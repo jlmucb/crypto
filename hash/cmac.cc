@@ -22,8 +22,6 @@
 #include <string.h>
 using namespace std;
 
-#define DEBUG
-
 // This implementation assumes a little-endian platform.
 
 Cmac::Cmac(int num_bits) { num_out_bytes_ = (num_bits + NBITSINBYTE - 1) / NBITSINBYTE; }
@@ -64,12 +62,12 @@ bool Cmac::Init(byte* K) {
   if (!ComputeSubKeys(K)) return false;
 
 #ifdef DEBUG
-  printf("K : "); PrintBytes(16, K); printf("\n");
-  printf("K1: "); PrintBytes(16, K1_); printf("\n");
-  printf("K2: "); PrintBytes(16, K2_); printf("\n");
+  printf("K         : "); PrintBytes(16, K); printf("\n");
+  printf("K1        : "); PrintBytes(16, K1_); printf("\n");
+  printf("K2        : "); PrintBytes(16, K2_); printf("\n");
 #endif
 
-  memset((byte*)state_, 0, sizeof(state_));
+  memset((byte*)state_, 0, BLOCKBYTESIZE);
   num_bytes_waiting_ = 0;
   num_bits_processed_ = 0;
   finalized_ = false;
@@ -97,9 +95,9 @@ void Cmac::AddToHash(int size, const byte* in) {
     num_bytes_waiting_ = 0;
   }
   while (size >= BLOCKBYTESIZE) {
-      for (int i = 0; i < BLOCKBYTESIZE; i++)
-        t[i] = state_[i] ^ in[i];
-      aes_.EncryptBlock(t, state_);
+    for (int i = 0; i < BLOCKBYTESIZE; i++)
+      t[i] = state_[i] ^ in[i];
+    aes_.EncryptBlock(t, state_);
     num_bits_processed_ += BLOCKBYTESIZE * NBITSINBYTE;
     size -= BLOCKBYTESIZE;
     in += BLOCKBYTESIZE;
@@ -113,17 +111,18 @@ void Cmac::AddToHash(int size, const byte* in) {
 void Cmac::Final(int size, byte* in) {
   byte blk[BLOCKBYTESIZE];
 
-  memset(blk, 0, BLOCKBYTESIZE);
   if (size == BLOCKBYTESIZE) {
     for (int i = 0; i < BLOCKBYTESIZE; i++)
-      blk[i] = in[i] ^ K1_[i];
+      blk[i] = state_[i] ^ in[i] ^ K1_[i];
   } else {
     for (int i = 0; i < size; i++)
-      blk[i] = in[i] ^ K2_[i];
-    for (int i = size; i < BLOCKBYTESIZE; i++)
-      blk[i] = K2_[i] ^ 0xaa;
+      blk[i] = state_[i] ^ in[i] ^ K2_[i];
+    blk[size] = state_[size] ^ K2_[size] ^ 0x80;
+    for (int i = (size + 1); i < BLOCKBYTESIZE; i++)
+      blk[i] = state_[i] ^ K2_[i];
   }
   aes_.EncryptBlock(blk, digest_);
+  num_bits_processed_ += size * NBITSINBYTE;
   finalized_ = true;
 }
 

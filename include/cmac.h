@@ -56,6 +56,9 @@ public:
   Cmac(int num_bits);
   ~Cmac();
 
+  byte* getK1() {return K1_;};
+  byte* getK2() {return K2_;};
+
   bool Init(byte* K);
   void AddToHash(int size, const byte* in);
   bool GetDigest(int size, byte* out);
