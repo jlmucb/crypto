@@ -55,6 +55,11 @@ static void BumpCtr(byte* ctr) {
     return;
 }
 
+static void And(byte* in, byte* to_and, byte* out, int size) {
+  for (int i = 0; i < size; i++)
+    out[i] = in[i] & to_and[i];
+}
+
 static void Xor(byte* in, byte* to_xor, byte* out, int size) {
   for (int i = 0; i < size; i++)
     out[i] = in[i] ^ to_xor[i];
@@ -64,8 +69,8 @@ static void setCtr(byte* in, byte* out) {
   // ctr initialized to IV & 1^(n−64) 01^31 01^31
   byte pad[4] = {0x7f, 0xff, 0xff, 0xff};
   memcpy(out, in, 8);
-  Xor(&in[8], pad, &out[8], 4);
-  Xor(&in[12], pad, &out[12], 4);
+  And(&in[8], pad, &out[8], 4);
+  And(&in[12], pad, &out[12], 4);
 }
 
 static void dbl(byte* in, byte* out) {
@@ -79,8 +84,6 @@ static void dbl(byte* in, byte* out) {
     out[Aes::BLOCKBYTESIZE - 1] ^= 0x87;
   }
 }
-
-#define DEBUG
 
 static bool CalcIv(byte* K, int hdr_size, byte* hdr_in, int msg_size, byte* msg_in, byte* out) {
 
@@ -100,18 +103,6 @@ static bool CalcIv(byte* K, int hdr_size, byte* hdr_in, int msg_size, byte* msg_
 
   dbl(S, X);
 
-#ifdef DEBUG
-  printf("\n");
-  printf("K        : "); PrintBytes(16, K); printf("\n");
-  printf("hdr      : "); PrintBytes(16, hdr_in); printf("\n");
-  printf("msg      : "); PrintBytes(16, msg_in); printf("\n");
-  printf("First S  : "); PrintBytes(16, S); printf("\n");
-  printf("Should be: 0e04dfafc1efbf040140582859bf073a\n");
-  printf("dbl(X)   : "); PrintBytes(16, X); printf("\n");
-  printf("Should be: 1c09bf5f83df7e080280b050b37e0e74\n");
-  printf("\n");
-#endif
-
   cmac.Init(K);
   int first_hdr_size = (hdr_size / Aes::BLOCKBYTESIZE) * Aes::BLOCKBYTESIZE;
   int last_hdr_size;
@@ -122,14 +113,6 @@ static bool CalcIv(byte* K, int hdr_size, byte* hdr_in, int msg_size, byte* msg_
   cmac.Final(last_hdr_size, (byte*)&hdr_in[first_hdr_size]);
   cmac.GetDigest(Aes::BLOCKBYTESIZE, Y); 
   Xor(Y, X, S, Aes::BLOCKBYTESIZE);
-
-#ifdef DEBUG
-  printf("\n");
-  printf("Cmac hdr : "); PrintBytes(16, Y); printf("\n");
-  printf("Should be: f1f922b7f5193ce64ff80cb47d93f23b\n");
-  printf("S        : "); PrintBytes(16, S); printf("\n");
-  printf("\n");
-#endif
 
   // last Xn
   dbl(S, X);
@@ -144,30 +127,18 @@ static bool CalcIv(byte* K, int hdr_size, byte* hdr_in, int msg_size, byte* msg_
     for (int i = 0; i < num_blocks; i++) {
       Xor(&msg_in[i * Aes::BLOCKBYTESIZE], S, T, Aes::BLOCKBYTESIZE);
       cmac.AddToHash(Aes::BLOCKBYTESIZE, T);
-printf("msg      : "); PrintBytes(16, &msg_in[i * Aes::BLOCKBYTESIZE]); printf("\n");
-printf("S        : "); PrintBytes(16, S); printf("\n");
-printf("Add      : "); PrintBytes(16, T); printf("\n");
     }
     memset(T, 0, Aes::BLOCKBYTESIZE);
     Xor(&msg_in[num_blocks * Aes::BLOCKBYTESIZE], S, T, last_msg_size);
     cmac.Final(last_msg_size, T);
-printf("Final    : "); PrintBytes(16, T); printf("\n");
   } else {
     memset(Y, 0, Aes::BLOCKBYTESIZE);
     memcpy(Y, msg_in, msg_size);
     Y[last_msg_size]= 0x80;
     Xor(X, Y, T, Aes::BLOCKBYTESIZE);
     cmac.Final(Aes::BLOCKBYTESIZE, T);
-printf("msg      : "); PrintBytes(16, Y); printf("\n");
-printf("X        : "); PrintBytes(16, X); printf("\n");
-printf("Final    : "); PrintBytes(16, T); printf("\n");
   }
   cmac.GetDigest(Aes::BLOCKBYTESIZE, out); 
-
-#ifdef DEBUG
-  printf("out      : "); PrintBytes(16, out); printf("\n");
-  printf("\n");
-#endif
   return true;
 }
 
@@ -195,7 +166,6 @@ bool AesSiv::Encrypt(byte* K, int hdr_size, byte* hdr, int msg_size, byte* msg, 
     printf("Siv-Encrypt hdr: "); PrintBytes(hdr_size, hdr); printf("\n");
     printf("Siv-Encrypt msg: "); PrintBytes(msg_size, msg); printf("\n");
     printf("Siv-Encrypt, iv: "); PrintBytes(Aes::BLOCKBYTESIZE, iv_); printf("\n");
-    printf("\n");
 #endif
 
   if (!aes_.Init(128, K2_, Aes::ENCRYPT)) {
@@ -204,6 +174,11 @@ bool AesSiv::Encrypt(byte* K, int hdr_size, byte* hdr, int msg_size, byte* msg, 
   }
 
   setCtr(iv_, ctr_blk_);
+
+#ifdef DEBUG
+    printf("Ctr            : "); PrintBytes(Aes::BLOCKBYTESIZE, ctr_blk_); printf("\n");
+    printf("\n");
+#endif
 
   byte* outptr = out;
   byte* inptr = msg;
@@ -242,7 +217,6 @@ bool AesSiv::Decrypt(byte* K, int hdr_size, byte* hdr, int cipher_size, byte* ci
     printf("\n");
     printf("Siv-Decrypt, K1_: "); PrintBytes(Aes::BLOCKBYTESIZE, K1_); printf("\n");
     printf("Siv-Decrypt, K2_: "); PrintBytes(Aes::BLOCKBYTESIZE, K2_); printf("\n");
-    printf("\n");
 #endif
 
   *size_out = cipher_size - Aes::BLOCKBYTESIZE;
@@ -260,6 +234,11 @@ bool AesSiv::Decrypt(byte* K, int hdr_size, byte* hdr, int cipher_size, byte* ci
   inptr += Aes::BLOCKBYTESIZE;
 
   setCtr(iv_, ctr_blk_);
+
+#ifdef DEBUG
+    printf("Ctr            : "); PrintBytes(Aes::BLOCKBYTESIZE, ctr_blk_); printf("\n");
+    printf("\n");
+#endif
 
   int bytes_to_process = *size_out;
   byte to_xor[Aes::BLOCKBYTESIZE];

@@ -1224,7 +1224,7 @@ TEST(AesSiv, AesSivTest) {
   AesSiv aes_siv_encrypt;
   EXPECT_TRUE(aes_siv_encrypt.Encrypt(Test_Siv_Key, sizeof(Test_Siv_Hdr), Test_Siv_Hdr,
               sizeof(Test_Siv_Plaintext), Test_Siv_Plaintext, &size_out, out));
-  // EXPECT_TRUE(memcmp(out, Test_Siv_output, size_out) == 0);
+  EXPECT_TRUE(memcmp(out, Test_Siv_output, size_out) == 0);
   printf("Computed SIV Encrypt (%d): ", size_out); PrintBytes(size_out, out); printf("\n");
 
   AesSiv aes_siv_decrypt;
