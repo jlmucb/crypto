@@ -68,15 +68,64 @@ static void setCtr(byte* in, byte* out) {
   Xor(&in[12], pad, &out[12], 4);
 }
 
+static void dbl(byte* in, byte* out) {
+  bool msb = ((in[0]&0x80) != 0);
+
+  for (int i = 0; i < (Aes::BLOCKBYTESIZE - 1); i++) {
+    out[i] = (in[i] << 1) | (in[i + 1] >> 7);
+  }
+  out[Aes::BLOCKBYTESIZE - 1] = in[Aes::BLOCKBYTESIZE - 1] << 1;
+  if (msb) {
+    out[Aes::BLOCKBYTESIZE - 1] ^= 0x87;
+  }
+}
+
 /*
- * IV = CMAC∗ (X1,...,Xm)
- * dbl(S) is S<<1 if msb(S) = 0 and dbl(S) = (S<<1) ^ 0**(120)10000111 if msb(S) = 1.
  * CMAC∗ (X1,...,Xm)
  *   S ← CMAC_K(0^n)
  *   for i=1 i<= m−1  S=dbl(S)⊕CMACK(Xi)
  *   if |Xm| ≥ n then return CMACK (S ⊕end Xm)
  *   else return CMACK (dbl(S) ⊕ Xm10∗)
  */
+
+bool AesSiv::CalcIv(int size, byte* in) {
+  Cmac cmac(128);
+  byte zero[16];
+  byte S[16];
+  byte X[16];
+  byte Y[16];
+  byte T[16];
+
+  memset(zero, 0, 16);
+  cmac.Init(K1_);
+  cmac.Final(16, zero);
+  cmac.GetDigest(16, S); 
+
+  int num_blocks = size / Aes::BLOCKBYTESIZE;
+  if ((Aes::BLOCKBYTESIZE * num_blocks) == size)
+    num_blocks--;
+  int last_size = size - num_blocks * Aes::BLOCKBYTESIZE;
+  byte* inptr = in;
+  for (int i = 0; i < num_blocks; i++) {
+    cmac.Init(K1_);
+    cmac.Final(16, inptr);
+    cmac.GetDigest(16, T); 
+    dbl(S, X);
+    Xor(X, T, S, Aes::BLOCKBYTESIZE);
+    inptr += Aes::BLOCKBYTESIZE;
+  }
+  memset(Y, 0, Aes::BLOCKBYTESIZE);
+  memcpy(Y, inptr, last_size);
+  if (last_size < Aes::BLOCKBYTESIZE) {
+    Y[last_size] = 0x80;
+  }
+  dbl(S, X);
+  Xor(Y, X, T, Aes::BLOCKBYTESIZE);
+  cmac.Init(K1_);
+  cmac.Final(16, T);
+  cmac.GetDigest(16, iv_); 
+  return true;
+}
 
 #define DEBUG
 bool AesSiv::Encrypt(byte* K, int hdr_size, byte* hdr, int msg_size, byte* msg, int* size_out, byte*out) {
@@ -153,9 +202,9 @@ bool AesSiv::Encrypt(byte* K, int hdr_size, byte* hdr, int msg_size, byte* msg, 
   while (bytes_to_process > 0) {
     aes_.EncryptBlock(ctr_blk_, to_xor);
     if (bytes_to_process >= Aes::BLOCKBYTESIZE) {
-	bytes_processed = Aes::BLOCKBYTESIZE;
+        bytes_processed = Aes::BLOCKBYTESIZE;
     } else {
-	bytes_processed = bytes_to_process;
+        bytes_processed = bytes_to_process;
     }
     Xor(inptr, to_xor, outptr, bytes_processed);
     bytes_to_process -= bytes_processed;
@@ -203,9 +252,9 @@ bool AesSiv::Decrypt(byte* K, int hdr_size, byte* hdr, int cipher_size, byte* ci
   while (bytes_to_process > 0) {
     aes_.EncryptBlock(ctr_blk_, to_xor);
     if (bytes_to_process >= Aes::BLOCKBYTESIZE) {
-	bytes_processed = Aes::BLOCKBYTESIZE;
+        bytes_processed = Aes::BLOCKBYTESIZE;
     } else {
-	bytes_processed = bytes_to_process;
+        bytes_processed = bytes_to_process;
     }
     bytes_to_process -= bytes_processed;
     Xor(inptr, to_xor, outptr, bytes_processed);

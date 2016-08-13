@@ -49,6 +49,7 @@ private:
   ~AesSiv();
 
   byte* getIV() {return iv_;};
+  bool CalcIv(int size, byte* in);
   bool Encrypt(byte* K, int hdr_size, byte* hdr,
                int msg_size, byte* msg, int* size_out, byte* out);
   bool Decrypt(byte* K, int hdr_size, byte* hdr,
