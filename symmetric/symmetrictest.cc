@@ -1224,12 +1224,14 @@ TEST(AesSiv, AesSivTest) {
   AesSiv aes_siv_encrypt;
   EXPECT_TRUE(aes_siv_encrypt.Encrypt(Test_Siv_Key, sizeof(Test_Siv_Hdr), Test_Siv_Hdr,
               sizeof(Test_Siv_Plaintext), Test_Siv_Plaintext, &size_out, out));
+  // EXPECT_TRUE(memcmp(out, Test_Siv_output, size_out) == 0);
   printf("Computed SIV Encrypt (%d): ", size_out); PrintBytes(size_out, out); printf("\n");
 
   AesSiv aes_siv_decrypt;
   EXPECT_TRUE(aes_siv_decrypt.Decrypt(Test_Siv_Key, sizeof(Test_Siv_Hdr), Test_Siv_Hdr,
               size_out, out, &size_decrypt_out, decrypt_out));
   printf("Computed SIV Decrypt (%d): ", size_decrypt_out); PrintBytes(size_decrypt_out, decrypt_out); printf("\n");
+  EXPECT_TRUE(memcmp(decrypt_out, Test_Siv_Plaintext, size_decrypt_out) == 0);
 }
 
 DEFINE_string(log_file, "symmetrictest.log", "symmetrictest file name");

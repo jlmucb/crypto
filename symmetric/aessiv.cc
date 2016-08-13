@@ -80,16 +80,9 @@ static void dbl(byte* in, byte* out) {
   }
 }
 
-/*
- * CMAC∗ (X1,...,Xm)
- *   S ← CMAC_K(0^n)
- *   for i=1 i<= m−1  S=dbl(S)⊕CMACK(Xi)
- *   if |Xm| ≥ n then return CMACK (S ⊕end Xm)
- *   else return CMACK (dbl(S) ⊕ Xm10∗)
- */
 #define DEBUG
 
-static bool CalcIv(byte* K, int size, byte* in, byte* out) {
+static bool CalcIv(byte* K, int hdr_size, byte* hdr_in, int msg_size, byte* msg_in, byte* out) {
 
   byte zero[Aes::BLOCKBYTESIZE];
   byte S[Aes::BLOCKBYTESIZE];
@@ -105,40 +98,76 @@ static bool CalcIv(byte* K, int size, byte* in, byte* out) {
   cmac.Final(Aes::BLOCKBYTESIZE, zero);
   cmac.GetDigest(Aes::BLOCKBYTESIZE, S); 
 
+  dbl(S, X);
+
 #ifdef DEBUG
   printf("\n");
   printf("K        : "); PrintBytes(16, K); printf("\n");
-  printf("in       : "); PrintBytes(16, in); printf("\n");
+  printf("hdr      : "); PrintBytes(16, hdr_in); printf("\n");
+  printf("msg      : "); PrintBytes(16, msg_in); printf("\n");
   printf("First S  : "); PrintBytes(16, S); printf("\n");
   printf("Should be: 0e04dfafc1efbf040140582859bf073a\n");
+  printf("dbl(X)   : "); PrintBytes(16, X); printf("\n");
+  printf("Should be: 1c09bf5f83df7e080280b050b37e0e74\n");
   printf("\n");
 #endif
 
-  int num_blocks = size / Aes::BLOCKBYTESIZE;
-  if ((Aes::BLOCKBYTESIZE * num_blocks) == size)
-    num_blocks--;
-  int last_size = size - num_blocks * Aes::BLOCKBYTESIZE;
-  byte* inptr = in;
-  for (int i = 0; i < num_blocks; i++) {
-    cmac.Init(K);
-    cmac.AddToHash(0, zero);
-    cmac.Final(16, inptr);
-    cmac.GetDigest(16, T); 
-    dbl(S, X);
-    Xor(X, T, S, Aes::BLOCKBYTESIZE);
-    inptr += Aes::BLOCKBYTESIZE;
-  }
-  memset(Y, 0, Aes::BLOCKBYTESIZE);
-  memcpy(Y, inptr, last_size);
-  if (last_size < Aes::BLOCKBYTESIZE) {
-    Y[last_size] = 0x80;
-  }
-  dbl(S, X);
-  Xor(Y, X, T, Aes::BLOCKBYTESIZE);
   cmac.Init(K);
-  cmac.AddToHash(0, zero);
-  cmac.Final(16, T);
-  cmac.GetDigest(16, out); 
+  int first_hdr_size = (hdr_size / Aes::BLOCKBYTESIZE) * Aes::BLOCKBYTESIZE;
+  int last_hdr_size;
+  if (first_hdr_size == hdr_size)
+    first_hdr_size -= Aes::BLOCKBYTESIZE;
+  last_hdr_size = hdr_size - first_hdr_size;
+  cmac.AddToHash(first_hdr_size, hdr_in);
+  cmac.Final(last_hdr_size, (byte*)&hdr_in[first_hdr_size]);
+  cmac.GetDigest(Aes::BLOCKBYTESIZE, Y); 
+  Xor(Y, X, S, Aes::BLOCKBYTESIZE);
+
+#ifdef DEBUG
+  printf("\n");
+  printf("Cmac hdr : "); PrintBytes(16, Y); printf("\n");
+  printf("Should be: f1f922b7f5193ce64ff80cb47d93f23b\n");
+  printf("S        : "); PrintBytes(16, S); printf("\n");
+  printf("\n");
+#endif
+
+  // last Xn
+  dbl(S, X);
+  cmac.Init(K);
+  int first_msg_size = (msg_size / Aes::BLOCKBYTESIZE) * Aes::BLOCKBYTESIZE;
+  int last_msg_size;
+  if (first_msg_size == msg_size)
+    first_msg_size -= Aes::BLOCKBYTESIZE;
+  last_msg_size = msg_size - first_msg_size;
+  if (msg_size >= Aes::BLOCKBYTESIZE) {
+    int num_blocks = first_msg_size / Aes::BLOCKBYTESIZE;
+    for (int i = 0; i < num_blocks; i++) {
+      Xor(&msg_in[i * Aes::BLOCKBYTESIZE], S, T, Aes::BLOCKBYTESIZE);
+      cmac.AddToHash(Aes::BLOCKBYTESIZE, T);
+printf("msg      : "); PrintBytes(16, &msg_in[i * Aes::BLOCKBYTESIZE]); printf("\n");
+printf("S        : "); PrintBytes(16, S); printf("\n");
+printf("Add      : "); PrintBytes(16, T); printf("\n");
+    }
+    memset(T, 0, Aes::BLOCKBYTESIZE);
+    Xor(&msg_in[num_blocks * Aes::BLOCKBYTESIZE], S, T, last_msg_size);
+    cmac.Final(last_msg_size, T);
+printf("Final    : "); PrintBytes(16, T); printf("\n");
+  } else {
+    memset(Y, 0, Aes::BLOCKBYTESIZE);
+    memcpy(Y, msg_in, msg_size);
+    Y[last_msg_size]= 0x80;
+    Xor(X, Y, T, Aes::BLOCKBYTESIZE);
+    cmac.Final(Aes::BLOCKBYTESIZE, T);
+printf("msg      : "); PrintBytes(16, Y); printf("\n");
+printf("X        : "); PrintBytes(16, X); printf("\n");
+printf("Final    : "); PrintBytes(16, T); printf("\n");
+  }
+  cmac.GetDigest(Aes::BLOCKBYTESIZE, out); 
+
+#ifdef DEBUG
+  printf("out      : "); PrintBytes(16, out); printf("\n");
+  printf("\n");
+#endif
   return true;
 }
 
@@ -156,29 +185,18 @@ bool AesSiv::Encrypt(byte* K, int hdr_size, byte* hdr, int msg_size, byte* msg, 
 
   *size_out = msg_size + Aes::BLOCKBYTESIZE;
 
-  int all_size = hdr_size + msg_size;
-  byte* all = (byte*)malloc(all_size);
-  if (all == nullptr) {
-    LOG(ERROR) << "AesSiv::Encrypt: malloc fails\n";
-    return false;
-  }
-  memcpy(all, hdr, hdr_size);
-  memcpy(&all[hdr_size], msg, msg_size);
-
-  if (!CalcIv(K1_, all_size, all, iv_)) {
+  if (!CalcIv(K1_, hdr_size, hdr, msg_size, msg, iv_)) {
     LOG(ERROR) << "AesSiv::Encrypt: CalcIv fails\n";
     return false;
   }
 
 #ifdef DEBUG
     printf("\n");
-    printf("Siv-Encrypt, to digest: "); PrintBytes(all_size, all); printf("\n");
+    printf("Siv-Encrypt hdr: "); PrintBytes(hdr_size, hdr); printf("\n");
+    printf("Siv-Encrypt msg: "); PrintBytes(msg_size, msg); printf("\n");
     printf("Siv-Encrypt, iv: "); PrintBytes(Aes::BLOCKBYTESIZE, iv_); printf("\n");
     printf("\n");
 #endif
-
-  free(all);
-  all = nullptr;
 
   if (!aes_.Init(128, K2_, Aes::ENCRYPT)) {
     LOG(ERROR) << "AesSiv::Encrypt: Aes::Init fails\n";
@@ -261,31 +279,20 @@ bool AesSiv::Decrypt(byte* K, int hdr_size, byte* hdr, int cipher_size, byte* ci
     BumpCtr(ctr_blk_);
   }
 
-  int all_size = hdr_size + *size_out;
-  byte* all = (byte*)malloc(all_size);
-  if (all == nullptr) {
-    LOG(ERROR) << "AesSiv::Decrypt: malloc fails\n";
-    return false;
-  }
-  memcpy(all, hdr, hdr_size);
-  memcpy(&all[hdr_size], out, *size_out);
-
   byte computed_iv[16];
 
-  if (!CalcIv(K1_, all_size, all, computed_iv)) {
+  if (!CalcIv(K1_, hdr_size, hdr, *size_out, out, computed_iv)) {
     LOG(ERROR) << "AesSiv::Encrypt: CalcIv fails\n";
     return false;
   }
 
 #ifdef DEBUG
     printf("\n");
-    printf("Siv-Decrypt, to digest: "); PrintBytes(all_size, all); printf("\n");
+    printf("Siv-Decrypt hdr: "); PrintBytes(hdr_size, hdr); printf("\n");
+    printf("Siv-Decrypt cipher: "); PrintBytes(cipher_size, cipher); printf("\n");
     printf("Siv-Decrypt, calculated iv: "); PrintBytes(Aes::BLOCKBYTESIZE, computed_iv); printf("\n");
     printf("\n");
 #endif
-
-  free(all);
-  all = nullptr;
 
   return memcmp(computed_iv, iv_, Aes::BLOCKBYTESIZE) == 0;
 }
