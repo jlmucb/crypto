@@ -14,24 +14,24 @@
 #    File: big.mak
 
 
-#ifndef SRC_DIR
+ifndef SRC_DIR
 SRC_DIR=$(HOME)/crypto
-#endif
-#ifndef OBJ_DIR
+endif
+ifndef OBJ_DIR
 OBJ_DIR=$(HOME)/cryptoobj
-#endif
-#ifndef EXE_DIR
+endif
+ifndef EXE_DIR
 EXE_DIR=$(HOME)/cryptobin
-#endif
-#ifndef GOOGLE_INCLUDE
+endif
+ifndef GOOGLE_INCLUDE
 GOOGLE_INCLUDE=/usr/local/include/google
-#endif
-#ifndef LOCAL_LIB
+endif
+ifndef LOCAL_LIB
 LOCAL_LIB=/usr/local/lib
-#endif
-#ifndef TARGET_MACHINE_TYPE
+endif
+ifndef TARGET_MACHINE_TYPE
 TARGET_MACHINE_TYPE= x64
-#endif
+endif
 
 O= $(OBJ_DIR)/cryptolib
 INCLUDE= -I$(SRC_DIR)/include -I/usr/local/include -I$(SRC_DIR)/keys -I$(GOOGLE_INCLUDE) 
@@ -39,7 +39,7 @@ INCLUDE= -I$(SRC_DIR)/include -I/usr/local/include -I$(SRC_DIR)/keys -I$(GOOGLE_
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
 CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
 
-#include OSName
+include OSName
 ifdef YOSEMITE
 	CC=clang++
 	LINK=clang++

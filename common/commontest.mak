@@ -14,24 +14,24 @@
 #    File: common.mak
 
 
-#ifndef SRC_DIR
+ifndef SRC_DIR
 SRC_DIR=$(HOME)/crypto
-#endif
-#ifndef OBJ_DIR
+endif
+ifndef OBJ_DIR
 OBJ_DIR=$(HOME)/cryptoobj
-#endif
-#ifndef EXE_DIR
+endif
+ifndef EXE_DIR
 EXE_DIR=$(HOME)/cryptobin
-#endif
-#ifndef GOOGLE_INCLUDE
+endif
+ifndef GOOGLE_INCLUDE
 GOOGLE_INCLUDE=/usr/local/include/google
-#endif
-#ifndef LOCAL_LIB
+endif
+ifndef LOCAL_LIB
 LOCAL_LIB=/usr/local/lib
-#endif
-#ifndef TARGET_MACHINE_TYPE
+endif
+ifndef TARGET_MACHINE_TYPE
 TARGET_MACHINE_TYPE= x64
-#endif
+endif
 
 S= $(SRC_DIR)/common
 O= $(OBJ_DIR)/common
