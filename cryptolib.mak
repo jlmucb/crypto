@@ -11,7 +11,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License
 #    Project: New Cloudproxy Crypto
-#    File: big.mak
+#    File: cryptolib.mak
 
 
 #ifndef SRC_DIR
