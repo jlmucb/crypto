@@ -265,6 +265,50 @@ bool multiply_linear(int n, int size_min_poly, byte* min_poly, gf2_8* a, gf2_8* 
   return true;
 }
 
+void printMatrix(int n, int* perm, gf2_instance* a) {
+  for (int i = 0; i < n; i++) {
+    printf("permuted row %d\n", i);
+    for (int j = 0; j < n; j++) {
+      uint16_t u;
+      from_internal_representation(8, a[i].a_[j].v_, &u);
+      printf(" %02x", u);
+    }
+    printf("\n");
+  }
+}
+
+bool isZero(gf2_8& x) {
+  for (int i = 0; i < 8; i++) {
+    if (x.v_[i] != 0)
+      return false;
+  }
+  return true;
+}
+
+int find_non_zero(int n, int col, int* perm, gf2_instance* row) {
+  for (int j = (col + 1); j < n; j++) {
+    if (!isZero(row[perm[j]].a_[col]))
+      return j;
+  }
+  return -1;
+}
+
+bool divide_equation_by(int n, int size_min_poly, byte* min_poly, int pivot_col,
+                        gf2_instance& row) {
+  for (int j = (pivot_col + 1); j < n; j++) {
+    // row.a_[j] = row.a_[j]/row.a_[pivot_col];
+  }
+  return true;
+}
+
+bool subtract_equation_by(int n, int size_min_poly, byte* min_poly, int pivot_col,
+                          gf2_instance& row_subtracted, gf2_instance& row) {
+  for (int j = (pivot_col + 1); j < n; j++) {
+    // row.a_[j] == row.a_[pivot_col]*row.a_[j];
+  }
+  return true;
+}
+
 // Solve Sum from i = 0 to n-1 a[i] * x[i] = c[i].
 // by Gaussian elimination over GF(2^8).
 // Output x[i].
@@ -272,16 +316,60 @@ bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_instance* a, g
   if (!g_inverse_initialized)
     return false;
 
+  // This is the rearranged order of the a matrix which results in an upper triangular form.
+  int* permutation = new int[n];
+  for (int i = 0; i < n; i++)
+    permutation[i] = i;
+
+  int m;
+
   // Get it into upper triangular form.
   for (int j = 0; j < n; j++) {
+    // Find an instance with a non-zero entry in position.
+    int k = find_non_zero(n, j, permutation, a);
+    if (k < 0) {
+      delete []permutation;
+      return false;
+    }
+
+    // Permute current row j with identified row.
+    m = permutation[j];
+    permutation[j] = permutation[k];
+    permutation[k] = m;
+
+    // Divide identified row by leading coefficient.
+    if (!divide_equation_by(n, size_min_poly, min_poly, j,
+                          a[permutation[j]]))
+        delete []permutation;
+        return false;
+
+    // Subtract appropriate multiple of identified row from later rows.
+    for (int l = (j+1); l < n; l++) {
+      if(!subtract_equation_by(n, size_min_poly, min_poly, j,
+                              a[permutation[j]], a[permutation[l]])) {
+        delete []permutation;
+        return false;
+      }
+    }
   }
 
   // Reverse solve.
   for (int j = (n - 1); j >= 0; j--) {
-    for (int k = (j + 1); k < n; k++) {
+    if (isZero(a[j].a_[j])) {
+      delete []permutation;
+      return false;
     }
 
-  // x[j] = instance[j].y_/instance[j].a_[j].
+    gf2_8 u;
+    for (int l = (j + 1); l < n; l++) {
+      if(!multiply_linear(n - l, size_min_poly, min_poly, &a[permutation[l + 1]].a_[l + 1], &x[l], u)) {
+        delete []permutation;
+        return false;
+      }
+      // subtract u from y_[l]
+      // x[l] = y_/a[permutation[l]].a_[l];
+    }
   }
+  delete []permutation;
   return true;
 }
