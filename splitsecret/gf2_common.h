@@ -26,6 +26,13 @@
 typedef unsigned char byte;
 #endif
 
+class gf2_8 {
+public:
+  byte v_[8];
+};
+extern bool g_inverse_initialized;
+extern gf2_8 g_gf2_inverse[256];
+
 int max(int a, int b);
 int real_size(int size_in, byte* in);
 bool gf2_mult(int size_in1, byte* in1, int size_in2, byte* in2,
@@ -37,6 +44,7 @@ bool gf2_reduce(int size_min_poly, byte* min_poly,
 void print_poly(int size_in, byte* in);
 bool to_internal_representation(uint16_t in, int* size_out, byte* out);
 bool from_internal_representation( int size_in, byte* in, uint16_t* out);
+bool init_inverses(int size_min_poly, byte* min_poly);
 
 #endif
 

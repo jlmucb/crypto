@@ -148,6 +148,25 @@ bool Gf2MultiplyTest() {
   return true;
 }
 
+bool Gf2InverseTest() {
+  int size_min_poly = 16;
+  byte min_poly[16];
+  uint16_t minpoly = 0x11b;
+
+  EXPECT_TRUE(to_internal_representation(minpoly, &size_min_poly, min_poly));
+  printf("Min poly: "); print_poly(size_min_poly, min_poly); printf("\n");
+  EXPECT_TRUE(init_inverses(size_min_poly, min_poly));
+  for (int i = 0; i < 256; i++) {
+    uint16_t z;
+    from_internal_representation(8, g_gf2_inverse[i].v_, &z);
+    printf("1/%02x = %02x\n", i, z);
+  }
+  uint16_t w;
+  from_internal_representation(8, g_gf2_inverse[2].v_, &w);
+  EXPECT_TRUE( w == 0x8d);
+  return true;
+}
+
 
 TEST(InternalRep, InternalRepTest) {
   EXPECT_TRUE(InternalRepTest());
@@ -163,6 +182,9 @@ TEST(Gf2Multiply, Gf2MultiplyTest) {
 }
 TEST(PrintPoly, PrintPolyTest) {
   EXPECT_TRUE(PrintPolyTest());
+}
+TEST(Gf2Inverse, Gf2InverseTest) {
+  EXPECT_TRUE(Gf2InverseTest());
 }
 
 

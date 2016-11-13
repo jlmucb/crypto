@@ -25,10 +25,13 @@
 #include <fstream>
 #include <memory>
 
-#include "cryptotypes.h"
+#include "gf2_common.h"
 #include <gtest/gtest.h>
 #include <gflags/gflags.h>
 
+uint16_t minpoly = 0x11b;
+
+DEFINE_int32(minpoly, 0x11b, " Minimal polynomial for field");
 
 int main(int an, char** av) {
 #ifdef __linux__
@@ -36,6 +39,13 @@ int main(int an, char** av) {
 #else
   google::ParseCommandLineFlags(&an, &av, true);
 #endif
+
+  uint16_t gen_poly = FLAGS_minpoly;
+  int size_min_poly = 16;
+  byte min_poly[16];
+
+  EXPECT_TRUE(to_internal_representation(gen_poly, &size_min_poly, min_poly));
+  printf("Min poly: "); print_poly(size_min_poly, min_poly); printf("\n");
 
   return 0;
 }
