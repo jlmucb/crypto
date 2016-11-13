@@ -45,6 +45,14 @@ void print_poly(int size_in, byte* in);
 bool to_internal_representation(uint16_t in, int* size_out, byte* out);
 bool from_internal_representation( int size_in, byte* in, uint16_t* out);
 bool init_inverses(int size_min_poly, byte* min_poly);
-
+void byte_8_zero(byte* a);
+void byte_16_zero(byte* a);
+void gf2_8_zero(gf2_8& a);
+bool byte_8_equal(byte* a, byte* b);
+bool gf2_8_equal(gf2_8& a, gf2_8& b);
+void byte_8_copy(byte* a, byte* b);
+void gf2_8_copy(gf2_8& a, gf2_8& b);
+bool multiply_linear(int n, int size_min_poly, byte* min_poly, gf2_8* a, gf2_8* x, gf2_8& y);
+bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_8* a, gf2_8* c, gf2_8* x);
 #endif
 

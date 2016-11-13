@@ -173,20 +173,36 @@ bool byte_8_equal(byte* a, byte* b) {
   return true;
 }
 
-
 bool gf2_8_equal(gf2_8& a, gf2_8& b) {
   return byte_8_equal(a.v_, b.v_);
 }
 
-void gf2_8_copy(byte* a, byte* b) {
+void byte_8_copy(byte* a, byte* b) {
   for (int i = 0; i < 8; i++) 
     b[i] = a[i];
 }
 
+void gf2_8_copy(gf2_8& a, gf2_8& b) {
+  byte_8_copy(a.v_, b.v_);
+}
+
+void byte_8_zero(byte* a) {
+  for (int i = 0; i < 8; i++)
+    a[i] = 0;
+}
+
+void gf2_8_zero(gf2_8& a) {
+    byte_8_zero(a.v_);
+}
+
+void byte_16_zero(byte* a) {
+  for (int i = 0; i < 16; i++)
+    a[i] = 0;
+}
+
 bool init_inverses(int size_min_poly, byte* min_poly) {
   for (int j = 0; j < 256; j++) {
-    for (int i = 0; i < 8; i++)
-      g_gf2_inverse[j].v_[i] = 0;
+    gf2_8_zero(g_gf2_inverse[j]);
   }
   g_gf2_inverse[1].v_[0] = 1;
 
@@ -203,11 +219,11 @@ bool init_inverses(int size_min_poly, byte* min_poly) {
       continue;
     }
     size_a = 16;
-    for (int i = 0; i < 16; i++) a[i] = 0;
+    byte_16_zero(a);
     to_internal_representation(x, &size_a, a);
     for (uint16_t y = 2; y < 256; y++) {
       size_b = 16;
-      for (int i = 0; i < 16; i++) b[i] = 0;
+      byte_16_zero(b);
       for (int i = 0; i < 32; i++) c[i] = 0;
       to_internal_representation(y, &size_b, b);
       size_c = 16;
@@ -216,12 +232,44 @@ bool init_inverses(int size_min_poly, byte* min_poly) {
       if (byte_8_equal(c, g_gf2_inverse[1].v_)) {
         uint16_t z;
         from_internal_representation(size_b, b, &z);
-        gf2_8_copy(b, g_gf2_inverse[x].v_);
-        gf2_8_copy(a, g_gf2_inverse[z].v_);
+        byte_8_copy(b, g_gf2_inverse[x].v_);
+        byte_8_copy(a, g_gf2_inverse[z].v_);
         break;
       }
     }
   }
   g_inverse_initialized = true;
+  return true;
+}
+
+bool multiply_linear(int n, int size_min_poly, byte* min_poly, gf2_8* a, gf2_8* x, gf2_8& y) {
+  gf2_8_zero(y);
+  int size_t1 = 16;
+  byte t1[16];
+  int size_t2 = 16;
+  byte t2[16];
+
+  for (int i = 0; i < n; i++) {
+    size_t1 = 16;
+    byte_16_zero(t1);
+    if(!gf2_mult(8, a[i].v_, 8, x[i].v_, size_min_poly, min_poly,
+                         &size_t1, t1))
+      return false;
+    size_t2 = 16;
+    byte_16_zero(t2);
+    if(!gf2_add(8, t1, 8, y.v_, size_min_poly, min_poly,
+                        &size_t2, t2))
+      return false;
+    byte_8_copy(t2, y.v_);
+  }
+  return true;
+}
+
+// Solve Sum from i = 0 to n -1 a[i] * x[i] = c[i].
+// by Gaussian elimination over GF(2^8).
+// Output x[i].
+bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_8* a, gf2_8* c, gf2_8* x) {
+  if (!g_inverse_initialized)
+    return false;
   return true;
 }
