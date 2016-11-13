@@ -80,7 +80,7 @@ bool gf2_add(int size_in1, byte* in1, int size_in2, byte* in2,
 bool gf2_mult(int size_in1, byte* in1, int size_in2, byte* in2,
               int size_min_poly, byte* min_poly, int* size_out, byte* out) {
   int size_out_t = size_in1 + size_in2;
-  byte* out_t = new(byte[size_out_t]);
+  byte* out_t = new byte[size_out_t];
 
   for (int i = 0; i < size_out_t; i++)
     out_t[i] = 0;
@@ -92,20 +92,20 @@ bool gf2_mult(int size_in1, byte* in1, int size_in2, byte* in2,
   }
 
   if (!gf2_reduce(size_min_poly, min_poly, &size_out_t, out_t)) {
-    delete out_t;
+    delete []out_t;
     return false;
   }
 
   int k = real_size(size_out_t, out_t);
   if (k > *size_out) {
-    delete out_t;
+    delete []out_t;
     return false;
   }
   *size_out = k;
   for (int i = 0; i < k; i++) {
     out[i] = out_t[i];
   }
-  delete out_t;
+  delete []out_t;
   return true;
 }
 
