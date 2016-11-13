@@ -254,6 +254,13 @@ bool Gf2SolveSimultaneousTest() {
     printf(" = %02x\n\n", w);
   }
 
+  gf2_8 solved_x[48];
+  if(!gaussian_solve(48, size_min_poly, min_poly, instance, solved_x)) {
+  }
+  for (int i = 0; i < 48; i++) {
+    EXPECT_TRUE(from_internal_representation(8, solved_x[i].v_, &w));
+    printf("x[%d]= %02x\n", i, w);  
+  }
   return true;
 }
 
