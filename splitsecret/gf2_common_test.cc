@@ -39,19 +39,6 @@ void GF2Common::SetUp() {}
 
 void GF2Common::TearDown() {}
 
-/*
-int real_size(int size_in, byte* in);
-bool gf2_mult(int size_in1, byte* in1, int size_in2, byte* in2,
-              int size_min_poly, byte* min_poly, int* size_out, byte* out);
-bool gf2_add(int size_in1, byte* in1, int size_in2, byte* in2,
-             int size_min_poly, byte* min_poly, int* size_out, byte* out);
-bool gf2_reduce(int size_min_poly, byte* min_poly,
-                int* size_in_out, byte* in_out);
-void print_poly(int size_in, byte* in);
-bool to_internal_representation(uint16_t in, int* size_out, byte* out);
-bool from_internal_representation( int size_in, byte* in, uint16_t* out);
- */
-
 
 bool InternalRepTest() {
   uint16_t tpoly = 0x77;
@@ -75,8 +62,73 @@ bool PrintPolyTest() {
   return true;
 }
 
+bool Gf2AddTest() {
+  uint16_t poly1 = 0x77;
+  uint16_t poly2 = 0x07;
+
+  int size_min_poly = 16;
+  byte min_poly[16];
+
+  int size_a = 16;
+  byte a[16];
+  int size_b = 16;
+  byte b[16];
+  int size_c = 16;
+  byte c[16];
+
+  EXPECT_TRUE(to_internal_representation(poly1, &size_a, a));
+  EXPECT_TRUE(to_internal_representation(poly2, &size_b, b));
+  EXPECT_TRUE(gf2_add(size_a, a, size_b, b, size_min_poly, min_poly, &size_c, c));
+
+  uint16_t cpoly;
+  EXPECT_TRUE(from_internal_representation(size_c, c, &cpoly));
+  printf("poly1: %02x, poly2: %02x, Cpoly: %02x\n", poly1, poly2, cpoly);
+  EXPECT_TRUE(cpoly == 0x70);
+  return true;
+}
+
+bool Gf2ReduceTest() {
+  uint16_t minpoly = 0x11b;
+  uint16_t poly1 = 0x200;
+
+  int size_min_poly = 16;
+  byte min_poly[16];
+
+  EXPECT_TRUE(to_internal_representation(minpoly, &size_min_poly, min_poly));
+  printf("Min poly: "); print_poly(size_min_poly, min_poly); printf("\n");
+
+  int size_a = 16;
+  byte a[16];
+
+  EXPECT_TRUE(to_internal_representation(poly1, &size_a, a));
+  printf("Input poly: "); print_poly(size_a, a); printf("\n");
+  EXPECT_TRUE(gf2_reduce(size_min_poly, min_poly, &size_a, a));
+
+  uint16_t cpoly;
+  EXPECT_TRUE(from_internal_representation(size_a, a, &cpoly));
+  printf("Reduced poly: "); print_poly(size_a, a); printf(", %02x\n", cpoly);
+  EXPECT_TRUE(cpoly == 0x36);
+  return true;
+}
+
+bool Gf2MultiplyTest() {
+  //bool gf2_mult(int size_in1, byte* in1, int size_in2, byte* in2,
+  //            int size_min_poly, byte* min_poly, int* size_out, byte* out);
+  return true;
+}
+
+
 TEST(InternalRep, InternalRepTest) {
   EXPECT_TRUE(InternalRepTest());
+}
+TEST(Gf2Add, Gf2AddTest) {
+  EXPECT_TRUE(Gf2AddTest());
+}
+TEST(Gf2Reduce, Gf2ReduceTest) {
+  EXPECT_TRUE(Gf2ReduceTest());
+}
+TEST(Gf2Multiply, Gf2MultiplyTest) {
+  EXPECT_TRUE(Gf2MultiplyTest());
 }
 TEST(PrintPoly, PrintPolyTest) {
   EXPECT_TRUE(PrintPolyTest());

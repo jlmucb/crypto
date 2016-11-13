@@ -115,8 +115,10 @@ bool gf2_reduce(int size_min_poly, byte* min_poly,
   int n = k;
   while (n >= size_min_poly) {
     int m = n - size_min_poly;
-    for (int i = 0; i < size_min_poly; i++) {
-      in_out[m + i] ^= min_poly[i];
+    if (in_out[m + size_min_poly - 1] !=0) {
+      for (int i = 0; i < size_min_poly; i++) {
+        in_out[m + i] ^= min_poly[i];
+      }
     }
     n--;
   }
@@ -129,7 +131,7 @@ void print_poly(int size_in, byte* in) {
     if (in[i] != 0)
       printf("x^%d + ", i);
   }
-  if (in[0] == 0)
+  if (in[0] != 0)
     printf("1");
   else
     printf("0");
