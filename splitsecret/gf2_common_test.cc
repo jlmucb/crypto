@@ -112,8 +112,39 @@ bool Gf2ReduceTest() {
 }
 
 bool Gf2MultiplyTest() {
-  //bool gf2_mult(int size_in1, byte* in1, int size_in2, byte* in2,
-  //            int size_min_poly, byte* min_poly, int* size_out, byte* out);
+  uint16_t poly1 = 0x77;
+  uint16_t poly2 = 0x07;
+
+  int size_min_poly = 16;
+  byte min_poly[16];
+  uint16_t minpoly = 0x11b;
+
+  EXPECT_TRUE(to_internal_representation(minpoly, &size_min_poly, min_poly));
+  printf("Min poly: "); print_poly(size_min_poly, min_poly); printf("\n");
+
+  int size_a = 16;
+  byte a[16];
+  int size_b = 16;
+  byte b[16];
+  int size_c = 32;
+  byte c[32];
+
+  EXPECT_TRUE(to_internal_representation(poly1, &size_a, a));
+  EXPECT_TRUE(to_internal_representation(poly2, &size_b, b));
+  EXPECT_TRUE(gf2_mult(size_a, a, size_b, b, size_min_poly, min_poly, &size_c, c));
+  print_poly(size_a, a);
+  printf(" * ");
+  print_poly(size_b, b);
+  printf(" [mod ");
+  print_poly(size_min_poly, min_poly);
+  printf(" ] = ");
+  print_poly(size_c, c);
+  printf("\n");
+
+  uint16_t cpoly;
+  EXPECT_TRUE(from_internal_representation(size_c, c, &cpoly));
+  printf("cpoly: %02x\n", cpoly);
+  EXPECT_TRUE(cpoly == 0x5e);
   return true;
 }
 
