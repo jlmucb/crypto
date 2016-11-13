@@ -217,27 +217,43 @@ bool Gf2SolveSimultaneousTest() {
   printf("Min poly: "); print_poly(size_min_poly, min_poly); printf("\n");
   EXPECT_TRUE(init_inverses(size_min_poly, min_poly));
 
-  /*
-  gf2_8 a[48];
   gf2_8 x[48];
-  gf2_8 y[48];
-
   byte t3[16];
-  uint16_t u, w;
+  uint16_t w;
   int size;
+
   for (int i = 0; i < 48; i++) {
     w =  (uint16_t)(i + 1);
-    u =  (uint16_t)(2 * i + 10);
     size = 16;
     EXPECT_TRUE(to_internal_representation(w, &size, t3));
-    byte_8_copy(t3, a[i].v_);
-    size = 16;
-    EXPECT_TRUE(to_internal_representation(u, &size, t3));
     byte_8_copy(t3, x[i].v_);
   }
 
-  EXPECT_TRUE(multiply_linear(48, size_min_poly, min_poly, a, x, y));
-  */
+  gf2_instance instance[48];
+
+  for (int j = 0; j < 48; j++) {
+    for (int i = 0; i < 48; i++) {
+      w =  (uint16_t)((j * i + 1) % 256);
+      size = 16;
+      EXPECT_TRUE(to_internal_representation(w, &size, t3));
+      byte_8_copy(t3, instance[j].a_[i].v_);
+    }
+
+    // Generate a's and y's
+    if (!multiply_linear(48, size_min_poly, min_poly, instance[j].a_, x, instance[j].y_))
+      return false;
+  }
+
+  for (int j = 0; j < 48; j++) {
+    printf("Equation %d:\n", j + 1);
+    for(int i = 0; i < 48; i++) {
+      EXPECT_TRUE(from_internal_representation(8, instance[j].a_[i].v_, &w));
+      printf("%02x * x[%d] + ", w, i);
+    }
+    EXPECT_TRUE(from_internal_representation(8, instance[j].y_.v_, &w));
+    printf(" = %02x\n\n", w);
+  }
+
   return true;
 }
 

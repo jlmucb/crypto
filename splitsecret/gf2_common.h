@@ -33,6 +33,12 @@ public:
 extern bool g_inverse_initialized;
 extern gf2_8 g_gf2_inverse[256];
 
+class gf2_instance {
+public:
+  gf2_8 a_[48];
+  gf2_8 y_;
+};
+
 int max(int a, int b);
 int real_size(int size_in, byte* in);
 bool gf2_mult(int size_in1, byte* in1, int size_in2, byte* in2,
@@ -53,6 +59,6 @@ bool gf2_8_equal(gf2_8& a, gf2_8& b);
 void byte_8_copy(byte* a, byte* b);
 void gf2_8_copy(gf2_8& a, gf2_8& b);
 bool multiply_linear(int n, int size_min_poly, byte* min_poly, gf2_8* a, gf2_8* x, gf2_8& y);
-bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_8* a, gf2_8* c, gf2_8* x);
+bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_instance* a, gf2_8* x);
 #endif
 

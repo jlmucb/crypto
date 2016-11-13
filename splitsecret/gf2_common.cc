@@ -265,11 +265,23 @@ bool multiply_linear(int n, int size_min_poly, byte* min_poly, gf2_8* a, gf2_8* 
   return true;
 }
 
-// Solve Sum from i = 0 to n -1 a[i] * x[i] = c[i].
+// Solve Sum from i = 0 to n-1 a[i] * x[i] = c[i].
 // by Gaussian elimination over GF(2^8).
 // Output x[i].
-bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_8* a, gf2_8* c, gf2_8* x) {
+bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_instance* a, gf2_8* x) {
   if (!g_inverse_initialized)
     return false;
+
+  // Get it into upper triangular form.
+  for (int j = 0; j < n; j++) {
+  }
+
+  // Reverse solve.
+  for (int j = (n - 1); j >= 0; j--) {
+    for (int k = (j + 1); k < n; k++) {
+    }
+
+  // x[j] = instance[j].y_/instance[j].a_[j].
+  }
   return true;
 }
