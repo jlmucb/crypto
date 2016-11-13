@@ -265,7 +265,7 @@ bool multiply_linear(int n, int size_min_poly, byte* min_poly, gf2_8* a, gf2_8* 
   return true;
 }
 
-void printMatrix(int n, int* perm, gf2_instance* a) {
+void print_matrix(int n, int* perm, gf2_instance* a) {
   for (int i = 0; i < n; i++) {
     printf("permuted row %d\n", i);
     for (int j = 0; j < n; j++) {
@@ -286,7 +286,7 @@ bool isZero(gf2_8& x) {
 }
 
 int find_non_zero(int n, int col, int* perm, gf2_instance* row) {
-  for (int j = (col + 1); j < n; j++) {
+  for (int j = col; j < n; j++) {
     if (!isZero(row[perm[j]].a_[col]))
       return j;
   }
@@ -313,8 +313,12 @@ bool subtract_equation_by(int n, int size_min_poly, byte* min_poly, int pivot_co
 // by Gaussian elimination over GF(2^8).
 // Output x[i].
 bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_instance* a, gf2_8* x) {
-  if (!g_inverse_initialized)
-    return false;
+  if (!g_inverse_initialized) {
+    if (!init_inverses(size_min_poly, min_poly)) {
+      printf("Can't compute inverses\n");
+      return false;
+    }
+  }
 
   // This is the rearranged order of the a matrix which results in an upper triangular form.
   int* permutation = new int[n];
@@ -332,14 +336,19 @@ bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_instance* a, g
       return false;
     }
 
+printf("Pivot is %d\n", permutation[k]);
+
     // Permute current row j with identified row.
     m = permutation[j];
     permutation[j] = permutation[k];
     permutation[k] = m;
 
+/*
+printf("Position 1\n");
     // Divide identified row by leading coefficient.
     if (!divide_equation_by(n, size_min_poly, min_poly, j,
                           a[permutation[j]]))
+printf("Error exit 1\n");
         delete []permutation;
         return false;
 
@@ -347,22 +356,32 @@ bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_instance* a, g
     for (int l = (j+1); l < n; l++) {
       if(!subtract_equation_by(n, size_min_poly, min_poly, j,
                               a[permutation[j]], a[permutation[l]])) {
+printf("Position 2\n");
+printf("Error exit 2\n");
         delete []permutation;
         return false;
       }
     }
+*/
+print_matrix(n, permutation, a);
+break;
   }
 
+/*
   // Reverse solve.
   for (int j = (n - 1); j >= 0; j--) {
+printf("Position 3\n");
     if (isZero(a[j].a_[j])) {
+printf("Error exit 3\n");
       delete []permutation;
       return false;
     }
 
     gf2_8 u;
     for (int l = (j + 1); l < n; l++) {
+printf("Position 4\n");
       if(!multiply_linear(n - l, size_min_poly, min_poly, &a[permutation[l + 1]].a_[l + 1], &x[l], u)) {
+printf("Error exit 4\n");
         delete []permutation;
         return false;
       }
@@ -370,6 +389,8 @@ bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_instance* a, g
       // x[l] = y_/a[permutation[l]].a_[l];
     }
   }
+*/
+printf("\n");
   delete []permutation;
   return true;
 }
