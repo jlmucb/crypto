@@ -383,8 +383,6 @@ bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_instance* a, g
       return false;
     }
 
-printf("\nPivot is %d\n", permutation[k]);
-
     // Permute current row j with identified row.
     m = permutation[j];
     permutation[j] = permutation[k];
@@ -405,8 +403,8 @@ printf("\nPivot is %d\n", permutation[k]);
         return false;
       }
     }
-print_matrix(n, permutation, a);
   }
+print_matrix(n, permutation, a);
 
   int size_out1;
   byte out1[16];
@@ -423,23 +421,24 @@ print_matrix(n, permutation, a);
     gf2_8 u;
     for (int i = 0; i < 8; i++)
       u.v_[i] = 0;
-    for (int l = (j + 1); l < n; l++) {
-      if(!multiply_linear(n - l, size_min_poly, min_poly, &a[permutation[l + 1]].a_[l + 1], &x[l], u)) {
+      if(!multiply_linear(n - j - 1, size_min_poly, min_poly, &a[permutation[j + 1]].a_[j + 1], &x[j + 1], u)) {
         delete []permutation;
         return false;
       }
-      size_out1 = 16;
-      size_out2 = 16;
-      if(!gf2_add(8, u.v_, 8, a[permutation[j]].y_.v_, size_min_poly, min_poly,
-                        &size_out1, out1))
-        return false;
-      gf2_8* inv = get_inverse(a[permutation[j]].a_[j]);
-      if (inv == nullptr)
-        return false;
-      if(!gf2_mult(8, inv->v_, 8, a[permutation[j]].a_[j].v_, size_min_poly, min_poly, &size_out2, out2))
-        return false;
-      byte_8_copy(out2, x[j].v_);
-    }
+printf("j: %d, u: ", j);print_poly(8, u.v_); printf("\n");
+    size_out1 = 16;
+    size_out2 = 16;
+    if(!gf2_add(8, u.v_, 8, a[permutation[j]].y_.v_, size_min_poly, min_poly,
+                      &size_out1, out1))
+      return false;
+printf("a[permutation[j]].a_[j]: ");print_poly(8, a[permutation[j]].a_[j].v_); 
+printf(", y_: "); print_poly(8, a[permutation[j]].y_.v_); printf("\n");
+    gf2_8* inv = get_inverse(a[permutation[j]].a_[j]);
+    if (inv == nullptr)
+      return false;
+    if(!gf2_mult(8, inv->v_, 8, a[permutation[j]].y_.v_, size_min_poly, min_poly, &size_out2, out2))
+      return false;
+    byte_8_copy(out2, x[j].v_);
   }
 printf("\n");
   delete []permutation;
