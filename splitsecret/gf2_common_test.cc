@@ -277,18 +277,30 @@ bool Gf2SolvePrimitivesTest() {
   int size;
 
   gf2_instance one_instance;
+  gf2_instance two_instance;
   for (int i = 0; i < 48; i++) {
-    w =  (uint16_t)((2 * i + 1) % 256);
+    w =  (uint16_t)((2 * i + 3) % 256);
     size = 16;
     EXPECT_TRUE(to_internal_representation(w, &size, t3));
     byte_8_copy(t3, one_instance.a_[i].v_);
+    w =  (uint16_t)((3 * i + 5) % 256);
+    size = 16;
+    EXPECT_TRUE(to_internal_representation(w, &size, t3));
+    byte_8_copy(t3, two_instance.a_[i].v_);
   }
   printf("one_instance: ");
   print_row(48, one_instance);
-  EXPECT_TRUE(divide_equation_by(48, size_min_poly, min_poly, 1, one_instance));
+  EXPECT_TRUE(divide_equation_by(48, size_min_poly, min_poly, 0, one_instance));
   printf("after divide by: ");
   print_row(48, one_instance);
 
+  printf("Before subtract: ");
+  print_row(48, two_instance);
+  if (!subtract_equation_by(48, size_min_poly, min_poly, 0,
+                          one_instance, two_instance))
+    return false;
+  printf("After subtract: ");
+  print_row(48, two_instance);
   return true;
 }
 

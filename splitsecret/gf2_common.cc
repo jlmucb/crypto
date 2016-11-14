@@ -329,9 +329,29 @@ bool divide_equation_by(int n, int size_min_poly, byte* min_poly, int pivot_col,
 
 bool subtract_equation_by(int n, int size_min_poly, byte* min_poly, int pivot_col,
                           gf2_instance& row_subtracted, gf2_instance& row) {
-  for (int j = (pivot_col + 1); j < n; j++) {
-    // row.a_[j] == row.a_[pivot_col]*row.a_[j];
+  int size_out1;
+  byte out1[16];
+  int size_out2;
+  byte out2[16];
+  byte pivot[8];
+  byte_8_copy(row.a_[pivot_col].v_, pivot);
+  for (int j = pivot_col; j < n; j++) {
+    size_out1 = 16;
+    size_out2 = 16;
+    if(!gf2_mult(8, row_subtracted.a_[j].v_, 8, pivot, size_min_poly, min_poly, &size_out1, out1))
+      return false;
+    if(!gf2_add(8, out1, 8, row.a_[j].v_, size_min_poly, min_poly, &size_out2, out2))
+      return false;
+    byte_8_copy(out2, row.a_[j].v_);
   }
+
+  size_out1 = 16;
+  size_out2 = 16;
+  if(!gf2_mult(8, row_subtracted.y_.v_, 8, pivot, size_min_poly, min_poly, &size_out1, out1))
+      return false;
+  if(!gf2_add(8, out1, 8, row.y_.v_, size_min_poly, min_poly, &size_out2, out2))
+    return false;
+  byte_8_copy(out2, row.y_.v_);
   return true;
 }
 
