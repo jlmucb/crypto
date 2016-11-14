@@ -29,6 +29,13 @@
 bool g_inverse_initialized = false;
 gf2_8 g_gf2_inverse[256];
 
+gf2_8* get_inverse(gf2_8& d) {
+  uint16_t u;
+  if (!from_internal_representation(8, d.v_, &u))
+    return nullptr;
+  return &g_gf2_inverse[u];
+}
+
 
 int max(int a, int b) {
   if (a > b)
@@ -104,6 +111,8 @@ bool gf2_mult(int size_in1, byte* in1, int size_in2, byte* in2,
     delete []out_t;
     return false;
   }
+  for (int i = k; i < *size_out; i++)
+    out[i] = 0;
   *size_out = k;
   for (int i = 0; i < k; i++) {
     out[i] = out_t[i];
@@ -265,15 +274,19 @@ bool multiply_linear(int n, int size_min_poly, byte* min_poly, gf2_8* a, gf2_8* 
   return true;
 }
 
+void print_row(int n, gf2_instance& row) {
+  uint16_t u;
+  for (int j = 0; j < n; j++) {
+    from_internal_representation(8, row.a_[j].v_, &u);
+    printf(" %02x", u);
+  }
+  from_internal_representation(8, row.y_.v_, &u);
+  printf(" =    %02x\n", u);
+}
+
 void print_matrix(int n, int* perm, gf2_instance* a) {
   for (int i = 0; i < n; i++) {
-    printf("permuted row %d\n", i);
-    for (int j = 0; j < n; j++) {
-      uint16_t u;
-      from_internal_representation(8, a[i].a_[j].v_, &u);
-      printf(" %02x", u);
-    }
-    printf("\n");
+    print_row(n, a[i]);
   }
 }
 
@@ -295,9 +308,22 @@ int find_non_zero(int n, int col, int* perm, gf2_instance* row) {
 
 bool divide_equation_by(int n, int size_min_poly, byte* min_poly, int pivot_col,
                         gf2_instance& row) {
-  for (int j = (pivot_col + 1); j < n; j++) {
-    // row.a_[j] = row.a_[j]/row.a_[pivot_col];
+  int size_out;
+  byte out[32];
+
+  gf2_8* inv = get_inverse(row.a_[pivot_col]);
+  if (inv == nullptr)
+    return false;
+  for (int j = 0; j < n; j++) {
+    size_out = 32;
+    if(!gf2_mult(8, inv->v_, 8, row.a_[j].v_, size_min_poly, min_poly, &size_out, out))
+      return false;
+    byte_8_copy(out, row.a_[j].v_);
   }
+  size_out = 32;
+  if(!gf2_mult(8, inv->v_, 8, row.y_.v_, size_min_poly, min_poly, &size_out, out))
+    return false;
+  byte_8_copy(out, row.y_.v_);
   return true;
 }
 

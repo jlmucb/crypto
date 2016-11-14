@@ -263,6 +263,35 @@ bool Gf2SolveSimultaneousTest() {
   return true;
 }
 
+bool Gf2SolvePrimitivesTest() {
+  int size_min_poly = 16;
+  byte min_poly[16];
+  uint16_t minpoly = 0x11b;
+
+  EXPECT_TRUE(to_internal_representation(minpoly, &size_min_poly, min_poly));
+  printf("Min poly: "); print_poly(size_min_poly, min_poly); printf("\n");
+  EXPECT_TRUE(init_inverses(size_min_poly, min_poly));
+
+  byte t3[16];
+  uint16_t w;
+  int size;
+
+  gf2_instance one_instance;
+  for (int i = 0; i < 48; i++) {
+    w =  (uint16_t)((2 * i + 1) % 256);
+    size = 16;
+    EXPECT_TRUE(to_internal_representation(w, &size, t3));
+    byte_8_copy(t3, one_instance.a_[i].v_);
+  }
+  printf("one_instance: ");
+  print_row(48, one_instance);
+  EXPECT_TRUE(divide_equation_by(48, size_min_poly, min_poly, 1, one_instance));
+  printf("after divide by: ");
+  print_row(48, one_instance);
+
+  return true;
+}
+
 TEST(InternalRep, InternalRepTest) {
   EXPECT_TRUE(InternalRepTest());
 }
@@ -284,9 +313,12 @@ TEST(Gf2Inverse, Gf2InverseTest) {
 TEST(Gf2Linear, Gf2LinearTest) {
   EXPECT_TRUE(Gf2LinearTest());
 }
-TEST(Gf2SolveSimultaneous, Gf2SolveSimultaneousTest) {
-  EXPECT_TRUE(Gf2SolveSimultaneousTest());
+TEST(Gf2SolvePrimitives, Gf2SolvePrimitivesTest) {
+  EXPECT_TRUE(Gf2SolvePrimitivesTest());
 }
+// TEST(Gf2SolveSimultaneous, Gf2SolveSimultaneousTest) {
+//   EXPECT_TRUE(Gf2SolveSimultaneousTest());
+// }
 
 
 DEFINE_string(log_file, "gf2_common_test.log", "gf2_common_test file name");
