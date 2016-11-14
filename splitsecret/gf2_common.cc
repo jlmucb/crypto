@@ -252,6 +252,7 @@ bool init_inverses(int size_min_poly, byte* min_poly) {
 }
 
 bool multiply_linear(int n, int size_min_poly, byte* min_poly, gf2_8* a, gf2_8* x, gf2_8& y) {
+printf("multiply_linear, n: %d, a: ", n);print_poly(8, a->v_); printf(", x: "); print_poly(8, x->v_); printf("\n");
   gf2_8_zero(y);
   int size_t1 = 16;
   byte t1[16];
@@ -408,8 +409,6 @@ print_matrix(n, permutation, a);
 
   int size_out1;
   byte out1[16];
-  int size_out2;
-  byte out2[16];
 
   // Reverse solve.
   for (int j = (n - 1); j >= 0; j--) {
@@ -421,26 +420,16 @@ print_matrix(n, permutation, a);
     gf2_8 u;
     for (int i = 0; i < 8; i++)
       u.v_[i] = 0;
-      if(!multiply_linear(n - j - 1, size_min_poly, min_poly, &a[permutation[j + 1]].a_[j + 1], &x[j + 1], u)) {
-        delete []permutation;
-        return false;
-      }
-printf("j: %d, u: ", j);print_poly(8, u.v_); printf("\n");
+    if(!multiply_linear(n - j - 1, size_min_poly, min_poly, &a[permutation[j]].a_[j + 1], &x[j + 1], u)) {
+      delete []permutation;
+      return false;
+    }
     size_out1 = 16;
-    size_out2 = 16;
     if(!gf2_add(8, u.v_, 8, a[permutation[j]].y_.v_, size_min_poly, min_poly,
                       &size_out1, out1))
       return false;
-printf("a[permutation[j]].a_[j]: ");print_poly(8, a[permutation[j]].a_[j].v_); 
-printf(", y_: "); print_poly(8, a[permutation[j]].y_.v_); printf("\n");
-    gf2_8* inv = get_inverse(a[permutation[j]].a_[j]);
-    if (inv == nullptr)
-      return false;
-    if(!gf2_mult(8, inv->v_, 8, a[permutation[j]].y_.v_, size_min_poly, min_poly, &size_out2, out2))
-      return false;
-    byte_8_copy(out2, x[j].v_);
+    byte_8_copy(out1, x[j].v_);
   }
-printf("\n");
   delete []permutation;
   return true;
 }
