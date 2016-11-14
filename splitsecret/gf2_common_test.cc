@@ -156,11 +156,13 @@ bool Gf2InverseTest() {
   EXPECT_TRUE(to_internal_representation(minpoly, &size_min_poly, min_poly));
   printf("Min poly: "); print_poly(size_min_poly, min_poly); printf("\n");
   EXPECT_TRUE(init_inverses(size_min_poly, min_poly));
+#if 0
   for (int i = 0; i < 256; i++) {
     uint16_t z;
     from_internal_representation(8, g_gf2_inverse[i].v_, &z);
     printf("1/%02x = %02x\n", i, z);
   }
+#endif
   uint16_t w;
   from_internal_representation(8, g_gf2_inverse[2].v_, &w);
   EXPECT_TRUE( w == 0x8d);
@@ -233,7 +235,7 @@ bool Gf2SolveSimultaneousTest() {
 
   for (int j = 0; j < 48; j++) {
     for (int i = 0; i < 48; i++) {
-      w =  (uint16_t)((j * i + 1) % 256);
+      w =  (uint16_t)((j * j * j +  7 * j * j +  31 * i * i + i * j + 1) % 256);
       size = 16;
       EXPECT_TRUE(to_internal_representation(w, &size, t3));
       byte_8_copy(t3, instance[j].a_[i].v_);
@@ -244,6 +246,7 @@ bool Gf2SolveSimultaneousTest() {
       return false;
   }
 
+#if 0
   for (int j = 0; j < 48; j++) {
     printf("Equation %d:\n", j + 1);
     for(int i = 0; i < 48; i++) {
@@ -253,6 +256,7 @@ bool Gf2SolveSimultaneousTest() {
     EXPECT_TRUE(from_internal_representation(8, instance[j].y_.v_, &w));
     printf(" = %02x\n\n", w);
   }
+#endif
 
   gf2_8 solved_x[48];
   EXPECT_TRUE(gaussian_solve(48, size_min_poly, min_poly, instance, solved_x));
@@ -328,9 +332,9 @@ TEST(Gf2Linear, Gf2LinearTest) {
 TEST(Gf2SolvePrimitives, Gf2SolvePrimitivesTest) {
   EXPECT_TRUE(Gf2SolvePrimitivesTest());
 }
-// TEST(Gf2SolveSimultaneous, Gf2SolveSimultaneousTest) {
-//   EXPECT_TRUE(Gf2SolveSimultaneousTest());
-// }
+TEST(Gf2SolveSimultaneous, Gf2SolveSimultaneousTest) {
+  EXPECT_TRUE(Gf2SolveSimultaneousTest());
+}
 
 
 DEFINE_string(log_file, "gf2_common_test.log", "gf2_common_test file name");

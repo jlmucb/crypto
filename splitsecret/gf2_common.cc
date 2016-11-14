@@ -286,7 +286,7 @@ void print_row(int n, gf2_instance& row) {
 
 void print_matrix(int n, int* perm, gf2_instance* a) {
   for (int i = 0; i < n; i++) {
-    print_row(n, a[i]);
+    print_row(n, a[perm[i]]);
   }
 }
 
@@ -378,6 +378,7 @@ bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_instance* a, g
     // Find an instance with a non-zero entry in position.
     int k = find_non_zero(n, j, permutation, a);
     if (k < 0) {
+      printf("No non zero at %d\n", j);
       delete []permutation;
       return false;
     }
@@ -389,28 +390,22 @@ printf("Pivot is %d\n", permutation[k]);
     permutation[j] = permutation[k];
     permutation[k] = m;
 
-/*
-printf("Position 1\n");
     // Divide identified row by leading coefficient.
     if (!divide_equation_by(n, size_min_poly, min_poly, j,
-                          a[permutation[j]]))
-printf("Error exit 1\n");
+                          a[permutation[j]])) {
         delete []permutation;
         return false;
+    }
 
     // Subtract appropriate multiple of identified row from later rows.
     for (int l = (j+1); l < n; l++) {
       if(!subtract_equation_by(n, size_min_poly, min_poly, j,
                               a[permutation[j]], a[permutation[l]])) {
-printf("Position 2\n");
-printf("Error exit 2\n");
         delete []permutation;
         return false;
       }
     }
-*/
 print_matrix(n, permutation, a);
-break;
   }
 
 /*
