@@ -224,13 +224,14 @@ void PrintShard(string& serialized) {
   printf("shard_number: %d\n", msg.shard_number());
   printf("number_of_coefficients: %d\n", msg.number_of_coefficients());
   printf("number_of_equations_in_shard: %d\n", msg.number_of_equations_in_shard());
+  byte a, b;
   for (int j = 0; j < msg.equations_size(); j++) {
     for (int k = 0; k < msg.equations(j).coefficients().size(); k++) {
-      byte* p = (byte*)msg.equations(j).coefficients(k).data();
-      printf("%02x ", *p);
+      a = (byte)msg.equations(j).coefficients(k);
+      printf("%02x ", a);
     }
-    byte* q = (byte*)msg.equations(j).value().data();
-    printf("   =  %02x\n", *q);
+    b = (byte) msg.equations(j).value();
+    printf("   =  %02x\n", b);
   }
   printf("\n");
 }
@@ -290,12 +291,11 @@ bool Gf2SolveSimultaneousTest() {
     for(int i = 0; i < 48; i++) {
       EXPECT_TRUE(from_internal_representation(8, instance[j].a_[i].v_, &w));
       printf("%02x * x[%d] + ", w, i);
-      string* s = e_msg->add_coefficients();
-      s->append((const char*)&w, 1);
+      e_msg->add_coefficients((int)w);
     }
     EXPECT_TRUE(from_internal_representation(8, instance[j].y_.v_, &w));
     printf(" = %02x\n\n", w);
-    e_msg->set_value((const char*)&w, 1);
+    e_msg->set_value((int)w);
   }
 
   string serialized_messages[3];
