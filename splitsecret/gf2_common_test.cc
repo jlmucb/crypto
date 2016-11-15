@@ -23,6 +23,7 @@
 #include <gtest/gtest.h>
 #include <gflags/gflags.h>
 #include "gf2_common.h"
+#include "splitsecret.pb.h"
 
 #include <memory>
 #include <cmath>
@@ -246,17 +247,38 @@ bool Gf2SolveSimultaneousTest() {
       return false;
   }
 
-#if 0
+  split_secret_message secret_message[3];
+
+  for (int i = 0; i < 3; i++) {
+    secret_message[i].set_secret_name("TestKey1");
+    secret_message[i].set_number_of_subsequences_in_secret(1);
+    secret_message[i].set_sequence_number(1);
+    secret_message[i].set_number_of_shards_outstanding(5);
+    secret_message[i].set_number_of_shards_required(3);
+    secret_message[i].set_shard_number(i + 1);
+    secret_message[i].set_number_of_coefficients(48);
+    secret_message[i].set_number_of_equations_in_shard(16);
+  }
+
   for (int j = 0; j < 48; j++) {
     printf("Equation %d:\n", j + 1);
+    equation_message* e_msg = secret_message[j/16].add_equations();
     for(int i = 0; i < 48; i++) {
       EXPECT_TRUE(from_internal_representation(8, instance[j].a_[i].v_, &w));
       printf("%02x * x[%d] + ", w, i);
+      e_msg->add_coefficients((const char*)&w);
     }
     EXPECT_TRUE(from_internal_representation(8, instance[j].y_.v_, &w));
     printf(" = %02x\n\n", w);
+    e_msg->set_value((const char*)&w);
   }
-#endif
+
+  string serialized_messages[3];
+  for (int i = 0; i < 3; i++) {
+    secret_message[i].SerializeToString(&serialized_messages[i]);
+  }
+
+  // secret_message[i].ParseFromString(const string& data);
 
   gf2_8 solved_x[48];
   EXPECT_TRUE(gaussian_solve(48, size_min_poly, min_poly, instance, solved_x));

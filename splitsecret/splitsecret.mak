@@ -53,7 +53,7 @@ endif
 
 
 dobj_tables=	$(O)/gf2_common.o $(O)/gf2_tables.o
-dobj_gf2_common_test=$(O)/gf2_common.o $(O)/gf2_common_test.o
+dobj_gf2_common_test=$(O)/gf2_common.o $(O)/gf2_common_test.o $(O)/splitsecret.pb.o
 
 all:	splitsecret_tables.exe gf2_common_test.exe
 clean:
@@ -82,4 +82,8 @@ $(O)/gf2_tables.o: $(S)/gf2_tables.cc
 $(O)/gf2_common_test.o: $(S)/gf2_common_test.cc
 	@echo "compiling gf2_common_test.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/gf2_common_test.o $(S)/gf2_common_test.cc
+
+$(O)/splitsecret.pb.o: $(S)/splitsecret.pb.cc
+	@echo "compiling splitsecret.pb.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/splitsecret.pb.o $(S)/splitsecret.pb.cc
 
