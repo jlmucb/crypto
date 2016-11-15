@@ -252,7 +252,6 @@ bool init_inverses(int size_min_poly, byte* min_poly) {
 }
 
 bool multiply_linear(int n, int size_min_poly, byte* min_poly, gf2_8* a, gf2_8* x, gf2_8& y) {
-printf("multiply_linear, n: %d, a: ", n);print_poly(8, a->v_); printf(", x: "); print_poly(8, x->v_); printf("\n");
   gf2_8_zero(y);
   int size_t1 = 16;
   byte t1[16];
