@@ -370,8 +370,7 @@ bool Gf2SolveSimultaneousTest() {
     printf("x[%d]= %02x\n", i, w);  
   }
 #else
-  if (!RecoverAndSolve(3, serialized_messages))
-    return false;
+  EXPECT_TRUE(RecoverAndSolve(3, serialized_messages));
 #endif
   return true;
 }
