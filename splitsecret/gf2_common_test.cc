@@ -211,10 +211,7 @@ bool Gf2LinearTest() {
   return true;
 }
 
-void PrintShard(string& serialized) {
-  split_secret_message msg;
-
-  msg.ParseFromString(serialized);
+void PrintSplitSecretMessage(split_secret_message& msg) {
   printf("\n");
   printf("Secret name: %s\n", msg.secret_name().c_str());
   printf("number_of_subsequences_in_secret: %d\n", msg.number_of_subsequences_in_secret());
@@ -234,6 +231,68 @@ void PrintShard(string& serialized) {
     printf("   =  %02x\n", b);
   }
   printf("\n");
+}
+
+void PrintShard(string& serialized) {
+  split_secret_message msg;
+
+  msg.ParseFromString(serialized);
+  PrintSplitSecretMessage(msg);
+}
+
+bool RecoverAndSolve(int n, string* serialized_msg) {
+  gf2_instance instance[48];
+  uint16_t w;
+  int size_min_poly = 16;
+  byte min_poly[16];
+  uint16_t minpoly = 0x11b;
+
+  printf("\n\n*****RecoverAndSolve\n\n");
+  if (!to_internal_representation(minpoly, &size_min_poly, min_poly)) {
+    return false;
+  }
+  printf("Min poly: "); print_poly(size_min_poly, min_poly); printf("\n");
+
+  split_secret_message msgs[3];
+  for (int i = 0; i < 3; i++) {
+    msgs[i].ParseFromString(serialized_msg[i]);
+    PrintSplitSecretMessage(msgs[i]);
+  }
+
+  int size;
+  byte c[16];
+  for (int j = 0; j < 48; j++) {
+    printf("-----Equation %d\n", j + 1);
+    const equation_message& e_msg = msgs[j/16].equations(j%16);
+    for(int i = 0; i < 48; i++) {
+      w = e_msg.coefficients(i);
+      size = 16;
+      if(!to_internal_representation(w, &size, c)) {
+        return false;
+      }
+      byte_8_copy(c, instance[j].a_[i].v_);
+      printf("%02x * x[%d] + ", w, i);
+    }
+    size = 16;
+    w = e_msg.value();
+    if(!to_internal_representation(w, &size, c)) {
+      return false;
+    }
+    byte_8_copy(c, instance[j].y_.v_);
+    printf(" = %02x\n\n", w);
+  }
+
+  gf2_8 solved_x[48];
+  if(!gaussian_solve(48, size_min_poly, min_poly, instance, solved_x)) {
+      return false;
+  }
+  for (int i = 0; i < 48; i++) {
+    if(!from_internal_representation(8, solved_x[i].v_, &w)) {
+      return false;
+    }
+    printf("x[%d]= %02x\n", i, w);
+  }
+  return true;
 }
 
 bool Gf2SolveSimultaneousTest() {
@@ -303,13 +362,17 @@ bool Gf2SolveSimultaneousTest() {
     secret_message[i].SerializeToString(&serialized_messages[i]);
     PrintShard(serialized_messages[i]);
   }
-
+#if 0
   gf2_8 solved_x[48];
   EXPECT_TRUE(gaussian_solve(48, size_min_poly, min_poly, instance, solved_x));
   for (int i = 0; i < 48; i++) {
     EXPECT_TRUE(from_internal_representation(8, solved_x[i].v_, &w));
     printf("x[%d]= %02x\n", i, w);  
   }
+#else
+  if (!RecoverAndSolve(3, serialized_messages))
+    return false;
+#endif
   return true;
 }
 
