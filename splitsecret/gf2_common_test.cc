@@ -416,6 +416,20 @@ bool Gf2SolvePrimitivesTest() {
   return true;
 }
 
+bool Gf2GenMatrixTest() {
+  uint16_t minpoly = 0x11b;
+  int size_min_poly = 16;
+  byte min_poly[16];
+
+  EXPECT_TRUE(to_internal_representation(minpoly, &size_min_poly, min_poly));
+
+  printf("Min poly: "); print_poly(size_min_poly, min_poly); printf("\n");
+
+  gf2_8 a[48 * 48];
+  EXPECT_TRUE(generate_invertible_matrix(48, size_min_poly, min_poly, a));
+  return true;
+}
+
 TEST(InternalRep, InternalRepTest) {
   EXPECT_TRUE(InternalRepTest());
 }
@@ -442,6 +456,9 @@ TEST(Gf2SolvePrimitives, Gf2SolvePrimitivesTest) {
 }
 TEST(Gf2SolveSimultaneous, Gf2SolveSimultaneousTest) {
   EXPECT_TRUE(Gf2SolveSimultaneousTest());
+}
+TEST(Gf2GenMatrix, Gf2GenMatrixTest) {
+  EXPECT_TRUE(Gf2GenMatrixTest());
 }
 
 

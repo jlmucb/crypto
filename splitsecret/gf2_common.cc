@@ -138,6 +138,166 @@ bool gf2_reduce(int size_min_poly, byte* min_poly,
   return true;
 }
 
+void add_col_to_multiple_of_col(int n, int size_min_poly, byte* min_poly,
+                int c1, int c2, byte x, gf2_8* a) {
+  uint16_t w = (uint16_t)x;
+  gf2_8 r, s, t;
+  int size = 16;
+  byte c[16];
+
+  for (int i = 0; i< 16; i++)
+    c[i] = 0;
+  if (!to_internal_representation(w, &size, c)) {
+    return;
+  }
+  gf2_8_zero(t);
+  byte_8_copy(c, t.v_);
+
+  for (int i = 0; i < n; i++) {
+    gf2_8_zero(r);
+    gf2_8_zero(s);
+
+    size = 16;
+    gf2_mult(8, a[i * n + c1].v_, 8, t.v_,
+              size_min_poly, min_poly, &size, r.v_);
+    size = 16;
+    gf2_add(8, r.v_, 8, a[i * n + c2].v_,
+             size_min_poly, min_poly, &size, s.v_);
+    byte_8_copy(s.v_, a[i * n + c2].v_);
+  }
+}
+
+void add_row_to_multiple_of_row(int n, int size_min_poly, byte* min_poly, 
+              int r1, int r2, byte x, gf2_8* a) {
+  uint16_t w = (uint16_t)x;
+  gf2_8 r, s, t;
+  int size = 16;
+  byte c[16];
+
+  for (int i = 0; i< 16; i++)
+    c[i] = 0;
+  if (!to_internal_representation(w, &size, c)) {
+    return;
+  }
+  byte_8_copy(c, t.v_);
+
+  for (int i = 0; i < n; i++) {
+    gf2_8_zero(r);
+    gf2_8_zero(s);
+
+    for (int i = 0; i< 16; i++)
+      c[i] = 0;
+    size = 16;
+    gf2_mult(8, a[r1 * n + i].v_, 8, t.v_,
+              size_min_poly, min_poly, &size, c);
+    byte_8_copy(c, r.v_);
+    size = 16;
+    gf2_add(8, r.v_, 8, a[r2 * n + i].v_,
+             size_min_poly, min_poly, &size, s.v_); 
+    byte_8_copy(s.v_, a[r2 * n + i].v_);
+  }
+}
+
+int g_rd = -1;
+static int g_num_rand = 0;
+byte g_rand_array[128];
+
+bool get_random_byte(bool non_zero, byte* y) {
+  if (g_rd < 0) {
+    g_rd = open("/dev/random", O_RDONLY);
+    if (g_rd < 0) {
+      return false;
+    }
+  }
+
+  for (;;) {
+    if (g_num_rand <= 0) {
+      g_num_rand = read(g_rd, g_rand_array, 64);
+      if (g_num_rand < 0)
+        return false;
+    }
+    *y = g_rand_array[--g_num_rand];
+    if (non_zero && *y == 0)
+      continue;
+    else
+      break;
+  }
+  return true;
+}
+
+bool generate_invertible_matrix(int n, int size_min_poly, byte* min_poly,
+        gf2_8* a) {
+
+  // Zero.
+  for (int i = 0; i < n * n; i++)
+    gf2_8_zero(a[i]);
+
+  // First get non-zero stuff on diagonal
+  uint16_t w;
+  int size;
+  byte c[16];
+  for (int i = 0; i < n; i++) {
+    w = 0;
+    if (!get_random_byte(true, (byte*)&w)) {
+      return false;
+    }
+    size = 16;
+    if (!to_internal_representation(w, &size, c)) {
+      return false;
+    }
+    byte_8_copy(c, a[n * i + i].v_);
+  }
+
+  // fill in the upper triangular entries
+  for (int i = 0; i < n; i++) {
+    for (int j = (i + 1); j < n; j++) {
+      w = 0;
+      if (!get_random_byte(false, (byte*)&w)) {
+        return false;
+      }
+      size = 16;
+      if (!to_internal_representation(w, &size, c)) {
+        return false;
+      }
+      byte_8_copy(c, a[n * i + j].v_);
+    }
+  }
+
+  printf("\ntriangular form:\n");
+  print_array(n, a);
+  printf("\n");
+
+  // Combine row and columns to get full matrix.
+  int c1, c2, r1, r2;
+  byte x, y;
+  for (int i = 0; i < 256; i++) {
+    if (!get_random_byte(false, (byte*)&r1))
+      return false;
+    if (!get_random_byte(false, (byte*)&r2))
+      return false;
+    if (!get_random_byte(false, (byte*)&c1))
+      return false;
+    if (!get_random_byte(false, (byte*)&c2))
+      return false;
+    r1 %= 48;
+    r2 %= 48;
+    c1 %= 48;
+    c2 %= 48;
+    if (!get_random_byte(true, &x))
+      return false;
+    if (!get_random_byte(true, &y))
+      return false;
+    add_col_to_multiple_of_col(n, size_min_poly, min_poly, c1, c2, x, a);
+    add_row_to_multiple_of_row(n, size_min_poly, min_poly, r1, r2, y, a);
+  }
+
+  printf("\nfinal form:\n");
+  print_array(n, a);
+  printf("\n");
+
+  return true;
+}
+
 void print_poly(int size_in, byte* in) {
   for (int i = (size_in - 1); i > 0; i--) {
     if (in[i] != 0)
@@ -272,6 +432,21 @@ bool multiply_linear(int n, int size_min_poly, byte* min_poly, gf2_8* a, gf2_8* 
     byte_8_copy(t2, y.v_);
   }
   return true;
+}
+
+void print_vector(int n, gf2_8* row) {
+  uint16_t u;
+  for (int j = 0; j < n; j++) {
+    from_internal_representation(8, row[j].v_, &u);
+    printf(" %02x", u);
+  }
+  printf("\n");
+}
+
+void print_array(int n, gf2_8* a) {
+  for (int i = 0; i < n; i++) {
+    print_vector(n, &a[n * i]);
+  }
 }
 
 void print_row(int n, gf2_instance& row) {

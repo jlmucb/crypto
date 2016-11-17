@@ -67,7 +67,12 @@ bool divide_equation_by(int n, int size_min_poly, byte* min_poly, int pivot_col,
                         gf2_instance& row);
 bool subtract_equation_by(int n, int size_min_poly, byte* min_poly, int pivot_col,
                           gf2_instance& row_subtracted, gf2_instance& row);
+void print_vector(int n, gf2_8* row);
+void print_array(int n, gf2_8* a);
 void print_row(int n, gf2_instance& row);
 void print_matrix(int n, int* perm, gf2_instance* a);
+bool generate_invertible_matrix(int n, int size_min_poly, byte* min_poly,
+        gf2_8* a);
+
 #endif
 
