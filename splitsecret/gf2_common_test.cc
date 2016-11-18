@@ -427,6 +427,89 @@ bool Gf2GenMatrixTest() {
 
   gf2_8 a[48 * 48];
   EXPECT_TRUE(generate_invertible_matrix(48, size_min_poly, min_poly, a));
+  printf("\nMatrix:\n");
+  print_array(48, a);
+  printf("\n");
+  return true;
+}
+
+bool Gf2EquationSetup(int size_min_poly, byte* min_poly, gf2_instance* instance,
+      gf2_8* x) {
+  gf2_8 a[48 * 48];
+
+  if (!generate_invertible_matrix(48, size_min_poly, min_poly, a)) {
+    printf("generate_invertible_matrix fails\n");
+    return false;
+  }
+
+  printf("\nGenerated matrix:\n");
+  print_array(48, a);
+  printf("\n");
+
+  for (int i = 0; i < 48 * 48; i++) {
+    gf2_8_copy(a[i], instance[i / 48].a_[i % 48]);
+  }
+
+  for (int j = 0; j < 48; j++) {
+    if (!multiply_linear(48, size_min_poly, min_poly, instance[j].a_, x, instance[j].y_)) {
+      printf("multiply_linear %d fails\n", j);
+      return false;
+    }
+  }
+  
+  return true;
+}
+
+bool Gf2GenMatrixAndSolveTest() {
+  uint16_t minpoly = 0x11b;
+  int size_min_poly = 16;
+  byte min_poly[16];
+
+  gf2_instance instance[48];
+  gf2_8 x[48];
+  gf2_8 solved_x[48];
+  uint16_t u, w;
+
+  printf("\n\nGf2GenMatrixAndSolveTest():\n");
+  if (!to_internal_representation(minpoly, &size_min_poly, min_poly)) {
+    return false;
+  }
+  printf("Min poly: "); print_poly(size_min_poly, min_poly); printf("\n");
+
+  int size;
+  byte c[16];
+  for (int i = 0; i < 48; i++) {
+    w = (uint16_t)(i + 1);
+    size = 16;
+    if (!to_internal_representation(w, &size, c)) {
+      return false;
+    }
+    byte_8_copy(c, x[i].v_);
+  }
+
+  if (!Gf2EquationSetup(size_min_poly, min_poly, instance, x)) {
+    printf("Gf2EquationSetup failed\n");
+    return false;
+  }
+
+  if(!gaussian_solve(48, size_min_poly, min_poly, instance, solved_x)) {
+      printf("gaussian_solve fails\n");
+      return false;
+  }
+
+  for (int i = 0; i < 48; i++) {
+    if(!from_internal_representation(8, x[i].v_, &w)) {
+      return false;
+    }
+    if(!from_internal_representation(8, solved_x[i].v_, &u)) {
+      return false;
+    }
+    printf("x[%d], solved_x[%d]:  %02x %02x\n", i, i, w, u);
+    if (!gf2_8_equal(x[i], solved_x[i])) {
+      printf("x[%2d] != solved_x[%2d]\n", i, i);
+      return false;
+    }
+  }
   return true;
 }
 
@@ -459,6 +542,9 @@ TEST(Gf2SolveSimultaneous, Gf2SolveSimultaneousTest) {
 }
 TEST(Gf2GenMatrix, Gf2GenMatrixTest) {
   EXPECT_TRUE(Gf2GenMatrixTest());
+}
+TEST(Gf2GenMatrixAndSolve, Gf2GenMatrixAndSolveTest) {
+  EXPECT_TRUE(Gf2GenMatrixAndSolveTest());
 }
 
 

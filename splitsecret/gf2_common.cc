@@ -566,6 +566,7 @@ bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_instance* a, g
     // Divide identified row by leading coefficient.
     if (!divide_equation_by(n, size_min_poly, min_poly, j,
                           a[permutation[j]])) {
+        printf("Error 0.1\n");
         delete []permutation;
         return false;
     }
@@ -574,12 +575,12 @@ bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_instance* a, g
     for (int l = (j+1); l < n; l++) {
       if(!subtract_equation_by(n, size_min_poly, min_poly, j,
                               a[permutation[j]], a[permutation[l]])) {
+        printf("Error 0.2\n");
         delete []permutation;
         return false;
       }
     }
   }
-print_matrix(n, permutation, a);
 
   int size_out1;
   byte out1[16];
@@ -587,6 +588,7 @@ print_matrix(n, permutation, a);
   // Reverse solve.
   for (int j = (n - 1); j >= 0; j--) {
     if (isZero(a[j].a_[j])) {
+      printf("Error 0.3\n");
       delete []permutation;
       return false;
     }
@@ -595,13 +597,16 @@ print_matrix(n, permutation, a);
     for (int i = 0; i < 8; i++)
       u.v_[i] = 0;
     if(!multiply_linear(n - j - 1, size_min_poly, min_poly, &a[permutation[j]].a_[j + 1], &x[j + 1], u)) {
+      printf("Error 1\n");
       delete []permutation;
       return false;
     }
     size_out1 = 16;
     if(!gf2_add(8, u.v_, 8, a[permutation[j]].y_.v_, size_min_poly, min_poly,
-                      &size_out1, out1))
+                      &size_out1, out1)) {
+      printf("Error 2\n");
       return false;
+    }
     byte_8_copy(out1, x[j].v_);
   }
   delete []permutation;
