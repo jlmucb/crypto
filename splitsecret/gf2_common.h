@@ -60,6 +60,8 @@ bool gf2_8_equal(gf2_8& a, gf2_8& b);
 void byte_8_copy(byte* a, byte* b);
 void gf2_8_copy(gf2_8& a, gf2_8& b);
 
+bool get_random_byte(bool non_zero, byte* y);
+
 bool multiply_linear(int n, int size_min_poly, byte* min_poly, gf2_8* a, gf2_8* x, gf2_8& y);
 bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_instance* a, gf2_8* x);
 

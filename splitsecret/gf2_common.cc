@@ -263,14 +263,16 @@ bool generate_invertible_matrix(int n, int size_min_poly, byte* min_poly,
     }
   }
 
+#if 0
   printf("\ntriangular form:\n");
   print_array(n, a);
   printf("\n");
+#endif
 
   // Combine row and columns to get full matrix.
   int c1, c2, r1, r2;
   byte x, y;
-  for (int i = 0; i < 256; i++) {
+  for (int i = 0; i < 384; i++) {
     if (!get_random_byte(false, (byte*)&r1))
       return false;
     if (!get_random_byte(false, (byte*)&r2))
@@ -291,9 +293,11 @@ bool generate_invertible_matrix(int n, int size_min_poly, byte* min_poly,
     add_row_to_multiple_of_row(n, size_min_poly, min_poly, r1, r2, y, a);
   }
 
+#if 0
   printf("\nfinal form:\n");
   print_array(n, a);
   printf("\n");
+#endif
 
   return true;
 }
@@ -588,7 +592,7 @@ bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_instance* a, g
   // Reverse solve.
   for (int j = (n - 1); j >= 0; j--) {
     if (isZero(a[j].a_[j])) {
-      printf("Error 0.3\n");
+      printf("Error 0.3 %d\n", j);
       delete []permutation;
       return false;
     }
