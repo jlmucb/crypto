@@ -504,7 +504,7 @@ bool Gf2GenMatrixAndSolveTest() {
     if(!from_internal_representation(8, solved_x[i].v_, &u)) {
       return false;
     }
-    printf("x[%d], solved_x[%d]:  %02x %02x\n", i, i, w, u);
+    printf("x[%2d], solved_x[%2d]:  %02x %02x\n", i, i, w, u);
     if (!gf2_8_equal(x[i], solved_x[i])) {
       printf("x[%2d] != solved_x[%2d]\n", i, i);
       return false;
