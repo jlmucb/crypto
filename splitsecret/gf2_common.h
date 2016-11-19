@@ -21,6 +21,12 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include <string>
+
+#include "splitsecret.pb.h"
+
+
+using namespace std;
 
 #ifndef byte
 typedef unsigned char byte;
@@ -75,6 +81,10 @@ void print_row(int n, gf2_instance& row);
 void print_matrix(int n, int* perm, gf2_instance* a);
 bool generate_invertible_matrix(int n, int size_min_poly, byte* min_poly,
         gf2_8* a);
+bool fill_shard(string& secretname, int number_of_sequences, int sequence_number, int shards_outstanding,
+                int shards_required, int shard_number, int num_equations, int num_coefficients,
+                gf2_instance* instance, split_secret_message* shard);
+void print_shard(split_secret_message& msg);
 
 #endif
 

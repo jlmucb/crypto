@@ -447,6 +447,58 @@ void print_vector(int n, gf2_8* row) {
   printf("\n");
 }
 
+bool fill_shard(string& secretname, int number_of_sequences, int sequence_number, int shards_outstanding,
+                int shards_required, int shard_number, int num_equations, int num_coefficients,
+                gf2_instance* instance, split_secret_message* shard) {
+  uint16_t w;
+  int size;
+
+  shard->set_secret_name(secretname);
+  shard->set_number_of_subsequences_in_secret(number_of_sequences);
+  shard->set_sequence_number(sequence_number);
+  shard->set_number_of_shards_outstanding(shards_outstanding);
+  shard->set_number_of_shards_required(shards_required);
+  shard->set_shard_number(shard_number);
+  shard->set_number_of_coefficients(num_coefficients);
+  shard->set_number_of_equations_in_shard(num_equations);
+  for (int k = 0; k < num_equations; k++) {
+    equation_message* e_msg = shard->add_equations();
+    for (int j = 0; j < num_coefficients; j++) {
+      size = 16;
+      w = 0;
+      if(!from_internal_representation(8, instance[k].a_[j].v_, &w)) {
+        return false;
+      }
+      e_msg->add_coefficients((int32_t)w);
+    }
+    size = 16;
+    w = 0;
+    if(!from_internal_representation(8, instance[k].y_.v_, &w)) {
+      return false;
+    }
+    e_msg->set_value((int)w);
+  }
+  return true;
+}
+
+void print_shard(split_secret_message& msg) {
+  printf("Name: %s\n", msg.secret_name().c_str());
+  printf("number_of_subsequences_in_secret: %d\n", msg.number_of_subsequences_in_secret());
+  printf("sequence_number: %d\n", msg.sequence_number());
+  printf("number_of_shards_outstanding: %d\n", msg.number_of_shards_outstanding());
+  printf("number_of_shards_required: %d\n", msg.number_of_shards_required());
+  printf("shard_number: %d\n", msg.shard_number());
+  printf("number_of_coefficients: %d\n", msg.number_of_coefficients());
+  printf("number_of_equations_in_shard: %d\n", msg.number_of_equations_in_shard());
+  for (int i = 0; i < 16; i++) {
+    const equation_message& e_msg = msg.equations(i);
+    for (int j = 0; j < 48; j++) {
+      printf("%02x ", e_msg.coefficients(j));
+    }
+    printf("   =   %02x\n", e_msg.value());
+  }
+}
+
 void print_array(int n, gf2_8* a) {
   for (int i = 0; i < n; i++) {
     print_vector(n, &a[n * i]);

@@ -23,7 +23,6 @@
 #include <gtest/gtest.h>
 #include <gflags/gflags.h>
 #include "gf2_common.h"
-#include "splitsecret.pb.h"
 
 #include <memory>
 #include <cmath>

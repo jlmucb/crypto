@@ -52,25 +52,19 @@ else
 endif
 
 
-dobj_tables=	$(O)/gf2_common.o $(O)/gf2_tables.o
 dobj_gf2_common_test=$(O)/gf2_common.o $(O)/gf2_common_test.o $(O)/splitsecret.pb.o
 dobj_splitsecret=$(O)/gf2_common.o $(O)/splitsecret.pb.o $(O)/splitsecret.o
 
-all:	splitsecret_tables.exe gf2_common_test.exe splitsecret.exe
+all:	gf2_common_test.exe splitsecret.exe
 clean:
 	@echo "removing object files"
 	rm $(O)/*.o
 	@echo "removing executable file"
-	rm $(EXE_DIR)/splitsecret_tables.exe
 	rm $(EXE_DIR)/gf2_common_test.exe
 
 gf2_common_test.exe: $(dobj_gf2_common_test) 
 	@echo "linking executable files"
 	$(LINK) -o $(EXE_DIR)/gf2_common_test.exe $(dobj_gf2_common_test) $(LDFLAGS)
-
-splitsecret_tables.exe: $(dobj_tables) 
-	@echo "linking executable files"
-	$(LINK) -o $(EXE_DIR)/splitsecret_tables.exe $(dobj_tables) $(LDFLAGS)
 
 splitsecret.exe: $(dobj_splitsecret) 
 	@echo "linking executable files"
@@ -79,10 +73,6 @@ splitsecret.exe: $(dobj_splitsecret)
 $(O)/gf2_common.o: $(S)/gf2_common.cc
 	@echo "compiling gf2_common.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/gf2_common.o $(S)/gf2_common.cc
-
-$(O)/gf2_tables.o: $(S)/gf2_tables.cc
-	@echo "compiling gf2_tables.cc"
-	$(CC) $(CFLAGS) -c -o $(O)/gf2_tables.o $(S)/gf2_tables.cc
 
 $(O)/gf2_common_test.o: $(S)/gf2_common_test.cc
 	@echo "compiling gf2_common_test.cc"
