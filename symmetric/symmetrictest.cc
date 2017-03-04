@@ -880,8 +880,8 @@ void init_test() {
   }
 }
 
-bool aes_benchmark_tests(byte* key, int num_tests, bool use_aesni) {
-  printf("\nAES_TIME_TESTS\n");
+bool aes128_benchmark_tests(byte* key, int num_tests, bool use_aesni) {
+  printf("\nAES128_TIME_TESTS\n");
   byte in[64];
   byte out[64];
   int num_tests_executed = 0;
@@ -926,13 +926,61 @@ bool aes_benchmark_tests(byte* key, int num_tests, bool use_aesni) {
   printf("time per block %le\n",
          ((double)cycles_diff) /
              ((double)(num_tests_executed * cycles_per_second)));
-  printf("END AES_TIME_TESTS\n\n");
+  printf("END AES128_TIME_TESTS\n\n");
+  return true;
+}
+
+bool aes256_benchmark_tests(byte* key, int num_tests, bool use_aesni) {
+  printf("\nAES256_TIME_TESTS\n");
+  byte in[64];
+  byte out[64];
+  int num_tests_executed = 0;
+  use_aesni &= HaveAesNi();
+
+  uint64_t cycles_start_test;
+  if (use_aesni) {
+    AesNi aes;
+    if (!aes.Init(256, key, Aes::ENCRYPT)) {
+      cycles_start_test = 0;
+      printf("AesNi failed Init()\n");
+    } else {
+      cycles_start_test = ReadRdtsc();
+      for (num_tests_executed = 0; num_tests_executed < num_tests;
+           num_tests_executed++) {
+        aes.EncryptBlock(in, out);
+      }
+    }
+  } else {
+    Aes aes;
+    if (!aes.Init(256, key, Aes::ENCRYPT)) {
+      cycles_start_test = 0;
+      printf("Aes failed Init()\n");
+    } else {
+      cycles_start_test = ReadRdtsc();
+      for (num_tests_executed = 0; num_tests_executed < num_tests;
+           num_tests_executed++) {
+        aes.EncryptBlock(in, out);
+      }
+    }
+  }
+  uint64_t cycles_end_test = ReadRdtsc();
+  uint64_t cycles_diff = cycles_end_test - cycles_start_test;
+  if (use_aesni) {
+    printf("using aesni, ");
+  } else {
+    printf("not using aesni, ");
+  }
+  printf("aes_time_test number of successful tests: %d\n", num_tests_executed);
+  printf("total ellapsed time %le\n",
+         ((double)cycles_diff) / ((double)cycles_per_second));
+  printf("time per block %le\n",
+         ((double)cycles_diff) /
+             ((double)(num_tests_executed * cycles_per_second)));
+  printf("END AES256_TIME_TESTS\n\n");
   return true;
 }
 
 bool sha1_benchmark_tests() {
-  /*
-   */
   return true;
 }
 
@@ -1046,20 +1094,22 @@ TEST(Simon, Simple) {
 byte test_key[] = {
     0x01, 0x02, 0x03, 0x04, 0x51, 0x52, 0x53, 0x54,
     0x91, 0x92, 0x93, 0x94, 0xe1, 0xe2, 0xe3, 0xe4,
+    0x01, 0x02, 0x03, 0x04, 0x51, 0x52, 0x53, 0x54,
+    0x91, 0x92, 0x93, 0x94, 0xe1, 0xe2, 0xe3, 0xe4,
 };
 
 TEST(FirstAesCase, FirstAesTest) {
   EXPECT_TRUE(SimpleAes128Test());
   EXPECT_TRUE(SimpleAes128NiTest());
-  EXPECT_TRUE(aes_benchmark_tests(test_key, 10000, true));
-  EXPECT_TRUE(aes_benchmark_tests(test_key, 10000, false));
+  EXPECT_TRUE(aes128_benchmark_tests(test_key, 10000, true));
+  EXPECT_TRUE(aes128_benchmark_tests(test_key, 10000, false));
 }
 
 TEST(SecondAesCase, SecondAesTest) {
   EXPECT_TRUE(SimpleAes256Test());
   EXPECT_TRUE(SimpleAes256NiTest());
-  // EXPECT_TRUE(aes_benchmark_tests(test_key, 10000, true));
-  // EXPECT_TRUE(aes_benchmark_tests(test_key, 10000, false));
+  EXPECT_TRUE(aes256_benchmark_tests(test_key, 10000, true));
+  EXPECT_TRUE(aes256_benchmark_tests(test_key, 10000, false));
 }
 
 TEST(FirstTwofishCase, FirstTwofishTest) { EXPECT_TRUE(SimpleTwofishTest()); }

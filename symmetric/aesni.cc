@@ -193,13 +193,6 @@ bool AesNi::InitEnc() {
       :
       : [key] "m"(key), [enc_key_sched] "m"(enc_key_sched)
       : "%rdi", "%rsi", "%xmm1", "%xmm2", "%xmm3");
-printf("\nKey schedule\n");
-for(int i = 0; i < 15; i++) {
-  printf("\t");
-  PrintBytes(16, &enc_key_sched[16 * i]);
-  printf("\n");
-}
-printf("\n");
   } else {
     return false;
   }
