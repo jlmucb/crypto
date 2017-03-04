@@ -55,7 +55,7 @@ else
 	LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 endif
 
-dobj=	$(O)/lattice_test.o $(O)/lattice_support.o
+dobj=	$(O)/lattice_test.o $(O)/lattice_support.o $(O)/lwe_lattice.o
 
 all:	lattice_test.exe
 clean:
@@ -75,4 +75,8 @@ $(O)/lattice_test.o: $(S)/lattice_test.cc
 $(O)/lattice_support.o: $(S)/lattice_support.cc
 	@echo "compiling lattice_support.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/lattice_support.o $(S)/lattice_support.cc
+
+$(O)/lwe_lattice.o: $(S)/lwe_lattice.cc
+	@echo "compiling lwe_lattice.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/lwe_lattice.o $(S)/lwe_lattice.cc
 

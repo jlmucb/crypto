@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 // Project: New Cloudproxy Crypto
-// File: lattice_support.cc
+// File: lwe_lattice.cc
 
 #include "cryptotypes.h"
 #include <string>
@@ -22,26 +22,27 @@
 #include "math.h"
 #include "lattice_support.h"
 
-// double exp (double x)
-// double log (double x)
-// long int random (void)
-// double sqrt (double x)
 
-bool RejectNormal(double x, double mean, double var) {
-  double t = (x - mean);
-  t *= t;
-  t /= 2.0 * var;
-  // probability of acceptance
-  double p = exp(-t);
-  printf("Pr(x = %10.7f) = %10.7f\n", t, p);
-  // get a random number, r, between 0 and 1
-  // accept if r <= p
-
-  long int flip = random();
-  long int denom = 0x7fffffffL;
-  double test_p = ((double) flip) / ((double) denom);
-  printf("%ld/%ld, test_p = %10.7f\n", flip, denom, test_p);
-  return (test_p <= p);
-}
-
+/*
+ *  q a prime (size: 50 bits)
+ *  S, a "secret" n x m matrix with small entries
+ *  A, a random n x m matrix
+ *  T = AS
+ *  H(x) a cryptographic hash
+ *
+ *  Sign(q, h, A, S)
+ *    y = Rand(m, std-dev)
+ *    c = H(Ay (mod q, h)
+ *    z = SC + y
+ *    output (z, c) with probability exp([-2(z, Sc) + ||Sc||^2]/2 sigma)
+ *
+ *  Verify(q, h, c, A, T)
+ *    check ||z|| <= 2 sigma sqrt(m)
+ *    Check c == H(Az-Tc)
+ *
+ *  Parameters
+ *    n = 512
+ *    S 20K bits
+ *    Sig: 200K bits
+ */
 
