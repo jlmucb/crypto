@@ -110,7 +110,7 @@ bool SimpleAes128NiTest() {
   }
 
   if (!aes128_object.Init(128, aes128_test1_key, AesNi::BOTH)) {
-    printf("Cant init aes object\n");
+    printf("Can't init aes object\n");
     return false;
   }
   aes128_object.EncryptBlock(aes128_test1_plain, test_cipher_out);
@@ -135,6 +135,94 @@ bool SimpleAes128NiTest() {
   }
   if (memcmp(aes128_test1_cipher, test_cipher_out, 16) != 0) return false;
   if (memcmp(aes128_test1_plain, test_plain_out, 16) != 0) return false;
+  return true;
+}
+
+// AES-256 (Nk=8, Nr=14)
+byte aes256_test1_plain[] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+                              0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff };
+byte aes256_test1_key[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+                            0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+                            0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+                            0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f };
+byte aes256_test1_cipher[] = { 0x8e, 0xa2, 0xb7, 0xca, 0x51, 0x67, 0x45, 0xbf,
+                               0xea, 0xfc, 0x49, 0x90, 0x4b, 0x49, 0x60, 0x89 };
+
+bool SimpleAes256Test() {
+  Aes aes256_object;
+  byte test_cipher_out[16];
+  byte test_plain_out[16];
+
+  if (FLAGS_printall) {
+    printf("Aes-256 test\n");
+    printf("\n");
+  }
+
+  if (!aes256_object.Init(256, aes256_test1_key, Aes::BOTH)) {
+    printf("Can't init aes object\n");
+    return false;
+  }
+  aes256_object.EncryptBlock(aes256_test1_plain, test_cipher_out);
+  aes256_object.DecryptBlock(test_cipher_out, test_plain_out);
+  if (FLAGS_printall) {
+    printf("\tKey            : ");
+    PrintBytes(32, aes256_test1_key);
+    printf("\n");
+    printf("\tCorrect plain  : ");
+    PrintBytes(16, aes256_test1_plain);
+    printf("\n");
+    printf("\tCorrect cipher : ");
+    PrintBytes(16, aes256_test1_cipher);
+    printf("\n");
+    printf("\tComputed cipher: ");
+    PrintBytes(16, test_cipher_out);
+    printf("\n");
+    printf("\tComputed plain : ");
+    PrintBytes(16, test_plain_out);
+    printf("\n");
+    printf("\n");
+  }
+  if (memcmp(aes256_test1_cipher, test_cipher_out, 16) != 0) return false;
+  if (memcmp(aes256_test1_plain, test_plain_out, 16) != 0) return false;
+  return true;
+}
+
+bool SimpleAes256NiTest() {
+  AesNi aes256_object;
+  byte test_cipher_out[16];
+  byte test_plain_out[16];
+
+  if (!HaveAesNi()) return true;
+  if (FLAGS_printall) {
+    printf("AesNi-256 test\n");
+  }
+
+  if (!aes256_object.Init(256, aes256_test1_key, AesNi::BOTH)) {
+    printf("Can't init aes object\n");
+    return false;
+  }
+  aes256_object.EncryptBlock(aes256_test1_plain, test_cipher_out);
+  aes256_object.DecryptBlock(test_cipher_out, test_plain_out);
+  if (FLAGS_printall) {
+    printf("\tKey            : ");
+    PrintBytes(32, aes256_test1_key);
+    printf("\n");
+    printf("\tCorrect plain  : ");
+    PrintBytes(16, aes256_test1_plain);
+    printf("\n");
+    printf("\tCorrect cipher : ");
+    PrintBytes(16, aes256_test1_cipher);
+    printf("\n");
+    printf("\tComputed cipher: ");
+    PrintBytes(16, test_cipher_out);
+    printf("\n");
+    printf("\tComputed plain : ");
+    PrintBytes(16, test_plain_out);
+    printf("\n");
+    printf("\n");
+  }
+  if (memcmp(aes256_test1_cipher, test_cipher_out, 16) != 0) return false;
+  if (memcmp(aes256_test1_plain, test_plain_out, 16) != 0) return false;
   return true;
 }
 
@@ -519,7 +607,7 @@ bool AesNi128Compare(int size_key, byte* key, int size_in, byte* in) {
     printf("AesCompare: Aes-128 test\n");
   }
   if (!aes128_object.Init(128, key, Aes::BOTH)) {
-    printf("Aes128Compare: Cant init aes object\n");
+    printf("Aes128Compare: Can't init aes object\n");
     return false;
   }
   aes128_object.EncryptBlock(in, test_cipher_out);
@@ -548,7 +636,7 @@ bool Aes128Compare(int size_key, byte* key, int size_in, byte* in) {
   byte test_plain_out[16];
 
   if (!aes128_object.Init(128, key, Aes::BOTH)) {
-    printf("Aes128Compare: Cant init aes object\n");
+    printf("Aes128Compare: Can't init aes object\n");
     return false;
   }
   aes128_object.EncryptBlock(in, test_cipher_out);
@@ -965,6 +1053,14 @@ TEST(FirstAesCase, FirstAesTest) {
   EXPECT_TRUE(aes_benchmark_tests(test_key, 10000, true));
   EXPECT_TRUE(aes_benchmark_tests(test_key, 10000, false));
 }
+
+TEST(SecondAesCase, SecondAesTest) {
+  EXPECT_TRUE(SimpleAes256Test());
+  // EXPECT_TRUE(SimpleAes256NiTest());
+  // EXPECT_TRUE(aes_benchmark_tests(test_key, 10000, true));
+  // EXPECT_TRUE(aes_benchmark_tests(test_key, 10000, false));
+}
+
 TEST(FirstTwofishCase, FirstTwofishTest) { EXPECT_TRUE(SimpleTwofishTest()); }
 TEST(FirstCbcCase, FirstCbcTest) { EXPECT_TRUE(SimpleCbcTest()); }
 TEST(FirstCbcEncryptionAlgorithmTest, FirstEncryptionCbcAlgorithmTest) {

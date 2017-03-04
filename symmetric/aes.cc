@@ -1034,13 +1034,18 @@ void Aes::DecryptBlock(const byte* ct, byte* pt) {
 }
 
 bool Aes::Init(int key_bit_size, byte* key_buf, int directionflag) {
-  if (key_bit_size != 128) {
+  if (key_bit_size == 128) {
+    cipher_name_ = new string("aes-128");
+    num_key_bits_ = key_bit_size;
+    num_rounds_ = 10;
+  } else if (key_bit_size == 256) {
+    cipher_name_ = new string("aes-256");
+    num_key_bits_ = key_bit_size;
+    num_rounds_ = 14;
+  } else {
     LOG(ERROR) << "Aes::Init bad key size\n";
     return false;
   }
-  cipher_name_ = new string("aes-128");
-  num_key_bits_ = key_bit_size;
-  num_rounds_ = 10;
   if (key_buf == nullptr) {
     LOG(ERROR) << "Aes::Init key_buf is nullptr\n";
     return false;
