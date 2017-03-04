@@ -86,6 +86,7 @@ bool SimpleAes128Test() {
     printf("\n");
     printf("\tCorrect cipher : ");
     PrintBytes(16, aes128_test1_cipher);
+    printf("\n");
     printf("\tComputed cipher: ");
     PrintBytes(16, test_cipher_out);
     printf("\n");
@@ -1056,7 +1057,7 @@ TEST(FirstAesCase, FirstAesTest) {
 
 TEST(SecondAesCase, SecondAesTest) {
   EXPECT_TRUE(SimpleAes256Test());
-  // EXPECT_TRUE(SimpleAes256NiTest());
+  EXPECT_TRUE(SimpleAes256NiTest());
   // EXPECT_TRUE(aes_benchmark_tests(test_key, 10000, true));
   // EXPECT_TRUE(aes_benchmark_tests(test_key, 10000, false));
 }

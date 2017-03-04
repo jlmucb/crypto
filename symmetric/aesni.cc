@@ -56,57 +56,153 @@ bool AesNi::InitEnc() {
 
   //  rdi --- key
   //  rsi --- enc_key_sched
-  asm volatile(
-      "\tjmp                  2f\n"
-      "1: \n"
-      "\tpshufd              $255, %%xmm2, %%xmm2\n"
-      "\tmovdqa              %%xmm1, %%xmm3 \n"
-      "\tpslldq              $4, %%xmm3 \n"
-      "\tpxor                %%xmm3, %%xmm1 \n"
-      "\tpslldq              $4, %%xmm3 \n"
-      "\tpxor                %%xmm3, %%xmm1 \n"
-      "\tpslldq              $4, %%xmm3\n"
-      "\tpxor                %%xmm3, %%xmm1\n"
-      "\tpxor                %%xmm2, %%xmm1\n"
-      "\tret\n"
-      "2:\n"
-      "\tmovq                %[key], %%rdi\n"
-      "\tmovq                %[enc_key_sched], %%rsi\n"
-      "\tmovdqu              (%%rdi), %%xmm1 \n"
-      "\tmovdqu              %%xmm1, (%%rsi)\n"
-      "\taeskeygenassist     $1, %%xmm1, %%xmm2\n"
-      "\tcall                1b\n"
-      "\tmovdqu              %%xmm1, 16(%%rsi) \n"
-      "\taeskeygenassist     $2, %%xmm1, %%xmm2 \n"
-      "\tcall                1b\n"
-      "\tmovdqu              %%xmm1, 32(%%rsi) \n"
-      "\taeskeygenassist     $4, %%xmm1, %%xmm2 \n"
-      "\tcall                1b\n"
-      "\tmovdqu              %%xmm1, 48(%%rsi) \n"
-      "\taeskeygenassist     $8, %%xmm1, %%xmm2 \n"
-      "\tcall                1b\n"
-      "\tmovdqu              %%xmm1, 64(%%rsi) \n"
-      "\taeskeygenassist     $16, %%xmm1, %%xmm2 \n"
-      "\tcall                1b\n"
-      "\tmovdqu              %%xmm1, 80(%%rsi) \n"
-      "\taeskeygenassist     $32, %%xmm1, %%xmm2 \n"
-      "\tcall                1b\n"
-      "\tmovdqu              %%xmm1, 96(%%rsi) \n"
-      "\taeskeygenassist     $64, %%xmm1, %%xmm2 \n"
-      "\tcall                1b\n"
-      "\tmovdqu              %%xmm1, 112(%%rsi) \n"
-      "\taeskeygenassist     $0x80, %%xmm1, %%xmm2 \n"
-      "\tcall                1b\n"
-      "\tmovdqu              %%xmm1, 128(%%rsi) \n"
-      "\taeskeygenassist     $0x1b, %%xmm1, %%xmm2 \n"
-      "\tcall                1b\n"
-      "\tmovdqu              %%xmm1, 144(%%rsi) \n"
-      "\taeskeygenassist     $0x36, %%xmm1, %%xmm2 \n"
-      "\tcall                1b\n"
-      "\tmovdqu              %%xmm1, 160(%%rsi)\n"
+  if (num_rounds_ == 10) {
+    asm volatile(
+        "\tjmp                  2f\n"
+        "1: \n"
+        "\tpshufd              $255, %%xmm2, %%xmm2\n"
+        "\tmovdqa              %%xmm1, %%xmm3 \n"
+        "\tpslldq              $4, %%xmm3 \n"
+        "\tpxor                %%xmm3, %%xmm1 \n"
+        "\tpslldq              $4, %%xmm3 \n"
+        "\tpxor                %%xmm3, %%xmm1 \n"
+        "\tpslldq              $4, %%xmm3\n"
+        "\tpxor                %%xmm3, %%xmm1\n"
+        "\tpxor                %%xmm2, %%xmm1\n"
+        "\tret\n"
+        "2:\n"
+        "\tmovq                %[key], %%rdi\n"
+        "\tmovq                %[enc_key_sched], %%rsi\n"
+        "\tmovdqu              (%%rdi), %%xmm1 \n"
+        "\tmovdqu              %%xmm1, (%%rsi)\n"
+        "\taeskeygenassist     $1, %%xmm1, %%xmm2\n"
+        "\tcall                1b\n"
+        "\tmovdqu              %%xmm1, 16(%%rsi) \n"
+        "\taeskeygenassist     $2, %%xmm1, %%xmm2 \n"
+        "\tcall                1b\n"
+        "\tmovdqu              %%xmm1, 32(%%rsi) \n"
+        "\taeskeygenassist     $4, %%xmm1, %%xmm2 \n"
+        "\tcall                1b\n"
+        "\tmovdqu              %%xmm1, 48(%%rsi) \n"
+        "\taeskeygenassist     $8, %%xmm1, %%xmm2 \n"
+        "\tcall                1b\n"
+        "\tmovdqu              %%xmm1, 64(%%rsi) \n"
+        "\taeskeygenassist     $16, %%xmm1, %%xmm2 \n"
+        "\tcall                1b\n"
+        "\tmovdqu              %%xmm1, 80(%%rsi) \n"
+        "\taeskeygenassist     $32, %%xmm1, %%xmm2 \n"
+        "\tcall                1b\n"
+        "\tmovdqu              %%xmm1, 96(%%rsi) \n"
+        "\taeskeygenassist     $64, %%xmm1, %%xmm2 \n"
+        "\tcall                1b\n"
+        "\tmovdqu              %%xmm1, 112(%%rsi) \n"
+        "\taeskeygenassist     $0x80, %%xmm1, %%xmm2 \n"
+        "\tcall                1b\n"
+        "\tmovdqu              %%xmm1, 128(%%rsi) \n"
+        "\taeskeygenassist     $0x1b, %%xmm1, %%xmm2 \n"
+        "\tcall                1b\n"
+        "\tmovdqu              %%xmm1, 144(%%rsi) \n"
+        "\taeskeygenassist     $0x36, %%xmm1, %%xmm2 \n"
+        "\tcall                1b\n"
+        "\tmovdqu              %%xmm1, 160(%%rsi)\n"
+        :
+      : [key] "m"(key), [enc_key_sched] "m"(enc_key_sched)
+      : "%rdi", "%rsi", "%xmm1", "%xmm2", "%xmm3");
+  } else if(num_rounds_ == 14) {
+    asm volatile(
+        "\tjmp                  3f\n"
+
+        "1: \n"
+        "\tpshufd              $0xff, %%xmm2, %%xmm2\n"
+        "\tmovdqa              %%xmm1, %%xmm4\n"
+        "\tpslldq              $4, %%xmm4 \n"
+        "\tpxor                %%xmm4, %%xmm1 \n"
+        "\tpslldq              $4, %%xmm4 \n"
+        "\tpxor                %%xmm4, %%xmm1 \n"
+        "\tpslldq              $4, %%xmm4 \n"
+        "\tpxor                %%xmm4, %%xmm1 \n"
+        "\tpxor                %%xmm2, %%xmm1\n"
+        "\tret\n"
+ 
+	"2:\n"
+        "\tpshufd              $0xaa, %%xmm2, %%xmm2\n"
+        "\tmovdqa              %%xmm3, %%xmm4\n"
+        "\tpslldq              $4, %%xmm4 \n"
+        "\tpxor                %%xmm4, %%xmm3 \n"
+        "\tpslldq              $4, %%xmm4 \n"
+        "\tpxor                %%xmm4, %%xmm3 \n"
+        "\tpslldq              $4, %%xmm4 \n"
+        "\tpxor                %%xmm4, %%xmm3 \n"
+        "\tpxor                %%xmm2, %%xmm3\n"
+        "\tret\n"
+
+        "3:\n"
+        "\tmovq                %[key], %%rdi\n"
+        "\tmovq                %[enc_key_sched], %%rsi\n"
+        "\tmovdqu              (%%rdi), %%xmm1 \n"
+        "\tmovdqu              16(%%rdi), %%xmm3 \n"
+
+        "\tmovdqa              %%xmm1, (%%rsi)\n"
+        "\tmovdqa              %%xmm3, 16(%%rsi)\n"
+
+        "\taeskeygenassist     $0x1, %%xmm3, %%xmm2\n"
+        "\tcall                1b\n"
+        "\tmovdqu              %%xmm1, 32(%%rsi) \n"
+        "\taeskeygenassist     $0x0, %%xmm1, %%xmm2 \n"
+        "\tcall                2b\n"
+        "\tmovdqu              %%xmm3, 48(%%rsi) \n"
+
+        "\taeskeygenassist     $0x2, %%xmm3, %%xmm2 \n"
+        "\tcall                1b\n"
+        "\tmovdqu              %%xmm1, 64(%%rsi) \n"
+        "\taeskeygenassist     $0x0, %%xmm1, %%xmm2 \n"
+        "\tcall                2b\n"
+        "\tmovdqu              %%xmm3, 80(%%rsi) \n"
+
+        "\taeskeygenassist     $0x4, %%xmm3, %%xmm2 \n"
+        "\tcall                1b\n"
+        "\tmovdqu              %%xmm1, 96(%%rsi) \n"
+        "\taeskeygenassist     $0x0, %%xmm1, %%xmm2 \n"
+        "\tcall                2b\n"
+        "\tmovdqu              %%xmm3, 112(%%rsi) \n"
+
+        "\taeskeygenassist     $0x8, %%xmm3, %%xmm2 \n"
+        "\tcall                1b\n"
+        "\tmovdqu              %%xmm1, 128(%%rsi) \n"
+        "\taeskeygenassist     $0x0, %%xmm1, %%xmm2 \n"
+        "\tcall                2b\n"
+        "\tmovdqu              %%xmm3, 144(%%rsi) \n"
+
+        "\taeskeygenassist     $0x10, %%xmm3, %%xmm2 \n"
+        "\tcall                1b\n"
+        "\tmovdqu              %%xmm1, 160(%%rsi) \n"
+        "\taeskeygenassist     $0x0, %%xmm1, %%xmm2 \n"
+        "\tcall                2b\n"
+        "\tmovdqu              %%xmm3, 176(%%rsi)\n"
+
+        "\taeskeygenassist     $0x20, %%xmm3, %%xmm2 \n"
+        "\tcall                1b\n"
+        "\tmovdqu              %%xmm1, 192(%%rsi)\n"
+        "\taeskeygenassist     $0x0, %%xmm1, %%xmm2 \n"
+        "\tcall                2b\n"
+        "\tmovdqu              %%xmm3, 208(%%rsi)\n"
+
+        "\taeskeygenassist     $0x40, %%xmm3, %%xmm2 \n"
+        "\tcall                1b\n"
+        "\tmovdqu              %%xmm1, 224(%%rsi)\n"
       :
       : [key] "m"(key), [enc_key_sched] "m"(enc_key_sched)
       : "%rdi", "%rsi", "%xmm1", "%xmm2", "%xmm3");
+printf("\nKey schedule\n");
+for(int i = 0; i < 15; i++) {
+  printf("\t");
+  PrintBytes(16, &enc_key_sched[16 * i]);
+  printf("\n");
+}
+printf("\n");
+  } else {
+    return false;
+  }
   return true;
 }
 
@@ -133,90 +229,187 @@ bool AesNi::InitDec() {
   }
   memcpy((byte*)decrypt_round_key_, (byte*)encrypt_round_key_,
          (4 * (AesNi::MAXNR + 1) + 1) * sizeof(uint32_t));
-  for (int i = 1; i < 10; i++)
-    FixAes128DecRoundKeys((byte*)&decrypt_round_key_[4 * i]);
-  return true;
+  if (num_rounds_ == 10) {
+    for (int i = 1; i < 10; i++)
+      FixAes128DecRoundKeys((byte*)&decrypt_round_key_[4 * i]);
+    return true;
+  } else if (num_rounds_ == 14) {
+    for (int i = 1; i < 14; i++)
+      FixAes128DecRoundKeys((byte*)&decrypt_round_key_[4 * i]);
+    return true;
+  } else {
+    return false;
+  }
 }
 
 void AesNi::EncryptBlock(const byte* pt, byte* ct) {
   byte* ks = (byte*)encrypt_round_key_;
 
-  asm volatile(
-      "\tmovq         %[ks], %%r8\n"
-      "\tmovq         %[pt], %%rdi\n"
-      "\tmovq         %[ct], %%rsi\n"
-      "\tmovdqu       (%%rdi), %%xmm1\n"
-      "\tmovdqu       (%%r8), %%xmm0\n"
-      "\tpxor         %%xmm0, %%xmm1\n"
-      "\tmovdqu       16(%%r8),%%xmm0\n"
-      "\taesenc       %%xmm0,%%xmm1\n"
-      "\tmovdqu       32(%%r8),%%xmm0\n"
-      "\taesenc       %%xmm0,%%xmm1\n"
-      "\tmovdqu       48(%%r8),%%xmm0\n"
-      "\taesenc       %%xmm0,%%xmm1\n"
-      "\tmovdqu       64(%%r8),%%xmm0\n"
-      "\taesenc       %%xmm0,%%xmm1\n"
-      "\tmovdqu       80(%%r8),%%xmm0\n"
-      "\taesenc       %%xmm0,%%xmm1\n"
-      "\tmovdqu       96(%%r8),%%xmm0\n"
-      "\taesenc       %%xmm0,%%xmm1\n"
-      "\tmovdqu       112(%%r8),%%xmm0\n"
-      "\taesenc       %%xmm0,%%xmm1\n"
-      "\tmovdqu       128(%%r8),%%xmm0\n"
-      "\taesenc       %%xmm0,%%xmm1\n"
-      "\tmovdqu       144(%%r8),%%xmm0\n"
-      "\taesenc       %%xmm0,%%xmm1\n"
-      "\tmovdqu       160(%%r8),%%xmm0\n"
-      "\taesenclast   %%xmm0,%%xmm1\n"
-      "\tmovdqu       %%xmm1,(%%rsi)\n"
-      :
-      : [pt] "m"(pt), [ct] "m"(ct), [ks] "m"(ks)
-      : "%rdi", "%rsi", "%xmm1", "%r8", "%xmm0");
+  if (num_rounds_ == 10) {
+    asm volatile(
+        "\tmovq         %[ks], %%r8\n"
+        "\tmovq         %[pt], %%rdi\n"
+        "\tmovq         %[ct], %%rsi\n"
+        "\tmovdqu       (%%rdi), %%xmm1\n"
+        "\tmovdqu       (%%r8), %%xmm0\n"
+        "\tpxor         %%xmm0, %%xmm1\n"
+        "\tmovdqu       16(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       32(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       48(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       64(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       80(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       96(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       112(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       128(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       144(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       160(%%r8),%%xmm0\n"
+        "\taesenclast   %%xmm0,%%xmm1\n"
+        "\tmovdqu       %%xmm1,(%%rsi)\n"
+        :
+        : [pt] "m"(pt), [ct] "m"(ct), [ks] "m"(ks)
+        : "%rdi", "%rsi", "%xmm1", "%r8", "%xmm0");
+  } else {
+    asm volatile(
+        "\tmovq         %[ks], %%r8\n"
+        "\tmovq         %[pt], %%rdi\n"
+        "\tmovq         %[ct], %%rsi\n"
+        "\tmovdqu       (%%rdi), %%xmm1\n"
+        "\tmovdqu       (%%r8), %%xmm0\n"
+        "\tpxor         %%xmm0, %%xmm1\n"
+        "\tmovdqu       16(%%r8), %%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       32(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       48(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       64(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       80(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       96(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       112(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       128(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       144(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       160(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       176(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       192(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       208(%%r8),%%xmm0\n"
+        "\taesenc       %%xmm0,%%xmm1\n"
+        "\tmovdqu       224(%%r8),%%xmm0\n"
+        "\taesenclast   %%xmm0,%%xmm1\n"
+        "\tmovdqu       %%xmm1,(%%rsi)\n"
+        :
+        : [pt] "m"(pt), [ct] "m"(ct), [ks] "m"(ks)
+        : "%rdi", "%rsi", "%xmm1", "%r8", "%xmm0");
+  }
 }
 
 void AesNi::DecryptBlock(const byte* ct, byte* pt) {
   byte* ks = (byte*)decrypt_round_key_;
 
-  asm volatile(
-      "\tmovq         %[ks], %%r8\n"
-      "\tmovq         %[pt], %%rdi\n"
-      "\tmovq         %[ct], %%rsi\n"
-      "\tmovdqu       (%%rsi), %%xmm1\n"
-      "\tmovdqu       160(%%r8), %%xmm0\n"
-      "\tpxor         %%xmm0, %%xmm1\n"
-      "\tmovdqu       144(%%r8), %%xmm0\n"
-      "\taesdec       %%xmm0,%%xmm1\n"
-      "\tmovdqu       128(%%r8),%%xmm0\n"
-      "\taesdec       %%xmm0,%%xmm1\n"
-      "\tmovdqu       112(%%r8),%%xmm0\n"
-      "\taesdec       %%xmm0,%%xmm1\n"
-      "\tmovdqu       96(%%r8),%%xmm0\n"
-      "\taesdec       %%xmm0,%%xmm1\n"
-      "\tmovdqu       80(%%r8),%%xmm0\n"
-      "\taesdec       %%xmm0,%%xmm1\n"
-      "\tmovdqu       64(%%r8),%%xmm0\n"
-      "\taesdec       %%xmm0,%%xmm1\n"
-      "\tmovdqu       48(%%r8),%%xmm0\n"
-      "\taesdec       %%xmm0,%%xmm1\n"
-      "\tmovdqu       32(%%r8),%%xmm0\n"
-      "\taesdec       %%xmm0,%%xmm1\n"
-      "\tmovdqu       16(%%r8),%%xmm0\n"
-      "\taesdec       %%xmm0,%%xmm1\n"
-      "\tmovdqu       (%%r8),%%xmm0\n"
-      "\taesdeclast   %%xmm0,%%xmm1\n"
-      "\tmovdqu       %%xmm1,(%%rdi)\n"
-      :
-      : [pt] "m"(pt), [ct] "m"(ct), [ks] "m"(ks)
-      : "%rdi", "%rsi", "%xmm1", "%r8", "%xmm0");
+  if (num_rounds_ == 10) {
+    asm volatile(
+        "\tmovq         %[ks], %%r8\n"
+        "\tmovq         %[pt], %%rdi\n"
+        "\tmovq         %[ct], %%rsi\n"
+        "\tmovdqu       (%%rsi), %%xmm1\n"
+        "\tmovdqu       160(%%r8), %%xmm0\n"
+        "\tpxor         %%xmm0, %%xmm1\n"
+        "\tmovdqu       144(%%r8), %%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       128(%%r8),%%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       112(%%r8),%%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       96(%%r8),%%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       80(%%r8),%%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       64(%%r8),%%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       48(%%r8),%%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       32(%%r8),%%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       16(%%r8),%%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       (%%r8),%%xmm0\n"
+        "\taesdeclast   %%xmm0,%%xmm1\n"
+        "\tmovdqu       %%xmm1,(%%rdi)\n"
+        :
+        : [pt] "m"(pt), [ct] "m"(ct), [ks] "m"(ks)
+        : "%rdi", "%rsi", "%xmm1", "%r8", "%xmm0");
+  } else {
+    asm volatile(
+        "\tmovq         %[ks], %%r8\n"
+        "\tmovq         %[pt], %%rdi\n"
+        "\tmovq         %[ct], %%rsi\n"
+        "\tmovdqu       (%%rsi), %%xmm1\n"
+        "\tmovdqu       224(%%r8), %%xmm0\n"
+        "\tpxor         %%xmm0, %%xmm1\n"
+        "\tmovdqu       208(%%r8), %%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       192(%%r8), %%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       176(%%r8), %%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       160(%%r8), %%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       144(%%r8), %%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       128(%%r8),%%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       112(%%r8),%%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       96(%%r8),%%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       80(%%r8),%%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       64(%%r8),%%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       48(%%r8),%%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       32(%%r8),%%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       16(%%r8),%%xmm0\n"
+        "\taesdec       %%xmm0,%%xmm1\n"
+        "\tmovdqu       (%%r8),%%xmm0\n"
+        "\taesdeclast   %%xmm0,%%xmm1\n"
+        "\tmovdqu       %%xmm1,(%%rdi)\n"
+        :
+        : [pt] "m"(pt), [ct] "m"(ct), [ks] "m"(ks)
+        : "%rdi", "%rsi", "%xmm1", "%r8", "%xmm0");
+  }
 }
 
 bool AesNi::Init(int key_bit_size, byte* key_buf, int directionflag) {
-  if (key_bit_size != 128) {
+  if (key_bit_size == 128) {
+    cipher_name_ = new string("aes-128");
+    num_key_bits_ = key_bit_size;
+    num_rounds_ = 10;
+  } else if (key_bit_size == 256) {
+    cipher_name_ = new string("aes-256");
+    num_key_bits_ = key_bit_size;
+    num_rounds_ = 14;
+  } else {
     return false;
   }
-  cipher_name_ = new string("aes-128");
-  num_key_bits_ = key_bit_size;
-  num_rounds_ = 10;
   if (key_buf == nullptr) {
     return false;
   }
