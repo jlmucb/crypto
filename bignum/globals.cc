@@ -14,10 +14,10 @@
 // Project: New Cloudproxy Crypto
 // File: globals.cc for bignum
 
-#include <google/gtest/gtest.h>
-#include <google/gflags/gflags.h>
 #include <stdio.h>
 #include <string>
+#include <gtest/gtest.h>
+#include <gflags/gflags.h>
 #include "conversions.h"
 #include "bignum.h"
 #include "util.h"
