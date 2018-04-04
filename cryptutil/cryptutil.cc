@@ -63,29 +63,45 @@ std::string cryptutil_ops[] = {
     "--operation=FromHex --direction=[left-right|right-left] --input_file=file " \
     "--output_file=file",
     "--operation=ToDecimal --direction=[left-right|right-left] " \
-    "--input_file=file",
+    "--input_file=file --output_file=file",
     "--operation=FromDecimal --direction=[left-right|right-left] " \
     "--input_file=file --output_file=file",
+    "--operation=ToHexBuf --direction=[left-right|right-left] --input_file=file " \
+    "--output_file=file",
+    "--operation=FromHexBuf --direction=[left-right|right-left] --input_file=file " \
+    "--output_file=file" \
+    "\n",
+    "--operation=GetRandom --size=num-bits --output_file=file",
+    "--operation=GenerateKey --algorithm=alg --key_name=name " \
+    "--purpose=pur --owner=own --duration=dur --output_file=file" \
+    "\n",
     "--operation=Hash --algorithm=alg --input_file=file",
     "--operation=Mac --algorithm=alg --key_file=file --input_file=file " \
     "--output_file=file",
-    "--operation=GetRandom --size=num-bits --output_file=file",
-    "--operation=GenerateKey --algorithm=alg --key_name=name " \
-    "--purpose=pur --owner=own --duration=dur --output_file=file",
+    "--operation=VerifyMac --algorithm=alg --keyfile=file --input_file=file " \
+    "--input2_file=file" \
+    "\n",
     "--operation=ReadKey --algorithm=alg --key_name=name " \
     "--duration=dur --input_file=file",
     "--operation=EncryptWithKey --key_file=key_file --algorithm=alg " \
     "--input_file=file --output_file=file",
     "--operation=DecryptWithKey --key_file=key_file --algorithm=alg " \
-    "--input_file=file --output_file=file",
+    "--input_file=file --output_file=file"
+    "\n",
     "--operation=GenerateScheme --algorithm=alg --key_name=name " \
     "--duration=dur --output_file=file",
     "--operation=ReadScheme --algorithm=alg --key_name=name" \
-    " --duration=dur --input_file=file",
+    " --duration=dur --input_file=file" \
+    "\n",
+    "--operation=EncryptWithPassword --algorithm=aes128-ctr-hmacsha256-sympad " \
+    "--pass=password --input_file=file --output_file=file",
+    "--operation=DecryptWithPassword --algorithm=aes128-ctr-hmacsha256-sympad " \
+    "--pass=password --input_file=file --output_file=file",
     "--operation=EncryptWithScheme --scheme_file=scheme_file " \
     "--algorithm=alg --input_file=file --output_file=file",
     "--operation=DecryptWithScheme --scheme_file=scheme_file" \
-    " --algorithm=alg --input_file=file --output_file=file",
+    " --algorithm=alg --input_file=file --output_file=file" \
+    "\n",
     "--operation=PkcsSignWithKey --algorithm=alg --keyfile=file " \
     "--hash_file= file --input_file=file --output_file=file",
     "--operation=PkcsVerifyWithKey --algorithm=alg --keyfile=file " \
@@ -94,16 +110,6 @@ std::string cryptutil_ops[] = {
     "--input_file=file --output_file=file",
     "--operation=PkcsPubSealWithKey --keyfile=file --algorithm=alg " \
     "--input_file=file --output_file=file",
-    "--operation=EncryptWithPassword --algorithm=aes128-ctr-hmacsha256-sympad " \
-    "--pass=password --input_file=file --output_file=file",
-    "--operation=DecryptWithPassword --algorithm=aes128-ctr-hmacsha256-sympad " \
-    "--pass=password --input_file=file --output_file=file",
-    "--operation=VerifyMac --algorithm=alg --keyfile=file --input_file=file " \
-    "--input2_file=file",
-    "--operation=ToHexBuf --direction=[left-right|right-left] --input_file=file " \
-    "--output_file=file",
-    "--operation=FromHexBuf --direction=[left-right|right-left] --input_file=file " \
-    "--output_file=file",
 };
 
 const int num_cryptutil_algs = 23;
@@ -115,7 +121,7 @@ std::string cryptalgs[] = {
     "twofish-256", "rc4-128", "tea-128", "simon-128", "aes128-gcm128"};
 
 void print_options() {
-  printf("Permitted operations:\n");
+  printf("Permitted operations:\n\n");
   for (int i = 0; i < num_cryptutil_ops; i++) {
     printf("  cryptutil.exe %s\n", cryptutil_ops[i].c_str());
   }
