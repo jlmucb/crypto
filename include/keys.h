@@ -148,6 +148,8 @@ class EccKey : public CryptoKey {
                   int num_bits, double secondstolive, EccCurve* c,
                   CurvePoint* g, CurvePoint* base, BigNum* order,
                   BigNum* secret);
+  bool GenerateEccKey(string& curve_name, const char* name, const char* usage,
+                    const char* owner, double seconds_to_live);
   bool ReadKey(string& filename);
   bool SaveKey(string& filename);
 

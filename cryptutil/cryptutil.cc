@@ -72,6 +72,7 @@ std::string cryptutil_ops[] = {
     "--output_file=file" \
     "\n",
     "--operation=GetRandom --size=num-bits --output_file=file",
+    "--operation=ReadKey --input_file=file",
     "--operation=GenerateKey --algorithm=alg --key_name=name " \
     "--purpose=pur --owner=own --duration=dur --output_file=file" \
     "\n",
@@ -81,8 +82,6 @@ std::string cryptutil_ops[] = {
     "--operation=VerifyMac --algorithm=alg --keyfile=file --input_file=file " \
     "--input2_file=file" \
     "\n",
-    "--operation=ReadKey --algorithm=alg --key_name=name " \
-    "--duration=dur --input_file=file",
     "--operation=EncryptWithKey --key_file=key_file --algorithm=alg " \
     "--input_file=file --output_file=file",
     "--operation=DecryptWithKey --key_file=key_file --algorithm=alg " \
@@ -585,10 +584,34 @@ AesGcm* GetAesGcm128(int size, byte* in) {
   return new_scheme;
 }
 
+EccKey* GenEccKey(string& curve_name, const char* durationStr, const char* keyName,
+                  const char* ownerStr, const char* purposeStr, int* size, byte** out) {
+  double duration = convertDuration(durationStr);
+  EccKey* new_key = new EccKey();
+  if (!new_key->GenerateEccKey(curve_name, keyName, purposeStr, ownerStr, duration)) {
+    printf("EccKey::GenerateEccKey fails\n");
+    return nullptr;
+  }
+  crypto_key_message* message = new crypto_key_message;
+  if (!((CryptoKey*)new_key)->SerializeKeyToMessage(*message)) {
+    printf("SerializeKeyToMessage fails\n");
+    return nullptr;
+  }
+  string* outstr = new string();
+  if (!message->SerializeToString(outstr)) {
+    printf("SerializeKeyToString fails\n");
+    return nullptr;
+  }
+  *size = outstr->size();
+  *out = (byte*)outstr->data();
+  return new_key;
+}
+
 RsaKey* GenRsaKey(int num_bits, const char* durationStr, const char* keyName,
                   const char* ownerStr, const char* purposeStr, int* size,
                   byte** out) {
-  double duration = convertDuration(FLAGS_duration.c_str());
+  // double duration = convertDuration(FLAGS_duration.c_str());
+  double duration = convertDuration(durationStr);
   RsaKey* new_key = new RsaKey();
   if (!new_key->GenerateRsaKey(keyName, purposeStr, ownerStr, num_bits,
                                duration)) {
@@ -2256,6 +2279,17 @@ int main(int an, char** av) {
       if (new_key == nullptr) {
         return 1;
       }
+      new_key->symmetric_algorithm_type_= new string("aes-128");
+      ((CryptoKey*)new_key)->PrintKey();
+      WriteaFile(FLAGS_output_file.c_str(), size, out);
+     } else if (FLAGS_algorithm == "aes-256") {
+      SymmetricKey* new_key =
+          GenAesKey(256, FLAGS_duration.c_str(), FLAGS_key_name.c_str(),
+                    FLAGS_owner.c_str(), FLAGS_purpose.c_str(), &size, &out);
+      if (new_key == nullptr) {
+        return 1;
+      }
+      new_key->symmetric_algorithm_type_= new string("aes-256");
       ((CryptoKey*)new_key)->PrintKey();
       WriteaFile(FLAGS_output_file.c_str(), size, out);
     } else if (FLAGS_algorithm == "twofish-128") {
@@ -2274,6 +2308,7 @@ int main(int an, char** av) {
       if (new_key == nullptr) {
         return 1;
       }
+      new_key->symmetric_algorithm_type_= new string("twofish-256");
       ((CryptoKey*)new_key)->PrintKey();
       WriteaFile(FLAGS_output_file.c_str(), size, out);
     } else if (FLAGS_algorithm == "simon-128") {
@@ -2336,7 +2371,20 @@ int main(int an, char** av) {
       }
       ((CryptoKey*)new_key)->PrintKey();
       WriteaFile(FLAGS_output_file.c_str(), size, out);
+    } else if (FLAGS_algorithm == "ecc-256") {
+      int size = 0;
+      byte* out = nullptr;
+      string curve_name("P-256");
+      EccKey* new_key = GenEccKey(curve_name, FLAGS_duration.c_str(), FLAGS_key_name.c_str(),
+                    FLAGS_owner.c_str(), FLAGS_purpose.c_str(), &size, &out);
+      if (new_key == nullptr) {
+        printf("Can't generate ecc key\n");
+        return 1;
+      }
+      ((CryptoKey*)new_key)->PrintKey();
+      WriteaFile(FLAGS_output_file.c_str(), size, out);
     } else {
+      printf("Unknown key type\n");
       return 1;
     }
   } else if ("ReadKey" == FLAGS_operation) {
@@ -2344,31 +2392,53 @@ int main(int an, char** av) {
     byte* out = nullptr;
 
     if (!ReadaFile(FLAGS_input_file.c_str(), &size, &out)) {
+    }
+
+    crypto_key_message* message = new crypto_key_message;
+    string data(reinterpret_cast<char const*>(out), size);
+
+    if (!message->ParseFromString(data)) {
       return 1;
     }
-    if (FLAGS_algorithm == "aes-128") {
-      SymmetricKey* new_key = GetAesKey(size, out);
+    if (!message->has_key_type()) {
+        printf("No key type\n");
+        return 1;
+    }
+
+    if (message->key_type() == "aes-128" ||
+        message->key_type() == "twofish-128" ||
+        message->key_type() == "simon-128" ||
+        message->key_type() == "rc4-128" ||
+        message->key_type() == "tea-128" ||
+        message->key_type() == "symmetric-cipher") {
+      SymmetricKey* new_key = new SymmetricKey();
+
+      if (!((CryptoKey*)new_key)->DeserializeKeyFromMessage(*message)) {
+        printf("Can't deserialize key\n");
+        return 1;
+      }
+
       ((CryptoKey*)new_key)->PrintKey();
-    } else if (FLAGS_algorithm == "twofish-128") {
-      SymmetricKey* new_key = GetTwofishKey(size, out);
+    } else if (message->key_type() == "rsa-1024" ||
+               message->key_type() == "rsa-2048" ||
+               message->key_type() == "rsa-256") {
+      RsaKey* new_key = new RsaKey();
+
+      if (!((CryptoKey*)new_key)->DeserializeKeyFromMessage(*message)) {
+        printf("Can't deserialize key\n");
+        return 1;
+      }
+
       ((CryptoKey*)new_key)->PrintKey();
-    } else if (FLAGS_algorithm == "simon-128") {
-      SymmetricKey* new_key = GetSimonKey(size, out);
-      ((CryptoKey*)new_key)->PrintKey();
-    } else if (FLAGS_algorithm == "rc4-128") {
-      SymmetricKey* new_key = GetRc4Key(size, out);
-      ((CryptoKey*)new_key)->PrintKey();
-    } else if (FLAGS_algorithm == "tea-128") {
-      SymmetricKey* new_key = GetTeaKey(size, out);
-      ((CryptoKey*)new_key)->PrintKey();
-    } else if (FLAGS_algorithm == "rsa-256") {
-      RsaKey* new_key = GetRsaKey(size, out);
-      ((CryptoKey*)new_key)->PrintKey();
-    } else if (FLAGS_algorithm == "rsa-1024") {
-      RsaKey* new_key = GetRsaKey(size, out);
-      ((CryptoKey*)new_key)->PrintKey();
-    } else if (FLAGS_algorithm == "rsa-2048") {
-      RsaKey* new_key = GetRsaKey(size, out);
+    } else if (message->key_type() == "ecc-256" ||
+               message->key_type() == "ecc-521" ) {
+      EccKey* new_key = new EccKey();
+
+      if (!((CryptoKey*)new_key)->DeserializeKeyFromMessage(*message)) {
+        printf("Can't deserialize key\n");
+        return 1;
+      }
+
       ((CryptoKey*)new_key)->PrintKey();
     } else {
       printf("GenerateKey: no such key type\n");

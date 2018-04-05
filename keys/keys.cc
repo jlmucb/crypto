@@ -173,13 +173,16 @@ bool CryptoKey::SerializeKeyToMessage(crypto_key_message& message) {
              strcmp(key_type_->c_str(), "rsa-512") == 0 ||
              strcmp(key_type_->c_str(), "rsa-1024") == 0 ||
              strcmp(key_type_->c_str(), "rsa-2048") == 0 ||
-             strcmp(key_type_->c_str(), "rsa3072") == 0) {
+             strcmp(key_type_->c_str(), "rsa-3072") == 0) {
     crypto_rsa_key_message* rsa_key_message = message.mutable_rsakey();
     ((RsaKey*)this)->SerializeKeyToMessage(*rsa_key_message);
   } else if (strcmp(key_type_->c_str(), "ecc") == 0 ||
              strcmp(key_type_->c_str(), "ecc-256") == 0) {
     crypto_ecc_key_message* ecc_key_message = message.mutable_ecckey();
     ((EccKey*)this)->SerializeKeyToMessage(*ecc_key_message);
+  } else {
+    printf("CryptoKey::SerializeKeyToMessage: unknown type\n");
+    return false;
   }
   message.set_crypto_context("jlm-crypto-key-message");
   return true;
@@ -376,13 +379,16 @@ bool SymmetricKey::MakeAesKey(const char* name, const char* usage,
   not_after_ = new TimePoint();
   not_before_->TimePointNow();
   not_after_->TimePointLaterBySeconds(*not_before_, secondstolive);
-  if (num_bits != 128) {
-    LOG(ERROR) << "SymmetricKey::MakeAesKey: only 128 bit keys supported\n";
+  if (num_bits == 128) {
+    symmetric_algorithm_type_ = new string("aes-128");
+  } else if (num_bits == 256) {
+    symmetric_algorithm_type_ = new string("aes-256");
+  } else {
+    LOG(ERROR) << "SymmetricKey::MakeAesKey: key bit size unsupported\n";
     return false;
   }
   symmetric_key_bit_size_ = num_bits;
   symmetric_key_bytes_ = new byte[32];
-  symmetric_algorithm_type_ = new string("aes-128");
   memcpy(symmetric_key_bytes_, key, num_bits / NBITSINBYTE);
   key_valid_ = true;
   return true;

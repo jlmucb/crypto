@@ -891,8 +891,7 @@ EccKey::~EccKey() {
 
 bool EccKey::MakeEccKey(const char* name, const char* usage, const char* owner,
                         int num_bits, double secondstolive, EccCurve* c,
-                        CurvePoint* g, CurvePoint* base, BigNum* order,
-                        BigNum* secret) {
+                        CurvePoint* g, CurvePoint* base, BigNum* order, BigNum* secret) {
   bit_size_modulus_ = num_bits;
   key_valid_ = true;
   key_type_ = new string("ecc-256");
@@ -904,7 +903,7 @@ bool EccKey::MakeEccKey(const char* name, const char* usage, const char* owner,
   not_before_->TimePointNow();
   not_after_->TimePointLaterBySeconds(*not_before_, secondstolive);
   if (num_bits != 256) {
-    LOG(ERROR) << "EccKey::MakeECCKey: only 128 bit keys supported\n";
+    LOG(ERROR) << "EccKey::MakeECCKey: only 256 bit keys supported\n";
     return false;
   }
   if (c != nullptr) {
@@ -943,6 +942,30 @@ bool EccKey::MakeEccKey(const char* name, const char* usage, const char* owner,
     EccMult(c_, g_, *secret, base_);
   }
   return true;
+}
+
+bool EccKey::GenerateEccKey(string& curve_name, const char* name, const char* usage,
+                    const char* owner, double seconds_to_live) {
+  BigNum secret(8);
+
+  if (!InitEccCurves()) {
+    printf("InitEccCurves failed\n");
+    return false;
+  }
+  secret.ZeroNum();
+  if (curve_name == "P-256") {
+    // Check
+    if (!GetCryptoRand(192, (byte*)secret.value_)) {
+      printf("Cant GetCryptoRand\n");
+      return false;
+    }
+    secret.Normalize();
+    return MakeEccKey(name, usage, owner, 256, seconds_to_live, &P256_Key.c_,
+                    &P256_Key.g_, nullptr, P256_Key.order_of_g_, &secret);
+  } else {
+    printf("Unknown curve name\n");
+    return false;
+  }
 }
 
 bool CurvePoint::SerializePointToMessage(crypto_point_message& msg) {
