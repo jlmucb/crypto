@@ -777,10 +777,6 @@ bool SimpleCbcEncryptionAlgorithmTest() {
     LOG(ERROR) << "can't serialize encryption_algorithm to message\n";
     return false;
   }
-#if 0
-  string sbuf= message.DebugString();
-  printf("Buffer string: %s\n", sbuf.c_str());
-#endif
   AesCbcHmac256Sympad* new_encryption_algorithm = new AesCbcHmac256Sympad();
   crypto_encryption_algorithm_message new_message;
   if (!((EncryptionAlgorithm*)new_encryption_algorithm)

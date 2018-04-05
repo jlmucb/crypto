@@ -625,10 +625,8 @@ RsaKey* GenRsaKey(int num_bits, const char* durationStr, const char* keyName,
   if (!message->SerializeToString(outstr)) {
     return nullptr;
   }
-  printf("GenRsaKey debug string: %s\n", message->DebugString().c_str());
   *size = outstr->size();
   *out = (byte*)outstr->data();
-  printf("GenRsaKey outsize %d\n", *size);
   return new_key;
 }
 
