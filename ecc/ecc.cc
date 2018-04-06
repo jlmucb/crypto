@@ -974,46 +974,38 @@ bool CurvePoint::SerializePointToMessage(crypto_point_message& msg) {
   if (x_ != nullptr) {
     string* s = ByteToBase64RightToLeft(x_->size_ * sizeof(uint64_t),
                                         (byte*)x_->value_);
-    msg.set_x(s->c_str());
+    msg.set_x(*s);
     delete s;
   }
   if (y_ != nullptr) {
     string* s = ByteToBase64RightToLeft(y_->size_ * sizeof(uint64_t),
                                         (byte*)y_->value_);
-    msg.set_y(s->c_str());
+    msg.set_y(*s);
     delete s;
   }
   return true;
 }
 
 bool CurvePoint::DeserializePointFromMessage(crypto_point_message& msg) {
-  int k;
-  int len, bignum_size;
+  int k, len, bignum_size;
 
   if (msg.has_x()) {
-    len = strlen(msg.x().c_str());
-    bignum_size =
-        ((len + sizeof(uint64_t) - 1) / sizeof(uint64_t)) * sizeof(uint64_t);
-    if (x_ == nullptr) {
-      x_ = new BigNum(bignum_size);
-    }
-    k = Base64ToByteRightToLeft((char*)(msg.x().c_str()),
-                                bignum_size * sizeof(uint64_t),
-                                (byte*)x_->value_);
+    len = (6 * msg.x().size() + NBITSINBYTE - 1) / NBITSINBYTE;
+    bignum_size = (len + sizeof(uint64_t) - 1) / sizeof(uint64_t);
+    x_ = new BigNum(bignum_size);
+    x_->ZeroNum();
+    k = Base64ToByteRightToLeft((char*)msg.x().data(), len, (byte*)x_->value_);
     if (k < 0) {
       LOG(ERROR) << "EccCurve::DeserializePointFromMessage: cant encode\n";
     }
     x_->Normalize();
   }
   if (msg.has_y()) {
-    len = strlen(msg.y().c_str());
-    bignum_size =
-        ((len + sizeof(uint64_t) - 1) / sizeof(uint64_t)) * sizeof(uint64_t);
-    if (y_ == nullptr) {
-      y_ = new BigNum(bignum_size);
-    }
-    k = Base64ToByteRightToLeft((char*)(msg.y().c_str()),
-                                bignum_size * sizeof(uint64_t),
+    len = (6 * msg.y().size() + NBITSINBYTE - 1) / NBITSINBYTE;
+    bignum_size = (len + sizeof(uint64_t) - 1) / sizeof(uint64_t);
+    y_ = new BigNum(bignum_size);
+    y_->ZeroNum();
+    k = Base64ToByteRightToLeft((char*)(msg.y().data()), len,
                                 (byte*)y_->value_);
     if (k < 0) {
       LOG(ERROR) << "EccCurve::DeserializePointFromMessage: cant encode\n";
@@ -1049,18 +1041,14 @@ bool EccCurve::SerializeCurveToMessage(crypto_ecc_curve_message& msg) {
 }
 
 bool EccCurve::DeserializeCurveFromMessage(crypto_ecc_curve_message& msg) {
-  int k;
-  int len, bignum_size;
+  int k, len, bignum_size;
 
   if (msg.has_p()) {
-    len = strlen(msg.p().c_str());
-    bignum_size =
-        ((len + sizeof(uint64_t) - 1) / sizeof(uint64_t)) * sizeof(uint64_t);
-    if (p_ == nullptr) {
-      p_ = new BigNum(bignum_size);
-    }
-    k = Base64ToByteRightToLeft((char*)(msg.p().c_str()),
-                                bignum_size * sizeof(uint64_t),
+    len = (6 * msg.p().size() + NBITSINBYTE - 1) / NBITSINBYTE;
+    bignum_size = ((len + sizeof(uint64_t) - 1) / sizeof(uint64_t));
+    p_ = new BigNum(bignum_size);
+    p_->ZeroNum();
+    k = Base64ToByteRightToLeft((char*)(msg.p().c_str()), len,
                                 (byte*)p_->value_);
     if (k < 0) {
       LOG(ERROR) << "EccCurve::DeserializeCurveFromMessage: cant encode\n";
@@ -1068,14 +1056,10 @@ bool EccCurve::DeserializeCurveFromMessage(crypto_ecc_curve_message& msg) {
     p_->Normalize();
   }
   if (msg.has_a()) {
-    len = strlen(msg.a().c_str());
-    bignum_size =
-        ((len + sizeof(uint64_t) - 1) / sizeof(uint64_t)) * sizeof(uint64_t);
-    if (a_ == nullptr) {
-      a_ = new BigNum(bignum_size);
-    }
-    k = Base64ToByteRightToLeft((char*)(msg.a().c_str()),
-                                bignum_size * sizeof(uint64_t),
+    len = (6 * msg.a().size() + NBITSINBYTE - 1) / NBITSINBYTE;
+    bignum_size = ((len + sizeof(uint64_t) - 1) / sizeof(uint64_t));
+    a_ = new BigNum(bignum_size);
+    k = Base64ToByteRightToLeft((char*)(msg.a().data()), len,
                                 (byte*)a_->value_);
     if (k < 0) {
       LOG(ERROR) << "EccCurve::DeserializeCurveFromMessage: cant encode\n";
@@ -1083,14 +1067,11 @@ bool EccCurve::DeserializeCurveFromMessage(crypto_ecc_curve_message& msg) {
     a_->Normalize();
   }
   if (msg.has_b()) {
-    len = strlen(msg.b().c_str());
-    bignum_size =
-        ((len + sizeof(uint64_t) - 1) / sizeof(uint64_t)) * sizeof(uint64_t);
-    if (b_ == nullptr) {
-      b_ = new BigNum(bignum_size);
-    }
-    k = Base64ToByteRightToLeft((char*)(msg.b().c_str()),
-                                bignum_size * sizeof(uint64_t),
+    len = (6 * msg.b().size() + NBITSINBYTE - 1) / NBITSINBYTE;
+    bignum_size = ((len + sizeof(uint64_t) - 1) / sizeof(uint64_t));
+    b_ = new BigNum(bignum_size);
+    b_->ZeroNum();
+    k = Base64ToByteRightToLeft((char*)(msg.b().data()), len,
                                 (byte*)b_->value_);
     if (k < 0) {
       LOG(ERROR) << "EccCurve::DeserializeCurveFromMessage: cant encode\n";
@@ -1106,9 +1087,10 @@ bool EccKey::SerializeKeyToMessage(crypto_ecc_key_message& msg) {
   if (a_ != nullptr) {
     string* s = ByteToBase64RightToLeft(a_->size_ * sizeof(uint64_t),
                                         (byte*)a_->value_);
-    msg.set_private_nonce(s->c_str());
+    msg.set_private_nonce(*s);
     delete s;
   }
+  printf("SerializeKeyFromMessage: %d\n", a_->size_);
   if (order_of_g_ != nullptr) {
     string* s = ByteToBase64RightToLeft(order_of_g_->size_ * sizeof(uint64_t),
                                         (byte*)order_of_g_->value_);
@@ -1125,37 +1107,33 @@ bool EccKey::SerializeKeyToMessage(crypto_ecc_key_message& msg) {
 }
 
 bool EccKey::DeserializeKeyFromMessage(crypto_ecc_key_message& msg) {
-  int k;
+  int bignum_size, len, k;
 
   bit_size_modulus_ = 256;
-  int len, bignum_size;
-  if (!msg.has_key_type()) return false;
+  if (!msg.has_key_type())
+    return false;
 
   if (msg.has_private_nonce()) {
-    len = strlen(msg.private_nonce().c_str());
-    bignum_size =
-        ((len + sizeof(uint64_t) - 1) / sizeof(uint64_t)) * sizeof(uint64_t);
-    if (a_ == nullptr) {
-      a_ = new BigNum(bignum_size);
-    }
-    k = Base64ToByteRightToLeft((char*)(msg.private_nonce().c_str()),
-                                bignum_size * sizeof(uint64_t),
-                                (byte*)a_->value_);
+    len = (msg.private_nonce().size() * 6 + NBITSINBYTE - 1) / NBITSINBYTE;
+    if (len == 0)
+      bignum_size = 1;
+    else
+      bignum_size = (len + NBITSINBYTE - 1) / NBITSINBYTE;
+    a_ = new BigNum(bignum_size);
+    a_->ZeroNum();
+    k = Base64ToByteRightToLeft((char*)(msg.private_nonce().data()),
+                                msg.private_nonce().size(), (byte*)a_->value_);
     if (k < 0) {
       LOG(ERROR) << "EccCurve::DeserializeKeyFromMessage: cant encode\n";
-      a_->Normalize();
     }
+    a_->Normalize();
   }
   if (msg.has_order()) {
-    len = strlen(msg.order().c_str());
-    bignum_size =
-        ((len + sizeof(uint64_t) - 1) / sizeof(uint64_t)) * sizeof(uint64_t);
-    if (order_of_g_ == nullptr) {
-      order_of_g_ = new BigNum(bignum_size);
-    }
-    k = Base64ToByteRightToLeft((char*)(msg.order().c_str()),
-                                bignum_size * sizeof(uint64_t),
-                                (byte*)order_of_g_->value_);
+    len = (6 * msg.order().size() + NBITSINBYTE - 1) / NBITSINBYTE;
+    bignum_size = (len + sizeof(uint64_t) - 1) / sizeof(uint64_t);
+    order_of_g_ = new BigNum(bignum_size);
+    order_of_g_->ZeroNum();
+    Base64ToByteRightToLeft((char*)msg.order().data(), len, (byte*)order_of_g_->value_);
     order_of_g_->Normalize();
   }
 
