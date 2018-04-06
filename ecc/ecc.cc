@@ -23,8 +23,14 @@
 #include "conversions.h"
 #define FASTECCMULT
 
+//  ECC Curve Data
 EccKey P256_Key;
 bool P256_key_valid = false;
+EccKey P384_Key;
+bool P384_key_valid = false;
+EccKey P521_Key;
+bool P521_key_valid = false;
+
 
 CurvePoint::CurvePoint() {
   x_ = nullptr;
@@ -1263,8 +1269,9 @@ bool InitEccCurves() {
     printf("TimePointNow failed\n");
     return false;
   }
-
   time_later->TimePointLaterBySeconds(*time_now, 10.0 * COMMON_YEAR_SECONDS);
+
+  // P-256
   P256_Key.key_name_ = new string("P-256");
   P256_Key.key_type_ = new string("ecc-256");
   P256_Key.key_usage_ = new string("all");
@@ -1294,7 +1301,6 @@ bool InitEccCurves() {
   P256_Key.c_.b_->Normalize();
 
   P256_Key.bit_size_modulus_ = 256;
-  CurvePoint g;
   P256_Key.order_of_g_ = new BigNum(4);
   P256_Key.order_of_g_->value_[3] = 0xffffffff00000000ULL;
   P256_Key.order_of_g_->value_[2] = 0xffffffffffffffffULL;
@@ -1322,6 +1328,164 @@ bool InitEccCurves() {
   P256_Key.base_.y_ = nullptr;
   P256_Key.base_.z_ = nullptr;
   P256_Key.key_valid_ = true;
+
+  // P-384
+  P384_Key.key_name_ = new string("P-384");
+  P384_Key.key_type_ = new string("ecc-384");
+  P384_Key.key_usage_ = new string("all");
+  P384_Key.key_owner_ = new string("NIST");
+  P384_Key.not_before_ = time_now;
+  P384_Key.not_after_ = time_later;
+
+  P384_Key.c_.p_ = new BigNum(6);
+  P384_Key.c_.p_->value_[5] = 0x0ULL;
+  P384_Key.c_.p_->value_[4] = 0x0ULL;
+  P384_Key.c_.p_->value_[3] = 0x0ULL;
+  P384_Key.c_.p_->value_[2] = 0x0ULL;
+  P384_Key.c_.p_->value_[1] = 0x0ULL;
+  P384_Key.c_.p_->value_[0] = 0x0ULL;
+  P384_Key.c_.p_->Normalize();
+
+  P384_Key.c_.a_ = new BigNum(6);
+  P384_Key.c_.a_->value_[5] = 0x0ULL;
+  P384_Key.c_.a_->value_[4] = 0x0ULL;
+  P384_Key.c_.a_->value_[3] = 0x0ULL;
+  P384_Key.c_.a_->value_[2] = 0x0ULL;
+  P384_Key.c_.a_->value_[1] = 0x0ULL;
+  P384_Key.c_.a_->value_[0] = 0x0ULL;
+  P384_Key.c_.a_->Normalize();
+
+  P384_Key.c_.b_ = new BigNum(6);
+  P384_Key.c_.b_->value_[5] = 0x0ULL;
+  P384_Key.c_.b_->value_[4] = 0x0ULL;
+  P384_Key.c_.b_->value_[3] = 0x0ULL;
+  P384_Key.c_.b_->value_[2] = 0x0ULL;
+  P384_Key.c_.b_->value_[1] = 0x0ULL;
+  P384_Key.c_.b_->value_[0] = 0x0ULL;
+  P384_Key.c_.b_->Normalize();
+
+  P384_Key.bit_size_modulus_ = 384;
+  P384_Key.order_of_g_ = new BigNum(6);
+  P384_Key.order_of_g_->value_[5] = 0x0ULL;
+  P384_Key.order_of_g_->value_[4] = 0x0ULL;
+  P384_Key.order_of_g_->value_[3] = 0x0ULL;
+  P384_Key.order_of_g_->value_[2] = 0x0ULL;
+  P384_Key.order_of_g_->value_[1] = 0x0ULL;
+  P384_Key.order_of_g_->value_[0] = 0x0ULL;
+  P384_Key.order_of_g_->Normalize();
+
+  P384_Key.g_.x_ = new BigNum(6);
+  P384_Key.g_.x_->value_[5] = 0x0ULL;
+  P384_Key.g_.x_->value_[4] = 0x0ULL;
+  P384_Key.g_.x_->value_[3] = 0x0ULL;
+  P384_Key.g_.x_->value_[2] = 0x0ULL;
+  P384_Key.g_.x_->value_[1] = 0x0ULL;
+  P384_Key.g_.x_->value_[0] = 0x0ULL;
+  P384_Key.g_.x_->Normalize();
+  P384_Key.g_.y_ = new BigNum(6);
+  P384_Key.g_.y_->value_[5] = 0x0ULL;
+  P384_Key.g_.y_->value_[4] = 0x0ULL;
+  P384_Key.g_.y_->value_[3] = 0x0ULL;
+  P384_Key.g_.y_->value_[2] = 0x0ULL;
+  P384_Key.g_.y_->value_[1] = 0x0ULL;
+  P384_Key.g_.y_->value_[0] = 0x0ULL;
+  P384_Key.g_.y_->Normalize();
+  P384_Key.g_.z_ = new BigNum(1, 1ULL);
+
+  P384_Key.g_.z_->Normalize();
+  P384_Key.base_.x_ = nullptr;
+  P384_Key.base_.y_ = nullptr;
+  P384_Key.base_.z_ = nullptr;
+  // P384_key_valid = true;
+  // P384_Key.key_valid_ = true;
+
+  // P-521
+  P521_Key.key_name_ = new string("P-521");
+  P521_Key.key_type_ = new string("ecc-521");
+  P521_Key.key_usage_ = new string("all");
+  P521_Key.key_owner_ = new string("NIST");
+  P521_Key.not_before_ = time_now;
+  P521_Key.not_after_ = time_later;
+
+  P521_Key.c_.p_ = new BigNum(9);
+  P521_Key.c_.p_->value_[8] = 0x0ULL;
+  P521_Key.c_.p_->value_[7] = 0x0ULL;
+  P521_Key.c_.p_->value_[6] = 0x0ULL;
+  P521_Key.c_.p_->value_[5] = 0x0ULL;
+  P521_Key.c_.p_->value_[4] = 0x0ULL;
+  P521_Key.c_.p_->value_[3] = 0x0ULL;
+  P521_Key.c_.p_->value_[2] = 0x0ULL;
+  P521_Key.c_.p_->value_[1] = 0x0ULL;
+  P521_Key.c_.p_->value_[0] = 0x0ULL;
+  P521_Key.c_.p_->Normalize();
+
+  P521_Key.c_.a_ = new BigNum(9);
+  P521_Key.c_.a_->value_[8] = 0x0ULL;
+  P521_Key.c_.a_->value_[7] = 0x0ULL;
+  P521_Key.c_.a_->value_[6] = 0x0ULL;
+  P521_Key.c_.a_->value_[5] = 0x0ULL;
+  P521_Key.c_.a_->value_[4] = 0x0ULL;
+  P521_Key.c_.a_->value_[3] = 0x0ULL;
+  P521_Key.c_.a_->value_[2] = 0x0ULL;
+  P521_Key.c_.a_->value_[1] = 0x0ULL;
+  P521_Key.c_.a_->value_[0] = 0x0ULL;
+  P521_Key.c_.a_->Normalize();
+
+  P521_Key.c_.b_ = new BigNum(9);
+  P521_Key.c_.b_->value_[8] = 0x0ULL;
+  P521_Key.c_.b_->value_[7] = 0x0ULL;
+  P521_Key.c_.b_->value_[6] = 0x0ULL;
+  P521_Key.c_.b_->value_[5] = 0x0ULL;
+  P521_Key.c_.b_->value_[4] = 0x0ULL;
+  P521_Key.c_.b_->value_[3] = 0x0ULL;
+  P521_Key.c_.b_->value_[2] = 0x0ULL;
+  P521_Key.c_.b_->value_[1] = 0x0ULL;
+  P521_Key.c_.b_->value_[0] = 0x0ULL;
+  P521_Key.c_.b_->Normalize();
+
+  P521_Key.bit_size_modulus_ = 521;
+  P521_Key.order_of_g_ = new BigNum(9);
+  P521_Key.order_of_g_->value_[8] = 0x0ULL;
+  P521_Key.order_of_g_->value_[7] = 0x0ULL;
+  P521_Key.order_of_g_->value_[6] = 0x0ULL;
+  P521_Key.order_of_g_->value_[5] = 0x0ULL;
+  P521_Key.order_of_g_->value_[4] = 0x0ULL;
+  P521_Key.order_of_g_->value_[3] = 0x0ULL;
+  P521_Key.order_of_g_->value_[2] = 0x0ULL;
+  P521_Key.order_of_g_->value_[1] = 0x0ULL;
+  P521_Key.order_of_g_->value_[0] = 0x0ULL;
+  P521_Key.order_of_g_->Normalize();
+
+  P521_Key.g_.x_ = new BigNum(9);
+  P521_Key.g_.x_->value_[8] = 0x0ULL;
+  P521_Key.g_.x_->value_[7] = 0x0ULL;
+  P521_Key.g_.x_->value_[6] = 0x0ULL;
+  P521_Key.g_.x_->value_[5] = 0x0ULL;
+  P521_Key.g_.x_->value_[4] = 0x0ULL;
+  P521_Key.g_.x_->value_[3] = 0x0ULL;
+  P521_Key.g_.x_->value_[2] = 0x0ULL;
+  P521_Key.g_.x_->value_[1] = 0x0ULL;
+  P521_Key.g_.x_->value_[0] = 0x0ULL;
+  P521_Key.g_.x_->Normalize();
+  P521_Key.g_.y_ = new BigNum(9);
+  P521_Key.g_.y_->value_[8] = 0x0ULL;
+  P521_Key.g_.y_->value_[7] = 0x0ULL;
+  P521_Key.g_.y_->value_[6] = 0x0ULL;
+  P521_Key.g_.y_->value_[5] = 0x0ULL;
+  P521_Key.g_.y_->value_[4] = 0x0ULL;
+  P521_Key.g_.y_->value_[3] = 0x0ULL;
+  P521_Key.g_.y_->value_[2] = 0x0ULL;
+  P521_Key.g_.y_->value_[1] = 0x0ULL;
+  P521_Key.g_.y_->value_[0] = 0x0ULL;
+  P521_Key.g_.y_->Normalize();
+  P521_Key.g_.z_ = new BigNum(1, 1ULL);
+
+  P521_Key.g_.z_->Normalize();
+  P521_Key.base_.x_ = nullptr;
+  P521_Key.base_.y_ = nullptr;
+  P521_Key.base_.z_ = nullptr;
+  // P521_key_valid = true;
+  // P521_Key.key_valid_ = true;
 
   return true;
 }
