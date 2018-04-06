@@ -291,16 +291,16 @@ void CryptoKey::PrintKey() {
   if (key_name_ == nullptr)
     printf("\tno key name\n");
   else
-    printf("\tkey name: %s\n", key_name_->c_str());
+    printf("\tkey name  : %s\n", key_name_->c_str());
 
   if (key_type_ == nullptr)
     printf("\tno key type\n");
   else
-    printf("\tkey type: %s\n", key_type_->c_str());
+    printf("\tkey type  : %s\n", key_type_->c_str());
   if (key_usage_ == nullptr)
     printf("\tno key usage\n");
   else
-    printf("\tkey usage: %s\n", key_usage_->c_str());
+    printf("\tkey usage : %s\n", key_usage_->c_str());
 
   if (not_before_ == nullptr) {
     printf("\tno not before\n");
@@ -312,7 +312,7 @@ void CryptoKey::PrintKey() {
   if (not_after_ == nullptr) {
     printf("\tno not after\n");
   } else {
-    printf("\tnot after: ");
+    printf("\tnot after : ");
     not_after_->PrintTime();
     printf("\n");
   }
