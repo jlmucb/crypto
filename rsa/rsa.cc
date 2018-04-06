@@ -175,66 +175,66 @@ bool RsaKey::SerializeKeyToMessage(crypto_rsa_key_message& msg) {
   sprintf(buf, "rsa-%d", bit_size_modulus_);
   string key_type(buf);
 
-  msg.set_key_type(key_type.c_str());
+  msg.set_key_type(key_type);
 
   if (m_ != nullptr) {
     string* s = ByteToBase64RightToLeft(m_->size_ * sizeof(uint64_t),
                                         (byte*)m_->value_);
-    msg.set_modulus(s->c_str());
+    msg.set_modulus(*s);
     delete s;
   }
   if (e_ != nullptr) {
     string* s = ByteToBase64RightToLeft(e_->size_ * sizeof(uint64_t),
                                         (byte*)e_->value_);
-    msg.set_public_exponent(s->c_str());
+    msg.set_public_exponent(*s);
     delete s;
   }
   if (d_ != nullptr) {
     string* s = ByteToBase64RightToLeft(d_->size_ * sizeof(uint64_t),
                                         (byte*)d_->value_);
-    msg.set_private_exponent(s->c_str());
+    msg.set_private_exponent(*s);
     delete s;
   }
   if (p_ != nullptr) {
     string* s = ByteToBase64RightToLeft(p_->size_ * sizeof(uint64_t),
                                         (byte*)p_->value_);
-    msg.set_p(s->c_str());
+    msg.set_p(*s);
     delete s;
   }
   if (q_ != nullptr) {
     string* s = ByteToBase64RightToLeft(q_->size_ * sizeof(uint64_t),
                                         (byte*)q_->value_);
-    msg.set_q(s->c_str());
+    msg.set_q(*s);
     delete s;
   }
   if (dp_ != nullptr) {
     string* s = ByteToBase64RightToLeft(dp_->size_ * sizeof(uint64_t),
                                         (byte*)dp_->value_);
-    msg.set_dp(s->c_str());
+    msg.set_dp(*s);
     delete s;
   }
   if (dq_ != nullptr) {
     string* s = ByteToBase64RightToLeft(dq_->size_ * sizeof(uint64_t),
                                         (byte*)dq_->value_);
-    msg.set_dq(s->c_str());
+    msg.set_dq(*s);
     delete s;
   }
   if (m_prime_ != nullptr) {
     string* s = ByteToBase64RightToLeft(m_prime_->size_ * sizeof(uint64_t),
                                         (byte*)m_prime_->value_);
-    msg.set_m_prime(s->c_str());
+    msg.set_m_prime(*s);
     delete s;
   }
   if (p_prime_ != nullptr) {
     string* s = ByteToBase64RightToLeft(p_prime_->size_ * sizeof(uint64_t),
                                         (byte*)p_prime_->value_);
-    msg.set_p_prime(s->c_str());
+    msg.set_p_prime(*s);
     delete s;
   }
   if (m_prime_ != nullptr) {
     string* s = ByteToBase64RightToLeft(q_prime_->size_ * sizeof(uint64_t),
                                         (byte*)q_prime_->value_);
-    msg.set_q_prime(s->c_str());
+    msg.set_q_prime(*s);
     delete s;
   }
   return true;
@@ -253,7 +253,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     if (m_ == nullptr) {
       m_ = new BigNum(bignum_size);
     }
-    k = Base64ToByteRightToLeft((char*)(msg.modulus().c_str()),
+    k = Base64ToByteRightToLeft((char*)(msg.modulus().data()),
                                 bignum_size * sizeof(uint64_t),
                                 (byte*)m_->value_);
     if (k < 0) {
@@ -265,7 +265,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     if (e_ == nullptr) {
       e_ = new BigNum(bignum_size);
     }
-    k = Base64ToByteRightToLeft((char*)(msg.public_exponent().c_str()),
+    k = Base64ToByteRightToLeft((char*)(msg.public_exponent().data()),
                                 bignum_size * sizeof(uint64_t),
                                 (byte*)e_->value_);
     if (k < 0) {
@@ -277,7 +277,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     if (d_ == nullptr) {
       d_ = new BigNum(bignum_size);
     }
-    k = Base64ToByteRightToLeft((char*)(msg.private_exponent().c_str()),
+    k = Base64ToByteRightToLeft((char*)(msg.private_exponent().data()),
                                 bignum_size * sizeof(uint64_t),
                                 (byte*)d_->value_);
     if (k < 0) {
@@ -289,7 +289,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     if (p_ == nullptr) {
       p_ = new BigNum(bignum_size);
     }
-    k = Base64ToByteRightToLeft((char*)(msg.p().c_str()),
+    k = Base64ToByteRightToLeft((char*)(msg.p().data()),
                                 bignum_size * sizeof(uint64_t),
                                 (byte*)p_->value_);
     if (k < 0) {
@@ -301,7 +301,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     if (q_ == nullptr) {
       q_ = new BigNum(bignum_size);
     }
-    k = Base64ToByteRightToLeft((char*)(msg.q().c_str()),
+    k = Base64ToByteRightToLeft((char*)(msg.q().data()),
                                 bignum_size * sizeof(uint64_t),
                                 (byte*)q_->value_);
     if (k < 0) {
@@ -313,7 +313,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     if (dp_ == nullptr) {
       dp_ = new BigNum(bignum_size);
     }
-    k = Base64ToByteRightToLeft((char*)(msg.dp().c_str()),
+    k = Base64ToByteRightToLeft((char*)(msg.dp().data()),
                                 bignum_size * sizeof(uint64_t),
                                 (byte*)dp_->value_);
     if (k < 0) {
@@ -325,7 +325,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     if (dq_ == nullptr) {
       dq_ = new BigNum(bignum_size);
     }
-    k = Base64ToByteRightToLeft((char*)(msg.dq().c_str()),
+    k = Base64ToByteRightToLeft((char*)(msg.dq().data()),
                                 bignum_size * sizeof(uint64_t),
                                 (byte*)dq_->value_);
     if (k < 0) {
@@ -337,7 +337,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     if (m_prime_ == nullptr) {
       m_prime_ = new BigNum(bignum_size);
     }
-    k = Base64ToByteRightToLeft((char*)(msg.m_prime().c_str()),
+    k = Base64ToByteRightToLeft((char*)(msg.m_prime().data()),
                                 bignum_size * sizeof(uint64_t),
                                 (byte*)m_prime_->value_);
     if (k < 0) {
@@ -349,7 +349,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     if (p_prime_ == nullptr) {
       p_prime_ = new BigNum(bignum_size);
     }
-    k = Base64ToByteRightToLeft((char*)(msg.p_prime().c_str()),
+    k = Base64ToByteRightToLeft((char*)(msg.p_prime().data()),
                                 bignum_size * sizeof(uint64_t),
                                 (byte*)p_prime_->value_);
     if (k < 0) {
@@ -361,7 +361,7 @@ bool RsaKey::DeserializeKeyFromMessage(crypto_rsa_key_message& msg) {
     if (q_prime_ == nullptr) {
       q_prime_ = new BigNum(bignum_size);
     }
-    k = Base64ToByteRightToLeft((char*)(msg.q_prime().c_str()),
+    k = Base64ToByteRightToLeft((char*)(msg.q_prime().data()),
                                 bignum_size * sizeof(uint64_t),
                                 (byte*)q_prime_->value_);
     if (k < 0) {
