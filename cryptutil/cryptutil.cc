@@ -354,18 +354,15 @@ bool keysFromPassPhrase(const char* phrase, int* size, byte* key) {
 
 const char* extractString(int size, byte* in) {
   int i;
+  int k = 0;
   char* out = new char[size + 1];
 
   memset(out, 0, size + 1);
   for (i = 0; i < size; i++) {
-    out[i] = in[i];
     if (in[i] == (byte)'\n' || in[i] == (byte)'\r' || in[i] == (byte)'\t' ||
-        in[i] == 0) {
-      in[i] = 0;
-      char* str = strdup(out);
-      delete []out;
-      return str;
-    }
+        in[i] == 0) 
+      continue;
+    out[k++] = in[i];
   }
   in[i] = 0;
   char* str = strdup(out);
@@ -1887,7 +1884,14 @@ int main(int an, char** av) {
     const char* str = extractString(size, out);
     BigNum* n = BigConvertFromDecimal(str);
     n->Normalize();
-    WriteaFile(FLAGS_input_file.c_str(), sizeof(uint64_t) * n->size_,
+
+    printf("size: %d, string: %s\n", n->size_, str);
+    byte* pb = (byte*) n->value_;
+    for (int i = (sizeof(uint64_t) * n->size_) - 1; i >= 0; i--) {
+      printf("%02x ", pb[i]);
+    }
+    printf("\n");
+    WriteaFile(FLAGS_output_file.c_str(), sizeof(uint64_t) * n->size_,
                (byte*)n->value_);
     delete n;
     delete out;
@@ -2269,7 +2273,6 @@ int main(int an, char** av) {
     int size = 0;
     byte* out = nullptr;
 
-    printf("GenerateKey\n");
     if (FLAGS_algorithm == "aes-128") {
       SymmetricKey* new_key =
           GenAesKey(128, FLAGS_duration.c_str(), FLAGS_key_name.c_str(),
