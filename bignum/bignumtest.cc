@@ -3971,7 +3971,6 @@ bool simple_ecc_tests() {
   }
 
   printf("END SIMPLE_ECC_TESTS\n");
-
   return true;
 }
 
@@ -4145,59 +4144,47 @@ bool simple_projective_ecc_tests() {
   return true;
 }
 
-bool ecc_tests() {
-  printf("\nECC_TESTS\n");
+bool run_ecc_encrypt_case(EccKey* ecc_key) {
 
-  if (!InitEccCurves()) {
-    printf("Can't init nist curve\n");
-    return false;
-  }
-  BigNum secret(8);
-  secret.ZeroNum();
-  if (!GetCryptoRand(252, (byte*)secret.value_)) {
-    printf("Cant get random bits\n");
-    return false;
-  }
-  secret.Normalize();
-  EccKey* ecc_key = new EccKey();
-  extern EccKey P256_Key;
-  ext_ecc_key = ecc_key;
+  int size = 0;
+  BigNum ksecret(10);
+  CurvePoint pt1(10);
+  CurvePoint pt2(10);
 
-  if (!ecc_key->MakeEccKey("JlmEccCode1", "key-exchange", "jlm",
-                           COMMON_YEAR_SECONDS, &P256_Key.c_, &P256_Key.g_,
-                           nullptr, P256_Key.order_of_g_, &secret)) {
-    printf("Cant MakeEccKey\n");
-    return false;
-  }
-  if (FLAGS_printall) {
-    ((CryptoKey*)ecc_key)->PrintKey();
-  }
-
-  CurvePoint pt1(8);
-  CurvePoint pt2(8);
-  byte plain[32] = {
+  byte plain[64] = {
+      0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x55, 0x55, 0x55,
+      0x55, 0x55, 0x55, 0x55, 0x55, 0x33, 0x33, 0x33, 0x33, 0x33, 0x33,
+      0x33, 0x33, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x0f, 0x55, 0x55, 0x55,
       0x55, 0x55, 0x55, 0x55, 0x55, 0x33, 0x33, 0x33, 0x33, 0x33, 0x33,
       0x33, 0x33, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   };
-  byte decrypted[32];
-  int size = 30;
-  BigNum ksecret(8);
+  byte decrypted[64];
 
   ksecret.ZeroNum();
-  if (!GetCryptoRand(252, (byte*)ksecret.value_)) {
+  if (ecc_key->bit_size_modulus_ == 256) {
+  	size = 32;
+  } else if (ecc_key->bit_size_modulus_ == 384) {
+  	size = 48;
+  } else if (ecc_key->bit_size_modulus_ == 521) {
+  	size = 64;
+  } else {
     LOG(ERROR) << "GetCryptoRandom error in EccKey::Encrypt\n";
     return false;
   }
+  if (!GetCryptoRand(size * NBITSINBYTE - 2, (byte*)ksecret.value_)) {
+    LOG(ERROR) << "run_ecc_encrypt_case: bad key size\n";
+    return false;
+  }
 
-  memset(decrypted, 0, 32);
+  memset(decrypted, 0, size);
   if (FLAGS_printall) {
     printf("Plain bytes: ");
-    PrintBytes(32, plain);
+    PrintBytes(size, plain);
     printf("\n");
     printf("\n");
   }
-  if (!ecc_key->Encrypt(32, plain, ksecret, pt1, pt2)) {
+  if (!ecc_key->Encrypt(size, plain, ksecret, pt1, pt2)) {
     printf("EccEncrypt fails\n");
     return false;
   }
@@ -4213,7 +4200,7 @@ bool ecc_tests() {
     pt2.PrintPoint();
     printf("\n");
     printf("Decrypted bytes: ");
-    PrintBytes(32, decrypted);
+    PrintBytes(size, decrypted);
     printf("\n");
     printf("\n");
   }
@@ -4221,6 +4208,102 @@ bool ecc_tests() {
     printf("plain and decrypted don't match\n");
     return false;
   }
+
+  return true;
+}
+
+bool ecc_tests() {
+
+  printf("\nECC_TESTS\n");
+
+  if (!InitEccCurves()) {
+    printf("Can't init nist curves\n");
+    return false;
+  }
+
+  // P-256
+  BigNum secret_p256(10);
+  secret_p256.ZeroNum();
+  if (!GetCryptoRand(252, (byte*)secret_p256.value_)) {
+    printf("Cant get random bits\n");
+    return false;
+  }
+  secret_p256.Normalize();
+
+  EccKey* ecc_key_p256 = new EccKey();
+  extern EccKey P256_Key;
+  ext_ecc_key = ecc_key_p256;
+
+  if (!ecc_key_p256->MakeEccKey("JlmEccCode1", "key-exchange", "jlm",
+                           COMMON_YEAR_SECONDS, &P256_Key.c_, &P256_Key.g_,
+                           nullptr, P256_Key.order_of_g_, &secret_p256)) {
+    printf("Can't MakeEccKey\n");
+    return false;
+  }
+  if (FLAGS_printall) {
+    ((CryptoKey*)ecc_key_p256)->PrintKey();
+  }
+
+  if (!run_ecc_encrypt_case(ecc_key_p256)) {
+    return false;
+  } else {
+    printf("ecc-256 sanity check passes\n");
+  }
+
+#if 0
+  // P-384
+  BigNum secret_p384(10);
+  secret_p384.ZeroNum();
+  if (!GetCryptoRand(252, (byte*)secret_p384.value_)) {
+    printf("Cant get random bits\n");
+    return false;
+  }
+  secret_p384.Normalize();
+
+  EccKey* ecc_key_p384 = new EccKey();
+  extern EccKey P384_Key;
+  if (!ecc_key_p384->MakeEccKey("JlmEccCode2", "key-exchange", "jlm",
+                           COMMON_YEAR_SECONDS, &P384_Key.c_, &P384_Key.g_,
+                           nullptr, P384_Key.order_of_g_, &secret_p384)) {
+    printf("Can't MakeEccKey\n");
+    return false;
+  }
+  if (FLAGS_printall) {
+    ((CryptoKey*)ecc_key_p384)->PrintKey();
+  }
+  if (!run_ecc_encrypt_case(ecc_key_p384)) {
+    return false;
+  } else {
+    printf("ecc-384 sanity check passes\n");
+  }
+
+  // P-521
+  BigNum secret_p521(10);
+  secret_p521.ZeroNum();
+  if (!GetCryptoRand(520, (byte*)secret_p521.value_)) {
+    printf("Cant get random bits\n");
+    return false;
+  }
+  secret_p521.Normalize();
+
+  EccKey* ecc_key_p521 = new EccKey();
+  extern EccKey P521_Key;
+  if (!ecc_key_p521->MakeEccKey("JlmEccCode3", "key-exchange", "jlm",
+                           COMMON_YEAR_SECONDS, &P521_Key.c_, &P521_Key.g_,
+                           nullptr, P521_Key.order_of_g_, &secret_p521)) {
+    printf("Can't MakeEccKey\n");
+    return false;
+  }
+  if (FLAGS_printall) {
+    ((CryptoKey*)ecc_key_p521)->PrintKey();
+  }
+  if (!run_ecc_encrypt_case(ecc_key_p521)) {
+    return false;
+  } else {
+    printf("ecc-521 sanity check passes\n");
+  }
+#endif
+
   printf("END_ECC_TESTS\n");
   return true;
 }
@@ -4228,6 +4311,7 @@ bool ecc_tests() {
 // --------------------------------------------------------------------------------------
 
 bool RunTestSuite() { return true; }
+
 
 #define TESTBUFSIZE 2048
 

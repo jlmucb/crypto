@@ -898,8 +898,8 @@ EccKey::~EccKey() {
 bool EccKey::MakeEccKey(const char* name, const char* usage, const char* owner,
                         double secondstolive, EccCurve* c,
                         CurvePoint* g, CurvePoint* base, BigNum* order, BigNum* secret) {
+
   bit_size_modulus_ = c->modulus_bit_size_;
-  key_valid_ = true;
   key_name_ = new string(name);
   key_usage_ = new string(usage);
   key_owner_ = new string(owner);
@@ -907,6 +907,8 @@ bool EccKey::MakeEccKey(const char* name, const char* usage, const char* owner,
   not_after_ = new TimePoint();
   not_before_->TimePointNow();
   not_after_->TimePointLaterBySeconds(*not_before_, secondstolive);
+  key_valid_ = true;
+
   if (c->modulus_bit_size_ == 256) {
     key_type_ = new string("ecc-256");
   } else if (c->modulus_bit_size_ == 384) {
