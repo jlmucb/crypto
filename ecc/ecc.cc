@@ -896,11 +896,10 @@ EccKey::~EccKey() {
 }
 
 bool EccKey::MakeEccKey(const char* name, const char* usage, const char* owner,
-                        int num_bits, double secondstolive, EccCurve* c,
+                        double secondstolive, EccCurve* c,
                         CurvePoint* g, CurvePoint* base, BigNum* order, BigNum* secret) {
-  bit_size_modulus_ = num_bits;
+  bit_size_modulus_ = c->modulus_bit_size_;
   key_valid_ = true;
-  key_type_ = new string("ecc-256");
   key_name_ = new string(name);
   key_usage_ = new string(usage);
   key_owner_ = new string(owner);
@@ -908,8 +907,14 @@ bool EccKey::MakeEccKey(const char* name, const char* usage, const char* owner,
   not_after_ = new TimePoint();
   not_before_->TimePointNow();
   not_after_->TimePointLaterBySeconds(*not_before_, secondstolive);
-  if (num_bits != 256) {
-    LOG(ERROR) << "EccKey::MakeECCKey: only 256 bit keys supported\n";
+  if (c->modulus_bit_size_ == 256) {
+    key_type_ = new string("ecc-256");
+  } else if (c->modulus_bit_size_ == 384) {
+    key_type_ = new string("ecc-384");
+  } else if (c->modulus_bit_size_ == 521) {
+    key_type_ = new string("ecc-521");
+  } else {
+    LOG(ERROR) << "EccKey::MakeECCKey: only P-256, P-384, P-521 supported\n";
     return false;
   }
   if (c != nullptr) {
@@ -934,9 +939,9 @@ bool EccKey::MakeEccKey(const char* name, const char* usage, const char* owner,
     base_.y_ = new BigNum(*base->y_);
     base_.z_ = new BigNum(*base->z_);
   } else {
-    base_.x_ = new BigNum(2 * num_bits / NBITSINUINT64);
-    base_.y_ = new BigNum(2 * num_bits / NBITSINUINT64);
-    base_.z_ = new BigNum(2 * num_bits / NBITSINUINT64);
+    base_.x_ = new BigNum(2 * (c->modulus_bit_size_+ NBITSINUINT64 - 1) / NBITSINUINT64);
+    base_.y_ = new BigNum(2 * (c->modulus_bit_size_+ NBITSINUINT64 - 1)/ NBITSINUINT64);
+    base_.z_ = new BigNum(2 * (c->modulus_bit_size_ + NBITSINUINT64 - 1)/ NBITSINUINT64);
   }
   if (order != nullptr) {
     order_of_g_ = new BigNum(*order);
@@ -952,7 +957,7 @@ bool EccKey::MakeEccKey(const char* name, const char* usage, const char* owner,
 
 bool EccKey::GenerateEccKey(string& curve_name, const char* name, const char* usage,
                     const char* owner, double seconds_to_live) {
-  BigNum secret(8);
+  BigNum secret(10);
 
   if (!InitEccCurves()) {
     printf("InitEccCurves failed\n");
@@ -966,8 +971,26 @@ bool EccKey::GenerateEccKey(string& curve_name, const char* name, const char* us
       return false;
     }
     secret.Normalize();
-    return MakeEccKey(name, usage, owner, 256, seconds_to_live, &P256_Key.c_,
+    return MakeEccKey(name, usage, owner, seconds_to_live, &P256_Key.c_,
                     &P256_Key.g_, nullptr, P256_Key.order_of_g_, &secret);
+  } else if (curve_name == "P-384") {
+    // Check
+    if (!GetCryptoRand(383, (byte*)secret.value_)) {
+      printf("Cant GetCryptoRand\n");
+      return false;
+    }
+    secret.Normalize();
+    return MakeEccKey(name, usage, owner, seconds_to_live, &P384_Key.c_,
+                    &P384_Key.g_, nullptr, P384_Key.order_of_g_, &secret);
+  } else if (curve_name == "P-521") {
+    // Check
+    if (!GetCryptoRand(520, (byte*)secret.value_)) {
+      printf("Cant GetCryptoRand\n");
+      return false;
+    }
+    secret.Normalize();
+    return MakeEccKey(name, usage, owner, seconds_to_live, &P521_Key.c_,
+                    &P521_Key.g_, nullptr, P521_Key.order_of_g_, &secret);
   } else {
     printf("Unknown curve name\n");
     return false;
@@ -1023,8 +1046,7 @@ bool CurvePoint::DeserializePointFromMessage(crypto_point_message& msg) {
 }
 
 bool EccCurve::SerializeCurveToMessage(crypto_ecc_curve_message& msg) {
-  // TODO: fix
-  msg.set_bit_modulus_size(256);
+  msg.set_bit_modulus_size(modulus_bit_size_);
   if (p_ != nullptr) {
     string* s = ByteToBase64RightToLeft(p_->size_ * sizeof(uint64_t),
                                         (byte*)p_->value_);
@@ -1058,6 +1080,7 @@ bool EccCurve::DeserializeCurveFromMessage(crypto_ecc_curve_message& msg) {
                                 (byte*)p_->value_);
     if (k < 0) {
       LOG(ERROR) << "EccCurve::DeserializeCurveFromMessage: cant encode\n";
+      return false;
     }
     p_->Normalize();
   }
@@ -1069,6 +1092,7 @@ bool EccCurve::DeserializeCurveFromMessage(crypto_ecc_curve_message& msg) {
                                 (byte*)a_->value_);
     if (k < 0) {
       LOG(ERROR) << "EccCurve::DeserializeCurveFromMessage: cant encode\n";
+      return false;
     }
     a_->Normalize();
   }
@@ -1081,6 +1105,7 @@ bool EccCurve::DeserializeCurveFromMessage(crypto_ecc_curve_message& msg) {
                                 (byte*)b_->value_);
     if (k < 0) {
       LOG(ERROR) << "EccCurve::DeserializeCurveFromMessage: cant encode\n";
+      return false;
     }
     b_->Normalize();
   }
@@ -1088,7 +1113,15 @@ bool EccCurve::DeserializeCurveFromMessage(crypto_ecc_curve_message& msg) {
 }
 
 bool EccKey::SerializeKeyToMessage(crypto_ecc_key_message& msg) {
-  msg.set_key_type("ecc-256");
+  if (bit_size_modulus_ == 256) {
+    msg.set_key_type("ecc-256");
+  } else if (bit_size_modulus_ == 384) {
+    msg.set_key_type("ecc-384");
+  } else if (bit_size_modulus_ == 521) {
+    msg.set_key_type("ecc-521");
+  } else { 
+    return false;
+  }
 
   if (a_ != nullptr) {
     string* s = ByteToBase64RightToLeft(a_->size_ * sizeof(uint64_t),
@@ -1115,9 +1148,19 @@ bool EccKey::SerializeKeyToMessage(crypto_ecc_key_message& msg) {
 bool EccKey::DeserializeKeyFromMessage(crypto_ecc_key_message& msg) {
   int bignum_size, len, k;
 
-  bit_size_modulus_ = 256;
   if (!msg.has_key_type())
     return false;
+
+  if (msg.key_type() == "ecc-256") {
+    bit_size_modulus_ = 256;
+  } else if (msg.key_type() == "ecc-384") {
+    bit_size_modulus_ = 384;
+  } else if (msg.key_type() == "ecc-521") {
+    bit_size_modulus_ = 521;
+  } else {
+      LOG(ERROR) << "EccCurve::DeserializeKeyFromMessage: unknown key\n";
+    return false;
+  }
 
   if (msg.has_private_nonce()) {
     len = (msg.private_nonce().size() * 6 + NBITSINBYTE - 1) / NBITSINBYTE;
@@ -1256,236 +1299,268 @@ void EccKey::PrintKey() {
 */
 
 bool InitEccCurves() {
-  if (P256_key_valid)
-    return true;
 
-  P256_Key.bit_size_modulus_ = 256;
-  TimePoint* time_now = new TimePoint();
-  TimePoint* time_later = new TimePoint();
-
-  if (!time_now->TimePointNow()) {
-    printf("TimePointNow failed\n");
-    return false;
-  }
-  time_later->TimePointLaterBySeconds(*time_now, 10.0 * COMMON_YEAR_SECONDS);
+  TimePoint* time_now = nullptr;
+  TimePoint* time_later = nullptr;
 
   // P-256
-  P256_Key.key_name_ = new string("P-256");
-  P256_Key.key_type_ = new string("ecc-256");
-  P256_Key.key_usage_ = new string("all");
-  P256_Key.key_owner_ = new string("NIST");
-  P256_Key.not_before_ = time_now;
-  P256_Key.not_after_ = time_later;
 
-  P256_Key.c_.p_ = new BigNum(4);
-  P256_Key.c_.p_->value_[3] = 0xffffffff00000001ULL;
-  P256_Key.c_.p_->value_[2] = 0ULL;
-  P256_Key.c_.p_->value_[1] = 0x00000000ffffffffULL;
-  P256_Key.c_.p_->value_[0] = 0xffffffffffffffffULL;
-  P256_Key.c_.p_->Normalize();
+  if (!P256_key_valid) {
 
-  P256_Key.c_.a_ = new BigNum(4);
-  P256_Key.c_.a_->value_[3] = 0xffffffff00000001ULL;
-  P256_Key.c_.a_->value_[2] = 0ULL;
-  P256_Key.c_.a_->value_[1] = 0x00000000ffffffffULL;
-  P256_Key.c_.a_->value_[0] = 0xfffffffffffffffcULL;
-  P256_Key.c_.a_->Normalize();
+    P256_Key.bit_size_modulus_ = 256;
+    time_now = new TimePoint();
+    time_later = new TimePoint();
 
-  P256_Key.c_.b_ = new BigNum(4);
-  P256_Key.c_.b_->value_[3] = 0x5ac635d8aa3a93e7ULL;
-  P256_Key.c_.b_->value_[2] = 0xb3ebbd55769886bcULL;
-  P256_Key.c_.b_->value_[1] = 0x651d06b0cc53b0f6ULL;
-  P256_Key.c_.b_->value_[0] = 0x3bce3c3e27d2604bULL;
-  P256_Key.c_.b_->Normalize();
+    if (!time_now->TimePointNow()) {
+      printf("TimePointNow failed\n");
+      return false;
+    }
+    time_later->TimePointLaterBySeconds(*time_now, 10.0 * COMMON_YEAR_SECONDS);
 
-  P256_Key.bit_size_modulus_ = 256;
-  P256_Key.order_of_g_ = new BigNum(4);
-  P256_Key.order_of_g_->value_[3] = 0xffffffff00000000ULL;
-  P256_Key.order_of_g_->value_[2] = 0xffffffffffffffffULL;
-  P256_Key.order_of_g_->value_[1] = 0xbce6faada7179e84ULL;
-  P256_Key.order_of_g_->value_[0] = 0xf3b9cac2fc632551ULL;
-  P256_Key.order_of_g_->Normalize();
+    P256_Key.key_name_ = new string("P-256");
+    P256_Key.key_type_ = new string("ecc-256");
+    P256_Key.key_usage_ = new string("all");
+    P256_Key.key_owner_ = new string("NIST");
+    P256_Key.not_before_ = time_now;
+    P256_Key.not_after_ = time_later;
+  
+    P256_Key.c_.modulus_bit_size_ = 256;
+    P256_Key.c_.p_ = new BigNum(4);
+    P256_Key.c_.p_->value_[3] = 0xffffffff00000001ULL;
+    P256_Key.c_.p_->value_[2] = 0ULL;
+    P256_Key.c_.p_->value_[1] = 0x00000000ffffffffULL;
+    P256_Key.c_.p_->value_[0] = 0xffffffffffffffffULL;
+    P256_Key.c_.p_->Normalize();
 
-  P256_Key.g_.x_ = new BigNum(4);
-  P256_Key.g_.x_->value_[3] = 0x6b17d1f2e12c4247ULL;
-  P256_Key.g_.x_->value_[2] = 0xf8bce6e563a440f2ULL;
-  P256_Key.g_.x_->value_[1] = 0x77037d812deb33a0ULL;
-  P256_Key.g_.x_->value_[0] = 0xf4a13945d898c296ULL;
-  P256_Key.g_.x_->Normalize();
-  P256_Key.g_.y_ = new BigNum(4);
-  P256_Key.g_.y_->value_[3] = 0x4fe342e2fe1a7f9bULL;
-  P256_Key.g_.y_->value_[2] = 0x8ee7eb4a7c0f9e16ULL;
-  P256_Key.g_.y_->value_[1] = 0x2bce33576b315eceULL;
-  P256_Key.g_.y_->value_[0] = 0xcbb6406837bf51f5ULL;
-  P256_Key.g_.y_->Normalize();
-  P256_Key.g_.z_ = new BigNum(1, 1ULL);
+    P256_Key.c_.a_ = new BigNum(4);
+    P256_Key.c_.a_->value_[3] = 0xffffffff00000001ULL;
+    P256_Key.c_.a_->value_[2] = 0ULL;
+    P256_Key.c_.a_->value_[1] = 0x00000000ffffffffULL;
+    P256_Key.c_.a_->value_[0] = 0xfffffffffffffffcULL;
+    P256_Key.c_.a_->Normalize();
 
-  P256_Key.g_.z_->Normalize();
-  P256_key_valid = true;
-  P256_Key.base_.x_ = nullptr;
-  P256_Key.base_.y_ = nullptr;
-  P256_Key.base_.z_ = nullptr;
-  P256_Key.key_valid_ = true;
+    P256_Key.c_.b_ = new BigNum(4);
+    P256_Key.c_.b_->value_[3] = 0x5ac635d8aa3a93e7ULL;
+    P256_Key.c_.b_->value_[2] = 0xb3ebbd55769886bcULL;
+    P256_Key.c_.b_->value_[1] = 0x651d06b0cc53b0f6ULL;
+    P256_Key.c_.b_->value_[0] = 0x3bce3c3e27d2604bULL;
+    P256_Key.c_.b_->Normalize();
+
+    P256_Key.bit_size_modulus_ = 256;
+    P256_Key.order_of_g_ = new BigNum(4);
+    P256_Key.order_of_g_->value_[3] = 0xffffffff00000000ULL;
+    P256_Key.order_of_g_->value_[2] = 0xffffffffffffffffULL;
+    P256_Key.order_of_g_->value_[1] = 0xbce6faada7179e84ULL;
+    P256_Key.order_of_g_->value_[0] = 0xf3b9cac2fc632551ULL;
+    P256_Key.order_of_g_->Normalize();
+
+    P256_Key.g_.x_ = new BigNum(4);
+    P256_Key.g_.x_->value_[3] = 0x6b17d1f2e12c4247ULL;
+    P256_Key.g_.x_->value_[2] = 0xf8bce6e563a440f2ULL;
+    P256_Key.g_.x_->value_[1] = 0x77037d812deb33a0ULL;
+    P256_Key.g_.x_->value_[0] = 0xf4a13945d898c296ULL;
+    P256_Key.g_.x_->Normalize();
+    P256_Key.g_.y_ = new BigNum(4);
+    P256_Key.g_.y_->value_[3] = 0x4fe342e2fe1a7f9bULL;
+    P256_Key.g_.y_->value_[2] = 0x8ee7eb4a7c0f9e16ULL;
+    P256_Key.g_.y_->value_[1] = 0x2bce33576b315eceULL;
+    P256_Key.g_.y_->value_[0] = 0xcbb6406837bf51f5ULL;
+    P256_Key.g_.y_->Normalize();
+    P256_Key.g_.z_ = new BigNum(1, 1ULL);
+
+    P256_Key.g_.z_->Normalize();
+    P256_key_valid = true;
+    P256_Key.base_.x_ = nullptr;
+    P256_Key.base_.y_ = nullptr;
+    P256_Key.base_.z_ = nullptr;
+    P256_Key.key_valid_ = true;
+  }
 
   // P-384
-  P384_Key.key_name_ = new string("P-384");
-  P384_Key.key_type_ = new string("ecc-384");
-  P384_Key.key_usage_ = new string("all");
-  P384_Key.key_owner_ = new string("NIST");
-  P384_Key.not_before_ = time_now;
-  P384_Key.not_after_ = time_later;
+  if (!P384_key_valid) {
 
-  // p = 2^384 – 2^128 – 2^96 + 2^32 –1
-  P384_Key.c_.p_ = new BigNum(6);
-  P384_Key.c_.p_->value_[5] = 0xffffffffffffffffULL;
-  P384_Key.c_.p_->value_[4] = 0xffffffffffffffffULL;
-  P384_Key.c_.p_->value_[3] = 0xffffffffffffffffULL;
-  P384_Key.c_.p_->value_[2] = 0xfffffffffffffffeULL;
-  P384_Key.c_.p_->value_[1] = 0xffffffff00000000ULL;
-  P384_Key.c_.p_->value_[0] = 0x00000000ffffffffULL;
-  P384_Key.c_.p_->Normalize();
+    P384_Key.c_.modulus_bit_size_ = 384;
+    time_now = new TimePoint();
+    time_later = new TimePoint();
 
-  P384_Key.c_.a_ = new BigNum(6);
-  P384_Key.c_.a_->value_[5] = 0x79d1e655f868f02fULL;
-  P384_Key.c_.a_->value_[4] = 0xff48dcdee14151ddULL;
-  P384_Key.c_.a_->value_[3] = 0xb80643c1406d0ca1ULL;
-  P384_Key.c_.a_->value_[2] = 0x0dfe6fc52009540aULL;
-  P384_Key.c_.a_->value_[1] = 0x495e8042ea5f744fULL;
-  P384_Key.c_.a_->value_[0] = 0x6e184667cc722483ULL;
-  P384_Key.c_.a_->Normalize();
+    if (!time_now->TimePointNow()) {
+      printf("TimePointNow failed\n");
+      return false;
+    }
+    time_later->TimePointLaterBySeconds(*time_now, 10.0 * COMMON_YEAR_SECONDS);
 
-  P384_Key.c_.b_ = new BigNum(6);
-  P384_Key.c_.b_->value_[5] = 0xb3312fa7e23ee7e4ULL;
-  P384_Key.c_.b_->value_[4] = 0x988e056be3f82d19ULL;
-  P384_Key.c_.b_->value_[3] = 0x181d9c6efe814112ULL;
-  P384_Key.c_.b_->value_[2] = 0x0314088f5013875aULL;
-  P384_Key.c_.b_->value_[1] = 0xc656398d8a2ed19dULL;
-  P384_Key.c_.b_->value_[0] = 0x2a85c8edd3ec2aefULL;
-  P384_Key.c_.b_->Normalize();
+    P384_Key.key_name_ = new string("P-384");
+    P384_Key.key_type_ = new string("ecc-384");
+    P384_Key.key_usage_ = new string("all");
+    P384_Key.key_owner_ = new string("NIST");
+    P384_Key.not_before_ = time_now;
+    P384_Key.not_after_ = time_later;
 
-  P384_Key.bit_size_modulus_ = 384;
-  P384_Key.order_of_g_ = new BigNum(6);
-  P384_Key.order_of_g_->value_[5] = 0xffffffffffffffffULL;
-  P384_Key.order_of_g_->value_[4] = 0xffffffffffffffffULL;
-  P384_Key.order_of_g_->value_[3] = 0xffffffffffffffffULL;
-  P384_Key.order_of_g_->value_[2] = 0xc7634d81f4372ddfULL;
-  P384_Key.order_of_g_->value_[1] = 0x581a0db248b0a77aULL;
-  P384_Key.order_of_g_->value_[0] = 0xecec196accc52973ULL;
-  P384_Key.order_of_g_->Normalize();
+    // p = 2^384 – 2^128 – 2^96 + 2^32 –1
+    P384_Key.c_.p_ = new BigNum(6);
+    P384_Key.c_.p_->value_[5] = 0xffffffffffffffffULL;
+    P384_Key.c_.p_->value_[4] = 0xffffffffffffffffULL;
+    P384_Key.c_.p_->value_[3] = 0xffffffffffffffffULL;
+    P384_Key.c_.p_->value_[2] = 0xfffffffffffffffeULL;
+    P384_Key.c_.p_->value_[1] = 0xffffffff00000000ULL;
+    P384_Key.c_.p_->value_[0] = 0x00000000ffffffffULL;
+    P384_Key.c_.p_->Normalize();
 
-  P384_Key.g_.x_ = new BigNum(6);
-  P384_Key.g_.x_->value_[5] = 0xaa87ca22be8b0537ULL;
-  P384_Key.g_.x_->value_[4] = 0x8eb1c71ef320ad74ULL;
-  P384_Key.g_.x_->value_[3] = 0x6e1d3b628ba79b98ULL;
-  P384_Key.g_.x_->value_[2] = 0x59f741e082542a38ULL;
-  P384_Key.g_.x_->value_[1] = 0x5502f25dbf55296cULL;
-  P384_Key.g_.x_->value_[0] = 0x3a545e3872760ab7ULL;
-  P384_Key.g_.x_->Normalize();
-  P384_Key.g_.y_ = new BigNum(6);
-  P384_Key.g_.y_->value_[5] = 0x3617de4a96262c6fULL;
-  P384_Key.g_.y_->value_[4] = 0x5d9e98bf9292dc29ULL;
-  P384_Key.g_.y_->value_[3] = 0xf8f41dbd289a147cULL;
-  P384_Key.g_.y_->value_[2] = 0xe9da3113b5f0b8c0ULL;
-  P384_Key.g_.y_->value_[1] = 0x0a60b1ce1d7e819dULL;
-  P384_Key.g_.y_->value_[0] = 0x7a431d7c90ea0e5fULL;
-  P384_Key.g_.y_->Normalize();
-  P384_Key.g_.z_ = new BigNum(1, 1ULL);
+    P384_Key.c_.a_ = new BigNum(6);
+    P384_Key.c_.a_->value_[5] = 0x79d1e655f868f02fULL;
+    P384_Key.c_.a_->value_[4] = 0xff48dcdee14151ddULL;
+    P384_Key.c_.a_->value_[3] = 0xb80643c1406d0ca1ULL;
+    P384_Key.c_.a_->value_[2] = 0x0dfe6fc52009540aULL;
+    P384_Key.c_.a_->value_[1] = 0x495e8042ea5f744fULL;
+    P384_Key.c_.a_->value_[0] = 0x6e184667cc722483ULL;
+    P384_Key.c_.a_->Normalize();
 
-  P384_Key.g_.z_->Normalize();
-  P384_Key.base_.x_ = nullptr;
-  P384_Key.base_.y_ = nullptr;
-  P384_Key.base_.z_ = nullptr;
-  P384_key_valid = true;
-  P384_Key.key_valid_ = true;
+    P384_Key.c_.b_ = new BigNum(6);
+    P384_Key.c_.b_->value_[5] = 0xb3312fa7e23ee7e4ULL;
+    P384_Key.c_.b_->value_[4] = 0x988e056be3f82d19ULL;
+    P384_Key.c_.b_->value_[3] = 0x181d9c6efe814112ULL;
+    P384_Key.c_.b_->value_[2] = 0x0314088f5013875aULL;
+    P384_Key.c_.b_->value_[1] = 0xc656398d8a2ed19dULL;
+    P384_Key.c_.b_->value_[0] = 0x2a85c8edd3ec2aefULL;
+    P384_Key.c_.b_->Normalize();
+
+    P384_Key.bit_size_modulus_ = 384;
+    P384_Key.order_of_g_ = new BigNum(6);
+    P384_Key.order_of_g_->value_[5] = 0xffffffffffffffffULL;
+    P384_Key.order_of_g_->value_[4] = 0xffffffffffffffffULL;
+    P384_Key.order_of_g_->value_[3] = 0xffffffffffffffffULL;
+    P384_Key.order_of_g_->value_[2] = 0xc7634d81f4372ddfULL;
+    P384_Key.order_of_g_->value_[1] = 0x581a0db248b0a77aULL;
+    P384_Key.order_of_g_->value_[0] = 0xecec196accc52973ULL;
+    P384_Key.order_of_g_->Normalize();
+
+    P384_Key.g_.x_ = new BigNum(6);
+    P384_Key.g_.x_->value_[5] = 0xaa87ca22be8b0537ULL;
+    P384_Key.g_.x_->value_[4] = 0x8eb1c71ef320ad74ULL;
+    P384_Key.g_.x_->value_[3] = 0x6e1d3b628ba79b98ULL;
+    P384_Key.g_.x_->value_[2] = 0x59f741e082542a38ULL;
+    P384_Key.g_.x_->value_[1] = 0x5502f25dbf55296cULL;
+    P384_Key.g_.x_->value_[0] = 0x3a545e3872760ab7ULL;
+    P384_Key.g_.x_->Normalize();
+    P384_Key.g_.y_ = new BigNum(6);
+    P384_Key.g_.y_->value_[5] = 0x3617de4a96262c6fULL;
+    P384_Key.g_.y_->value_[4] = 0x5d9e98bf9292dc29ULL;
+    P384_Key.g_.y_->value_[3] = 0xf8f41dbd289a147cULL;
+    P384_Key.g_.y_->value_[2] = 0xe9da3113b5f0b8c0ULL;
+    P384_Key.g_.y_->value_[1] = 0x0a60b1ce1d7e819dULL;
+    P384_Key.g_.y_->value_[0] = 0x7a431d7c90ea0e5fULL;
+    P384_Key.g_.y_->Normalize();
+    P384_Key.g_.z_ = new BigNum(1, 1ULL);
+
+    P384_Key.g_.z_->Normalize();
+    P384_Key.base_.x_ = nullptr;
+    P384_Key.base_.y_ = nullptr;
+    P384_Key.base_.z_ = nullptr;
+    P384_key_valid = true;
+    P384_Key.key_valid_ = true;
+  }
 
   // P-521
-  P521_Key.key_name_ = new string("P-521");
-  P521_Key.key_type_ = new string("ecc-521");
-  P521_Key.key_usage_ = new string("all");
-  P521_Key.key_owner_ = new string("NIST");
-  P521_Key.not_before_ = time_now;
-  P521_Key.not_after_ = time_later;
+  if (!P521_key_valid) {
 
-  P521_Key.c_.p_ = new BigNum(9);
-  P521_Key.c_.p_->value_[8] = 0x1ffULL;
-  P521_Key.c_.p_->value_[7] = 0xffffffffffffffffULL;
-  P521_Key.c_.p_->value_[6] = 0xffffffffffffffffULL;
-  P521_Key.c_.p_->value_[5] = 0xffffffffffffffffULL;
-  P521_Key.c_.p_->value_[4] = 0xffffffffffffffffULL;
-  P521_Key.c_.p_->value_[3] = 0xffffffffffffffffULL;
-  P521_Key.c_.p_->value_[2] = 0xffffffffffffffffULL;
-  P521_Key.c_.p_->value_[1] = 0xffffffffffffffffULL;
-  P521_Key.c_.p_->value_[0] = 0xffffffffffffffffULL;
-  P521_Key.c_.p_->Normalize();
+    P521_Key.c_.modulus_bit_size_ = 521;
+    time_now = new TimePoint();
+    time_later = new TimePoint();
 
-  P521_Key.c_.a_ = new BigNum(9);
-  P521_Key.c_.a_->value_[8] = 0x0b4ULL;
-  P521_Key.c_.a_->value_[7] = 0x8bfa5f420a349495ULL;
-  P521_Key.c_.a_->value_[6] = 0x39d2bdfc264eeeebULL;
-  P521_Key.c_.a_->value_[5] = 0x077688e44fbf0ad8ULL;
-  P521_Key.c_.a_->value_[4] = 0xf6d0edb37bd6b533ULL;
-  P521_Key.c_.a_->value_[3] = 0x281000518e19f1b9ULL;
-  P521_Key.c_.a_->value_[2] = 0xffbe0fe9ed8a3c22ULL;
-  P521_Key.c_.a_->value_[1] = 0x00b8f875e523868cULL;
-  P521_Key.c_.a_->value_[0] = 0x70c1e5bf55bad637ULL;
-  P521_Key.c_.a_->Normalize();
+    if (!time_now->TimePointNow()) {
+      printf("TimePointNow failed\n");
+      return false;
+    }
+    time_later->TimePointLaterBySeconds(*time_now, 10.0 * COMMON_YEAR_SECONDS);
 
-  P521_Key.c_.b_ = new BigNum(9);
-  P521_Key.c_.b_->value_[8] = 0x051ULL;
-  P521_Key.c_.b_->value_[7] = 0x953eb9618e1c9a1fULL;
-  P521_Key.c_.b_->value_[6] = 0x929a21a0b68540eeULL;
-  P521_Key.c_.b_->value_[5] = 0xa2da725b99b315f3ULL;
-  P521_Key.c_.b_->value_[4] = 0xb8b489918ef109e1ULL;
-  P521_Key.c_.b_->value_[3] = 0x56193951ec7e937bULL;
-  P521_Key.c_.b_->value_[2] = 0x1652c0bd3bb1bf07ULL;
-  P521_Key.c_.b_->value_[1] = 0x3573df883d2c34f1ULL;
-  P521_Key.c_.b_->value_[0] = 0xef451fd46b503f00ULL;
-  P521_Key.c_.b_->Normalize();
+    P521_Key.key_name_ = new string("P-521");
+    P521_Key.key_type_ = new string("ecc-521");
+    P521_Key.key_usage_ = new string("all");
+    P521_Key.key_owner_ = new string("NIST");
+    P521_Key.not_before_ = time_now;
+    P521_Key.not_after_ = time_later;
 
-  P521_Key.bit_size_modulus_ = 521;
-  P521_Key.order_of_g_ = new BigNum(9);
-  P521_Key.order_of_g_->value_[8] = 0x01ffULL;
-  P521_Key.order_of_g_->value_[7] = 0xffffffffffffffffULL;
-  P521_Key.order_of_g_->value_[6] = 0xffffffffffffffffULL;
-  P521_Key.order_of_g_->value_[5] = 0xffffffffffffffffULL;
-  P521_Key.order_of_g_->value_[4] = 0xfffffffffffffffaULL;
-  P521_Key.order_of_g_->value_[3] = 0x51868783bf2f966bULL;
-  P521_Key.order_of_g_->value_[2] = 0x7fcc0148f709a5d0ULL;
-  P521_Key.order_of_g_->value_[1] = 0x3bb5c9b8899c47aeULL;
-  P521_Key.order_of_g_->value_[0] = 0xbb6fb71e91386409ULL;
-  P521_Key.order_of_g_->Normalize();
+    P521_Key.c_.p_ = new BigNum(9);
+    P521_Key.c_.p_->value_[8] = 0x1ffULL;
+    P521_Key.c_.p_->value_[7] = 0xffffffffffffffffULL;
+    P521_Key.c_.p_->value_[6] = 0xffffffffffffffffULL;
+    P521_Key.c_.p_->value_[5] = 0xffffffffffffffffULL;
+    P521_Key.c_.p_->value_[4] = 0xffffffffffffffffULL;
+    P521_Key.c_.p_->value_[3] = 0xffffffffffffffffULL;
+    P521_Key.c_.p_->value_[2] = 0xffffffffffffffffULL;
+    P521_Key.c_.p_->value_[1] = 0xffffffffffffffffULL;
+    P521_Key.c_.p_->value_[0] = 0xffffffffffffffffULL;
+    P521_Key.c_.p_->Normalize();
 
-  P521_Key.g_.x_ = new BigNum(9);
-  P521_Key.g_.x_->value_[8] = 0xc6ULL;
-  P521_Key.g_.x_->value_[7] = 0x858e06b70404e9cdULL;
-  P521_Key.g_.x_->value_[6] = 0x9e3ecb662395b442ULL;
-  P521_Key.g_.x_->value_[5] = 0x9c648139053fb521ULL;
-  P521_Key.g_.x_->value_[4] = 0xf828af606b4d3dbaULL;
-  P521_Key.g_.x_->value_[3] = 0xa14b5e77efe75928ULL;
-  P521_Key.g_.x_->value_[2] = 0xfe1dc127a2ffa8deULL;
-  P521_Key.g_.x_->value_[1] = 0x3348b3c1856a429bULL;
-  P521_Key.g_.x_->value_[0] = 0xf97e7e31c2e5bd66ULL;
-  P521_Key.g_.x_->Normalize();
-  P521_Key.g_.y_ = new BigNum(9);
+    P521_Key.c_.a_ = new BigNum(9);
+    P521_Key.c_.a_->value_[8] = 0x0b4ULL;
+    P521_Key.c_.a_->value_[7] = 0x8bfa5f420a349495ULL;
+    P521_Key.c_.a_->value_[6] = 0x39d2bdfc264eeeebULL;
+    P521_Key.c_.a_->value_[5] = 0x077688e44fbf0ad8ULL;
+    P521_Key.c_.a_->value_[4] = 0xf6d0edb37bd6b533ULL;
+    P521_Key.c_.a_->value_[3] = 0x281000518e19f1b9ULL;
+    P521_Key.c_.a_->value_[2] = 0xffbe0fe9ed8a3c22ULL;
+    P521_Key.c_.a_->value_[1] = 0x00b8f875e523868cULL;
+    P521_Key.c_.a_->value_[0] = 0x70c1e5bf55bad637ULL;
+    P521_Key.c_.a_->Normalize();
+
+    P521_Key.c_.b_ = new BigNum(9);
+    P521_Key.c_.b_->value_[8] = 0x051ULL;
+    P521_Key.c_.b_->value_[7] = 0x953eb9618e1c9a1fULL;
+    P521_Key.c_.b_->value_[6] = 0x929a21a0b68540eeULL;
+    P521_Key.c_.b_->value_[5] = 0xa2da725b99b315f3ULL;
+    P521_Key.c_.b_->value_[4] = 0xb8b489918ef109e1ULL;
+    P521_Key.c_.b_->value_[3] = 0x56193951ec7e937bULL;
+    P521_Key.c_.b_->value_[2] = 0x1652c0bd3bb1bf07ULL;
+    P521_Key.c_.b_->value_[1] = 0x3573df883d2c34f1ULL;
+    P521_Key.c_.b_->value_[0] = 0xef451fd46b503f00ULL;
+    P521_Key.c_.b_->Normalize();
+
+    P521_Key.bit_size_modulus_ = 521;
+    P521_Key.order_of_g_ = new BigNum(9);
+    P521_Key.order_of_g_->value_[8] = 0x01ffULL;
+    P521_Key.order_of_g_->value_[7] = 0xffffffffffffffffULL;
+    P521_Key.order_of_g_->value_[6] = 0xffffffffffffffffULL;
+    P521_Key.order_of_g_->value_[5] = 0xffffffffffffffffULL;
+    P521_Key.order_of_g_->value_[4] = 0xfffffffffffffffaULL;
+    P521_Key.order_of_g_->value_[3] = 0x51868783bf2f966bULL;
+    P521_Key.order_of_g_->value_[2] = 0x7fcc0148f709a5d0ULL;
+    P521_Key.order_of_g_->value_[1] = 0x3bb5c9b8899c47aeULL;
+    P521_Key.order_of_g_->value_[0] = 0xbb6fb71e91386409ULL;
+    P521_Key.order_of_g_->Normalize();
+
+    P521_Key.g_.x_ = new BigNum(9);
+    P521_Key.g_.x_->value_[8] = 0xc6ULL;
+    P521_Key.g_.x_->value_[7] = 0x858e06b70404e9cdULL;
+    P521_Key.g_.x_->value_[6] = 0x9e3ecb662395b442ULL;
+    P521_Key.g_.x_->value_[5] = 0x9c648139053fb521ULL;
+    P521_Key.g_.x_->value_[4] = 0xf828af606b4d3dbaULL;
+    P521_Key.g_.x_->value_[3] = 0xa14b5e77efe75928ULL;
+    P521_Key.g_.x_->value_[2] = 0xfe1dc127a2ffa8deULL;
+    P521_Key.g_.x_->value_[1] = 0x3348b3c1856a429bULL;
+    P521_Key.g_.x_->value_[0] = 0xf97e7e31c2e5bd66ULL;
+    P521_Key.g_.x_->Normalize();
+    P521_Key.g_.y_ = new BigNum(9);
  
-  P521_Key.g_.y_->value_[8] = 0x118ULL;
-  P521_Key.g_.y_->value_[7] = 0x39296a789a3bc004ULL;
-  P521_Key.g_.y_->value_[6] = 0x5c8a5fb42c7d1bd9ULL;
-  P521_Key.g_.y_->value_[5] = 0x98f54449579b4468ULL;
-  P521_Key.g_.y_->value_[4] = 0x17afbd17273e662cULL;
-  P521_Key.g_.y_->value_[3] = 0x97ee72995ef42640ULL;
-  P521_Key.g_.y_->value_[2] = 0xc550b9013fad0761ULL;
-  P521_Key.g_.y_->value_[1] = 0x353c7086a272c240ULL;
-  P521_Key.g_.y_->value_[0] = 0x88be94769fd16650ULL;
-  P521_Key.g_.y_->Normalize();
-  P521_Key.g_.z_ = new BigNum(1, 1ULL);
+    P521_Key.g_.y_->value_[8] = 0x118ULL;
+    P521_Key.g_.y_->value_[7] = 0x39296a789a3bc004ULL;
+    P521_Key.g_.y_->value_[6] = 0x5c8a5fb42c7d1bd9ULL;
+    P521_Key.g_.y_->value_[5] = 0x98f54449579b4468ULL;
+    P521_Key.g_.y_->value_[4] = 0x17afbd17273e662cULL;
+    P521_Key.g_.y_->value_[3] = 0x97ee72995ef42640ULL;
+    P521_Key.g_.y_->value_[2] = 0xc550b9013fad0761ULL;
+    P521_Key.g_.y_->value_[1] = 0x353c7086a272c240ULL;
+    P521_Key.g_.y_->value_[0] = 0x88be94769fd16650ULL;
+    P521_Key.g_.y_->Normalize();
+    P521_Key.g_.z_ = new BigNum(1, 1ULL);
 
-  P521_Key.g_.z_->Normalize();
-  P521_Key.base_.x_ = nullptr;
-  P521_Key.base_.y_ = nullptr;
-  P521_Key.base_.z_ = nullptr;
-  P521_key_valid = true;
-  P521_Key.key_valid_ = true;
+    P521_Key.g_.z_->Normalize();
+    P521_Key.base_.x_ = nullptr;
+    P521_Key.base_.y_ = nullptr;
+    P521_Key.base_.z_ = nullptr;
+    P521_key_valid = true;
+    P521_Key.key_valid_ = true;
+  }
 
   return true;
 }

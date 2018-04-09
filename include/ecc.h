@@ -47,6 +47,7 @@ class CurvePoint {
 
 class EccCurve {
  public:
+  int modulus_bit_size_;
   BigNum* a_;
   BigNum* b_;
   BigNum* p_;

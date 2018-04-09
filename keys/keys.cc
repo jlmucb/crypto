@@ -176,8 +176,9 @@ bool CryptoKey::SerializeKeyToMessage(crypto_key_message& message) {
              strcmp(key_type_->c_str(), "rsa-3072") == 0) {
     crypto_rsa_key_message* rsa_key_message = message.mutable_rsakey();
     ((RsaKey*)this)->SerializeKeyToMessage(*rsa_key_message);
-  } else if (strcmp(key_type_->c_str(), "ecc") == 0 ||
-             strcmp(key_type_->c_str(), "ecc-256") == 0) {
+  } else if (strcmp(key_type_->c_str(), "ecc-256") == 0 ||
+             strcmp(key_type_->c_str(), "ecc-384") == 0 ||
+             strcmp(key_type_->c_str(), "ecc-521") == 0) {
     crypto_ecc_key_message* ecc_key_message = message.mutable_ecckey();
     ((EccKey*)this)->SerializeKeyToMessage(*ecc_key_message);
   } else {
@@ -201,6 +202,7 @@ bool CryptoKey::DeserializeKeyFromMessage(crypto_key_message& message) {
   if (message.has_key_type()) {
     key_type_ = new string(message.key_type().c_str());
   } else {
+    LOG(ERROR) << "CryptoKey::DeserializeKeyFromMessage: no key type\n";
     return false;
   }
   if (message.has_key_owner()) {
@@ -241,6 +243,7 @@ bool CryptoKey::DeserializeKeyFromMessage(crypto_key_message& message) {
   if (message.has_ecckey()) {
     crypto_ecc_key_message* sc = (crypto_ecc_key_message*)&message.ecckey();
     if (!((EccKey*)this)->DeserializeKeyFromMessage(*sc)) {
+      LOG(ERROR) << "CryptoKey::DeserializeKeyFromMessage: can't deserialize ecc key\n";
       return false;
     }
   }
@@ -327,7 +330,9 @@ void CryptoKey::PrintKey() {
              strcmp(key_type_->c_str(), "rsa-256") == 0 ||
              strcmp(key_type_->c_str(), "rsa-128") == 0) {
     ((RsaKey*)this)->PrintKey();
-  } else if (strcmp(key_type_->c_str(), "ecc-256") == 0) {
+  } else if (strcmp(key_type_->c_str(), "ecc-256") == 0 ||
+             strcmp(key_type_->c_str(), "ecc-384") == 0 ||
+             strcmp(key_type_->c_str(), "ecc-521") == 0 ) {
     ((EccKey*)this)->PrintKey();
   } else {
     return;
@@ -660,7 +665,9 @@ bool KeyStore::FindKey(const char* keyname, string** the_key_type,
           *p_key = found_key;
           return true;
         } else if (strcmp(entry.key_type().c_str(), "ecc") == 0 ||
-                   strcmp(entry.key_type().c_str(), "ecc-256") == 0) {
+                   strcmp(entry.key_type().c_str(), "ecc-256") == 0 ||
+                   strcmp(entry.key_type().c_str(), "ecc-384") == 0 ||
+                   strcmp(entry.key_type().c_str(), "ecc-521") == 0) {
           *the_key_type = new string(entry.key_type().c_str());
           found_key = (CryptoKey*)new EccKey();
           if (!found_key->DeserializeKeyFromMessage(

@@ -3021,7 +3021,7 @@ bool ecc_speed_tests(EccKey* key, const char* filename, int size,
     secret.Normalize();
     if (key == nullptr ||
         !key->MakeEccKey((const char*)"test-key", (const char*)"test",
-                         (const char*)"test", 256, COMMON_YEAR_SECONDS,
+                         (const char*)"test", COMMON_YEAR_SECONDS,
                          &P256_Key.c_, &P256_Key.g_, nullptr,
                          P256_Key.order_of_g_, &secret)) {
       printf("Cant generate ecc key\n");
@@ -3591,9 +3591,8 @@ bool key_format_tests() {
   }
   secret.Normalize();
 
-  if (!ecc_key->MakeEccKey("JohnsECCKey1", "channel-encryption",
-                           "John Manferdelli", 256, COMMON_YEAR_SECONDS,
-                           &P256_Key.c_, &P256_Key.g_, nullptr,
+  if (!ecc_key->MakeEccKey("JohnsECCKey1", "channel-encryption", "John Manferdelli",
+                           COMMON_YEAR_SECONDS, &P256_Key.c_, &P256_Key.g_, nullptr,
                            P256_Key.order_of_g_, &secret)) {
     printf("Cant make ecc key\n");
     return false;
@@ -4164,7 +4163,7 @@ bool ecc_tests() {
   extern EccKey P256_Key;
   ext_ecc_key = ecc_key;
 
-  if (!ecc_key->MakeEccKey("JlmEccCode1", "key-exchange", "jlm", 256,
+  if (!ecc_key->MakeEccKey("JlmEccCode1", "key-exchange", "jlm",
                            COMMON_YEAR_SECONDS, &P256_Key.c_, &P256_Key.g_,
                            nullptr, P256_Key.order_of_g_, &secret)) {
     printf("Cant MakeEccKey\n");

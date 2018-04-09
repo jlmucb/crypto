@@ -2375,8 +2375,32 @@ int main(int an, char** av) {
     } else if (FLAGS_algorithm == "ecc-256") {
       int size = 0;
       byte* out = nullptr;
-      string curve_name("P-256");
-      EccKey* new_key = GenEccKey(curve_name, FLAGS_duration.c_str(), FLAGS_key_name.c_str(),
+      string P256_curve_name("P-256");
+      EccKey* new_key = GenEccKey(P256_curve_name, FLAGS_duration.c_str(), FLAGS_key_name.c_str(),
+                    FLAGS_owner.c_str(), FLAGS_purpose.c_str(), &size, &out);
+      if (new_key == nullptr) {
+        printf("Can't generate ecc key\n");
+        return 1;
+      }
+      ((CryptoKey*)new_key)->PrintKey();
+      WriteaFile(FLAGS_output_file.c_str(), size, out);
+    } else if (FLAGS_algorithm == "ecc-384") {
+      int size = 0;
+      byte* out = nullptr;
+      string P384_curve_name("P-384");
+      EccKey* new_key = GenEccKey(P384_curve_name, FLAGS_duration.c_str(), FLAGS_key_name.c_str(),
+                    FLAGS_owner.c_str(), FLAGS_purpose.c_str(), &size, &out);
+      if (new_key == nullptr) {
+        printf("Can't generate ecc key\n");
+        return 1;
+      }
+      ((CryptoKey*)new_key)->PrintKey();
+      WriteaFile(FLAGS_output_file.c_str(), size, out);
+    } else if (FLAGS_algorithm == "ecc-521") {
+      int size = 0;
+      byte* out = nullptr;
+      string P521_curve_name("P-521");
+      EccKey* new_key = GenEccKey(P521_curve_name, FLAGS_duration.c_str(), FLAGS_key_name.c_str(),
                     FLAGS_owner.c_str(), FLAGS_purpose.c_str(), &size, &out);
       if (new_key == nullptr) {
         printf("Can't generate ecc key\n");

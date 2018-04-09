@@ -145,9 +145,8 @@ class EccKey : public CryptoKey {
   ~EccKey();
 
   bool MakeEccKey(const char* name, const char* usage, const char* owner,
-                  int num_bits, double secondstolive, EccCurve* c,
-                  CurvePoint* g, CurvePoint* base, BigNum* order,
-                  BigNum* secret);
+                  double secondstolive, EccCurve* c, CurvePoint* g,
+                  CurvePoint* base, BigNum* order, BigNum* secret);
   bool GenerateEccKey(string& curve_name, const char* name, const char* usage,
                     const char* owner, double seconds_to_live);
   bool ReadKey(string& filename);
