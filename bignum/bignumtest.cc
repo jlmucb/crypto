@@ -2474,8 +2474,8 @@ bool square_root_time_test(const char* filename, int size, BigNum& p,
     return false;
   }
 
-  BigNum b(size + 1);
-  BigNum r(size + 1);
+  BigNum b(2 * size + 1);
+  BigNum r(2 * size + 1);
   int byte_size_copy = size * sizeof(uint64_t);
   byte* pbuf = buf;
   byte* pb = (byte*)b.value_;
@@ -4164,9 +4164,12 @@ bool run_ecc_encrypt_case(EccKey* ecc_key) {
   ksecret.ZeroNum();
   if (ecc_key->bit_size_modulus_ == 256) {
   	size = 32;
+	memset(&plain[30], 0, 34);
   } else if (ecc_key->bit_size_modulus_ == 384) {
+	memset(&plain[46], 0, 18);
   	size = 48;
   } else if (ecc_key->bit_size_modulus_ == 521) {
+	memset(&plain[62], 0, 2);
   	size = 64;
   } else {
     LOG(ERROR) << "GetCryptoRandom error in EccKey::Encrypt\n";
@@ -4177,7 +4180,7 @@ bool run_ecc_encrypt_case(EccKey* ecc_key) {
     return false;
   }
 
-  memset(decrypted, 0, size);
+  memset(decrypted, 0, 64);
   if (FLAGS_printall) {
     printf("Plain bytes: ");
     PrintBytes(size, plain);
@@ -4250,11 +4253,11 @@ bool ecc_tests() {
     printf("ecc-256 sanity check passes\n");
   }
 
-#if 0
   // P-384
   BigNum secret_p384(10);
   secret_p384.ZeroNum();
-  if (!GetCryptoRand(252, (byte*)secret_p384.value_)) {
+  
+  if (!GetCryptoRand(370, (byte*)secret_p384.value_)) {
     printf("Cant get random bits\n");
     return false;
   }
@@ -4280,7 +4283,7 @@ bool ecc_tests() {
   // P-521
   BigNum secret_p521(10);
   secret_p521.ZeroNum();
-  if (!GetCryptoRand(520, (byte*)secret_p521.value_)) {
+  if (!GetCryptoRand(518, (byte*)secret_p521.value_)) {
     printf("Cant get random bits\n");
     return false;
   }
@@ -4302,7 +4305,6 @@ bool ecc_tests() {
   } else {
     printf("ecc-521 sanity check passes\n");
   }
-#endif
 
   printf("END_ECC_TESTS\n");
   return true;
@@ -4375,7 +4377,7 @@ TEST(BigNum, MontTest) {
   EXPECT_TRUE(mont_arith_tests());
 }
 
-TEST(BigNum, SImpleMultTest) {
+TEST(BigNum, SimpleMultTest) {
   EXPECT_TRUE(simple_mult_time_test("test_data", TESTBUFSIZE, 1000000));
 }
 
@@ -4448,25 +4450,24 @@ TEST(BigNum, EccSpeedTest) {
   EXPECT_TRUE(ecc_speed_tests(nullptr, "test_data", 0, 200));
 }
 
+TEST(BigNum, SquareRootTest) {
+  EXPECT_TRUE(square_root_time_test("test_data", 10, *(ext_ecc_key->c_.p_), 200));
+}
+
 TEST(BigNum, RsaTest) {
   EXPECT_TRUE(rsa_tests());
 }
 
+TEST(BigNum, RsaGen1024Test) {
+  EXPECT_TRUE(rsa1024_gen_time_test("test_data", 4));
+}
+
+TEST(BigNum, RsaGen2048Test) {
+  EXPECT_TRUE(rsa2048_gen_time_test("test_data", 2));
+}
+
 TEST(BigNum, RsaSpeedTest) {
   EXPECT_TRUE(rsa_speed_tests(nullptr, nullptr, "test_data", 0, 500));
-}
-
-TEST(BigNum, SquareRootTest) {
-  EXPECT_TRUE(
-      square_root_time_test("test_data", 3, *(ext_ecc_key->c_.p_), 200));
-}
-
-TEST(BigNum, RsaGen1024Test) {
-    // EXPECT_TRUE(rsa1024_gen_time_test("test_data", 20));
-}
-
-TEST(BigNum, RsaGen20148Test) {
-    // EXPECT_TRUE(rsa2048_gen_time_test("test_data", 20));
 }
 
 TEST_F(BigNumTest, RunTestSuite) {
@@ -4480,6 +4481,7 @@ int main(int an, char** av) {
 #else
   google::ParseCommandLineFlags(&an, &av, true);
 #endif
+
   if (!InitUtilities("bignumtest.log")) {
     printf("InitUtilities() failed\n");
     return 1;
@@ -4487,7 +4489,8 @@ int main(int an, char** av) {
   cycles_per_second = CalibrateRdtsc();
   printf("This computer has %llu cycles per second\n", cycles_per_second);
   int result = RUN_ALL_TESTS();
-  printf("\nTESTS ENDED\n");
   CloseUtilities();
+
+  printf("\nTESTS ENDED\n");
   return result;
 }
