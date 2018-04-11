@@ -55,7 +55,7 @@ endif
 
 dobj=	$(O)/polynomial.o $(O)/rational.o $(O)/indeterminatetest.o $(O)/util.o \
 	$(O)/bignum.o $(O)/globals.o $(O)/basic_arith.o $(O)/number_theory.o \
-	$(O)/intel64_arith.o $(O)/smallprimes.o $(O)/conversions.o
+	$(O)/arith64.o $(O)/intel64_arith.o $(O)/smallprimes.o $(O)/conversions.o
 
 all:	indeterminatetest.exe
 clean:
@@ -111,6 +111,10 @@ $(O)/smallprimes.o: $(SRC_DIR)/bignum/smallprimes.cc
 $(O)/number_theory.o: $(SRC_DIR)/bignum/number_theory.cc
 	@echo "compiling number_theory.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/number_theory.o $(SRC_DIR)/bignum/number_theory.cc
+
+$(O)/arith64.o: $(SRC_DIR)/bignum/arith64.cc
+	@echo "compiling arith64.cc"
+	$(CC) $(CFLAGS1) -c -o $(O)/arith64.o $(SRC_DIR)/bignum/arith64.cc
 
 $(O)/intel64_arith.o: $(SRC_DIR)/bignum/intel64_arith.cc
 	@echo "compiling intel64_arith.cc"

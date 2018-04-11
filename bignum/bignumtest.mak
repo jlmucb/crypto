@@ -55,7 +55,7 @@ else
 endif
 
 dobj=	$(O)/bignumtest.o $(O)/bignum.o $(O)/basic_arith.o $(O)/number_theory.o \
-	$(O)/intel64_arith.o $(O)/globals.o $(O)/util.o $(O)/conversions.o \
+	$(O)/arith64.o $(O)/intel64_arith.o $(O)/globals.o $(O)/util.o $(O)/conversions.o \
 	$(O)/smallprimes.o $(O)/ecc.o $(O)/rsa.o $(O)/keys.o $(O)/keys.pb.o 
 
 all:	bignumtest.exe
@@ -93,6 +93,11 @@ $(O)/smallprimes.o: $(S)/smallprimes.cc
 $(O)/number_theory.o: $(S)/number_theory.cc
 	@echo "compiling number_theory.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/number_theory.o $(S)/number_theory.cc
+
+$(O)/arith64.o: $(S)/arith64.cc
+	@echo "compiling arith64.cc"
+	$(CC) $(CFLAGS1) -S -o $(O)/arith64.s $(S)/arith64.cc
+	$(CC) $(CFLAGS1) -c -o $(O)/arith64.o $(S)/arith64.cc
 
 $(O)/intel64_arith.o: $(S)/intel64_arith.cc
 	@echo "compiling intel64_arith.cc"

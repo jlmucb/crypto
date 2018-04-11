@@ -51,7 +51,7 @@ else
 	LDFLAGS= # -lprotobuf -lgtest -lgflags -lpthread
 endif
 
-dobj=	$(O)/bignum.o $(O)/basic_arith.o $(O)/number_theory.o \
+dobj=	$(O)/bignum.o $(O)/basic_arith.o $(O)/number_theory.o $(O)/arith64.o \
 	$(O)/intel64_arith.o $(O)/globals.o $(O)/util.o $(O)/conversions.o \
 	$(O)/smallprimes.o $(O)/ecc.o $(O)/rsa.o $(O)/keys.o $(O)/keys.pb.o \
 	$(O)/symmetric_cipher.o $(O)/aes.o $(O)/sha1.o $(O)/sha256.o \
@@ -96,6 +96,11 @@ $(O)/smallprimes.o: $(SRC_DIR)/bignum/smallprimes.cc
 $(O)/number_theory.o: $(SRC_DIR)/bignum/number_theory.cc
 	@echo "compiling number_theory.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/number_theory.o $(SRC_DIR)/bignum/number_theory.cc
+
+$(O)/arith64.o: $(SRC_DIR)/bignum/arith64.cc
+	@echo "compiling arith64.cc"
+	$(CC) $(CFLAGS1) -S -o $(O)/arith64.s $(SRC_DIR)/bignum/arith64.cc
+	$(CC) $(CFLAGS1) -c -o $(O)/arith64.o $(SRC_DIR)/bignum/arith64.cc
 
 $(O)/intel64_arith.o: $(SRC_DIR)/bignum/intel64_arith.cc
 	@echo "compiling intel64_arith.cc"

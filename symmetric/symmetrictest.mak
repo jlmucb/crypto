@@ -58,7 +58,7 @@ endif
 dobj=	$(O)/symmetrictest.o $(O)/symmetric_cipher.o $(O)/aes.o $(O)/util.o \
 	$(O)/conversions.o $(O)/aesni.o $(O)/hash.o $(O)/hmac_sha256.o \
 	$(O)/encryption_algorithm.o $(O)/sha256.o $(O)/aescbchmac256sympad.o \
-	$(O)/keys.o $(O)/keys.pb.o $(O)/rsa.o $(O)/ecc.o $(O)/intel64_arith.o \
+	$(O)/keys.o $(O)/keys.pb.o $(O)/rsa.o $(O)/ecc.o $(O)/arith64.o $(O)/intel64_arith.o \
 	$(O)/bignum.o $(O)/number_theory.o $(O)/smallprimes.o $(O)/globals.o \
 	$(O)/basic_arith.o $(O)/twofish.o $(O)/aesctrhmac256sympad.o $(O)/rc4.o \
 	$(O)/tea.o $(O)/simonspeck.o $(O)/ghash.o $(O)/cmac.o $(O)/aesgcm.o $(O)/aessiv.o
@@ -189,6 +189,10 @@ $(O)/smallprimes.o: $(SRC_DIR)/bignum/smallprimes.cc
 $(O)/number_theory.o: $(SRC_DIR)/bignum/number_theory.cc
 	@echo "compiling number_theory.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/number_theory.o $(SRC_DIR)/bignum/number_theory.cc
+
+$(O)/arith64.o: $(SRC_DIR)/bignum/arith64.cc
+	@echo "compiling arith64.cc"
+	$(CC) $(CFLAGS1) -c -o $(O)/arith64.o $(SRC_DIR)/bignum/arith64.cc
 
 $(O)/intel64_arith.o: $(SRC_DIR)/bignum/intel64_arith.cc
 	@echo "compiling intel64_arith.cc"
