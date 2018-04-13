@@ -38,6 +38,12 @@
 // DigitArrayShortDivisionAlgorithm
 // DigitArrayMult
 // AddTo
+// Subtraction (num1>=num2)
+// Multiplication (size2 >= size1)
+// Division (size2 >= size1)
+// Square
+// Estimate quotient
+
 // Addition (draft)
 //  size2 >= size1
 asm volatile (
@@ -66,89 +72,8 @@ asm volatile (
     : [num1] "=m" (num1), [num2] "=m" (num2), [num3] "=m" (num3), [size1] "=m" (size1), [size2] "=m" (size2),
     :"cc", "memory", "x9", "x10", "x11", "x12", "x13", "x14", "x15");
 
-// Subtraction (num1>=num2)
-// Multiplication (size2 >= size1)
-// Division (size2 >= size1)
-// Square
-// Estimate quotient
-
 /*
     [U|S]MULL r4, r5, r2, r3 ; r5 : r4 = r2 * r3
-
-unsigned_longdiv:
-    // r0 contains N
-    // r1 contains D
-    // r2 contains Q
-    // r3 contains R
-    push {r4, lr}
-    mov r2, #0                 // r2 ← 0
-    mov r3, #0                 // r3 ← 0
- 
-    mov r4, #32                // r4 ← 32
-    b .Lloop_check1
-    .Lloop1:
-        movs r0, r0, LSL #1    // r0 ← r0 << 1 updating cpsr (sets C if 31st bit of r0 was 1)
-        adc r3, r3, r3         // r3 ← r3 + r3 + C. This is equivalent to r3 ← (r3 << 1) + C
- 
-        cmp r3, r1             // compute r3 - r1 and update cpsr
-        subhs r3, r3, r1       // if r3 >= r1 (C=1) then r3 ← r3 - r1
-        adc r2, r2, r2         // r2 ← r2 + r2 + C. This is equivalent to r2 ← (r2 << 1) + C
-    .Lloop_check1:
-        subs r4, r4, #1        // r4 ← r4 - 1
-        bpl .Lloop1            // if r4 >= 0 (N=0) then branch to .Lloop1
- 
-    pop {r4, lr}
-    bx lr
-
-better_unsigned_division :
-    // r0 contains N and Ni
-    // r1 contains D
-    // r2 contains Q
-    // r3 will contain Di
-
-    mov r3, r1                   // r3 ← r1
-    cmp r3, r0, LSR #1           // update cpsr with r3 - r0/2
-    .Lloop2:
-      movls r3, r3, LSL #1       // if r3 <= 2*r0 (C=0 or Z=1) then r3 ← r3*2
-      cmp r3, r0, LSR #1         // update cpsr with r3 - (r0/2)
-      bls .Lloop2                // branch to .Lloop2 if r3 <= 2*r0 (C=0 or Z=1)
- 
-    mov r2, #0                   // r2 ← 0
- 
-    .Lloop3:
-      cmp r0, r3                 // update cpsr with r0 - r3
-      subhs r0, r0, r3           // if r0 >= r3 (C=1) then r0 ← r0 - r3
-      adc r2, r2, r2             // r2 ← r2 + r2 + C.
-                                    Note that if r0 >= r3 then C=1, C=0 otherwise
- 
-      mov r3, r3, LSR #1         // r3 ← r3/2
-      cmp r3, r1                 // update cpsr with r3 - r1
-      bhs .Lloop3                // if r3 >= r1 branch to .Lloop3
- 
-    bx lr
-
-clz_unsigned_division:
-    clz  r3, r0                // r3 ← CLZ(r0) Count leading zeroes of N
-    clz  r2, r1                // r2 ← CLZ(r1) Count leading zeroes of D
-    sub  r3, r2, r3            // r3 ← r2 - r3. 
-                               // This is the difference of zeroes
-                               // between D and N. 
-                               // Note that N >= D implies CLZ(N) <= CLZ(D)
-    add r3, r3, #1             // Loop below needs an extra iteration count
- 
-    mov r2, #0                 // r2 ← 0
-    b .Lloop_check4
-    .Lloop4:
-      cmp r0, r1, lsl r3       // Compute r0 - (r1 << r3) and update cpsr
-      adc r2, r2, r2           // r2 ← r2 + r2 + C.
-                               // Note that if r0 >= (r1 << r3) then C=1, C=0 otherwise
-      subcs r0, r0, r1, lsl r3 // r0 ← r0 - (r1 << r3) if C = 1 (this is, only if r0 >= (r1 << r3) )
-    .Lloop_check4:
-      subs r3, r3, #1          // r3 ← r3 - 1
-      bpl .Lloop4              // if r3 >= 0 (N=0) then branch to .Lloop1
- 
-    mov r0, r2
-    bx lr
 
     UDIV Wd, Wn, Wm
     Unsigned Divide: Wd = Wn ÷ Wm, treating source operands as unsigned. 
