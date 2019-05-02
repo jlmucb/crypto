@@ -1,4 +1,5 @@
 // To compile: protoc -I=. --cpp_out=. keys.proto
+syntax="proto2";
 
 message crypto_symmetric_key_message {
     required string key_type                    = 1;

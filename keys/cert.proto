@@ -1,10 +1,12 @@
+syntax="proto2";
+
 message cert_name_message {
   optional string name_type                       = 1;
   optional string name_value                      = 2;
 }
 
 message cert_principal_name_message {
-  repeated name_message names                     = 1;
+  repeated cert_name_message names                = 1;
 }
 
 message cert_rsa_parameters_message {
@@ -20,9 +22,9 @@ message cert_ecc_parameters_message {
 }
 
 message cert_algorithm_message {
-  required algorithm_name                         = 1;
-  optional rsa_parameters_message rsa_params      = 2;
-  optional ecc_parameters_message ecc_params      = 3;
+  required string algorithm_name                  = 1;
+  optional cert_rsa_parameters_message rsa_params = 2;
+  optional cert_ecc_parameters_message ecc_params = 3;
 }
 
 message cert_properties_message {

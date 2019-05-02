@@ -14,6 +14,9 @@
 // File: hashtest.cc
 
 #include "cryptotypes.h"
+#include "gtest/gtest.h"
+
+#include <gtest/gtest.h>
 #include <gflags/gflags.h>
 #include <stdio.h>
 #include <string>
@@ -34,6 +37,12 @@ DEFINE_bool(printall, false, "printall flag");
 
 
 uint64_t cycles_per_second = 10;
+
+class HashTest : public ::testing::Test {
+ protected:
+  virtual void SetUp();
+  virtual void TearDown();
+};
 
 // Sha 1 tests
 const byte* sha1_test1_toHash = (const byte*)"abc";
@@ -145,6 +154,10 @@ const byte sha3_output255[128] = {
     0x7B, 0x93, 0x45, 0xD7, 0xD9, 0x3E, 0xE5, 0x88, 0xCB, 0x26, 0x29, 0xC5,
     0x77, 0x08, 0x08, 0x19, 0x52, 0x57, 0xBB, 0xF4, 0x2B, 0x06, 0x95, 0x76,
     0xD9, 0x40, 0x11, 0x98, 0x9D, 0xC6, 0xEB, 0xC4};
+
+void HashTest::SetUp() {}
+
+void HashTest::TearDown() {}
 
 bool SimpleSha1Test1() {
   byte test1_digest[20];
@@ -670,8 +683,199 @@ bool SimpleHmacSha256Test1() {
 
   return fRet;
 }
-bool ghash_test1() {
 
+bool RunTestSuite() { return true; }
+
+TEST(FirstSha1Case, FirstSha1Test) {
+  EXPECT_TRUE(SimpleSha1Test1());
+  EXPECT_TRUE(sha1_benchmark_tests(3000));
+}
+#if 0
+TEST(FirstSha256Case, FirstSha256Test) {
+  EXPECT_TRUE(SimpleSha256Test1());
+  EXPECT_TRUE(sha256_benchmark_tests(3000));
+}
+TEST(FirstSha3Case, FirstSha3Test) {
+  EXPECT_TRUE(SimpleSha3Test());
+  EXPECT_TRUE(sha3_benchmark_tests(3000));
+}
+TEST(FirstHmacSha256Case, FirstHmacSha256Test) {
+  EXPECT_TRUE(SimpleHmacSha256Test1());
+}
+TEST(FirstPkcsCase, FirstPkcsTest) { EXPECT_TRUE(pkcsTest()); }
+TEST(FirstKdfCase, FirstKdfTest) { EXPECT_TRUE(pbkdfTest()); }
+TEST(Shift, ShiftTest) {
+  uint64_t a[2] = {0xffffffULL, 0xffff000000000000ULL};
+  uint64_t c[4];
+
+  for (int i = 0; i < 128; i++) {
+    Shift(2, a, i, 4, c) ;
+    if (FLAGS_printall) {
+      printf("%016llx%016llx << %03d = %016llx%016llx%016llx%016llx\n",
+           a[1], a[0], i, c[3], c[2], c[1], c[0]);
+    }
+  }
+}
+
+TEST(MultPoly, MultPolyTest1) {
+  uint64_t a[2] = {0x1ULL, 0x0ULL};
+  uint64_t b[2] = {7ULL, 3ULL};
+  uint64_t c[4] = {0ULL, 0ULL, 0ULL, 0ULL};
+  uint64_t d[4] = {0ULL, 0ULL, 0ULL, 0ULL};
+  uint64_t d_expected[4] = {0x0eULL, 0x06ULL, 0ULL, 0ULL};
+
+  EXPECT_TRUE(MultPoly(2, a, 2,  b, 4, c));
+  EXPECT_TRUE(memcmp(b, c, 16) == 0);
+  a[0] = 2ULL;
+  EXPECT_TRUE(MultPoly(2, a, 2, b, 4, d));
+  EXPECT_TRUE(memcmp(d_expected, d, 32) == 0);
+}
+
+TEST(MultPoly, MultPolyTest2) {
+  uint64_t c[4] = {0x9999999999999999ULL, 0x9999999999999999ULL};
+  uint64_t d[4];
+  memset(d, 0, 4 * sizeof(uint64_t));
+
+  EXPECT_TRUE(MultPoly(2, c, 2, c, 4, d));
+  if (FLAGS_printall) {
+    printf("%016llx%016llx**2 = %016llx%016llx%016llx%016llx\n",
+         c[1],c[0], d[3],d[2], d[1],d[0]);
+  }
+}
+
+TEST(Reduce, ReduceTest) {
+  uint64_t expected[4] = {0x85, 0x0, 0x0, 0x0};
+  uint64_t a[4] = {0x2ULL, 0x0, 0x1ULL, 0ULL};
+  uint64_t test_min_poly[3] = {0x87ULL, 0x0, 0x1ULL};
+
+  Reduce(4, a, 3, test_min_poly);
+  EXPECT_TRUE(memcmp(expected, a, 16) == 0);
+}
+
+TEST(MultAndReduce, MultAndReduceTest1) {
+  uint64_t A[2] = {0x00ULL, 0x8000000000000000ULL};
+  uint64_t B[2] = {0x02ULL, 0ULL};
+  uint64_t C[4];
+  uint64_t p[3] = {0x87ULL, 0ULL, 1ULL};
+
+  EXPECT_TRUE(MultAndReduce(2, A, 2, B, 3, p, 4, C));
+  if (FLAGS_printall) {
+    printf("%016llx%016llx x %016llx%016llx = \n",
+          A[1], A[0], B[1], B[0]);
+    printf("%016llx%016llx%016llx%016llx\n",
+         C[3], C[2], C[1], C[0]);
+  }
+  EXPECT_TRUE(C[0] == 0x87ULL && C[2] == 0ULL &&
+              C[1] == 0ULL && C[3] == 0ULL);
+}
+
+TEST(MultAndReduce, MultAndReduceTest2) {
+  uint64_t c[4] = {0x9999999999999999ULL, 0x9999999999999999ULL};
+  uint64_t p[3] = {0x3ULL, 0ULL, 0x1ULL};
+  uint64_t d[4];
+  memset(d, 0, 4 * sizeof(uint64_t));
+
+  EXPECT_TRUE(MultAndReduce(2, c, 2, c, 3, p, 4, d));
+  if (FLAGS_printall) {
+    printf("%016llx%016llx**2 (mod %016llx%016llx%016llx) = %016llx%016llx%016llx%016llx\n",
+         c[1],c[0], p[2], p[1],p[0], d[3],d[2], d[1],d[0]);
+  }
+}
+
+
+uint64_t A[8] = {
+  0xD609B1F056637A0DULL,
+  0x46DF998D88E5222AULL,
+  0xB2C2846512153524ULL,
+  0xC0895E8108000F10ULL,
+  0x1112131415161718ULL,
+  0x191A1B1C1D1E1F20ULL,
+  0x2122232425262728ULL,
+  0x292A2B2C2D2E2F30ULL,
+};
+
+uint64_t X[8] = {
+  0xEF7998E399C01CA4ULL,
+  0x6B0BE68D67C6EE03ULL,
+  0xCCCB028441197B22ULL,
+  0x5AABADF6D7806EC0ULL,
+  0xD7FDB0687192D293ULL,
+  0xFE072BFE2811A68AULL,
+  0xFB356E435DBB4CD0ULL,
+  0xA47252D1A7E09B49ULL,
+};
+
+TEST(Ghash, GhashTest0) {
+  byte HH[16] = {0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  byte      AA[16] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                      0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2};
+
+  Ghash hash;
+  hash.Init(HH);
+  hash.AddCHash(16, AA);
+}
+
+TEST(Ghash, GhashTest1) {
+  byte HH[16] = {0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  byte      AA[16] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                      0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4};
+
+  Ghash hash;
+  hash.Init(HH);
+  hash.AddCHash(16, AA);
+}
+
+TEST(Ghash, GhashTest2) {
+  byte HH[16] = {0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  byte      AA[16] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                      0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x6};
+
+  Ghash hash;
+  hash.Init(HH);
+  hash.AddCHash(16, AA);
+}
+
+TEST(Ghash, GhashTest3) {
+  byte HH[16] = {0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  byte      AA[16] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4,
+                      0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+
+  Ghash hash;
+  hash.Init(HH);
+  hash.AddCHash(16, AA);
+}
+
+TEST(Ghash, GhashTest4) {
+  byte HH[16] = {0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  byte      AA[16] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4,
+                      0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x6};
+
+  Ghash hash;
+  hash.Init(HH);
+  hash.AddCHash(16, AA);
+}
+
+TEST(Ghash, GhashTest5) {
+  byte HH[16] = {0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  byte AA[16] = {0x8, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                      0x0, 0x0, 0x0, 0x0, 0x0, 0x4, 0x4, 0x4};
+
+  Ghash hash;
+  hash.Init(HH);
+  hash.AddCHash(16, AA);
+}
+
+TEST(Ghash, GhashTest6) {
+  byte HH[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+  byte AA[16] = {0x11, 0x00, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+                 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x00, 0x00};
+
+  Ghash hash;
+  hash.Init(HH);
+  hash.AddCHash(16, AA);
+}
+
+TEST(Ghash, GhashTest7) {
   byte HH[16] = {
     0x66, 0xe9, 0x4b, 0xd4, 0xef, 0x8a, 0x2c, 0x3b, 
     0x88, 0x4c, 0xfa, 0x59, 0xca, 0x34, 0x2b, 0x2e
@@ -691,12 +895,14 @@ bool ghash_test1() {
   uint64_t out[2];
   hash.get_last_x(out);
   
-  printf("X1        : "); PrintBytes(16, (byte*)out); printf("\n");
-  printf("Correct X1: "); PrintBytes(16, X1); printf("\n");
-  return memcmp(X1, (byte*) out, 16) == 0;
+  if (FLAGS_printall) {
+    printf("X1        : "); PrintBytes(16, (byte*)out); printf("\n");
+    printf("Correct X1: "); PrintBytes(16, X1); printf("\n");
+  }
+  EXPECT_TRUE(memcmp(X1, (byte*) out, 16) == 0);
 }
 
-bool cmac_test1() {
+TEST(Cmac, CmacTest1) {
   byte K[16] = {
     0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
   };
@@ -730,38 +936,45 @@ bool cmac_test1() {
   Cmac cmac1(128);
 
   printf("\n");
-  if(!cmac1.Init(K))
-    return false;
+  EXPECT_TRUE(cmac1.Init(K));
   printf("init done\n");
   cmac1.AddToHash(sizeof(M1) - 16, M1);
   printf("AddToHash done\n");
   cmac1.Final(16, (byte*)&M1[sizeof(M1) - 16]);
   printf("Final\n");
-  if(!cmac1.GetDigest(16, out1))
-    return false;
+  EXPECT_TRUE(cmac1.GetDigest(16, out1));
   printf("M1        : "); PrintBytes(16, M1); printf("\n");
   printf("T1        : "); PrintBytes(16, T1); printf("\n");
   printf("Hash out  : "); PrintBytes(16, out1); printf("\n");
+  EXPECT_TRUE(memcmp(out1, T1, 16) == 0);
+  EXPECT_TRUE(memcmp(K1, cmac1.getK1(), 16) == 0);
+  EXPECT_TRUE(memcmp(K2, cmac1.getK2(), 16) == 0);
+  printf("\n");
 
   byte out2[16];
   Cmac cmac2(128);
 
-  if(!cmac2.Init(K))
-    return false;;
+  EXPECT_TRUE(cmac2.Init(K));
   cmac2.AddToHash(sizeof(M2) - 8, M2);
   cmac2.Final(8, (byte*)&M2[sizeof(M2) - 8]);
-  if(!cmac2.GetDigest(16, out2))
-    return false;
+  EXPECT_TRUE(cmac2.GetDigest(16, out2));
   printf("M2        : "); PrintBytes(40, M2); printf("\n");
   printf("T2        : "); PrintBytes(16, T2); printf("\n");
   printf("Hash out  : "); PrintBytes(16, out2); printf("\n");
-  return memcmp(out2, T2, 16) == 0;
+  EXPECT_TRUE(memcmp(out2, T2, 16) == 0);
 }
-
+#endif
 
 DEFINE_string(log_file, "hashtest.log", "hashtest log file name");
 
 int main(int an, char** av) {
+#ifdef __linux__
+  gflags::ParseCommandLineFlags(&an, &av, true);
+#else
+  google::ParseCommandLineFlags(&an, &av, true);
+#endif
+  an = 1;
+  ::testing::InitGoogleTest(&an, av);
   if (!InitUtilities(FLAGS_log_file.c_str())) {
     printf("InitUtilities() failed\n");
     return 1;
@@ -769,57 +982,7 @@ int main(int an, char** av) {
   cycles_per_second = CalibrateRdtsc();
   printf("Cycles per second on this machine: %lld\n\n", cycles_per_second);
   InitHashData();
-
-  int num_tests = 0;
-  int num_failed = 0;
-
-  num_tests++;
-  if(!SimpleSha256Test1()) {
-    printf("SimpleSha256Test1 failed\n");
-    num_failed++;
-  }
-  num_tests++;
-  if(!sha256_benchmark_tests(3000)) {
-    printf("sha256_benchmark_tests failed\n");
-    num_failed++;
-  }
-  num_tests++;
-  if(!SimpleSha3Test()) {
-    printf("SimpleSha3Test failed\n");
-    num_failed++;
-  }
-  num_tests++;
-  if(!sha3_benchmark_tests(3000)) {
-    printf("sha3_benchmark_tests failed\n");
-    num_failed++;
-  }
-  num_tests++;
-  if(!SimpleHmacSha256Test1()) {
-    printf("SimpleHmacSha256Test1 failed\n");
-    num_failed++;
-  }
-  num_tests++;
-  if(!pkcsTest()) {
-    printf("pkcsTest failed\n");
-    num_failed++;
-  }
-  num_tests++;
-  if(!pbkdfTest()) {
-    printf("pbkdfTest failed\n");
-    num_failed++;
-  }
-  num_tests++;
-  if(!ghash_test1()) {
-    printf("ghash_test1 failed\n");
-    num_failed++;
-  }
-  num_tests++;
-  if(!cmac_test1()) {
-    printf("cmac_test1 failed\n");
-    num_failed++;
-  }
-
-  printf("%d tests %d failed\n", num_tests, num_failed);
+  int result = RUN_ALL_TESTS();
   CloseUtilities();
-  return num_failed;
+  return result;
 }

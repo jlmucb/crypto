@@ -30,6 +30,17 @@
 
 DEFINE_bool(printall, false, "printall flag");
 
+
+class KeyTest : public ::testing::Test {
+ protected:
+  virtual void SetUp();
+  virtual void TearDown();
+};
+
+void KeyTest::SetUp() {}
+
+void KeyTest::TearDown() {}
+
 bool simpletest1() {
   SymmetricKey the_key;
   SymmetricKey new_key;
@@ -40,9 +51,11 @@ bool simpletest1() {
     return false;
   }
 
+  if (FLAGS_printall) {
     printf("Original key:\n");
     the_key.PrintKey();
     printf("\n");
+  }
 
   string filename("jlmTestSave1");
   if (!((CryptoKey*)&the_key)->SaveKey(filename)) {
@@ -54,9 +67,11 @@ bool simpletest1() {
     printf("ReadKey failed\n");
     return false;
   }
+  if (FLAGS_printall) {
     printf("Recovered key:\n");
     new_key.PrintKey();
     printf("\n");
+  }
   if (the_key.key_name_ != nullptr && *the_key.key_name_ != *new_key.key_name_) {
     printf("key names disagree\n");
     return false;
@@ -115,28 +130,23 @@ bool RunTestSuite() {
   return true;
 }
 
+TEST(FirstKeyCase, FirstKeyTest) { EXPECT_TRUE(simpletest1()); }
+TEST_F(KeyTest, RunTestSuite) { EXPECT_TRUE(RunTestSuite()); }
+
 DEFINE_string(log_file, "keytest.log", "keytest logging file name");
 
 int main(int an, char** av) {
-
+  ::testing::InitGoogleTest(&an, av);
+#ifdef __linux__
+  gflags::ParseCommandLineFlags(&an, &av, true);
+#else
+  google::ParseCommandLineFlags(&an, &av, true);
+#endif
   if (!InitUtilities(FLAGS_log_file.c_str())) {
     printf("InitUtilities() failed\n");
     return 1;
   }
-  int num_tests = 0;
-  int num_failed = 0;
-
-  num_tests++;
-  if(!simpletest1()) {
-    printf("simpletest1() failed\n");
-    num_failed++;
-  }
-  num_tests++;
-  if(!RunTestSuite()) {
-    printf("RunTestSuite() failed\n");
-    num_failed++;
-  }
+  int result = RUN_ALL_TESTS();
   CloseUtilities();
-  printf("%d tests, %d failed\n", num_tests, num_failed);
-  return num_failed;
+  return result;
 }

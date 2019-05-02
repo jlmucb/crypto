@@ -40,7 +40,19 @@
 #include <cmath>
 
 
+DEFINE_bool(printall, false, "printall flag");
+
 uint64_t cycles_per_second = 10;
+
+class SymmetricTest : public ::testing::Test {
+ protected:
+  virtual void SetUp();
+  virtual void TearDown();
+};
+
+void SymmetricTest::SetUp() {}
+
+void SymmetricTest::TearDown() {}
 
 byte aes128_test1_plain[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
                              0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
@@ -54,8 +66,10 @@ bool SimpleAes128Test() {
   byte test_cipher_out[16];
   byte test_plain_out[16];
 
+  if (FLAGS_printall) {
     printf("Aes-128 test\n");
     printf("\n");
+  }
 
   if (!aes128_object.Init(128, aes128_test1_key, Aes::BOTH)) {
     printf("Can't init aes object\n");
@@ -63,6 +77,7 @@ bool SimpleAes128Test() {
   }
   aes128_object.EncryptBlock(aes128_test1_plain, test_cipher_out);
   aes128_object.DecryptBlock(test_cipher_out, test_plain_out);
+  if (FLAGS_printall) {
     printf("\tKey            : ");
     PrintBytes(16, aes128_test1_key);
     printf("\n");
@@ -79,6 +94,7 @@ bool SimpleAes128Test() {
     PrintBytes(16, test_plain_out);
     printf("\n");
     printf("\n");
+  }
   if (memcmp(aes128_test1_cipher, test_cipher_out, 16) != 0) return false;
   if (memcmp(aes128_test1_plain, test_plain_out, 16) != 0) return false;
   return true;
@@ -90,7 +106,9 @@ bool SimpleAes128NiTest() {
   byte test_plain_out[16];
 
   if (!HaveAesNi()) return true;
+  if (FLAGS_printall) {
     printf("AesNi-128 test\n");
+  }
 
   if (!aes128_object.Init(128, aes128_test1_key, AesNi::BOTH)) {
     printf("Can't init aes object\n");
@@ -98,6 +116,7 @@ bool SimpleAes128NiTest() {
   }
   aes128_object.EncryptBlock(aes128_test1_plain, test_cipher_out);
   aes128_object.DecryptBlock(test_cipher_out, test_plain_out);
+  if (FLAGS_printall) {
     printf("\tKey            : ");
     PrintBytes(16, aes128_test1_key);
     printf("\n");
@@ -114,6 +133,7 @@ bool SimpleAes128NiTest() {
     PrintBytes(16, test_plain_out);
     printf("\n");
     printf("\n");
+  }
   if (memcmp(aes128_test1_cipher, test_cipher_out, 16) != 0) return false;
   if (memcmp(aes128_test1_plain, test_plain_out, 16) != 0) return false;
   return true;
@@ -134,8 +154,10 @@ bool SimpleAes256Test() {
   byte test_cipher_out[16];
   byte test_plain_out[16];
 
+  if (FLAGS_printall) {
     printf("Aes-256 test\n");
     printf("\n");
+  }
 
   if (!aes256_object.Init(256, aes256_test1_key, Aes::BOTH)) {
     printf("Can't init aes object\n");
@@ -143,6 +165,7 @@ bool SimpleAes256Test() {
   }
   aes256_object.EncryptBlock(aes256_test1_plain, test_cipher_out);
   aes256_object.DecryptBlock(test_cipher_out, test_plain_out);
+  if (FLAGS_printall) {
     printf("\tKey            : ");
     PrintBytes(32, aes256_test1_key);
     printf("\n");
@@ -159,6 +182,7 @@ bool SimpleAes256Test() {
     PrintBytes(16, test_plain_out);
     printf("\n");
     printf("\n");
+  }
   if (memcmp(aes256_test1_cipher, test_cipher_out, 16) != 0) return false;
   if (memcmp(aes256_test1_plain, test_plain_out, 16) != 0) return false;
   return true;
@@ -170,7 +194,9 @@ bool SimpleAes256NiTest() {
   byte test_plain_out[16];
 
   if (!HaveAesNi()) return true;
-  printf("AesNi-256 test\n");
+  if (FLAGS_printall) {
+    printf("AesNi-256 test\n");
+  }
 
   if (!aes256_object.Init(256, aes256_test1_key, AesNi::BOTH)) {
     printf("Can't init aes object\n");
@@ -178,6 +204,7 @@ bool SimpleAes256NiTest() {
   }
   aes256_object.EncryptBlock(aes256_test1_plain, test_cipher_out);
   aes256_object.DecryptBlock(test_cipher_out, test_plain_out);
+  if (FLAGS_printall) {
     printf("\tKey            : ");
     PrintBytes(32, aes256_test1_key);
     printf("\n");
@@ -194,6 +221,7 @@ bool SimpleAes256NiTest() {
     PrintBytes(16, test_plain_out);
     printf("\n");
     printf("\n");
+  }
   if (memcmp(aes256_test1_cipher, test_cipher_out, 16) != 0) return false;
   if (memcmp(aes256_test1_plain, test_plain_out, 16) != 0) return false;
   return true;
@@ -211,10 +239,12 @@ static byte twofish_c128[] = {0x01, 0x9F, 0x98, 0x09, 0xDE, 0x17, 0x11, 0x85,
 bool SimpleTwofishTest() {
   Twofish enc_obj;
 
+  if (FLAGS_printall) {
     printf("Twofish test\n");
     printf("\tKey: ");
     PrintBytes(16, twofish_k128);
     printf("\n");
+  }
   if (!enc_obj.Init(128, twofish_k128, 0)) {
     printf("failed initialization\n");
     return false;
@@ -225,6 +255,7 @@ bool SimpleTwofishTest() {
 
   memset(encrypted, 0, 16);
   enc_obj.Encrypt(16, twofish_p128, encrypted);
+  if (FLAGS_printall) {
     printf("\tplaintext: ");
     PrintBytes(16, twofish_p128);
     printf("\n");
@@ -235,13 +266,16 @@ bool SimpleTwofishTest() {
     PrintBytes(16, twofish_c128);
     printf("\n");
     printf("\n");
+  }
 
   memset(decrypted, 0, 16);
   enc_obj.Decrypt(16, encrypted, decrypted);
+  if (FLAGS_printall) {
     printf("\tdecrypted: ");
     PrintBytes(16, decrypted);
     printf("\n");
     printf("\n");
+  }
   if (memcmp(twofish_p128, decrypted, 16) != 0 ||
       memcmp(twofish_c128, encrypted, 16) != 0) {
     printf("Twofish: decrypted in and encrypted/decrypted text dont match\n");
@@ -303,6 +337,7 @@ bool CbcEncryptTest(int size_enc_key, byte* enc_key, int size_int_key,
   int decrypt_max_additional_final_output =
       decrypt_obj.MaxAdditionalFinalOutput();
 
+  if (FLAGS_printall) {
     printf("encrypt_quantum: %d, decrypt_quantum: %d\n", encrypt_quantum,
          decrypt_quantum);
     printf(
@@ -311,6 +346,7 @@ bool CbcEncryptTest(int size_enc_key, byte* enc_key, int size_int_key,
       encrypt_max_additional_output, decrypt_max_additional_final_output);
     printf("encrypt_max_final: %d, decrypt_max_final: %d\n", encrypt_max_final,
          decrypt_max_final);
+  }
 
   // bool ProcessInput(int size_in, byte* in, int* size_out, byte* out);
   int new_size_out = size_out2;
@@ -318,8 +354,10 @@ bool CbcEncryptTest(int size_enc_key, byte* enc_key, int size_int_key,
     printf("encrypt_obj.FinalPlainIn failed\n");
     return false;
   }
+  if (FLAGS_printall) {
     printf("Plain bytes in: %d, Cipher bytes out: %d\n",
          encrypt_obj.InputBytesProcessed(), encrypt_obj.OutputBytesProduced());
+  }
   if (!decrypt_obj.FinalCipherIn(new_size_out, out, &new_size_out, out2)) {
     printf("FinalCipherIn failed\n");
     return false;
@@ -329,12 +367,16 @@ bool CbcEncryptTest(int size_enc_key, byte* enc_key, int size_int_key,
 
   int encrypt_input_bytes_processed = encrypt_obj.InputBytesProcessed();
   int encrypt_output_bytes_produced = encrypt_obj.OutputBytesProduced();
+  if (FLAGS_printall) {
     printf( "encrypt_input_bytes_processed: %d, encrypt_input_bytes_produced: %d\n",
       encrypt_input_bytes_processed, encrypt_output_bytes_produced);
+  }
   int decrypt_input_bytes_processed = decrypt_obj.InputBytesProcessed();
   int decrypt_output_bytes_produced = decrypt_obj.OutputBytesProduced();
+  if (FLAGS_printall) {
     printf( "decrypt_input_bytes_processed: %d, decrypt_output_bytes_produced: %d\n",
       decrypt_input_bytes_processed, decrypt_output_bytes_produced);
+  }
   if (decrypt_obj.MessageValid()) {
     printf("decrypt object valid\n");
   } else {
@@ -346,6 +388,7 @@ bool CbcEncryptTest(int size_enc_key, byte* enc_key, int size_int_key,
            new_size_out);
     return false;
   }
+  if (FLAGS_printall) {
     printf("in              : ");
     PrintBytes(size_in, in);
     printf("\n");
@@ -359,6 +402,7 @@ bool CbcEncryptTest(int size_enc_key, byte* enc_key, int size_int_key,
     PrintBytes(decrypt_obj.output_bytes_produced_, out2);
     printf("\n");
     printf("\n");
+  }
   if (memcmp(out + 16, correct_cipher, size_correct) == 0)
     printf("cipher matches\n");
   else
@@ -385,6 +429,7 @@ bool CtrEncryptTest(int size_enc_key, byte* enc_key, int size_int_key,
     return false;
   }
 
+  if (FLAGS_printall) {
     printf("\n");
     printf("name: %s\n", encrypt_obj.alg_name_->c_str());
     if (aes_ni) {
@@ -402,6 +447,7 @@ bool CtrEncryptTest(int size_enc_key, byte* enc_key, int size_int_key,
     printf("input_bytes_processed_: %d, output_bytes_produced_: %d\n",
          encrypt_obj.input_bytes_processed_, encrypt_obj.output_bytes_produced_);
     printf("\n");
+  }
 
   int encrypt_quantum = encrypt_obj.EncryptInputQuantum();
   int decrypt_quantum = decrypt_obj.DecryptInputQuantum();
@@ -411,6 +457,7 @@ bool CtrEncryptTest(int size_enc_key, byte* enc_key, int size_int_key,
   int decrypt_max_additional_final_output =
       decrypt_obj.MaxAdditionalFinalOutput();
 
+  if (FLAGS_printall) {
     printf("encrypt_quantum: %d, decrypt_quantum: %d\n", encrypt_quantum,
          decrypt_quantum);
     printf("encrypt_max_additional_output: %d, decrypt_max_additional_final_output: "
@@ -418,6 +465,7 @@ bool CtrEncryptTest(int size_enc_key, byte* enc_key, int size_int_key,
       encrypt_max_additional_output, decrypt_max_additional_final_output);
     printf("encrypt_max_final: %d, decrypt_max_final: %d\n", encrypt_max_final,
          decrypt_max_final);
+  }
 
   // bool ProcessInput(int size_in, byte* in, int* size_out, byte* out);
   int new_size_out = size_out2;
@@ -432,12 +480,16 @@ bool CtrEncryptTest(int size_enc_key, byte* enc_key, int size_int_key,
 
   int encrypt_input_bytes_processed = encrypt_obj.InputBytesProcessed();
   int encrypt_output_bytes_produced = encrypt_obj.OutputBytesProduced();
+  if (FLAGS_printall) {
     printf( "encrypt_input_bytes_processed: %d, encrypt_output_bytes_produced: %d\n",
       encrypt_input_bytes_processed, encrypt_output_bytes_produced);
+  }
   int decrypt_input_bytes_processed = decrypt_obj.InputBytesProcessed();
   int decrypt_output_bytes_produced = decrypt_obj.OutputBytesProduced();
+  if (FLAGS_printall) {
     printf("decrypt_input_bytes_processed: %d, decrypt_output_bytes_produced: %d\n",
       decrypt_input_bytes_processed, decrypt_output_bytes_produced);
+  }
   if (decrypt_obj.MessageValid()) {
     printf("decrypt object valid\n");
   } else {
@@ -449,6 +501,7 @@ bool CtrEncryptTest(int size_enc_key, byte* enc_key, int size_int_key,
            new_size_out);
     return false;
   }
+  if (FLAGS_printall) {
     printf("in              : ");
     PrintBytes(size_in, in);
     printf("\n");
@@ -458,6 +511,7 @@ bool CtrEncryptTest(int size_enc_key, byte* enc_key, int size_int_key,
     printf("out2            : ");
     PrintBytes(decrypt_obj.output_bytes_produced_, out2);
     printf("\n");
+  }
   if (memcmp(in, out2, size_in) == 0)
     printf("cipher matches\n");
   else
@@ -550,13 +604,16 @@ bool AesNi128Compare(int size_key, byte* key, int size_in, byte* in) {
   byte test_cipher_out[16];
   byte test_plain_out[16];
 
+  if (FLAGS_printall) {
     printf("AesCompare: Aes-128 test\n");
+  }
   if (!aes128_object.Init(128, key, Aes::BOTH)) {
     printf("Aes128Compare: Can't init aes object\n");
     return false;
   }
   aes128_object.EncryptBlock(in, test_cipher_out);
   aes128_object.DecryptBlock(test_cipher_out, test_plain_out);
+  if (FLAGS_printall) {
     printf("\tKey            : ");
     PrintBytes(size_key, key);
     printf("\n");
@@ -566,6 +623,7 @@ bool AesNi128Compare(int size_key, byte* key, int size_in, byte* in) {
     printf("\tComputed plain : ");
     PrintBytes(16, test_plain_out);
     printf("\n");
+  }
   if (memcmp(in, test_plain_out, 16) != 0) {
     printf("Aes-128 test failed\n");
     return false;
@@ -584,6 +642,7 @@ bool Aes128Compare(int size_key, byte* key, int size_in, byte* in) {
   }
   aes128_object.EncryptBlock(in, test_cipher_out);
   aes128_object.DecryptBlock(test_cipher_out, test_plain_out);
+  if (FLAGS_printall) {
     printf("\tKey            : ");
     PrintBytes(size_key, key);
     printf("\n");
@@ -593,6 +652,7 @@ bool Aes128Compare(int size_key, byte* key, int size_in, byte* in) {
     printf("\tComputed plain : ");
     PrintBytes(16, test_plain_out);
     printf("\n");
+  }
   if (memcmp(in, test_plain_out, 16) != 0) {
     printf("AesCompare: Aes-128 test failed\n");
     return false;
@@ -662,6 +722,7 @@ bool CbcCompare(int size_enc_key, byte* enc_key, int size_int_key,
 
 done:
   if (!fRet) {
+    if (false) { //FLAGS_printall) {
       printf("Enc key: ");
       PrintBytes(size_enc_key, enc_key);
       printf("\n");
@@ -675,6 +736,7 @@ done:
       PrintBytes(size_in, in);
       printf("\n");
       printf("\n");
+    }
   }
   delete []cipher;
   delete []computeplain;
@@ -722,8 +784,10 @@ bool SimpleCbcEncryptionAlgorithmTest() {
     LOG(ERROR) << "can't deserialize encryption_algorithm from message\n";
     return false;
   }
+  if (FLAGS_printall) {
     printf("\nCbcEncryptTest using desserialized state\n");
     new_encryption_algorithm->PrintEncryptionAlgorithm();
+  }
   memcpy(in, aes128CBCTestPlain1a, AesNi::BLOCKBYTESIZE);
   byte* cbc_aes_key;
   if (use_aesni)
@@ -751,7 +815,9 @@ bool SimpleCtrEncryptionAlgorithmTest() {
   byte out2[512];
   bool use_aesni = HaveAesNi();
 
+  if (FLAGS_printall) {
     printf("SimpleCtrEncryptionAlgorithmTest\n");
+  }
   encryption_algorithm.message_id_ = new string("message-104");
   encryption_algorithm.initialized_ = true;
   encryption_algorithm.use_aesni_ = use_aesni;
@@ -797,6 +863,17 @@ bool SimpleCtrEncryptionAlgorithmTest() {
     printf("CtrEncryptTest succeeded\n");
   }
   return true;
+}
+
+byte my_keys[1024];
+byte my_test[1024];
+
+void init_test() {
+  int j;
+  for (j = 0; j < 1024; j++) {
+    my_keys[j] = (byte)j;
+    my_test[j] = (byte)j;
+  }
 }
 
 bool aes128_benchmark_tests(byte* key, int num_tests, bool use_aesni) {
@@ -913,13 +990,13 @@ byte rc4_test_key[5] = {0x01, 0x02, 0x03, 0x04, 0x05};
 byte rc4_test_in[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 byte rc4_test_out[16] = {0xb2, 0x39, 0x63, 0x05, 0xf0, 0x3d, 0xc0, 0x27,
                          0xcc, 0xc3, 0x52, 0x4a, 0x0a, 0x11, 0x18, 0xa8};
-bool rc4_test1() {
+TEST(Rc4, Simple) {
   byte out[16];
   Rc4 rc4;
 
-  if(!rc4.Init(5, rc4_test_key))
-    return false;
+  EXPECT_TRUE(rc4.Init(5, rc4_test_key));
   rc4.Encrypt(16, rc4_test_in, out);
+  if (FLAGS_printall) {
     printf("Rc4 test\n");
     printf("\tKey            : ");
     PrintBytes(5, rc4_test_key);
@@ -931,7 +1008,8 @@ bool rc4_test1() {
     PrintBytes(16, out);
     printf("\n");
     printf("\n");
-  return (memcmp(out, rc4_test_out, 16) == 0);
+  }
+  EXPECT_TRUE(memcmp(out, rc4_test_out, 16) == 0);
 }
 
 byte tea_test_key[16] = {
@@ -940,17 +1018,18 @@ byte tea_test_key[16] = {
 };
 byte tea_test_in[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 byte tea_test_out[8] = {0x0a, 0x3a, 0xea, 0x41, 0x40, 0xa9, 0xba, 0x94};
-
-bool tea_test1() {
+TEST(Tea, Simple) {
   byte in[16];
   byte out[16];
   Tea tea;
 
+  if (FLAGS_printall) {
     printf("Tea test\n");
-  if(!tea.Init(128, tea_test_key, 0))
-    return false;
+  }
+  EXPECT_TRUE(tea.Init(128, tea_test_key, 0));
   tea.Encrypt(8, tea_test_in, out);
   tea.Decrypt(8, out, in);
+  if (FLAGS_printall) {
     printf("\tKey            : ");
     PrintBytes(16, tea_test_key);
     printf("\n");
@@ -966,7 +1045,9 @@ bool tea_test1() {
     printf("\tDecrypted      : ");
     PrintBytes(8, in);
     printf("\n");
-  return (memcmp(out, tea_test_out, 8) == 0) && (memcmp(in, tea_test_in, 8) == 0);
+  }
+  EXPECT_TRUE(memcmp(out, tea_test_out, 8) == 0);
+  EXPECT_TRUE(memcmp(in, tea_test_in, 8) == 0);
 }
 
 uint64_t t_k[2] = {
@@ -981,20 +1062,19 @@ uint64_t t_o[2] = {
 byte* simon_test_key = (byte*)t_k;
 byte* simon_test_in = (byte*)t_i;
 byte* simon_test_out = (byte*)t_o;
-
-bool simon_test1()  {
+TEST(Simon, Simple) {
   byte out[16];
   byte in[16];
   Simon128 simon;
 
-  if(!simon.Init(128, simon_test_key, 0))
-    return false;
+  EXPECT_TRUE(simon.Init(128, simon_test_key, 0));
   uint64_t* o1 = (uint64_t*)out;
   uint64_t* o2 = (uint64_t*)(out + 8);
   uint64_t* i1 = (uint64_t*)in;
   uint64_t* i2 = (uint64_t*)(in + 8);
   simon.Encrypt(16, simon_test_in, out);
   simon.Decrypt(16, out, in);
+  if (FLAGS_printall) {
     printf("Simon128 test\n");
     printf("\tKey         : %016llx %016llx\n", t_k[0], t_k[1]);
     printf("\tCorrect in  : %016llx %016llx\n", t_i[0], t_i[1]);
@@ -1002,7 +1082,9 @@ bool simon_test1()  {
     printf("\tin          : %016llx %016llx\n", *i1, *i2);
     printf("\tout         : %016llx %016llx\n", *o1, *o2);
     printf("\n");
-  return (memcmp(out, simon_test_out, 16) == 0) && (memcmp(in, simon_test_in, 16) == 0);
+  }
+  EXPECT_TRUE(memcmp(out, simon_test_out, 16) == 0);
+  EXPECT_TRUE(memcmp(in, simon_test_in, 16) == 0);
 }
 
 byte test_key[] = {
@@ -1012,44 +1094,67 @@ byte test_key[] = {
     0x91, 0x92, 0x93, 0x94, 0xe1, 0xe2, 0xe3, 0xe4,
 };
 
+TEST(FirstAesCase, FirstAesTest) {
+  EXPECT_TRUE(SimpleAes128Test());
+  EXPECT_TRUE(SimpleAes128NiTest());
+  EXPECT_TRUE(aes128_benchmark_tests(test_key, 10000, true));
+  EXPECT_TRUE(aes128_benchmark_tests(test_key, 10000, false));
+}
+
+TEST(SecondAesCase, SecondAesTest) {
+  EXPECT_TRUE(SimpleAes256Test());
+  EXPECT_TRUE(SimpleAes256NiTest());
+  EXPECT_TRUE(aes256_benchmark_tests(test_key, 10000, true));
+  EXPECT_TRUE(aes256_benchmark_tests(test_key, 10000, false));
+}
+
+TEST(FirstTwofishCase, FirstTwofishTest) { EXPECT_TRUE(SimpleTwofishTest()); }
+TEST(FirstCbcCase, FirstCbcTest) { EXPECT_TRUE(SimpleCbcTest()); }
+TEST(FirstCbcEncryptionAlgorithmTest, FirstEncryptionCbcAlgorithmTest) {
+  EXPECT_TRUE(SimpleCbcEncryptionAlgorithmTest());
+}
+TEST(FirstCtrEncryptionAlgorithmTest, FirstEncryptionCtrAlgorithmTest) {
+  EXPECT_TRUE(SimpleCtrEncryptionAlgorithmTest());
+}
+
 void ReverseInPlace(int size, byte* in) {
   std::shared_ptr<byte>t(new byte[16]);
   ReverseCpy(size, in, t.get());
   memcpy((void*)in, (void*)t.get(), size);
 }
 
-  byte test_aesgcm_K_1[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  byte test_aesgcm_iv_1[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
-  byte test_aesgcm_H_1[16] = {0x66, 0xe9, 0x4b, 0xd4, 0xef, 0x8a, 0x2c, 0x3b,
-                              0x88, 0x4c, 0xfa, 0x59, 0xca, 0x34, 0x2b, 0x2e};
-  byte test_aesgcm_Y0_1[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
-  byte test_aesgcm_EY0_1[16] = {0x58, 0xe2, 0xfc, 0xce, 0xfa, 0x7e, 0x30, 0x61,
-                                0x36, 0x7f, 0x1d, 0x57, 0xa4, 0xe7, 0x45, 0x5a};
-  byte test_aesgcm_len_1[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  byte test_aesgcm_Ghash_1[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                                  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  byte test_aesgcm_T_1[16] = {0x58, 0xe2, 0xfc, 0xce, 0xfa, 0x7e, 0x30, 0x61,
+byte test_aesgcm_K_1[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+byte test_aesgcm_iv_1[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+byte test_aesgcm_H_1[16] = {0x66, 0xe9, 0x4b, 0xd4, 0xef, 0x8a, 0x2c, 0x3b,
+                            0x88, 0x4c, 0xfa, 0x59, 0xca, 0x34, 0x2b, 0x2e};
+byte test_aesgcm_Y0_1[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01};
+byte test_aesgcm_EY0_1[16] = {0x58, 0xe2, 0xfc, 0xce, 0xfa, 0x7e, 0x30, 0x61,
                               0x36, 0x7f, 0x1d, 0x57, 0xa4, 0xe7, 0x45, 0x5a};
+byte test_aesgcm_len_1[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+byte test_aesgcm_Ghash_1[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+byte test_aesgcm_T_1[16] = {0x58, 0xe2, 0xfc, 0xce, 0xfa, 0x7e, 0x30, 0x61,
+                            0x36, 0x7f, 0x1d, 0x57, 0xa4, 0xe7, 0x45, 0x5a};
 
-bool FirstAesGcmTest() {
+TEST(AesGcm, FirstAesGcmTest) {
   AesGcm aesgcm_obj;
 
-  if(!aesgcm_obj.Init(NBITSINBYTE * sizeof(test_aesgcm_K_1), test_aesgcm_K_1, 128,
-             16, test_aesgcm_iv_1, AesGcm::ENCRYPT, false))
-    return false;
+  EXPECT_TRUE(aesgcm_obj.Init(NBITSINBYTE * sizeof(test_aesgcm_K_1), test_aesgcm_K_1, 128,
+             16, test_aesgcm_iv_1, AesGcm::ENCRYPT, false));
   int size_out = 16;
   byte test_out[16];
-  if(!aesgcm_obj.FinalPlainIn(0, 0, &size_out, test_out))
-    return false;
+  EXPECT_TRUE(aesgcm_obj.FinalPlainIn(0, 0, &size_out, test_out));
   byte tag[32];
   aesgcm_obj.GetComputedTag(16, tag);
+  if (FLAGS_printall) {
     printf("Computed tag   : "); PrintBytes(16, tag); printf("\n");
     printf("test_aesgcm_T_1: "); PrintBytes(16, test_aesgcm_T_1); printf("\n");
-  return (memcmp(tag, test_aesgcm_T_1, 16) == 0);
+  }
+  EXPECT_TRUE(memcmp(tag, test_aesgcm_T_1, 16) == 0);
 }
 
 /*
@@ -1070,52 +1175,54 @@ bool FirstAesGcmTest() {
     00000000000000000000000000000200 // len(A)||len(C )
  */
 
-  byte test_P_2[64] = {
-    0xd9,0x31,0x32,0x25,0xf8,0x84,0x06,0xe5,0xa5,0x59,0x09,0xc5,0xaf,0xf5,0x26,0x9a,
-    0x86,0xa7,0xa9,0x53,0x15,0x34,0xf7,0xda,0x2e,0x4c,0x30,0x3d,0x8a,0x31,0x8a,0x72,
-    0x1c,0x3c,0x0c,0x95,0x95,0x68,0x09,0x53,0x2f,0xcf,0x0e,0x24,0x49,0xa6,0xb5,0x25,
-    0xb1,0x6a,0xed,0xf5,0xaa,0x0d,0xe6,0x57,0xba,0x63,0x7b,0x39,0x1a,0xaf,0xd2,0x55,
-  };
-  byte test_C_2[64] = {
-    0x42,0x83,0x1e,0xc2,0x21,0x77,0x74,0x24,0x4b,0x72,0x21,0xb7,0x84,0xd0,0xd4,0x9c,
-    0xe3,0xaa,0x21,0x2f,0x2c,0x02,0xa4,0xe0,0x35,0xc1,0x7e,0x23,0x29,0xac,0xa1,0x2e,
-    0x21,0xd5,0x14,0xb2,0x54,0x66,0x93,0x1c,0x7d,0x8f,0x6a,0x5a,0xac,0x84,0xaa,0x05,
-    0x1b,0xa3,0x0b,0x39,0x6a,0x0a,0xac,0x97,0x3d,0x58,0xe0,0x91,0x47,0x3f,0x59,0x85,
-  };
-  byte test_aesgcm_K_2[16] = {
-    0xfe,0xff,0xe9,0x92,0x86,0x65,0x73,0x1c,0x6d,0x6a,0x8f,0x94,0x67,0x30,0x83,0x08,
-  };
-  byte test_aesgcm_iv_2[16] = {
-    0xca, 0xfe, 0xba, 0xbe, 
-    0xfa, 0xce, 0xdb, 0xad, 0xde, 0xca, 0xf8, 0x88,
-    0x00, 0x00, 0x00, 0x01
-  };
-  byte test_aesgcm_H_2[16] = {
-    0xb8,0x3b,0x53,0x37,0x08,0xbf,0x53,0x5d,0x0a,0xa6,0xe5,0x29,0x80,0xd5,0x3b,0x78,
-  };
-  byte test_aesgcm_Ghash_2[16] = {
-    0x7f,0x1b,0x32,0xb8,0x1b,0x82,0x0d,0x02,0x61,0x4f,0x88,0x95,0xac,0x1d,0x4e,0xac,
-  };
-  byte test_aesgcm_T_2[16] = {
-    0x4d,0x5c,0x2a,0xf3,0x27,0xcd,0x64,0xa6,0x2c,0xf3,0x5a,0xbd,0x2b,0xa6,0xfa,0xb4,
-  };
-  byte test_aesgcm_X1_2[16] = {
-    0x59, 0xed, 0x3f, 0x2b, 0xb1, 0xa0, 0xaa, 0xa0, 0x7c, 0x9f, 0x56, 0xc6, 0xa5, 0x04, 0x64, 0x7b
-  };
+byte test_P_2[64] = {
+  0xd9,0x31,0x32,0x25,0xf8,0x84,0x06,0xe5,0xa5,0x59,0x09,0xc5,0xaf,0xf5,0x26,0x9a,
+  0x86,0xa7,0xa9,0x53,0x15,0x34,0xf7,0xda,0x2e,0x4c,0x30,0x3d,0x8a,0x31,0x8a,0x72,
+  0x1c,0x3c,0x0c,0x95,0x95,0x68,0x09,0x53,0x2f,0xcf,0x0e,0x24,0x49,0xa6,0xb5,0x25,
+  0xb1,0x6a,0xed,0xf5,0xaa,0x0d,0xe6,0x57,0xba,0x63,0x7b,0x39,0x1a,0xaf,0xd2,0x55,
+};
+byte test_C_2[64] = {
+  0x42,0x83,0x1e,0xc2,0x21,0x77,0x74,0x24,0x4b,0x72,0x21,0xb7,0x84,0xd0,0xd4,0x9c,
+  0xe3,0xaa,0x21,0x2f,0x2c,0x02,0xa4,0xe0,0x35,0xc1,0x7e,0x23,0x29,0xac,0xa1,0x2e,
+  0x21,0xd5,0x14,0xb2,0x54,0x66,0x93,0x1c,0x7d,0x8f,0x6a,0x5a,0xac,0x84,0xaa,0x05,
+  0x1b,0xa3,0x0b,0x39,0x6a,0x0a,0xac,0x97,0x3d,0x58,0xe0,0x91,0x47,0x3f,0x59,0x85,
+};
+byte test_aesgcm_K_2[16] = {
+  0xfe,0xff,0xe9,0x92,0x86,0x65,0x73,0x1c,0x6d,0x6a,0x8f,0x94,0x67,0x30,0x83,0x08,
+};
+byte test_aesgcm_iv_2[16] = {
+  0xca, 0xfe, 0xba, 0xbe, 
+  0xfa, 0xce, 0xdb, 0xad, 0xde, 0xca, 0xf8, 0x88,
+  0x00, 0x00, 0x00, 0x01
+};
+byte test_aesgcm_H_2[16] = {
+  0xb8,0x3b,0x53,0x37,0x08,0xbf,0x53,0x5d,0x0a,0xa6,0xe5,0x29,0x80,0xd5,0x3b,0x78,
+};
+byte test_aesgcm_Ghash_2[16] = {
+  0x7f,0x1b,0x32,0xb8,0x1b,0x82,0x0d,0x02,0x61,0x4f,0x88,0x95,0xac,0x1d,0x4e,0xac,
+};
+byte test_aesgcm_T_2[16] = {
+  0x4d,0x5c,0x2a,0xf3,0x27,0xcd,0x64,0xa6,0x2c,0xf3,0x5a,0xbd,0x2b,0xa6,0xfa,0xb4,
+};
+byte test_aesgcm_X1_2[16] = {
+  0x59, 0xed, 0x3f, 0x2b, 0xb1, 0xa0, 0xaa, 0xa0, 0x7c, 0x9f, 0x56, 0xc6, 0xa5, 0x04, 0x64, 0x7b
+};
 
-bool SecondAesGcmTest() {
+TEST(AesGcm, SecondAesGcmTest) {
   AesGcm aesgcm_obj;
 
+  if (FLAGS_printall) {
     printf("SecondAesGcmTest\n");
-  if(!aesgcm_obj.Init(NBITSINBYTE * sizeof(test_aesgcm_K_2), test_aesgcm_K_2, 128,
-             16, test_aesgcm_iv_2, AesGcm::ENCRYPT, false))
-    return false;
+  }
+  EXPECT_TRUE(aesgcm_obj.Init(NBITSINBYTE * sizeof(test_aesgcm_K_2), test_aesgcm_K_2, 128,
+             16, test_aesgcm_iv_2, AesGcm::ENCRYPT, false));
   int size_out = 128;
   byte test_out[128];
-  if(!aesgcm_obj.FinalPlainIn(sizeof(test_P_2), test_P_2, &size_out, test_out))
-    return false;
+  EXPECT_TRUE(aesgcm_obj.FinalPlainIn(sizeof(test_P_2), test_P_2, &size_out, test_out));
   byte tag[16];
   aesgcm_obj.GetComputedTag(16, tag);
+  EXPECT_TRUE(memcmp(test_aesgcm_T_2, tag, 16)==0);
+  if (FLAGS_printall) {
     printf("Key               : "); PrintBytes(16, test_aesgcm_K_2); printf("\n");
     printf("IV                : "); PrintBytes(16, test_aesgcm_iv_2); printf("\n");
     printf("Plain             : "); PrintBytes(64, test_P_2); printf("\n");
@@ -1127,51 +1234,53 @@ bool SecondAesGcmTest() {
     printf("H should be       : "); PrintBytes(16, test_aesgcm_H_2); printf("\n");
     printf("Ghash should be   : "); PrintBytes(16, test_aesgcm_Ghash_2); printf("\n");
     printf("Done\n");
-  return (memcmp(test_aesgcm_T_2, tag, 16)==0);
+  }
 }
 
-  byte test_P_3[16] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  };
-  byte test_C_3[16] = {
-    0x03,0x88,0xda,0xce,0x60,0xb6,0xa3,0x92,0xf3,0x28,0xc2,0xb9,0x71,0xb2,0xfe,0x78
-  };
-  byte test_aesgcm_K_3[16] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  };
-  byte test_aesgcm_iv_3[16] = {
-    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  };
-  byte test_aesgcm_H_3[16] = {
-    0x66,0xe9,0x4b,0xd4,0xef,0x8a,0x2c,0x3b,0x88,0x4c,0xfa,0x59,0xca,0x34,0x2b,0x2e
-  };
-  byte test_aesgcm_Ghash_3[16] = {
-    0xf3,0x8c,0xbb,0x1a,0xd6,0x92,0x23,0xdc,0xc3,0x45,0x7a,0xe5,0xb6,0xb0,0xf8,0x85
-  };
-  byte test_aesgcm_T_3[16] = {
-    0xab,0x6e,0x47,0xd4,0x2c,0xec,0x13,0xbd,0xf5,0x3a,0x67,0xb2,0x12,0x57,0xbd,0xdf
-  };
-  byte test_aesgcm_X1_3[16] = {
-    0x5e, 0x2e, 0xc7, 0x46, 0x91, 0x70, 0x62, 0x88, 0x2c, 0x85, 0xb0, 0x68, 0x53, 0x53, 0xde, 0xb7
-  };
+byte test_P_3[16] = {
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+byte test_C_3[16] = {
+  0x03,0x88,0xda,0xce,0x60,0xb6,0xa3,0x92,0xf3,0x28,0xc2,0xb9,0x71,0xb2,0xfe,0x78
+};
+byte test_aesgcm_K_3[16] = {
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+byte test_aesgcm_iv_3[16] = {
+  0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+byte test_aesgcm_H_3[16] = {
+  0x66,0xe9,0x4b,0xd4,0xef,0x8a,0x2c,0x3b,0x88,0x4c,0xfa,0x59,0xca,0x34,0x2b,0x2e
+};
+byte test_aesgcm_Ghash_3[16] = {
+  0xf3,0x8c,0xbb,0x1a,0xd6,0x92,0x23,0xdc,0xc3,0x45,0x7a,0xe5,0xb6,0xb0,0xf8,0x85
+};
+byte test_aesgcm_T_3[16] = {
+  0xab,0x6e,0x47,0xd4,0x2c,0xec,0x13,0xbd,0xf5,0x3a,0x67,0xb2,0x12,0x57,0xbd,0xdf
+};
+byte test_aesgcm_X1_3[16] = {
+  0x5e, 0x2e, 0xc7, 0x46, 0x91, 0x70, 0x62, 0x88, 0x2c, 0x85, 0xb0, 0x68, 0x53, 0x53, 0xde, 0xb7
+};
 
-bool ThirdAesGcmTest() {
+TEST(AesGcm, ThirdAesGcmTest) {
   AesGcm aesgcm_obj;
 
+  if (FLAGS_printall) {
     printf("ThirdAesGcmTest\n");
+  }
   ReverseInPlace(16, test_aesgcm_iv_3);
-  if(!aesgcm_obj.Init(NBITSINBYTE * sizeof(test_aesgcm_K_3), test_aesgcm_K_3, 128,
-             16, test_aesgcm_iv_3, AesGcm::ENCRYPT, false))
-    return false;
+  EXPECT_TRUE(aesgcm_obj.Init(NBITSINBYTE * sizeof(test_aesgcm_K_3), test_aesgcm_K_3, 128,
+             16, test_aesgcm_iv_3, AesGcm::ENCRYPT, false));
   int size_out = 128;
   byte test_out[128];
-  if(!aesgcm_obj.FinalPlainIn(sizeof(test_P_3), test_P_3, &size_out, test_out))
-    return false;
+  EXPECT_TRUE(aesgcm_obj.FinalPlainIn(sizeof(test_P_3), test_P_3, &size_out, test_out));
   byte tag[32];
   aesgcm_obj.GetComputedTag(16, tag);
+  EXPECT_TRUE(memcmp(tag, test_aesgcm_T_3, 16) ==0);
+  if (FLAGS_printall) {
     printf("Key               : "); PrintBytes(16, test_aesgcm_K_3); printf("\n");
     printf("IV                : "); PrintBytes(16, test_aesgcm_iv_3); printf("\n");
     printf("Plain             : "); PrintBytes(16, test_P_3); printf("\n");
@@ -1183,10 +1292,10 @@ bool ThirdAesGcmTest() {
     printf("H should be       : "); PrintBytes(16, test_aesgcm_H_3); printf("\n");
     printf("Ghash should be   : "); PrintBytes(16, test_aesgcm_Ghash_3); printf("\n");
     printf("Done\n");
-  return (memcmp(tag, test_aesgcm_T_3, 16) ==0);
+  }
 }
 
-bool FourthAesGcmTest() {
+TEST(AesGcm, FourthAesGcmTest) {
   AesGcm aesgcm_obj_enc;
   AesGcm aesgcm_obj_dec;
   byte computed_tag[16];
@@ -1194,30 +1303,33 @@ bool FourthAesGcmTest() {
   byte computed_P[64];
   int size_out;
 
+  if (FLAGS_printall) {
     printf("FourthAesGcmTest\n");
+  }
   EXPECT_TRUE(aesgcm_obj_enc.Init(128, test_aesgcm_K_2, 16,
             16, test_aesgcm_iv_2, AesGcm::ENCRYPT, false));
   size_out = 128;
   EXPECT_TRUE(aesgcm_obj_enc.FinalPlainIn(64, test_P_2, &size_out, computed_C));
   EXPECT_TRUE(memcmp(computed_C, test_C_2, 64)==0);
   aesgcm_obj_enc.GetComputedTag(16, computed_tag);
+  if (FLAGS_printall) {
     printf("P          :"); PrintBytes(64, test_P_2); printf("\n");
     printf("Key        :"); PrintBytes(16, test_aesgcm_K_2); printf("\n");
     printf("IV         :"); PrintBytes(16, test_aesgcm_iv_2); printf("\n");
     printf("Tag        :"); PrintBytes(16, test_aesgcm_T_2); printf("\n");
     printf("C          :"); PrintBytes(64, test_C_2); printf("\n");
+  }
 
-  if(!aesgcm_obj_dec.Init(128, test_aesgcm_K_2, 16,
-            16, test_aesgcm_iv_2, AesGcm::ENCRYPT, false))
-    return false;
+  EXPECT_TRUE(aesgcm_obj_dec.Init(128, test_aesgcm_K_2, 16,
+            16, test_aesgcm_iv_2, AesGcm::ENCRYPT, false));
   aesgcm_obj_dec.SetReceivedTag(16, test_aesgcm_T_2);
   size_out = 128;
-  if(!aesgcm_obj_dec.FinalCipherIn(64, computed_C, &size_out, computed_P))
-    return false;
-  return (memcmp(computed_P, test_P_2, 64)==0) && (aesgcm_obj_dec.MessageValid());
+  EXPECT_TRUE(aesgcm_obj_dec.FinalCipherIn(64, computed_C, &size_out, computed_P));
+  EXPECT_TRUE(memcmp(computed_P, test_P_2, 64)==0);
+  EXPECT_TRUE(aesgcm_obj_dec.MessageValid());
 }
 
-bool AesSivTest() {
+TEST(AesSiv, AesSivTest) {
 
   int size_out = 256;
   byte out[256];
@@ -1253,137 +1365,34 @@ bool AesSivTest() {
   printf("Test_Siv_output    : "); PrintBytes(sizeof(Test_Siv_output), Test_Siv_output); printf("\n");
 
   AesSiv aes_siv_encrypt;
-  if(!aes_siv_encrypt.Encrypt(Test_Siv_Key, sizeof(Test_Siv_Hdr), Test_Siv_Hdr,
-              sizeof(Test_Siv_Plaintext), Test_Siv_Plaintext, &size_out, out))
-    return false;
-  if (memcmp(out, Test_Siv_output, size_out) != 0)
-    return false;
+  EXPECT_TRUE(aes_siv_encrypt.Encrypt(Test_Siv_Key, sizeof(Test_Siv_Hdr), Test_Siv_Hdr,
+              sizeof(Test_Siv_Plaintext), Test_Siv_Plaintext, &size_out, out));
+  EXPECT_TRUE(memcmp(out, Test_Siv_output, size_out) == 0);
   printf("Computed SIV Encrypt (%d): ", size_out); PrintBytes(size_out, out); printf("\n");
 
   AesSiv aes_siv_decrypt;
-  if(!aes_siv_decrypt.Decrypt(Test_Siv_Key, sizeof(Test_Siv_Hdr), Test_Siv_Hdr,
-              size_out, out, &size_decrypt_out, decrypt_out))
-    return false;
+  EXPECT_TRUE(aes_siv_decrypt.Decrypt(Test_Siv_Key, sizeof(Test_Siv_Hdr), Test_Siv_Hdr,
+              size_out, out, &size_decrypt_out, decrypt_out));
   printf("Computed SIV Decrypt (%d): ", size_decrypt_out); PrintBytes(size_decrypt_out, decrypt_out); printf("\n");
-  return (memcmp(decrypt_out, Test_Siv_Plaintext, size_decrypt_out) == 0);
+  EXPECT_TRUE(memcmp(decrypt_out, Test_Siv_Plaintext, size_decrypt_out) == 0);
 }
 
+DEFINE_string(log_file, "symmetrictest.log", "symmetrictest file name");
 
 int main(int an, char** av) {
-
-  if (!InitUtilities("symmetrictest.log")) {
+  ::testing::InitGoogleTest(&an, av);
+#ifdef __linux__
+  gflags::ParseCommandLineFlags(&an, &av, true);
+#else
+  google::ParseCommandLineFlags(&an, &av, true);
+#endif
+  if (!InitUtilities(FLAGS_log_file.c_str())) {
     printf("InitUtilities() failed\n");
     return 1;
   }
   cycles_per_second = CalibrateRdtsc();
   printf("Cycles per second on this machine: %llu\n\n", cycles_per_second);
-
-  int num_tests = 0;
-  int num_failed = 0;
-
-  num_tests++;
-  if(!SimpleAes128Test()) {
-    num_failed++;
-    printf(" failed\n");
-  }
-  num_tests++;
-  if(!SimpleAes128NiTest()) {
-    num_failed++;
-    printf("SimpleAes128Test failed\n");
-  }
-  num_tests++;
-  if(!aes128_benchmark_tests(test_key, 10000, true)) {
-    num_failed++;
-    printf("aes128_benchmark_tests failed\n");
-  }
-  num_tests++;
-  if(!aes128_benchmark_tests(test_key, 10000, false)) {
-    num_failed++;
-    printf("aes128_benchmark_tests failed\n");
-  }
-  num_tests++;
-  if(!SimpleAes256Test()) {
-    num_failed++;
-    printf("SimpleAes256Test failed\n");
-  }
-  num_tests++;
-  if(!SimpleAes256NiTest()) {
-    num_failed++;
-    printf("SimpleAes256NiTest failed\n");
-  }
-  num_tests++;
-  if(!aes256_benchmark_tests(test_key, 10000, true)) {
-    num_failed++;
-    printf("aes256_benchmark_tests failed\n");
-  }
-  num_tests++;
-  if(!aes256_benchmark_tests(test_key, 10000, false)) {
-    num_failed++;
-    printf("aes256_benchmark_tests failed\n");
-  }
-  num_tests++;
-  if(!SimpleTwofishTest()) {
-    num_failed++;
-    printf("SimpleTwofishTest failed\n");
-  }
-  num_tests++;
-  if(!SimpleCbcTest()) {
-    num_failed++;
-    printf("SimpleCbcTest failed\n");
-  }
-  num_tests++;
-  if(!SimpleCbcEncryptionAlgorithmTest()) {
-    num_failed++;
-    printf("SimpleCbcEncryptionAlgorithmTest failed\n");
-  }
-  num_tests++;
-  if(!SimpleCtrEncryptionAlgorithmTest()) {
-    num_failed++;
-    printf("SimpleCtrEncryptionAlgorithmTest failed\n");
-  }
-  num_tests++;
-  if(!rc4_test1()) {
-    num_failed++;
-    printf("rc4 failed\n");
-  }
-  num_tests++;
-  if(!tea_test1()) {
-    num_failed++;
-    printf("tea failed\n");
-  }
-  num_tests++;
-  if(!simon_test1()) {
-    num_failed++;
-    printf("simon failed\n");
-  }
-  num_tests++;
-  if(!FirstAesGcmTest()) {
-    num_failed++;
-    printf("FirstAesGcmTest failed\n");
-  }
-  num_tests++;
-  if(!SecondAesGcmTest()) {
-    num_failed++;
-    printf("SecondAesGcmTest failed\n");
-  }
-  num_tests++;
-  if(!ThirdAesGcmTest()) {
-    num_failed++;
-    printf("ThirdAesGcmTest failed\n");
-  }
-  num_tests++;
-  if(!FourthAesGcmTest()) {
-    num_failed++;
-    printf("FourthAesGcmTest failed\n");
-  }
-  num_tests++;
-  if(!AesSivTest()) {
-    num_failed++;
-    printf("simon failed\n");
-  }
-
-
+  int result = RUN_ALL_TESTS();
   CloseUtilities();
-  printf("%d tests, %d failed\n", num_tests, num_failed);
-  return num_failed;
+  return result;
 }

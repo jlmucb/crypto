@@ -45,6 +45,7 @@ void Base64Test::TearDown() {}
 byte test1in[5] = {0x14, 0xfb, 0x9c, 0x03, 0xd9};
 byte test1bufout[20];
 string test1out("FPucA9k=");
+
 bool simpletest1() {
   string* s = ByteToBase64LeftToRight(sizeof(test1in), test1in);
   int n = Base64ToByteLeftToRight((char*)s->c_str(), 5, test1bufout);
@@ -60,8 +61,10 @@ bool simpletest1() {
     printf("ByteToBase64LeftToRight fails to match\n");
     return false;
   }
+  delete s;
   return true;
 }
+
 byte test2in[2] = {0x0c, 0x0d};
 bool simpletest2() {
   string* s = ByteToBase64LeftToRight(sizeof(test2in), test2in);
@@ -79,6 +82,7 @@ bool simpletest2() {
     printf("ByteToBase64LeftToRight fails 2 to match\n");
     return false;
   }
+  delete s;
   return true;
 }
 
@@ -97,11 +101,11 @@ bool simpletest3() {
     PrintBytes(5, tmpout);
     cout << "\n";
   }
-  delete s;
   if (n != 5 || memcmp(tmpout, test3in, 5) !=0) {
     printf("ByteToBase64RightToLeft fails to match\n");
     return false;
   }
+  delete s;
   return true;
 }
 
@@ -117,11 +121,11 @@ bool simpletest4() {
     PrintBytes(n, tmpout);
     cout << "\n";
   }
-  delete s;
   if (n != 2 || memcmp(tmpout, test2in, 2) !=0) {
     printf("ByteToBase64RightToLeft 2 fails to match\n");
     return false;
   }
+  delete s;
   return true;
 }
 
@@ -141,11 +145,11 @@ bool simpletest5() {
     cout << ", size: " << n;
     cout << "\n";
   }
-  delete s;
   if (sizeof(test1in) != n || hexout != *s) {
     printf("ByteToHexLeftToRight fails to match\n");
     return false;
   }
+  delete s;
   return true;
 }
 
@@ -337,11 +341,8 @@ TEST(FirstBase64Case, FirstBase64Test) {
   EXPECT_TRUE(simpletest4());
   printf("\t");
 }
-
 TEST(FirstHexCase, FirstHexTest) { EXPECT_TRUE(simpletest5()); }
-
 TEST(FirstTimeCase, FirstTimeTest) { EXPECT_TRUE(simpletimetest()); }
-
 TEST_F(Base64Test, RunTestSuite) { EXPECT_TRUE(RunTestSuite()); }
 
 DEFINE_string(log_file, "commontest.log", "commontest file name");

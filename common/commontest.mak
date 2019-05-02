@@ -14,6 +14,7 @@
 #    File: common.mak
 
 
+SRC_DIR=$(HOME)/src/github.com/jlmucb/crypto
 ifndef SRC_DIR
 SRC_DIR=$(HOME)/crypto
 endif
