@@ -30,7 +30,7 @@
 #include "cmac.h"
 #include <cmath>
 
-DEFINE_bool(printall, false, "printall flag");
+bool print_all = true;
 
 
 uint64_t cycles_per_second = 10;
@@ -159,7 +159,7 @@ bool SimpleSha1Test1() {
   if (!my_hash.GetDigest(20, (byte*)test1_digest)) {
     return false;
   }
-  if (FLAGS_printall) {
+  if (print_all) {
     printf("\tInput        : ");
     PrintBytes(sha1_test1_sizetoHash, (byte*)sha1_test1_toHash);
     printf("\n");
@@ -182,7 +182,7 @@ bool SimpleSha1Test1() {
   if (!my_hash.GetDigest(20, (byte*)test2_digest)) {
     return false;
   }
-  if (FLAGS_printall) {
+  if (print_all) {
     printf("\tInput        : ");
     PrintBytes(sha1_test2_sizetoHash, (byte*)sha1_test2_toHash);
     printf("\n");
@@ -214,7 +214,7 @@ bool SimpleSha3Test() {
   if (!my_hash.GetDigest(128, digest)) {
     return false;
   }
-  if (FLAGS_printall) {
+  if (print_all) {
     printf("\tInput        : ");
     PrintBytes(sizeof(sha3_input1), (byte*)sha3_input1);
     printf("\n");
@@ -237,7 +237,7 @@ bool SimpleSha3Test() {
   if (!my_hash.GetDigest(128, digest)) {
     return false;
   }
-  if (FLAGS_printall) {
+  if (print_all) {
     printf("\tInput        : ");
     PrintBytes(sizeof(sha3_input128), (byte*)sha3_input128);
     printf("\n");
@@ -260,7 +260,7 @@ bool SimpleSha3Test() {
   if (!my_hash.GetDigest(128, digest)) {
     return false;
   }
-  if (FLAGS_printall) {
+  if (print_all) {
     printf("\tInput        : ");
     PrintBytes(sizeof(sha3_input255), (byte*)sha3_input255);
     printf("\n");
@@ -292,7 +292,7 @@ bool SimpleSha256Test1() {
     printf("GetDigest SimpleSha256Test1 failed\n");
     return false;
   }
-  if (FLAGS_printall) {
+  if (print_all) {
     printf("\tInput        : ");
     PrintBytes(sha256_test1_sizetoHash, (byte*)sha256_test1_toHash);
     printf("\n");
@@ -317,7 +317,7 @@ bool SimpleSha256Test1() {
   if (!my_hash.GetDigest(32, (byte*)test2_digest)) {
     return false;
   }
-  if (FLAGS_printall) {
+  if (print_all) {
     printf("\tInput        : ");
     PrintBytes(sha256_test2_sizetoHash, (byte*)sha256_test2_toHash);
     printf("\n");
@@ -340,7 +340,7 @@ bool SimpleSha256Test1() {
   if (!my_hash.GetDigest(32, (byte*)test3_digest)) {
     return false;
   }
-  if (FLAGS_printall) {
+  if (print_all) {
     printf("\tInput        : ");
     PrintBytes(sha256_test3_sizetoHash, (byte*)sha256_test3_toHash);
     printf("\n");
@@ -369,7 +369,7 @@ bool pkcsTest() {
     printf("PkcsEncode failed\n");
     return false;
   }
-  if (FLAGS_printall) {
+  if (print_all) {
     printf("encoded hash: ");
     PrintBytes(256, out);
     printf("\n");
@@ -384,7 +384,7 @@ bool pkcsTest() {
     printf("PkcsEmbed failed\n");
     return false;
   }
-  if (FLAGS_printall) {
+  if (print_all) {
     printf("embedded message: ");
     PrintBytes(256, out);
     printf("\n");
@@ -393,7 +393,7 @@ bool pkcsTest() {
     printf("PkcsExtract failed\n");
     return false;
   }
-  if (FLAGS_printall) {
+  if (print_all) {
     printf("retrieved message: ");
     PrintBytes(new_out_size, new_out);
     printf("\n");
@@ -521,7 +521,7 @@ bool pbkdfTest() {
     printf("pbkdf2 failed\n");
     return false;
   }
-  if (FLAGS_printall) {
+  if (print_all) {
     printf("password derived key: ");
     PrintBytes(80, out);
     printf("\n");
@@ -585,7 +585,7 @@ bool SimpleHmacSha256Test1() {
     printf("gethmac failed\n");
     return false;
   }
-  if (FLAGS_printall) {
+  if (print_all) {
     printf("\tMac key     : ");
     PrintBytes(hmacsha256_test1_keysize, (byte*)hmacsha256_test1_key);
     printf("\n");
@@ -616,7 +616,7 @@ bool SimpleHmacSha256Test1() {
     printf("gethmac failed\n");
     return false;
   }
-  if (FLAGS_printall) {
+  if (print_all) {
     printf("\tMac key     : ");
     PrintBytes(hmacsha256_test2_keysize, (byte*)hmacsha256_test2_key);
     printf("\n");
@@ -635,7 +635,6 @@ bool SimpleHmacSha256Test1() {
     printf("SimpleHmacSha256Test1 comparison failed\n");
     fRet = false;
   }
-  printf("\n");
 
   printf("SimpleHmacSha256Test3\n");
   if (!my_mac3.Init(hmacsha256_test3_keysize, hmacsha256_test3_key)) {
@@ -648,7 +647,7 @@ bool SimpleHmacSha256Test1() {
     printf("gethmac failed\n");
     return false;
   }
-  if (FLAGS_printall) {
+  if (print_all) {
     printf("\tMac key     : ");
     PrintBytes(hmacsha256_test3_keysize, (byte*)hmacsha256_test3_key);
     printf("\n");
@@ -690,7 +689,8 @@ bool ghash_test1() {
   hash.AddCHash(16, AA);
   uint64_t out[2];
   hash.get_last_x(out);
-  
+ 
+  printf("\nghash test\n"); 
   printf("X1        : "); PrintBytes(16, (byte*)out); printf("\n");
   printf("Correct X1: "); PrintBytes(16, X1); printf("\n");
   return memcmp(X1, (byte*) out, 16) == 0;
@@ -729,6 +729,7 @@ bool cmac_test1() {
   byte out1[16];
   Cmac cmac1(128);
 
+  printf("\ncmac test\n");
   printf("\n");
   if(!cmac1.Init(K))
     return false;
