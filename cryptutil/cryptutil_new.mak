@@ -13,7 +13,7 @@
 #    Project: New Cloudproxy Crypto
 #    File: cryptutil.mak
 
-#SRC_DIR=$(HOME)/src/github.com/jlmucb/crypto
+SRC_DIR=$(HOME)/crypto
 ifndef SRC_DIR
 SRC_DIR=$(HOME)/crypto
 endif
@@ -35,24 +35,32 @@ endif
 
 S= $(SRC_DIR)/cryptutil
 O= $(OBJ_DIR)/cryptutil
+LO= $(OBJ_DIR)/cryptolib
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE) -I$(SRC_DIR)/keys
 
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
 CFLAGS1=$(INCLUDE) -O3 -g -Wall -std=c++11
 
+lobj=   $(LO)/bignum.o $(LO)/basic_arith.o $(LO)/number_theory.o $(LO)/arith64.o \
+        $(LO)/intel64_arith.o $(LO)/globals.o $(LO)/util.o $(LO)/conversions.o \
+        $(LO)/smallprimes.o $(LO)/ecc.o $(LO)/rsa.o $(LO)/keys.o $(LO)/keys.pb.o \
+        $(LO)/symmetric_cipher.o $(LO)/aes.o $(LO)/sha1.o $(LO)/sha256.o \
+        $(LO)/aesni.o $(LO)/hash.o $(LO)/hmac_sha256.o $(LO)/sha3.o $(LO)/twofish.o \
+        $(LO)/encryption_algorithm.o $(LO)/aescbchmac256sympad.o \
+        $(LO)/aesgcm.o $(LO)/aesctrhmac256sympad.o $(LO)/pkcs.o $(LO)/pbkdf2.o \
+        $(LO)/ghash.o $(LO)/simonspeck.o $(LO)/rc4.o $(LO)/tea.o
+
 include ../OSName
 ifdef YOSEMITE
 	CC=clang++
 	LINK=clang++
-	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
+	LDFLAGS= -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
 else
 	CC=g++
 	LINK=g++
 	export LD_LIBRARY_PATH=/usr/local/lib
 	LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 endif
-CRYPTOLIB= $(OBJ_DIR)/jlmcryptolib.a
-
 
 
 dobj=	$(O)/cryptutil.o 
@@ -64,13 +72,9 @@ clean:
 	@echo "removing executable file"
 	rm $(EXE_DIR)/cryptutil.exe
 
-$(O)/cryptutil.o: $(S)/cryptutil.cc
-	@echo "compiling cryptutil.cc"
-	$(CC) $(CFLAGS) -c -o $(O)/cryptutil.o $(SRC_DIR)/bignum/cryptutil.cc
-
 cryptutil.exe: $(dobj) 
 	@echo "linking executable files"
-	$(LINK) -o $(EXE_DIR)/cryptutil.exe $(dobj) $(CRYPTOLIB) $(LDFLAGS)
+	$(LINK) -o $(EXE_DIR)/cryptutil.exe $(lobj) $(dobj) $(LDFLAGS)
 
 $(O)/cryptutil.o: $(S)/cryptutil.cc
 	@echo "compiling cryptutil.cc"
