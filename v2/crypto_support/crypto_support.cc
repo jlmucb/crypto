@@ -67,7 +67,33 @@ string* time_point::encodeTime() {
   return new string(time_str);
 }
 
+const char* m_months[12] = {
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+};
+int month_from_name(char* mn) {
+  for(int i = 0; i < 12; i++) {
+    if (strcmp(mn, m_months[i]) == 0)
+      return i;
+  }
+  return -1;
+}
 bool time_point::decodeTime(string& encoded_time) {
+  int dm, yr, hr, min;
+  double sec;
+  char s[20];
+  sscanf(encoded_time.c_str(), "%d %s %d, %02d:%02d:%lfZ", &dm, s, &yr,
+      &hr, &min, &sec);
+  int mm = month_from_name(s);
+  if (mm < 0)
+   return false;
+  mm++;
+  year_ = yr;
+  month_ = mm;
+  day_in_month_ = dm;
+  hour_ = hr;
+  minutes_ = min;
+  seconds_ = sec;
   return true;
 }
 

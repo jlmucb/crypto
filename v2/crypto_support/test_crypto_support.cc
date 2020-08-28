@@ -38,6 +38,15 @@ bool time_convert_test() {
   t.time_now();
   t.print_time();
   printf("\n");
+
+  string* s1= t.encodeTime();
+  time_point t1;
+  printf("Encoded string: %s\n", s1->c_str());
+  t1.decodeTime(*s1);
+  string* s2= t1.encodeTime();
+  printf("Re-encoded string: %s\n", s2->c_str());
+  if (s1->compare(*s2) != 0)
+    return false;
   return true;
 }
 
