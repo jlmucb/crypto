@@ -1,0 +1,117 @@
+Encryption Schemes
+  aes128-ctr-hmacsha256-sympad
+  aes128-cbc-hmacsha256-sympad
+  aes128-ecb-hmacsha256-sympad
+  aes256-ctr-hmacsha512-sympad
+  aes256-cbc-hmacsha512-sympad
+  aes256-ecb-hmacsha512-sympad
+
+Keys
+  name
+  type
+  size
+  purpose
+  notBefore
+  notAfter
+
+Algorithms
+  rsa 
+  ecc
+  aes
+  rc4
+  tea
+  twofish
+  simon
+  spec
+  sha1
+  sha2
+  sha3
+  shaHmac
+
+BinaryByteBlob
+  size, blob
+EncryptedMessage
+  schemeName
+  schemeInstance
+  messageIdentifier
+  to
+  from
+  date
+Signature
+
+scheme
+  name
+  encryptionKey
+  hmacKey
+  publicNonce
+
+Parameters
+  rsaParameters
+  eccParameters
+  rsaPublicParameters
+    modulus
+    exponent
+  eccPublicParameters
+    p, base, curveParameters
+  rsaPrivateParameters
+  eccPrivateParameters
+  curveParameters
+  simpleSecretParameters
+  hmacParameters
+
+
+Operations
+  toBase64 direction input output
+  fromBase64 direction input output
+  toHex direction input output
+  fromHex direction input output
+  getRandom input
+  deriveKey
+
+  generateKey type size parameters name purpose output
+  readKey input
+  generateEncryptionSchemeParameters
+  readEncryptionSchemeParameters
+
+  decryptScheme scheme
+  encryptScheme
+
+  computeHash input output
+  computeMac macKey input output
+  verifyHmac macKey input output
+
+  encryptWithPassword
+  decryptWithPassword
+
+
+
+Support
+  printBytes size
+  reverseCopy size, buf
+  littleToBigEndian size, obj
+  bigToLittleEndian size, obj
+  toBase64
+  fromBase64
+  toHex
+  fromHex
+  encodeTime
+  decodeTime
+  getTime
+  addSecondsIntervalToTime
+  initLog
+  closeLog
+  haveIntelRdRand
+  haveIntelAesNi
+  initCryptoSupport
+  closeCryptoSupport
+  compareTimePoints
+  getFileProperties
+  openFile
+  closeFile
+  readFileBlock
+  writeFileBlock
+  readFile
+  writeFile
+  calibrateRdtsc
+  readRdtsc
+  
