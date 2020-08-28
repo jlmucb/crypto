@@ -55,11 +55,63 @@ bool random_test() {
   return rs.close_random_source();
 }
 
+string test_hex_string1("012ab33");
+string test_hex_string2("a012ab334466557789");
+
+bool hex_convert_test() {
+  string b1(50, 0);
+  string b2(50, 0);
+  b1.clear();
+  b2.clear();
+
+  printf("hex 1: %s\n", test_hex_string1.c_str());
+  printf("hex 2: %s\n", test_hex_string2.c_str());
+  if (!hex_to_bytes(test_hex_string1, &b1, false))
+    return false;
+  if (!hex_to_bytes(test_hex_string1, &b1, false))
+    return false;
+  if (!hex_to_bytes(test_hex_string2, &b2, false))
+    return false;
+  printf("b1: ");
+  print_bytes((int)b1.size(), (byte*)b1.data());
+  printf("b2: ");
+  print_bytes((int)b2.size(), (byte*)b2.data());
+  
+  string c1(50, 0);
+  string c2(50, 0);
+  if (!bytes_to_hex(b1, &c1, false))
+    return false;
+  if (!bytes_to_hex(b2, &c2, false))
+    return false;
+  printf("c1: %s\n", c1.c_str());
+  printf("c2: %s\n", c2.c_str());
+
+  string d1(50, 0);
+  string d2(50, 0);
+  if (!hex_to_bytes(c1, &d1, false))
+    return false;
+  if (!hex_to_bytes(c2, &d2, false))
+    return false;
+  printf("d1: ");
+  print_bytes((int)d1.size(), (byte*)d1.data());
+  printf("d2: ");
+  print_bytes((int)d2.size(), (byte*)d2.data());
+
+  if (d1.compare(b1) != 0)
+    return false;
+  if (d2.compare(b2) != 0)
+    return false;
+  return true;
+}
+
 TEST (algs, test_alg_names) {
   EXPECT_TRUE(test_alg_names());
 }
 TEST (timeutilities, time_convert_test) {
   EXPECT_TRUE(time_convert_test());
+}
+TEST (convertutilities, hex_convert_test) {
+  EXPECT_TRUE(hex_convert_test());
 }
 TEST (randomutilities, random_test) {
   EXPECT_TRUE(random_test());

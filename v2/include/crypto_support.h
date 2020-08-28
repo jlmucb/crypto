@@ -97,7 +97,7 @@ class time_point {
   bool add_interval_to_time(time_point& from, double seconds_later);
   void print_time();
   string* encodeTime();
-  bool decodeTime(string encoded_time);
+  bool decodeTime(string& encoded_time);
   bool time_point_to_unix_tm(struct tm* time_now);
   bool unix_tm_to_time_point(struct tm* time_now);
 };
@@ -123,6 +123,10 @@ int bits_to_bytes(int n);
 int bytes_to_bits(int n);
 int bits_to_uint64(int n);
 int uint64_to_bits(int n);
+bool hex_to_bytes(string& h, string* b, bool reverse=false);
+bool bytes_to_hex(string& b, string* h, bool reverse=false);
+bool base64_to_bytes(string& b64, string* b, bool reverse=false);
+bool bytes_to_base64(string& b, string* b64, bool reverse=false);
 
 void little_to_big_endian_32(uint32_t* in, uint32_t* out);
 void big_to_little_endian_32(uint32_t* in, uint32_t* out);

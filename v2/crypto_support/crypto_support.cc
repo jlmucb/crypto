@@ -56,10 +56,18 @@ void time_point::print_time() {
 }
 
 string* time_point::encodeTime() {
-  return nullptr;
+  int m = month_ - 1;
+  if (m < 0 || m > 11)
+    return nullptr;
+  char time_str[256];
+  *time_str = '\0';
+  snprintf(time_str,255, "%d %s %d, %02d:%02d:%lfZ", day_in_month_, s_months[m], year_,
+      hour_, minutes_, seconds_);
+  m = strlen(time_str);
+  return new string(time_str);
 }
 
-bool time_point::decodeTime(string encoded_time) {
+bool time_point::decodeTime(string& encoded_time) {
   return true;
 }
 
@@ -95,6 +103,130 @@ int bits_to_uint64(int n) {
 
 int uint64_to_bits(int n) {
   return (n + NBITSINUINT64 - 1) / NBITSINUINT64;
+}
+
+static byte s_hex_values1[10] = {
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+};
+static byte s_hex_values2[6] = {
+  10, 11, 12, 13, 14, 15
+};
+byte hex_value(char a) {
+  if (a >= '0' && a <= '9')
+    return s_hex_values1[a - '0'];
+  if (a >= 'A' && a <= 'F')
+    return s_hex_values2[a - 'A'];
+  if (a >= 'a' && a <= 'f')
+    return s_hex_values2[a - 'a'];
+  return 0;
+}  
+
+bool valid_hex(char* s) {
+  char a;
+  while (*s != '\0') {
+    a = *(s++);
+    if (a >= '0' && a <= '9')
+      continue;
+    if (a >= 'A' && a <= 'F')
+      continue;
+    if (a >= 'a' && a <= 'f')
+      continue;
+    return false;
+  }
+  return true;
+}
+
+bool hex_to_bytes(string& h, string* b, bool reverse) {
+  b->clear();
+  if (!valid_hex((char*)h.c_str()) || reverse)
+    return false;
+  int h_size = strlen(h.c_str());
+  // if odd first 4 bits is 0
+  if (b->capacity() < (h_size + 1) / 2)
+    return false;
+  byte b1, b2;
+  int k;
+  if ((h_size % 2) != 0) {
+    b1 = 0;
+    b2 = hex_value(h[0]);
+    k = 1;
+    b->append(1, (char)b2);
+  } else {
+    k = 0;
+  }
+  for (int i = k; i < h_size; i += 2) {
+    b1 = hex_value(h[i]);
+    b2 = hex_value(h[i + 1]);
+    b1 = (b1 << 4) | b2;
+    b->append(1, b1);
+  }
+  return true;
+}
+
+static char s_hex_chars[16] = {
+  '0', '1', '2', '3', '4', '5', '6', '7',
+  '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+};
+char hex_char(byte b) {
+  if (b > 16)
+    return '0';
+  return s_hex_chars[b];
+}
+
+bool bytes_to_hex(string& b, string* h, bool reverse) {
+  // always returns even number of hex characters
+  if (reverse)
+    return false;
+  h->clear();
+  int b_size = b.size();
+  if (h->capacity() < 2 * b_size + 1)
+    return false;
+  char c1, c2;
+  byte b1, b2;
+  for (int i = 0; i < b_size; i++) {
+    b1 = (b[i] >> 4) & 0x0f;
+    b2 = b[i] & 0x0f;
+    c1 = hex_char(b1);
+    c2 = hex_char(b2);
+    h->append(1, c1);
+    h->append(1, c2);
+  }
+  h->append(1, '\0');
+  return true;
+}
+
+static const char* web_safe_base64_characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+bool valid_base64(char* s) {
+  char a;
+  while (*s != '\0') {
+    a = *(s++);
+    if (a >= '0' && a <= '9')
+      continue;
+    if (a >= 'A' && a <= 'F')
+      continue;
+    if (a >= 'a' && a <= 'f')
+      continue;
+    if (a == '-' || a == '_')
+      continue;
+    return false;
+  }
+  return true;
+}
+bool base64_to_bytes(string& b64, string* b, bool reverse) {
+  if (!valid_base64((char*)b64.c_str()) || reverse)
+    return false;
+  int b64_size = strlen(b64.c_str());
+  if (b->capacity() < (b64_size + 1) / 2)
+    return false;
+  return false;
+}
+
+bool bytes_to_base64(string& b, string* b64, bool reverse) {
+  if (reverse)
+    return false;
+  // int b_size = b.size();
+  return false;
 }
 
 random_source::random_source() {

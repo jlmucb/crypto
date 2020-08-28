@@ -73,6 +73,6 @@ $(O)/crypto_support.o: $(S)/crypto_support.cc $(S)/support.pb.h
 	@echo "compiling crypto_support.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/crypto_support.o $(S)/crypto_support.cc
 
-$(O)/crypto_support.o: $(S)/crypto_names.cc
+$(O)/crypto_names.o: $(S)/crypto_names.cc
 	@echo "compiling crypto_names.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/crypto_names.o $(S)/crypto_names.cc
