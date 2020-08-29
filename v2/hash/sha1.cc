@@ -56,12 +56,11 @@ sha1::sha1() {
 
 sha1::~sha1() {}
 
+// you can reuse object after calling init again
 bool sha1::init() {
-  if (hash_name_ == nullptr) {
-    hash_name_ = new string("sha-1");
-  }
+  hash_name_.assign("sha-1");
   num_bytes_waiting_ = 0;
-  finalized_ = false;
+  num_bits_processed_ = 0;
   memset(bytes_waiting_, 0, BLOCKBYTESIZE);
   memset(digest_, 0, DIGESTBYTESIZE);
   state_[0] = 0x67452301L;
@@ -69,6 +68,7 @@ bool sha1::init() {
   state_[2] = 0x98BADCFEL;
   state_[3] = 0x10325476L;
   state_[4] = 0xC3D2E1F0L;
+  finalized_ = false;
   return true;
 }
 

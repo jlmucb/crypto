@@ -140,9 +140,9 @@ const byte sha3_output255[128] = {
 
 bool test_sha1() {
   sha1 hash_object;
+
   byte digest1[hash_object.DIGESTBYTESIZE];
   byte digest2[hash_object.DIGESTBYTESIZE];
-  byte digest3[hash_object.DIGESTBYTESIZE];
 
   if (!hash_object.init())
     return false;
@@ -157,6 +157,21 @@ bool test_sha1() {
   }
   if (memcmp((const void *)sha1_test1_answer,
              (const void *) digest1, hash_object.DIGESTBYTESIZE) != 0)
+    return false;
+
+  if (!hash_object.init())
+    return false;
+  hash_object.add_to_hash(sha1_test2_size, sha1_test2_input);
+  hash_object.finalize();
+  if (!hash_object.get_digest(hash_object.DIGESTBYTESIZE, digest2))
+    return false;
+  if (FLAGS_print_all) {
+    printf("Bytes to hash  : "); print_bytes(sha1_test2_size, (byte*)sha1_test2_input);
+    printf("Correct digest : "); print_bytes(hash_object.DIGESTBYTESIZE, (byte*)sha1_test2_answer);
+    printf("Computed digest: "); print_bytes(hash_object.DIGESTBYTESIZE, digest2);
+  }
+  if (memcmp((const void *)sha1_test2_answer,
+             (const void *) digest2, hash_object.DIGESTBYTESIZE) != 0)
     return false;
 
   return true;

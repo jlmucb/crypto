@@ -20,7 +20,7 @@
 
 class crypto_hash {
  public:
-  string* hash_name_;
+  string hash_name_;
   bool finalized_;
 
   crypto_hash();

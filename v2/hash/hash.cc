@@ -18,14 +18,9 @@
 #include "hash.h"
 
 crypto_hash::crypto_hash() {
-  hash_name_ = nullptr;
   finalized_ = false;
 }
 
 crypto_hash::~crypto_hash() {
-  if (hash_name_ != nullptr) {
-    delete hash_name_;
-    hash_name_ = nullptr;
-  }
   finalized_ = false;
 }
