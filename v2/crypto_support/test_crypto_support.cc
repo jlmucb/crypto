@@ -233,11 +233,21 @@ bool time_increment_test() {
   time_point t1, t2;
   t1.time_now();
   t2.add_interval_to_time(t1, 377 * 86400.0);
-  printf("\n");
-  t1.print_time();
-  printf("\n");
-  t2.print_time();
-  printf("\n");
+  if (FLAGS_print_all) {
+    printf("\n");
+    t1.print_time();
+    printf("\n");
+    t2.print_time();
+    printf("\n");
+  }
+  t2.add_interval_to_time(t1, 5 * 365 * 86400.0);
+  if (FLAGS_print_all) {
+    printf("\n");
+    t1.print_time();
+    printf("\n");
+    t2.print_time();
+    printf("\n");
+  }
   return true;
 }
 
