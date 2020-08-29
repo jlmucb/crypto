@@ -47,7 +47,7 @@ struct TableStruct_support_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[13]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[21]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -57,6 +57,30 @@ extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table
 class binary_blob;
 class binary_blobDefaultTypeInternal;
 extern binary_blobDefaultTypeInternal _binary_blob_default_instance_;
+class cert_algorithm_message;
+class cert_algorithm_messageDefaultTypeInternal;
+extern cert_algorithm_messageDefaultTypeInternal _cert_algorithm_message_default_instance_;
+class cert_ecc_parameters_message;
+class cert_ecc_parameters_messageDefaultTypeInternal;
+extern cert_ecc_parameters_messageDefaultTypeInternal _cert_ecc_parameters_message_default_instance_;
+class cert_name_message;
+class cert_name_messageDefaultTypeInternal;
+extern cert_name_messageDefaultTypeInternal _cert_name_message_default_instance_;
+class cert_principal_name_message;
+class cert_principal_name_messageDefaultTypeInternal;
+extern cert_principal_name_messageDefaultTypeInternal _cert_principal_name_message_default_instance_;
+class cert_properties_message;
+class cert_properties_messageDefaultTypeInternal;
+extern cert_properties_messageDefaultTypeInternal _cert_properties_message_default_instance_;
+class cert_rsa_parameters_message;
+class cert_rsa_parameters_messageDefaultTypeInternal;
+extern cert_rsa_parameters_messageDefaultTypeInternal _cert_rsa_parameters_message_default_instance_;
+class certificate_message;
+class certificate_messageDefaultTypeInternal;
+extern certificate_messageDefaultTypeInternal _certificate_message_default_instance_;
+class crypto_signature;
+class crypto_signatureDefaultTypeInternal;
+extern crypto_signatureDefaultTypeInternal _crypto_signature_default_instance_;
 class curve_parameters_message;
 class curve_parameters_messageDefaultTypeInternal;
 extern curve_parameters_messageDefaultTypeInternal _curve_parameters_message_default_instance_;
@@ -95,6 +119,14 @@ class signature_messageDefaultTypeInternal;
 extern signature_messageDefaultTypeInternal _signature_message_default_instance_;
 PROTOBUF_NAMESPACE_OPEN
 template<> ::binary_blob* Arena::CreateMaybeMessage<::binary_blob>(Arena*);
+template<> ::cert_algorithm_message* Arena::CreateMaybeMessage<::cert_algorithm_message>(Arena*);
+template<> ::cert_ecc_parameters_message* Arena::CreateMaybeMessage<::cert_ecc_parameters_message>(Arena*);
+template<> ::cert_name_message* Arena::CreateMaybeMessage<::cert_name_message>(Arena*);
+template<> ::cert_principal_name_message* Arena::CreateMaybeMessage<::cert_principal_name_message>(Arena*);
+template<> ::cert_properties_message* Arena::CreateMaybeMessage<::cert_properties_message>(Arena*);
+template<> ::cert_rsa_parameters_message* Arena::CreateMaybeMessage<::cert_rsa_parameters_message>(Arena*);
+template<> ::certificate_message* Arena::CreateMaybeMessage<::certificate_message>(Arena*);
+template<> ::crypto_signature* Arena::CreateMaybeMessage<::crypto_signature>(Arena*);
 template<> ::curve_parameters_message* Arena::CreateMaybeMessage<::curve_parameters_message>(Arena*);
 template<> ::ecc_parameters_message* Arena::CreateMaybeMessage<::ecc_parameters_message>(Arena*);
 template<> ::ecc_private_parameters_message* Arena::CreateMaybeMessage<::ecc_private_parameters_message>(Arena*);
@@ -2523,6 +2555,1936 @@ class scheme_message PROTOBUF_FINAL :
   ::hmac_parameters_message* parameters_;
   friend struct ::TableStruct_support_2eproto;
 };
+// -------------------------------------------------------------------
+
+class crypto_signature PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:crypto_signature) */ {
+ public:
+  inline crypto_signature() : crypto_signature(nullptr) {};
+  virtual ~crypto_signature();
+
+  crypto_signature(const crypto_signature& from);
+  crypto_signature(crypto_signature&& from) noexcept
+    : crypto_signature() {
+    *this = ::std::move(from);
+  }
+
+  inline crypto_signature& operator=(const crypto_signature& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline crypto_signature& operator=(crypto_signature&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const crypto_signature& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const crypto_signature* internal_default_instance() {
+    return reinterpret_cast<const crypto_signature*>(
+               &_crypto_signature_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    13;
+
+  friend void swap(crypto_signature& a, crypto_signature& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(crypto_signature* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(crypto_signature* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline crypto_signature* New() const final {
+    return CreateMaybeMessage<crypto_signature>(nullptr);
+  }
+
+  crypto_signature* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<crypto_signature>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const crypto_signature& from);
+  void MergeFrom(const crypto_signature& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(crypto_signature* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "crypto_signature";
+  }
+  protected:
+  explicit crypto_signature(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_support_2eproto);
+    return ::descriptor_table_support_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kEncryptionAlgorithmNameFieldNumber = 1,
+    kSerializedStatementFieldNumber = 2,
+    kSignatureFieldNumber = 3,
+    kSignerNameFieldNumber = 4,
+  };
+  // required string encryption_algorithm_name = 1;
+  bool has_encryption_algorithm_name() const;
+  private:
+  bool _internal_has_encryption_algorithm_name() const;
+  public:
+  void clear_encryption_algorithm_name();
+  const std::string& encryption_algorithm_name() const;
+  void set_encryption_algorithm_name(const std::string& value);
+  void set_encryption_algorithm_name(std::string&& value);
+  void set_encryption_algorithm_name(const char* value);
+  void set_encryption_algorithm_name(const char* value, size_t size);
+  std::string* mutable_encryption_algorithm_name();
+  std::string* release_encryption_algorithm_name();
+  void set_allocated_encryption_algorithm_name(std::string* encryption_algorithm_name);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_encryption_algorithm_name();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_encryption_algorithm_name(
+      std::string* encryption_algorithm_name);
+  private:
+  const std::string& _internal_encryption_algorithm_name() const;
+  void _internal_set_encryption_algorithm_name(const std::string& value);
+  std::string* _internal_mutable_encryption_algorithm_name();
+  public:
+
+  // required string serialized_statement = 2;
+  bool has_serialized_statement() const;
+  private:
+  bool _internal_has_serialized_statement() const;
+  public:
+  void clear_serialized_statement();
+  const std::string& serialized_statement() const;
+  void set_serialized_statement(const std::string& value);
+  void set_serialized_statement(std::string&& value);
+  void set_serialized_statement(const char* value);
+  void set_serialized_statement(const char* value, size_t size);
+  std::string* mutable_serialized_statement();
+  std::string* release_serialized_statement();
+  void set_allocated_serialized_statement(std::string* serialized_statement);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_serialized_statement();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_serialized_statement(
+      std::string* serialized_statement);
+  private:
+  const std::string& _internal_serialized_statement() const;
+  void _internal_set_serialized_statement(const std::string& value);
+  std::string* _internal_mutable_serialized_statement();
+  public:
+
+  // optional string signature = 3;
+  bool has_signature() const;
+  private:
+  bool _internal_has_signature() const;
+  public:
+  void clear_signature();
+  const std::string& signature() const;
+  void set_signature(const std::string& value);
+  void set_signature(std::string&& value);
+  void set_signature(const char* value);
+  void set_signature(const char* value, size_t size);
+  std::string* mutable_signature();
+  std::string* release_signature();
+  void set_allocated_signature(std::string* signature);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_signature();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_signature(
+      std::string* signature);
+  private:
+  const std::string& _internal_signature() const;
+  void _internal_set_signature(const std::string& value);
+  std::string* _internal_mutable_signature();
+  public:
+
+  // optional string signer_name = 4;
+  bool has_signer_name() const;
+  private:
+  bool _internal_has_signer_name() const;
+  public:
+  void clear_signer_name();
+  const std::string& signer_name() const;
+  void set_signer_name(const std::string& value);
+  void set_signer_name(std::string&& value);
+  void set_signer_name(const char* value);
+  void set_signer_name(const char* value, size_t size);
+  std::string* mutable_signer_name();
+  std::string* release_signer_name();
+  void set_allocated_signer_name(std::string* signer_name);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_signer_name();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_signer_name(
+      std::string* signer_name);
+  private:
+  const std::string& _internal_signer_name() const;
+  void _internal_set_signer_name(const std::string& value);
+  std::string* _internal_mutable_signer_name();
+  public:
+
+  // @@protoc_insertion_point(class_scope:crypto_signature)
+ private:
+  class _Internal;
+
+  // helper for ByteSizeLong()
+  size_t RequiredFieldsByteSizeFallback() const;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr encryption_algorithm_name_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr serialized_statement_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr signature_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr signer_name_;
+  friend struct ::TableStruct_support_2eproto;
+};
+// -------------------------------------------------------------------
+
+class cert_name_message PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:cert_name_message) */ {
+ public:
+  inline cert_name_message() : cert_name_message(nullptr) {};
+  virtual ~cert_name_message();
+
+  cert_name_message(const cert_name_message& from);
+  cert_name_message(cert_name_message&& from) noexcept
+    : cert_name_message() {
+    *this = ::std::move(from);
+  }
+
+  inline cert_name_message& operator=(const cert_name_message& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline cert_name_message& operator=(cert_name_message&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const cert_name_message& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const cert_name_message* internal_default_instance() {
+    return reinterpret_cast<const cert_name_message*>(
+               &_cert_name_message_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    14;
+
+  friend void swap(cert_name_message& a, cert_name_message& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(cert_name_message* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(cert_name_message* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline cert_name_message* New() const final {
+    return CreateMaybeMessage<cert_name_message>(nullptr);
+  }
+
+  cert_name_message* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<cert_name_message>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const cert_name_message& from);
+  void MergeFrom(const cert_name_message& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(cert_name_message* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "cert_name_message";
+  }
+  protected:
+  explicit cert_name_message(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_support_2eproto);
+    return ::descriptor_table_support_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kNameTypeFieldNumber = 1,
+    kNameValueFieldNumber = 2,
+  };
+  // optional string name_type = 1;
+  bool has_name_type() const;
+  private:
+  bool _internal_has_name_type() const;
+  public:
+  void clear_name_type();
+  const std::string& name_type() const;
+  void set_name_type(const std::string& value);
+  void set_name_type(std::string&& value);
+  void set_name_type(const char* value);
+  void set_name_type(const char* value, size_t size);
+  std::string* mutable_name_type();
+  std::string* release_name_type();
+  void set_allocated_name_type(std::string* name_type);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_name_type();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_name_type(
+      std::string* name_type);
+  private:
+  const std::string& _internal_name_type() const;
+  void _internal_set_name_type(const std::string& value);
+  std::string* _internal_mutable_name_type();
+  public:
+
+  // optional string name_value = 2;
+  bool has_name_value() const;
+  private:
+  bool _internal_has_name_value() const;
+  public:
+  void clear_name_value();
+  const std::string& name_value() const;
+  void set_name_value(const std::string& value);
+  void set_name_value(std::string&& value);
+  void set_name_value(const char* value);
+  void set_name_value(const char* value, size_t size);
+  std::string* mutable_name_value();
+  std::string* release_name_value();
+  void set_allocated_name_value(std::string* name_value);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_name_value();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_name_value(
+      std::string* name_value);
+  private:
+  const std::string& _internal_name_value() const;
+  void _internal_set_name_value(const std::string& value);
+  std::string* _internal_mutable_name_value();
+  public:
+
+  // @@protoc_insertion_point(class_scope:cert_name_message)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_type_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_value_;
+  friend struct ::TableStruct_support_2eproto;
+};
+// -------------------------------------------------------------------
+
+class cert_principal_name_message PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:cert_principal_name_message) */ {
+ public:
+  inline cert_principal_name_message() : cert_principal_name_message(nullptr) {};
+  virtual ~cert_principal_name_message();
+
+  cert_principal_name_message(const cert_principal_name_message& from);
+  cert_principal_name_message(cert_principal_name_message&& from) noexcept
+    : cert_principal_name_message() {
+    *this = ::std::move(from);
+  }
+
+  inline cert_principal_name_message& operator=(const cert_principal_name_message& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline cert_principal_name_message& operator=(cert_principal_name_message&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const cert_principal_name_message& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const cert_principal_name_message* internal_default_instance() {
+    return reinterpret_cast<const cert_principal_name_message*>(
+               &_cert_principal_name_message_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    15;
+
+  friend void swap(cert_principal_name_message& a, cert_principal_name_message& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(cert_principal_name_message* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(cert_principal_name_message* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline cert_principal_name_message* New() const final {
+    return CreateMaybeMessage<cert_principal_name_message>(nullptr);
+  }
+
+  cert_principal_name_message* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<cert_principal_name_message>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const cert_principal_name_message& from);
+  void MergeFrom(const cert_principal_name_message& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(cert_principal_name_message* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "cert_principal_name_message";
+  }
+  protected:
+  explicit cert_principal_name_message(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_support_2eproto);
+    return ::descriptor_table_support_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kNamesFieldNumber = 1,
+  };
+  // repeated .cert_name_message names = 1;
+  int names_size() const;
+  private:
+  int _internal_names_size() const;
+  public:
+  void clear_names();
+  ::cert_name_message* mutable_names(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_name_message >*
+      mutable_names();
+  private:
+  const ::cert_name_message& _internal_names(int index) const;
+  ::cert_name_message* _internal_add_names();
+  public:
+  const ::cert_name_message& names(int index) const;
+  ::cert_name_message* add_names();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_name_message >&
+      names() const;
+
+  // @@protoc_insertion_point(class_scope:cert_principal_name_message)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_name_message > names_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_support_2eproto;
+};
+// -------------------------------------------------------------------
+
+class cert_rsa_parameters_message PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:cert_rsa_parameters_message) */ {
+ public:
+  inline cert_rsa_parameters_message() : cert_rsa_parameters_message(nullptr) {};
+  virtual ~cert_rsa_parameters_message();
+
+  cert_rsa_parameters_message(const cert_rsa_parameters_message& from);
+  cert_rsa_parameters_message(cert_rsa_parameters_message&& from) noexcept
+    : cert_rsa_parameters_message() {
+    *this = ::std::move(from);
+  }
+
+  inline cert_rsa_parameters_message& operator=(const cert_rsa_parameters_message& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline cert_rsa_parameters_message& operator=(cert_rsa_parameters_message&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const cert_rsa_parameters_message& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const cert_rsa_parameters_message* internal_default_instance() {
+    return reinterpret_cast<const cert_rsa_parameters_message*>(
+               &_cert_rsa_parameters_message_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    16;
+
+  friend void swap(cert_rsa_parameters_message& a, cert_rsa_parameters_message& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(cert_rsa_parameters_message* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(cert_rsa_parameters_message* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline cert_rsa_parameters_message* New() const final {
+    return CreateMaybeMessage<cert_rsa_parameters_message>(nullptr);
+  }
+
+  cert_rsa_parameters_message* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<cert_rsa_parameters_message>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const cert_rsa_parameters_message& from);
+  void MergeFrom(const cert_rsa_parameters_message& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(cert_rsa_parameters_message* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "cert_rsa_parameters_message";
+  }
+  protected:
+  explicit cert_rsa_parameters_message(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_support_2eproto);
+    return ::descriptor_table_support_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kExponentFieldNumber = 3,
+    kModulusFieldNumber = 4,
+    kModulusSizeFieldNumber = 1,
+    kExponentSizeFieldNumber = 2,
+  };
+  // optional bytes exponent = 3;
+  bool has_exponent() const;
+  private:
+  bool _internal_has_exponent() const;
+  public:
+  void clear_exponent();
+  const std::string& exponent() const;
+  void set_exponent(const std::string& value);
+  void set_exponent(std::string&& value);
+  void set_exponent(const char* value);
+  void set_exponent(const void* value, size_t size);
+  std::string* mutable_exponent();
+  std::string* release_exponent();
+  void set_allocated_exponent(std::string* exponent);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_exponent();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_exponent(
+      std::string* exponent);
+  private:
+  const std::string& _internal_exponent() const;
+  void _internal_set_exponent(const std::string& value);
+  std::string* _internal_mutable_exponent();
+  public:
+
+  // optional bytes modulus = 4;
+  bool has_modulus() const;
+  private:
+  bool _internal_has_modulus() const;
+  public:
+  void clear_modulus();
+  const std::string& modulus() const;
+  void set_modulus(const std::string& value);
+  void set_modulus(std::string&& value);
+  void set_modulus(const char* value);
+  void set_modulus(const void* value, size_t size);
+  std::string* mutable_modulus();
+  std::string* release_modulus();
+  void set_allocated_modulus(std::string* modulus);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_modulus();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_modulus(
+      std::string* modulus);
+  private:
+  const std::string& _internal_modulus() const;
+  void _internal_set_modulus(const std::string& value);
+  std::string* _internal_mutable_modulus();
+  public:
+
+  // optional int32 modulus_size = 1;
+  bool has_modulus_size() const;
+  private:
+  bool _internal_has_modulus_size() const;
+  public:
+  void clear_modulus_size();
+  ::PROTOBUF_NAMESPACE_ID::int32 modulus_size() const;
+  void set_modulus_size(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_modulus_size() const;
+  void _internal_set_modulus_size(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // optional int32 exponent_size = 2;
+  bool has_exponent_size() const;
+  private:
+  bool _internal_has_exponent_size() const;
+  public:
+  void clear_exponent_size();
+  ::PROTOBUF_NAMESPACE_ID::int32 exponent_size() const;
+  void set_exponent_size(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_exponent_size() const;
+  void _internal_set_exponent_size(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:cert_rsa_parameters_message)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr exponent_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr modulus_;
+  ::PROTOBUF_NAMESPACE_ID::int32 modulus_size_;
+  ::PROTOBUF_NAMESPACE_ID::int32 exponent_size_;
+  friend struct ::TableStruct_support_2eproto;
+};
+// -------------------------------------------------------------------
+
+class cert_ecc_parameters_message PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:cert_ecc_parameters_message) */ {
+ public:
+  inline cert_ecc_parameters_message() : cert_ecc_parameters_message(nullptr) {};
+  virtual ~cert_ecc_parameters_message();
+
+  cert_ecc_parameters_message(const cert_ecc_parameters_message& from);
+  cert_ecc_parameters_message(cert_ecc_parameters_message&& from) noexcept
+    : cert_ecc_parameters_message() {
+    *this = ::std::move(from);
+  }
+
+  inline cert_ecc_parameters_message& operator=(const cert_ecc_parameters_message& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline cert_ecc_parameters_message& operator=(cert_ecc_parameters_message&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const cert_ecc_parameters_message& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const cert_ecc_parameters_message* internal_default_instance() {
+    return reinterpret_cast<const cert_ecc_parameters_message*>(
+               &_cert_ecc_parameters_message_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    17;
+
+  friend void swap(cert_ecc_parameters_message& a, cert_ecc_parameters_message& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(cert_ecc_parameters_message* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(cert_ecc_parameters_message* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline cert_ecc_parameters_message* New() const final {
+    return CreateMaybeMessage<cert_ecc_parameters_message>(nullptr);
+  }
+
+  cert_ecc_parameters_message* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<cert_ecc_parameters_message>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const cert_ecc_parameters_message& from);
+  void MergeFrom(const cert_ecc_parameters_message& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(cert_ecc_parameters_message* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "cert_ecc_parameters_message";
+  }
+  protected:
+  explicit cert_ecc_parameters_message(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_support_2eproto);
+    return ::descriptor_table_support_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kPrimeFieldNumber = 2,
+    kPrimeSizeFieldNumber = 1,
+  };
+  // optional bytes prime = 2;
+  bool has_prime() const;
+  private:
+  bool _internal_has_prime() const;
+  public:
+  void clear_prime();
+  const std::string& prime() const;
+  void set_prime(const std::string& value);
+  void set_prime(std::string&& value);
+  void set_prime(const char* value);
+  void set_prime(const void* value, size_t size);
+  std::string* mutable_prime();
+  std::string* release_prime();
+  void set_allocated_prime(std::string* prime);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_prime();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_prime(
+      std::string* prime);
+  private:
+  const std::string& _internal_prime() const;
+  void _internal_set_prime(const std::string& value);
+  std::string* _internal_mutable_prime();
+  public:
+
+  // optional int32 prime_size = 1;
+  bool has_prime_size() const;
+  private:
+  bool _internal_has_prime_size() const;
+  public:
+  void clear_prime_size();
+  ::PROTOBUF_NAMESPACE_ID::int32 prime_size() const;
+  void set_prime_size(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_prime_size() const;
+  void _internal_set_prime_size(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:cert_ecc_parameters_message)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr prime_;
+  ::PROTOBUF_NAMESPACE_ID::int32 prime_size_;
+  friend struct ::TableStruct_support_2eproto;
+};
+// -------------------------------------------------------------------
+
+class cert_algorithm_message PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:cert_algorithm_message) */ {
+ public:
+  inline cert_algorithm_message() : cert_algorithm_message(nullptr) {};
+  virtual ~cert_algorithm_message();
+
+  cert_algorithm_message(const cert_algorithm_message& from);
+  cert_algorithm_message(cert_algorithm_message&& from) noexcept
+    : cert_algorithm_message() {
+    *this = ::std::move(from);
+  }
+
+  inline cert_algorithm_message& operator=(const cert_algorithm_message& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline cert_algorithm_message& operator=(cert_algorithm_message&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const cert_algorithm_message& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const cert_algorithm_message* internal_default_instance() {
+    return reinterpret_cast<const cert_algorithm_message*>(
+               &_cert_algorithm_message_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    18;
+
+  friend void swap(cert_algorithm_message& a, cert_algorithm_message& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(cert_algorithm_message* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(cert_algorithm_message* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline cert_algorithm_message* New() const final {
+    return CreateMaybeMessage<cert_algorithm_message>(nullptr);
+  }
+
+  cert_algorithm_message* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<cert_algorithm_message>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const cert_algorithm_message& from);
+  void MergeFrom(const cert_algorithm_message& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(cert_algorithm_message* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "cert_algorithm_message";
+  }
+  protected:
+  explicit cert_algorithm_message(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_support_2eproto);
+    return ::descriptor_table_support_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kAlgorithmNameFieldNumber = 1,
+    kRsaParamsFieldNumber = 2,
+    kEccParamsFieldNumber = 3,
+  };
+  // required string algorithm_name = 1;
+  bool has_algorithm_name() const;
+  private:
+  bool _internal_has_algorithm_name() const;
+  public:
+  void clear_algorithm_name();
+  const std::string& algorithm_name() const;
+  void set_algorithm_name(const std::string& value);
+  void set_algorithm_name(std::string&& value);
+  void set_algorithm_name(const char* value);
+  void set_algorithm_name(const char* value, size_t size);
+  std::string* mutable_algorithm_name();
+  std::string* release_algorithm_name();
+  void set_allocated_algorithm_name(std::string* algorithm_name);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_algorithm_name();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_algorithm_name(
+      std::string* algorithm_name);
+  private:
+  const std::string& _internal_algorithm_name() const;
+  void _internal_set_algorithm_name(const std::string& value);
+  std::string* _internal_mutable_algorithm_name();
+  public:
+
+  // optional .cert_rsa_parameters_message rsa_params = 2;
+  bool has_rsa_params() const;
+  private:
+  bool _internal_has_rsa_params() const;
+  public:
+  void clear_rsa_params();
+  const ::cert_rsa_parameters_message& rsa_params() const;
+  ::cert_rsa_parameters_message* release_rsa_params();
+  ::cert_rsa_parameters_message* mutable_rsa_params();
+  void set_allocated_rsa_params(::cert_rsa_parameters_message* rsa_params);
+  private:
+  const ::cert_rsa_parameters_message& _internal_rsa_params() const;
+  ::cert_rsa_parameters_message* _internal_mutable_rsa_params();
+  public:
+  void unsafe_arena_set_allocated_rsa_params(
+      ::cert_rsa_parameters_message* rsa_params);
+  ::cert_rsa_parameters_message* unsafe_arena_release_rsa_params();
+
+  // optional .cert_ecc_parameters_message ecc_params = 3;
+  bool has_ecc_params() const;
+  private:
+  bool _internal_has_ecc_params() const;
+  public:
+  void clear_ecc_params();
+  const ::cert_ecc_parameters_message& ecc_params() const;
+  ::cert_ecc_parameters_message* release_ecc_params();
+  ::cert_ecc_parameters_message* mutable_ecc_params();
+  void set_allocated_ecc_params(::cert_ecc_parameters_message* ecc_params);
+  private:
+  const ::cert_ecc_parameters_message& _internal_ecc_params() const;
+  ::cert_ecc_parameters_message* _internal_mutable_ecc_params();
+  public:
+  void unsafe_arena_set_allocated_ecc_params(
+      ::cert_ecc_parameters_message* ecc_params);
+  ::cert_ecc_parameters_message* unsafe_arena_release_ecc_params();
+
+  // @@protoc_insertion_point(class_scope:cert_algorithm_message)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr algorithm_name_;
+  ::cert_rsa_parameters_message* rsa_params_;
+  ::cert_ecc_parameters_message* ecc_params_;
+  friend struct ::TableStruct_support_2eproto;
+};
+// -------------------------------------------------------------------
+
+class cert_properties_message PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:cert_properties_message) */ {
+ public:
+  inline cert_properties_message() : cert_properties_message(nullptr) {};
+  virtual ~cert_properties_message();
+
+  cert_properties_message(const cert_properties_message& from);
+  cert_properties_message(cert_properties_message&& from) noexcept
+    : cert_properties_message() {
+    *this = ::std::move(from);
+  }
+
+  inline cert_properties_message& operator=(const cert_properties_message& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline cert_properties_message& operator=(cert_properties_message&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const cert_properties_message& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const cert_properties_message* internal_default_instance() {
+    return reinterpret_cast<const cert_properties_message*>(
+               &_cert_properties_message_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    19;
+
+  friend void swap(cert_properties_message& a, cert_properties_message& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(cert_properties_message* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(cert_properties_message* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline cert_properties_message* New() const final {
+    return CreateMaybeMessage<cert_properties_message>(nullptr);
+  }
+
+  cert_properties_message* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<cert_properties_message>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const cert_properties_message& from);
+  void MergeFrom(const cert_properties_message& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(cert_properties_message* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "cert_properties_message";
+  }
+  protected:
+  explicit cert_properties_message(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_support_2eproto);
+    return ::descriptor_table_support_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kPropertyNameFieldNumber = 1,
+    kPropertyValueFieldNumber = 2,
+  };
+  // optional string property_name = 1;
+  bool has_property_name() const;
+  private:
+  bool _internal_has_property_name() const;
+  public:
+  void clear_property_name();
+  const std::string& property_name() const;
+  void set_property_name(const std::string& value);
+  void set_property_name(std::string&& value);
+  void set_property_name(const char* value);
+  void set_property_name(const char* value, size_t size);
+  std::string* mutable_property_name();
+  std::string* release_property_name();
+  void set_allocated_property_name(std::string* property_name);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_property_name();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_property_name(
+      std::string* property_name);
+  private:
+  const std::string& _internal_property_name() const;
+  void _internal_set_property_name(const std::string& value);
+  std::string* _internal_mutable_property_name();
+  public:
+
+  // optional string property_value = 2;
+  bool has_property_value() const;
+  private:
+  bool _internal_has_property_value() const;
+  public:
+  void clear_property_value();
+  const std::string& property_value() const;
+  void set_property_value(const std::string& value);
+  void set_property_value(std::string&& value);
+  void set_property_value(const char* value);
+  void set_property_value(const char* value, size_t size);
+  std::string* mutable_property_value();
+  std::string* release_property_value();
+  void set_allocated_property_value(std::string* property_value);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_property_value();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_property_value(
+      std::string* property_value);
+  private:
+  const std::string& _internal_property_value() const;
+  void _internal_set_property_value(const std::string& value);
+  std::string* _internal_mutable_property_value();
+  public:
+
+  // @@protoc_insertion_point(class_scope:cert_properties_message)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr property_name_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr property_value_;
+  friend struct ::TableStruct_support_2eproto;
+};
+// -------------------------------------------------------------------
+
+class certificate_message PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:certificate_message) */ {
+ public:
+  inline certificate_message() : certificate_message(nullptr) {};
+  virtual ~certificate_message();
+
+  certificate_message(const certificate_message& from);
+  certificate_message(certificate_message&& from) noexcept
+    : certificate_message() {
+    *this = ::std::move(from);
+  }
+
+  inline certificate_message& operator=(const certificate_message& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline certificate_message& operator=(certificate_message&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
+  }
+  inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const certificate_message& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const certificate_message* internal_default_instance() {
+    return reinterpret_cast<const certificate_message*>(
+               &_certificate_message_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    20;
+
+  friend void swap(certificate_message& a, certificate_message& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(certificate_message* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(certificate_message* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline certificate_message* New() const final {
+    return CreateMaybeMessage<certificate_message>(nullptr);
+  }
+
+  certificate_message* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<certificate_message>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const certificate_message& from);
+  void MergeFrom(const certificate_message& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(certificate_message* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "certificate_message";
+  }
+  protected:
+  explicit certificate_message(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_support_2eproto);
+    return ::descriptor_table_support_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kSubjectFieldNumber = 2,
+    kPropertiesFieldNumber = 4,
+    kIssuerFieldNumber = 12,
+    kVersionFieldNumber = 1,
+    kPurposeFieldNumber = 5,
+    kNotBeforeFieldNumber = 6,
+    kNotAfterFieldNumber = 7,
+    kNonceFieldNumber = 8,
+    kCanonicalFieldNumber = 9,
+    kRevocationAddressFieldNumber = 10,
+    kDateSignedFieldNumber = 11,
+    kSignatureFieldNumber = 14,
+    kSubjectKeyFieldNumber = 3,
+    kSigningKeyFieldNumber = 13,
+  };
+  // repeated .cert_name_message subject = 2;
+  int subject_size() const;
+  private:
+  int _internal_subject_size() const;
+  public:
+  void clear_subject();
+  ::cert_name_message* mutable_subject(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_name_message >*
+      mutable_subject();
+  private:
+  const ::cert_name_message& _internal_subject(int index) const;
+  ::cert_name_message* _internal_add_subject();
+  public:
+  const ::cert_name_message& subject(int index) const;
+  ::cert_name_message* add_subject();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_name_message >&
+      subject() const;
+
+  // repeated .cert_properties_message properties = 4;
+  int properties_size() const;
+  private:
+  int _internal_properties_size() const;
+  public:
+  void clear_properties();
+  ::cert_properties_message* mutable_properties(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_properties_message >*
+      mutable_properties();
+  private:
+  const ::cert_properties_message& _internal_properties(int index) const;
+  ::cert_properties_message* _internal_add_properties();
+  public:
+  const ::cert_properties_message& properties(int index) const;
+  ::cert_properties_message* add_properties();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_properties_message >&
+      properties() const;
+
+  // repeated .cert_name_message issuer = 12;
+  int issuer_size() const;
+  private:
+  int _internal_issuer_size() const;
+  public:
+  void clear_issuer();
+  ::cert_name_message* mutable_issuer(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_name_message >*
+      mutable_issuer();
+  private:
+  const ::cert_name_message& _internal_issuer(int index) const;
+  ::cert_name_message* _internal_add_issuer();
+  public:
+  const ::cert_name_message& issuer(int index) const;
+  ::cert_name_message* add_issuer();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_name_message >&
+      issuer() const;
+
+  // required string version = 1;
+  bool has_version() const;
+  private:
+  bool _internal_has_version() const;
+  public:
+  void clear_version();
+  const std::string& version() const;
+  void set_version(const std::string& value);
+  void set_version(std::string&& value);
+  void set_version(const char* value);
+  void set_version(const char* value, size_t size);
+  std::string* mutable_version();
+  std::string* release_version();
+  void set_allocated_version(std::string* version);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_version();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_version(
+      std::string* version);
+  private:
+  const std::string& _internal_version() const;
+  void _internal_set_version(const std::string& value);
+  std::string* _internal_mutable_version();
+  public:
+
+  // optional string purpose = 5;
+  bool has_purpose() const;
+  private:
+  bool _internal_has_purpose() const;
+  public:
+  void clear_purpose();
+  const std::string& purpose() const;
+  void set_purpose(const std::string& value);
+  void set_purpose(std::string&& value);
+  void set_purpose(const char* value);
+  void set_purpose(const char* value, size_t size);
+  std::string* mutable_purpose();
+  std::string* release_purpose();
+  void set_allocated_purpose(std::string* purpose);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_purpose();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_purpose(
+      std::string* purpose);
+  private:
+  const std::string& _internal_purpose() const;
+  void _internal_set_purpose(const std::string& value);
+  std::string* _internal_mutable_purpose();
+  public:
+
+  // optional string not_before = 6;
+  bool has_not_before() const;
+  private:
+  bool _internal_has_not_before() const;
+  public:
+  void clear_not_before();
+  const std::string& not_before() const;
+  void set_not_before(const std::string& value);
+  void set_not_before(std::string&& value);
+  void set_not_before(const char* value);
+  void set_not_before(const char* value, size_t size);
+  std::string* mutable_not_before();
+  std::string* release_not_before();
+  void set_allocated_not_before(std::string* not_before);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_not_before();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_not_before(
+      std::string* not_before);
+  private:
+  const std::string& _internal_not_before() const;
+  void _internal_set_not_before(const std::string& value);
+  std::string* _internal_mutable_not_before();
+  public:
+
+  // optional string not_after = 7;
+  bool has_not_after() const;
+  private:
+  bool _internal_has_not_after() const;
+  public:
+  void clear_not_after();
+  const std::string& not_after() const;
+  void set_not_after(const std::string& value);
+  void set_not_after(std::string&& value);
+  void set_not_after(const char* value);
+  void set_not_after(const char* value, size_t size);
+  std::string* mutable_not_after();
+  std::string* release_not_after();
+  void set_allocated_not_after(std::string* not_after);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_not_after();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_not_after(
+      std::string* not_after);
+  private:
+  const std::string& _internal_not_after() const;
+  void _internal_set_not_after(const std::string& value);
+  std::string* _internal_mutable_not_after();
+  public:
+
+  // optional bytes nonce = 8;
+  bool has_nonce() const;
+  private:
+  bool _internal_has_nonce() const;
+  public:
+  void clear_nonce();
+  const std::string& nonce() const;
+  void set_nonce(const std::string& value);
+  void set_nonce(std::string&& value);
+  void set_nonce(const char* value);
+  void set_nonce(const void* value, size_t size);
+  std::string* mutable_nonce();
+  std::string* release_nonce();
+  void set_allocated_nonce(std::string* nonce);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_nonce();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_nonce(
+      std::string* nonce);
+  private:
+  const std::string& _internal_nonce() const;
+  void _internal_set_nonce(const std::string& value);
+  std::string* _internal_mutable_nonce();
+  public:
+
+  // optional bytes canonical = 9;
+  bool has_canonical() const;
+  private:
+  bool _internal_has_canonical() const;
+  public:
+  void clear_canonical();
+  const std::string& canonical() const;
+  void set_canonical(const std::string& value);
+  void set_canonical(std::string&& value);
+  void set_canonical(const char* value);
+  void set_canonical(const void* value, size_t size);
+  std::string* mutable_canonical();
+  std::string* release_canonical();
+  void set_allocated_canonical(std::string* canonical);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_canonical();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_canonical(
+      std::string* canonical);
+  private:
+  const std::string& _internal_canonical() const;
+  void _internal_set_canonical(const std::string& value);
+  std::string* _internal_mutable_canonical();
+  public:
+
+  // optional string revocation_address = 10;
+  bool has_revocation_address() const;
+  private:
+  bool _internal_has_revocation_address() const;
+  public:
+  void clear_revocation_address();
+  const std::string& revocation_address() const;
+  void set_revocation_address(const std::string& value);
+  void set_revocation_address(std::string&& value);
+  void set_revocation_address(const char* value);
+  void set_revocation_address(const char* value, size_t size);
+  std::string* mutable_revocation_address();
+  std::string* release_revocation_address();
+  void set_allocated_revocation_address(std::string* revocation_address);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_revocation_address();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_revocation_address(
+      std::string* revocation_address);
+  private:
+  const std::string& _internal_revocation_address() const;
+  void _internal_set_revocation_address(const std::string& value);
+  std::string* _internal_mutable_revocation_address();
+  public:
+
+  // optional string date_signed = 11;
+  bool has_date_signed() const;
+  private:
+  bool _internal_has_date_signed() const;
+  public:
+  void clear_date_signed();
+  const std::string& date_signed() const;
+  void set_date_signed(const std::string& value);
+  void set_date_signed(std::string&& value);
+  void set_date_signed(const char* value);
+  void set_date_signed(const char* value, size_t size);
+  std::string* mutable_date_signed();
+  std::string* release_date_signed();
+  void set_allocated_date_signed(std::string* date_signed);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_date_signed();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_date_signed(
+      std::string* date_signed);
+  private:
+  const std::string& _internal_date_signed() const;
+  void _internal_set_date_signed(const std::string& value);
+  std::string* _internal_mutable_date_signed();
+  public:
+
+  // optional bytes signature = 14;
+  bool has_signature() const;
+  private:
+  bool _internal_has_signature() const;
+  public:
+  void clear_signature();
+  const std::string& signature() const;
+  void set_signature(const std::string& value);
+  void set_signature(std::string&& value);
+  void set_signature(const char* value);
+  void set_signature(const void* value, size_t size);
+  std::string* mutable_signature();
+  std::string* release_signature();
+  void set_allocated_signature(std::string* signature);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_signature();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_signature(
+      std::string* signature);
+  private:
+  const std::string& _internal_signature() const;
+  void _internal_set_signature(const std::string& value);
+  std::string* _internal_mutable_signature();
+  public:
+
+  // optional .cert_algorithm_message subject_key = 3;
+  bool has_subject_key() const;
+  private:
+  bool _internal_has_subject_key() const;
+  public:
+  void clear_subject_key();
+  const ::cert_algorithm_message& subject_key() const;
+  ::cert_algorithm_message* release_subject_key();
+  ::cert_algorithm_message* mutable_subject_key();
+  void set_allocated_subject_key(::cert_algorithm_message* subject_key);
+  private:
+  const ::cert_algorithm_message& _internal_subject_key() const;
+  ::cert_algorithm_message* _internal_mutable_subject_key();
+  public:
+  void unsafe_arena_set_allocated_subject_key(
+      ::cert_algorithm_message* subject_key);
+  ::cert_algorithm_message* unsafe_arena_release_subject_key();
+
+  // optional .cert_algorithm_message signing_key = 13;
+  bool has_signing_key() const;
+  private:
+  bool _internal_has_signing_key() const;
+  public:
+  void clear_signing_key();
+  const ::cert_algorithm_message& signing_key() const;
+  ::cert_algorithm_message* release_signing_key();
+  ::cert_algorithm_message* mutable_signing_key();
+  void set_allocated_signing_key(::cert_algorithm_message* signing_key);
+  private:
+  const ::cert_algorithm_message& _internal_signing_key() const;
+  ::cert_algorithm_message* _internal_mutable_signing_key();
+  public:
+  void unsafe_arena_set_allocated_signing_key(
+      ::cert_algorithm_message* signing_key);
+  ::cert_algorithm_message* unsafe_arena_release_signing_key();
+
+  // @@protoc_insertion_point(class_scope:certificate_message)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_name_message > subject_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_properties_message > properties_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_name_message > issuer_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr version_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr purpose_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr not_before_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr not_after_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr nonce_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr canonical_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr revocation_address_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr date_signed_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr signature_;
+  ::cert_algorithm_message* subject_key_;
+  ::cert_algorithm_message* signing_key_;
+  friend struct ::TableStruct_support_2eproto;
+};
 // ===================================================================
 
 
@@ -4660,9 +6622,2574 @@ inline void scheme_message::unsafe_arena_set_allocated_public_nonce(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:scheme_message.public_nonce)
 }
 
+// -------------------------------------------------------------------
+
+// crypto_signature
+
+// required string encryption_algorithm_name = 1;
+inline bool crypto_signature::_internal_has_encryption_algorithm_name() const {
+  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool crypto_signature::has_encryption_algorithm_name() const {
+  return _internal_has_encryption_algorithm_name();
+}
+inline void crypto_signature::clear_encryption_algorithm_name() {
+  encryption_algorithm_name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline const std::string& crypto_signature::encryption_algorithm_name() const {
+  // @@protoc_insertion_point(field_get:crypto_signature.encryption_algorithm_name)
+  return _internal_encryption_algorithm_name();
+}
+inline void crypto_signature::set_encryption_algorithm_name(const std::string& value) {
+  _internal_set_encryption_algorithm_name(value);
+  // @@protoc_insertion_point(field_set:crypto_signature.encryption_algorithm_name)
+}
+inline std::string* crypto_signature::mutable_encryption_algorithm_name() {
+  // @@protoc_insertion_point(field_mutable:crypto_signature.encryption_algorithm_name)
+  return _internal_mutable_encryption_algorithm_name();
+}
+inline const std::string& crypto_signature::_internal_encryption_algorithm_name() const {
+  return encryption_algorithm_name_.Get();
+}
+inline void crypto_signature::_internal_set_encryption_algorithm_name(const std::string& value) {
+  _has_bits_[0] |= 0x00000001u;
+  encryption_algorithm_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void crypto_signature::set_encryption_algorithm_name(std::string&& value) {
+  _has_bits_[0] |= 0x00000001u;
+  encryption_algorithm_name_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:crypto_signature.encryption_algorithm_name)
+}
+inline void crypto_signature::set_encryption_algorithm_name(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000001u;
+  encryption_algorithm_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:crypto_signature.encryption_algorithm_name)
+}
+inline void crypto_signature::set_encryption_algorithm_name(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000001u;
+  encryption_algorithm_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:crypto_signature.encryption_algorithm_name)
+}
+inline std::string* crypto_signature::_internal_mutable_encryption_algorithm_name() {
+  _has_bits_[0] |= 0x00000001u;
+  return encryption_algorithm_name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* crypto_signature::release_encryption_algorithm_name() {
+  // @@protoc_insertion_point(field_release:crypto_signature.encryption_algorithm_name)
+  if (!_internal_has_encryption_algorithm_name()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000001u;
+  return encryption_algorithm_name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void crypto_signature::set_allocated_encryption_algorithm_name(std::string* encryption_algorithm_name) {
+  if (encryption_algorithm_name != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  encryption_algorithm_name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), encryption_algorithm_name,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:crypto_signature.encryption_algorithm_name)
+}
+inline std::string* crypto_signature::unsafe_arena_release_encryption_algorithm_name() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:crypto_signature.encryption_algorithm_name)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000001u;
+  return encryption_algorithm_name_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void crypto_signature::unsafe_arena_set_allocated_encryption_algorithm_name(
+    std::string* encryption_algorithm_name) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (encryption_algorithm_name != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  encryption_algorithm_name_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      encryption_algorithm_name, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:crypto_signature.encryption_algorithm_name)
+}
+
+// required string serialized_statement = 2;
+inline bool crypto_signature::_internal_has_serialized_statement() const {
+  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline bool crypto_signature::has_serialized_statement() const {
+  return _internal_has_serialized_statement();
+}
+inline void crypto_signature::clear_serialized_statement() {
+  serialized_statement_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline const std::string& crypto_signature::serialized_statement() const {
+  // @@protoc_insertion_point(field_get:crypto_signature.serialized_statement)
+  return _internal_serialized_statement();
+}
+inline void crypto_signature::set_serialized_statement(const std::string& value) {
+  _internal_set_serialized_statement(value);
+  // @@protoc_insertion_point(field_set:crypto_signature.serialized_statement)
+}
+inline std::string* crypto_signature::mutable_serialized_statement() {
+  // @@protoc_insertion_point(field_mutable:crypto_signature.serialized_statement)
+  return _internal_mutable_serialized_statement();
+}
+inline const std::string& crypto_signature::_internal_serialized_statement() const {
+  return serialized_statement_.Get();
+}
+inline void crypto_signature::_internal_set_serialized_statement(const std::string& value) {
+  _has_bits_[0] |= 0x00000002u;
+  serialized_statement_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void crypto_signature::set_serialized_statement(std::string&& value) {
+  _has_bits_[0] |= 0x00000002u;
+  serialized_statement_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:crypto_signature.serialized_statement)
+}
+inline void crypto_signature::set_serialized_statement(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000002u;
+  serialized_statement_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:crypto_signature.serialized_statement)
+}
+inline void crypto_signature::set_serialized_statement(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000002u;
+  serialized_statement_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:crypto_signature.serialized_statement)
+}
+inline std::string* crypto_signature::_internal_mutable_serialized_statement() {
+  _has_bits_[0] |= 0x00000002u;
+  return serialized_statement_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* crypto_signature::release_serialized_statement() {
+  // @@protoc_insertion_point(field_release:crypto_signature.serialized_statement)
+  if (!_internal_has_serialized_statement()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000002u;
+  return serialized_statement_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void crypto_signature::set_allocated_serialized_statement(std::string* serialized_statement) {
+  if (serialized_statement != nullptr) {
+    _has_bits_[0] |= 0x00000002u;
+  } else {
+    _has_bits_[0] &= ~0x00000002u;
+  }
+  serialized_statement_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), serialized_statement,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:crypto_signature.serialized_statement)
+}
+inline std::string* crypto_signature::unsafe_arena_release_serialized_statement() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:crypto_signature.serialized_statement)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000002u;
+  return serialized_statement_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void crypto_signature::unsafe_arena_set_allocated_serialized_statement(
+    std::string* serialized_statement) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (serialized_statement != nullptr) {
+    _has_bits_[0] |= 0x00000002u;
+  } else {
+    _has_bits_[0] &= ~0x00000002u;
+  }
+  serialized_statement_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      serialized_statement, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:crypto_signature.serialized_statement)
+}
+
+// optional string signature = 3;
+inline bool crypto_signature::_internal_has_signature() const {
+  bool value = (_has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline bool crypto_signature::has_signature() const {
+  return _internal_has_signature();
+}
+inline void crypto_signature::clear_signature() {
+  signature_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline const std::string& crypto_signature::signature() const {
+  // @@protoc_insertion_point(field_get:crypto_signature.signature)
+  return _internal_signature();
+}
+inline void crypto_signature::set_signature(const std::string& value) {
+  _internal_set_signature(value);
+  // @@protoc_insertion_point(field_set:crypto_signature.signature)
+}
+inline std::string* crypto_signature::mutable_signature() {
+  // @@protoc_insertion_point(field_mutable:crypto_signature.signature)
+  return _internal_mutable_signature();
+}
+inline const std::string& crypto_signature::_internal_signature() const {
+  return signature_.Get();
+}
+inline void crypto_signature::_internal_set_signature(const std::string& value) {
+  _has_bits_[0] |= 0x00000004u;
+  signature_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void crypto_signature::set_signature(std::string&& value) {
+  _has_bits_[0] |= 0x00000004u;
+  signature_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:crypto_signature.signature)
+}
+inline void crypto_signature::set_signature(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000004u;
+  signature_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:crypto_signature.signature)
+}
+inline void crypto_signature::set_signature(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000004u;
+  signature_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:crypto_signature.signature)
+}
+inline std::string* crypto_signature::_internal_mutable_signature() {
+  _has_bits_[0] |= 0x00000004u;
+  return signature_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* crypto_signature::release_signature() {
+  // @@protoc_insertion_point(field_release:crypto_signature.signature)
+  if (!_internal_has_signature()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000004u;
+  return signature_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void crypto_signature::set_allocated_signature(std::string* signature) {
+  if (signature != nullptr) {
+    _has_bits_[0] |= 0x00000004u;
+  } else {
+    _has_bits_[0] &= ~0x00000004u;
+  }
+  signature_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), signature,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:crypto_signature.signature)
+}
+inline std::string* crypto_signature::unsafe_arena_release_signature() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:crypto_signature.signature)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000004u;
+  return signature_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void crypto_signature::unsafe_arena_set_allocated_signature(
+    std::string* signature) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (signature != nullptr) {
+    _has_bits_[0] |= 0x00000004u;
+  } else {
+    _has_bits_[0] &= ~0x00000004u;
+  }
+  signature_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      signature, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:crypto_signature.signature)
+}
+
+// optional string signer_name = 4;
+inline bool crypto_signature::_internal_has_signer_name() const {
+  bool value = (_has_bits_[0] & 0x00000008u) != 0;
+  return value;
+}
+inline bool crypto_signature::has_signer_name() const {
+  return _internal_has_signer_name();
+}
+inline void crypto_signature::clear_signer_name() {
+  signer_name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline const std::string& crypto_signature::signer_name() const {
+  // @@protoc_insertion_point(field_get:crypto_signature.signer_name)
+  return _internal_signer_name();
+}
+inline void crypto_signature::set_signer_name(const std::string& value) {
+  _internal_set_signer_name(value);
+  // @@protoc_insertion_point(field_set:crypto_signature.signer_name)
+}
+inline std::string* crypto_signature::mutable_signer_name() {
+  // @@protoc_insertion_point(field_mutable:crypto_signature.signer_name)
+  return _internal_mutable_signer_name();
+}
+inline const std::string& crypto_signature::_internal_signer_name() const {
+  return signer_name_.Get();
+}
+inline void crypto_signature::_internal_set_signer_name(const std::string& value) {
+  _has_bits_[0] |= 0x00000008u;
+  signer_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void crypto_signature::set_signer_name(std::string&& value) {
+  _has_bits_[0] |= 0x00000008u;
+  signer_name_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:crypto_signature.signer_name)
+}
+inline void crypto_signature::set_signer_name(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000008u;
+  signer_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:crypto_signature.signer_name)
+}
+inline void crypto_signature::set_signer_name(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000008u;
+  signer_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:crypto_signature.signer_name)
+}
+inline std::string* crypto_signature::_internal_mutable_signer_name() {
+  _has_bits_[0] |= 0x00000008u;
+  return signer_name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* crypto_signature::release_signer_name() {
+  // @@protoc_insertion_point(field_release:crypto_signature.signer_name)
+  if (!_internal_has_signer_name()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000008u;
+  return signer_name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void crypto_signature::set_allocated_signer_name(std::string* signer_name) {
+  if (signer_name != nullptr) {
+    _has_bits_[0] |= 0x00000008u;
+  } else {
+    _has_bits_[0] &= ~0x00000008u;
+  }
+  signer_name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), signer_name,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:crypto_signature.signer_name)
+}
+inline std::string* crypto_signature::unsafe_arena_release_signer_name() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:crypto_signature.signer_name)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000008u;
+  return signer_name_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void crypto_signature::unsafe_arena_set_allocated_signer_name(
+    std::string* signer_name) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (signer_name != nullptr) {
+    _has_bits_[0] |= 0x00000008u;
+  } else {
+    _has_bits_[0] &= ~0x00000008u;
+  }
+  signer_name_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      signer_name, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:crypto_signature.signer_name)
+}
+
+// -------------------------------------------------------------------
+
+// cert_name_message
+
+// optional string name_type = 1;
+inline bool cert_name_message::_internal_has_name_type() const {
+  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool cert_name_message::has_name_type() const {
+  return _internal_has_name_type();
+}
+inline void cert_name_message::clear_name_type() {
+  name_type_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline const std::string& cert_name_message::name_type() const {
+  // @@protoc_insertion_point(field_get:cert_name_message.name_type)
+  return _internal_name_type();
+}
+inline void cert_name_message::set_name_type(const std::string& value) {
+  _internal_set_name_type(value);
+  // @@protoc_insertion_point(field_set:cert_name_message.name_type)
+}
+inline std::string* cert_name_message::mutable_name_type() {
+  // @@protoc_insertion_point(field_mutable:cert_name_message.name_type)
+  return _internal_mutable_name_type();
+}
+inline const std::string& cert_name_message::_internal_name_type() const {
+  return name_type_.Get();
+}
+inline void cert_name_message::_internal_set_name_type(const std::string& value) {
+  _has_bits_[0] |= 0x00000001u;
+  name_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void cert_name_message::set_name_type(std::string&& value) {
+  _has_bits_[0] |= 0x00000001u;
+  name_type_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:cert_name_message.name_type)
+}
+inline void cert_name_message::set_name_type(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000001u;
+  name_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:cert_name_message.name_type)
+}
+inline void cert_name_message::set_name_type(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000001u;
+  name_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:cert_name_message.name_type)
+}
+inline std::string* cert_name_message::_internal_mutable_name_type() {
+  _has_bits_[0] |= 0x00000001u;
+  return name_type_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* cert_name_message::release_name_type() {
+  // @@protoc_insertion_point(field_release:cert_name_message.name_type)
+  if (!_internal_has_name_type()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000001u;
+  return name_type_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void cert_name_message::set_allocated_name_type(std::string* name_type) {
+  if (name_type != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  name_type_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), name_type,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:cert_name_message.name_type)
+}
+inline std::string* cert_name_message::unsafe_arena_release_name_type() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:cert_name_message.name_type)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000001u;
+  return name_type_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void cert_name_message::unsafe_arena_set_allocated_name_type(
+    std::string* name_type) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (name_type != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  name_type_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      name_type, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:cert_name_message.name_type)
+}
+
+// optional string name_value = 2;
+inline bool cert_name_message::_internal_has_name_value() const {
+  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline bool cert_name_message::has_name_value() const {
+  return _internal_has_name_value();
+}
+inline void cert_name_message::clear_name_value() {
+  name_value_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline const std::string& cert_name_message::name_value() const {
+  // @@protoc_insertion_point(field_get:cert_name_message.name_value)
+  return _internal_name_value();
+}
+inline void cert_name_message::set_name_value(const std::string& value) {
+  _internal_set_name_value(value);
+  // @@protoc_insertion_point(field_set:cert_name_message.name_value)
+}
+inline std::string* cert_name_message::mutable_name_value() {
+  // @@protoc_insertion_point(field_mutable:cert_name_message.name_value)
+  return _internal_mutable_name_value();
+}
+inline const std::string& cert_name_message::_internal_name_value() const {
+  return name_value_.Get();
+}
+inline void cert_name_message::_internal_set_name_value(const std::string& value) {
+  _has_bits_[0] |= 0x00000002u;
+  name_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void cert_name_message::set_name_value(std::string&& value) {
+  _has_bits_[0] |= 0x00000002u;
+  name_value_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:cert_name_message.name_value)
+}
+inline void cert_name_message::set_name_value(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000002u;
+  name_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:cert_name_message.name_value)
+}
+inline void cert_name_message::set_name_value(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000002u;
+  name_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:cert_name_message.name_value)
+}
+inline std::string* cert_name_message::_internal_mutable_name_value() {
+  _has_bits_[0] |= 0x00000002u;
+  return name_value_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* cert_name_message::release_name_value() {
+  // @@protoc_insertion_point(field_release:cert_name_message.name_value)
+  if (!_internal_has_name_value()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000002u;
+  return name_value_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void cert_name_message::set_allocated_name_value(std::string* name_value) {
+  if (name_value != nullptr) {
+    _has_bits_[0] |= 0x00000002u;
+  } else {
+    _has_bits_[0] &= ~0x00000002u;
+  }
+  name_value_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), name_value,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:cert_name_message.name_value)
+}
+inline std::string* cert_name_message::unsafe_arena_release_name_value() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:cert_name_message.name_value)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000002u;
+  return name_value_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void cert_name_message::unsafe_arena_set_allocated_name_value(
+    std::string* name_value) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (name_value != nullptr) {
+    _has_bits_[0] |= 0x00000002u;
+  } else {
+    _has_bits_[0] &= ~0x00000002u;
+  }
+  name_value_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      name_value, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:cert_name_message.name_value)
+}
+
+// -------------------------------------------------------------------
+
+// cert_principal_name_message
+
+// repeated .cert_name_message names = 1;
+inline int cert_principal_name_message::_internal_names_size() const {
+  return names_.size();
+}
+inline int cert_principal_name_message::names_size() const {
+  return _internal_names_size();
+}
+inline void cert_principal_name_message::clear_names() {
+  names_.Clear();
+}
+inline ::cert_name_message* cert_principal_name_message::mutable_names(int index) {
+  // @@protoc_insertion_point(field_mutable:cert_principal_name_message.names)
+  return names_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_name_message >*
+cert_principal_name_message::mutable_names() {
+  // @@protoc_insertion_point(field_mutable_list:cert_principal_name_message.names)
+  return &names_;
+}
+inline const ::cert_name_message& cert_principal_name_message::_internal_names(int index) const {
+  return names_.Get(index);
+}
+inline const ::cert_name_message& cert_principal_name_message::names(int index) const {
+  // @@protoc_insertion_point(field_get:cert_principal_name_message.names)
+  return _internal_names(index);
+}
+inline ::cert_name_message* cert_principal_name_message::_internal_add_names() {
+  return names_.Add();
+}
+inline ::cert_name_message* cert_principal_name_message::add_names() {
+  // @@protoc_insertion_point(field_add:cert_principal_name_message.names)
+  return _internal_add_names();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_name_message >&
+cert_principal_name_message::names() const {
+  // @@protoc_insertion_point(field_list:cert_principal_name_message.names)
+  return names_;
+}
+
+// -------------------------------------------------------------------
+
+// cert_rsa_parameters_message
+
+// optional int32 modulus_size = 1;
+inline bool cert_rsa_parameters_message::_internal_has_modulus_size() const {
+  bool value = (_has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline bool cert_rsa_parameters_message::has_modulus_size() const {
+  return _internal_has_modulus_size();
+}
+inline void cert_rsa_parameters_message::clear_modulus_size() {
+  modulus_size_ = 0;
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 cert_rsa_parameters_message::_internal_modulus_size() const {
+  return modulus_size_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 cert_rsa_parameters_message::modulus_size() const {
+  // @@protoc_insertion_point(field_get:cert_rsa_parameters_message.modulus_size)
+  return _internal_modulus_size();
+}
+inline void cert_rsa_parameters_message::_internal_set_modulus_size(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _has_bits_[0] |= 0x00000004u;
+  modulus_size_ = value;
+}
+inline void cert_rsa_parameters_message::set_modulus_size(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_modulus_size(value);
+  // @@protoc_insertion_point(field_set:cert_rsa_parameters_message.modulus_size)
+}
+
+// optional int32 exponent_size = 2;
+inline bool cert_rsa_parameters_message::_internal_has_exponent_size() const {
+  bool value = (_has_bits_[0] & 0x00000008u) != 0;
+  return value;
+}
+inline bool cert_rsa_parameters_message::has_exponent_size() const {
+  return _internal_has_exponent_size();
+}
+inline void cert_rsa_parameters_message::clear_exponent_size() {
+  exponent_size_ = 0;
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 cert_rsa_parameters_message::_internal_exponent_size() const {
+  return exponent_size_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 cert_rsa_parameters_message::exponent_size() const {
+  // @@protoc_insertion_point(field_get:cert_rsa_parameters_message.exponent_size)
+  return _internal_exponent_size();
+}
+inline void cert_rsa_parameters_message::_internal_set_exponent_size(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _has_bits_[0] |= 0x00000008u;
+  exponent_size_ = value;
+}
+inline void cert_rsa_parameters_message::set_exponent_size(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_exponent_size(value);
+  // @@protoc_insertion_point(field_set:cert_rsa_parameters_message.exponent_size)
+}
+
+// optional bytes exponent = 3;
+inline bool cert_rsa_parameters_message::_internal_has_exponent() const {
+  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool cert_rsa_parameters_message::has_exponent() const {
+  return _internal_has_exponent();
+}
+inline void cert_rsa_parameters_message::clear_exponent() {
+  exponent_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline const std::string& cert_rsa_parameters_message::exponent() const {
+  // @@protoc_insertion_point(field_get:cert_rsa_parameters_message.exponent)
+  return _internal_exponent();
+}
+inline void cert_rsa_parameters_message::set_exponent(const std::string& value) {
+  _internal_set_exponent(value);
+  // @@protoc_insertion_point(field_set:cert_rsa_parameters_message.exponent)
+}
+inline std::string* cert_rsa_parameters_message::mutable_exponent() {
+  // @@protoc_insertion_point(field_mutable:cert_rsa_parameters_message.exponent)
+  return _internal_mutable_exponent();
+}
+inline const std::string& cert_rsa_parameters_message::_internal_exponent() const {
+  return exponent_.Get();
+}
+inline void cert_rsa_parameters_message::_internal_set_exponent(const std::string& value) {
+  _has_bits_[0] |= 0x00000001u;
+  exponent_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void cert_rsa_parameters_message::set_exponent(std::string&& value) {
+  _has_bits_[0] |= 0x00000001u;
+  exponent_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:cert_rsa_parameters_message.exponent)
+}
+inline void cert_rsa_parameters_message::set_exponent(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000001u;
+  exponent_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:cert_rsa_parameters_message.exponent)
+}
+inline void cert_rsa_parameters_message::set_exponent(const void* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000001u;
+  exponent_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:cert_rsa_parameters_message.exponent)
+}
+inline std::string* cert_rsa_parameters_message::_internal_mutable_exponent() {
+  _has_bits_[0] |= 0x00000001u;
+  return exponent_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* cert_rsa_parameters_message::release_exponent() {
+  // @@protoc_insertion_point(field_release:cert_rsa_parameters_message.exponent)
+  if (!_internal_has_exponent()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000001u;
+  return exponent_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void cert_rsa_parameters_message::set_allocated_exponent(std::string* exponent) {
+  if (exponent != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  exponent_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), exponent,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:cert_rsa_parameters_message.exponent)
+}
+inline std::string* cert_rsa_parameters_message::unsafe_arena_release_exponent() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:cert_rsa_parameters_message.exponent)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000001u;
+  return exponent_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void cert_rsa_parameters_message::unsafe_arena_set_allocated_exponent(
+    std::string* exponent) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (exponent != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  exponent_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      exponent, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:cert_rsa_parameters_message.exponent)
+}
+
+// optional bytes modulus = 4;
+inline bool cert_rsa_parameters_message::_internal_has_modulus() const {
+  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline bool cert_rsa_parameters_message::has_modulus() const {
+  return _internal_has_modulus();
+}
+inline void cert_rsa_parameters_message::clear_modulus() {
+  modulus_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline const std::string& cert_rsa_parameters_message::modulus() const {
+  // @@protoc_insertion_point(field_get:cert_rsa_parameters_message.modulus)
+  return _internal_modulus();
+}
+inline void cert_rsa_parameters_message::set_modulus(const std::string& value) {
+  _internal_set_modulus(value);
+  // @@protoc_insertion_point(field_set:cert_rsa_parameters_message.modulus)
+}
+inline std::string* cert_rsa_parameters_message::mutable_modulus() {
+  // @@protoc_insertion_point(field_mutable:cert_rsa_parameters_message.modulus)
+  return _internal_mutable_modulus();
+}
+inline const std::string& cert_rsa_parameters_message::_internal_modulus() const {
+  return modulus_.Get();
+}
+inline void cert_rsa_parameters_message::_internal_set_modulus(const std::string& value) {
+  _has_bits_[0] |= 0x00000002u;
+  modulus_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void cert_rsa_parameters_message::set_modulus(std::string&& value) {
+  _has_bits_[0] |= 0x00000002u;
+  modulus_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:cert_rsa_parameters_message.modulus)
+}
+inline void cert_rsa_parameters_message::set_modulus(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000002u;
+  modulus_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:cert_rsa_parameters_message.modulus)
+}
+inline void cert_rsa_parameters_message::set_modulus(const void* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000002u;
+  modulus_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:cert_rsa_parameters_message.modulus)
+}
+inline std::string* cert_rsa_parameters_message::_internal_mutable_modulus() {
+  _has_bits_[0] |= 0x00000002u;
+  return modulus_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* cert_rsa_parameters_message::release_modulus() {
+  // @@protoc_insertion_point(field_release:cert_rsa_parameters_message.modulus)
+  if (!_internal_has_modulus()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000002u;
+  return modulus_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void cert_rsa_parameters_message::set_allocated_modulus(std::string* modulus) {
+  if (modulus != nullptr) {
+    _has_bits_[0] |= 0x00000002u;
+  } else {
+    _has_bits_[0] &= ~0x00000002u;
+  }
+  modulus_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), modulus,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:cert_rsa_parameters_message.modulus)
+}
+inline std::string* cert_rsa_parameters_message::unsafe_arena_release_modulus() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:cert_rsa_parameters_message.modulus)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000002u;
+  return modulus_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void cert_rsa_parameters_message::unsafe_arena_set_allocated_modulus(
+    std::string* modulus) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (modulus != nullptr) {
+    _has_bits_[0] |= 0x00000002u;
+  } else {
+    _has_bits_[0] &= ~0x00000002u;
+  }
+  modulus_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      modulus, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:cert_rsa_parameters_message.modulus)
+}
+
+// -------------------------------------------------------------------
+
+// cert_ecc_parameters_message
+
+// optional int32 prime_size = 1;
+inline bool cert_ecc_parameters_message::_internal_has_prime_size() const {
+  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline bool cert_ecc_parameters_message::has_prime_size() const {
+  return _internal_has_prime_size();
+}
+inline void cert_ecc_parameters_message::clear_prime_size() {
+  prime_size_ = 0;
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 cert_ecc_parameters_message::_internal_prime_size() const {
+  return prime_size_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::int32 cert_ecc_parameters_message::prime_size() const {
+  // @@protoc_insertion_point(field_get:cert_ecc_parameters_message.prime_size)
+  return _internal_prime_size();
+}
+inline void cert_ecc_parameters_message::_internal_set_prime_size(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _has_bits_[0] |= 0x00000002u;
+  prime_size_ = value;
+}
+inline void cert_ecc_parameters_message::set_prime_size(::PROTOBUF_NAMESPACE_ID::int32 value) {
+  _internal_set_prime_size(value);
+  // @@protoc_insertion_point(field_set:cert_ecc_parameters_message.prime_size)
+}
+
+// optional bytes prime = 2;
+inline bool cert_ecc_parameters_message::_internal_has_prime() const {
+  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool cert_ecc_parameters_message::has_prime() const {
+  return _internal_has_prime();
+}
+inline void cert_ecc_parameters_message::clear_prime() {
+  prime_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline const std::string& cert_ecc_parameters_message::prime() const {
+  // @@protoc_insertion_point(field_get:cert_ecc_parameters_message.prime)
+  return _internal_prime();
+}
+inline void cert_ecc_parameters_message::set_prime(const std::string& value) {
+  _internal_set_prime(value);
+  // @@protoc_insertion_point(field_set:cert_ecc_parameters_message.prime)
+}
+inline std::string* cert_ecc_parameters_message::mutable_prime() {
+  // @@protoc_insertion_point(field_mutable:cert_ecc_parameters_message.prime)
+  return _internal_mutable_prime();
+}
+inline const std::string& cert_ecc_parameters_message::_internal_prime() const {
+  return prime_.Get();
+}
+inline void cert_ecc_parameters_message::_internal_set_prime(const std::string& value) {
+  _has_bits_[0] |= 0x00000001u;
+  prime_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void cert_ecc_parameters_message::set_prime(std::string&& value) {
+  _has_bits_[0] |= 0x00000001u;
+  prime_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:cert_ecc_parameters_message.prime)
+}
+inline void cert_ecc_parameters_message::set_prime(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000001u;
+  prime_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:cert_ecc_parameters_message.prime)
+}
+inline void cert_ecc_parameters_message::set_prime(const void* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000001u;
+  prime_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:cert_ecc_parameters_message.prime)
+}
+inline std::string* cert_ecc_parameters_message::_internal_mutable_prime() {
+  _has_bits_[0] |= 0x00000001u;
+  return prime_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* cert_ecc_parameters_message::release_prime() {
+  // @@protoc_insertion_point(field_release:cert_ecc_parameters_message.prime)
+  if (!_internal_has_prime()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000001u;
+  return prime_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void cert_ecc_parameters_message::set_allocated_prime(std::string* prime) {
+  if (prime != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  prime_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), prime,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:cert_ecc_parameters_message.prime)
+}
+inline std::string* cert_ecc_parameters_message::unsafe_arena_release_prime() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:cert_ecc_parameters_message.prime)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000001u;
+  return prime_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void cert_ecc_parameters_message::unsafe_arena_set_allocated_prime(
+    std::string* prime) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (prime != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  prime_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      prime, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:cert_ecc_parameters_message.prime)
+}
+
+// -------------------------------------------------------------------
+
+// cert_algorithm_message
+
+// required string algorithm_name = 1;
+inline bool cert_algorithm_message::_internal_has_algorithm_name() const {
+  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool cert_algorithm_message::has_algorithm_name() const {
+  return _internal_has_algorithm_name();
+}
+inline void cert_algorithm_message::clear_algorithm_name() {
+  algorithm_name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline const std::string& cert_algorithm_message::algorithm_name() const {
+  // @@protoc_insertion_point(field_get:cert_algorithm_message.algorithm_name)
+  return _internal_algorithm_name();
+}
+inline void cert_algorithm_message::set_algorithm_name(const std::string& value) {
+  _internal_set_algorithm_name(value);
+  // @@protoc_insertion_point(field_set:cert_algorithm_message.algorithm_name)
+}
+inline std::string* cert_algorithm_message::mutable_algorithm_name() {
+  // @@protoc_insertion_point(field_mutable:cert_algorithm_message.algorithm_name)
+  return _internal_mutable_algorithm_name();
+}
+inline const std::string& cert_algorithm_message::_internal_algorithm_name() const {
+  return algorithm_name_.Get();
+}
+inline void cert_algorithm_message::_internal_set_algorithm_name(const std::string& value) {
+  _has_bits_[0] |= 0x00000001u;
+  algorithm_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void cert_algorithm_message::set_algorithm_name(std::string&& value) {
+  _has_bits_[0] |= 0x00000001u;
+  algorithm_name_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:cert_algorithm_message.algorithm_name)
+}
+inline void cert_algorithm_message::set_algorithm_name(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000001u;
+  algorithm_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:cert_algorithm_message.algorithm_name)
+}
+inline void cert_algorithm_message::set_algorithm_name(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000001u;
+  algorithm_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:cert_algorithm_message.algorithm_name)
+}
+inline std::string* cert_algorithm_message::_internal_mutable_algorithm_name() {
+  _has_bits_[0] |= 0x00000001u;
+  return algorithm_name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* cert_algorithm_message::release_algorithm_name() {
+  // @@protoc_insertion_point(field_release:cert_algorithm_message.algorithm_name)
+  if (!_internal_has_algorithm_name()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000001u;
+  return algorithm_name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void cert_algorithm_message::set_allocated_algorithm_name(std::string* algorithm_name) {
+  if (algorithm_name != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  algorithm_name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), algorithm_name,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:cert_algorithm_message.algorithm_name)
+}
+inline std::string* cert_algorithm_message::unsafe_arena_release_algorithm_name() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:cert_algorithm_message.algorithm_name)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000001u;
+  return algorithm_name_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void cert_algorithm_message::unsafe_arena_set_allocated_algorithm_name(
+    std::string* algorithm_name) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (algorithm_name != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  algorithm_name_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      algorithm_name, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:cert_algorithm_message.algorithm_name)
+}
+
+// optional .cert_rsa_parameters_message rsa_params = 2;
+inline bool cert_algorithm_message::_internal_has_rsa_params() const {
+  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  PROTOBUF_ASSUME(!value || rsa_params_ != nullptr);
+  return value;
+}
+inline bool cert_algorithm_message::has_rsa_params() const {
+  return _internal_has_rsa_params();
+}
+inline void cert_algorithm_message::clear_rsa_params() {
+  if (rsa_params_ != nullptr) rsa_params_->Clear();
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline const ::cert_rsa_parameters_message& cert_algorithm_message::_internal_rsa_params() const {
+  const ::cert_rsa_parameters_message* p = rsa_params_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::cert_rsa_parameters_message*>(
+      &::_cert_rsa_parameters_message_default_instance_);
+}
+inline const ::cert_rsa_parameters_message& cert_algorithm_message::rsa_params() const {
+  // @@protoc_insertion_point(field_get:cert_algorithm_message.rsa_params)
+  return _internal_rsa_params();
+}
+inline void cert_algorithm_message::unsafe_arena_set_allocated_rsa_params(
+    ::cert_rsa_parameters_message* rsa_params) {
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(rsa_params_);
+  }
+  rsa_params_ = rsa_params;
+  if (rsa_params) {
+    _has_bits_[0] |= 0x00000002u;
+  } else {
+    _has_bits_[0] &= ~0x00000002u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:cert_algorithm_message.rsa_params)
+}
+inline ::cert_rsa_parameters_message* cert_algorithm_message::release_rsa_params() {
+  auto temp = unsafe_arena_release_rsa_params();
+  if (GetArena() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+  return temp;
+}
+inline ::cert_rsa_parameters_message* cert_algorithm_message::unsafe_arena_release_rsa_params() {
+  // @@protoc_insertion_point(field_release:cert_algorithm_message.rsa_params)
+  _has_bits_[0] &= ~0x00000002u;
+  ::cert_rsa_parameters_message* temp = rsa_params_;
+  rsa_params_ = nullptr;
+  return temp;
+}
+inline ::cert_rsa_parameters_message* cert_algorithm_message::_internal_mutable_rsa_params() {
+  _has_bits_[0] |= 0x00000002u;
+  if (rsa_params_ == nullptr) {
+    auto* p = CreateMaybeMessage<::cert_rsa_parameters_message>(GetArena());
+    rsa_params_ = p;
+  }
+  return rsa_params_;
+}
+inline ::cert_rsa_parameters_message* cert_algorithm_message::mutable_rsa_params() {
+  // @@protoc_insertion_point(field_mutable:cert_algorithm_message.rsa_params)
+  return _internal_mutable_rsa_params();
+}
+inline void cert_algorithm_message::set_allocated_rsa_params(::cert_rsa_parameters_message* rsa_params) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  if (message_arena == nullptr) {
+    delete rsa_params_;
+  }
+  if (rsa_params) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(rsa_params);
+    if (message_arena != submessage_arena) {
+      rsa_params = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, rsa_params, submessage_arena);
+    }
+    _has_bits_[0] |= 0x00000002u;
+  } else {
+    _has_bits_[0] &= ~0x00000002u;
+  }
+  rsa_params_ = rsa_params;
+  // @@protoc_insertion_point(field_set_allocated:cert_algorithm_message.rsa_params)
+}
+
+// optional .cert_ecc_parameters_message ecc_params = 3;
+inline bool cert_algorithm_message::_internal_has_ecc_params() const {
+  bool value = (_has_bits_[0] & 0x00000004u) != 0;
+  PROTOBUF_ASSUME(!value || ecc_params_ != nullptr);
+  return value;
+}
+inline bool cert_algorithm_message::has_ecc_params() const {
+  return _internal_has_ecc_params();
+}
+inline void cert_algorithm_message::clear_ecc_params() {
+  if (ecc_params_ != nullptr) ecc_params_->Clear();
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline const ::cert_ecc_parameters_message& cert_algorithm_message::_internal_ecc_params() const {
+  const ::cert_ecc_parameters_message* p = ecc_params_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::cert_ecc_parameters_message*>(
+      &::_cert_ecc_parameters_message_default_instance_);
+}
+inline const ::cert_ecc_parameters_message& cert_algorithm_message::ecc_params() const {
+  // @@protoc_insertion_point(field_get:cert_algorithm_message.ecc_params)
+  return _internal_ecc_params();
+}
+inline void cert_algorithm_message::unsafe_arena_set_allocated_ecc_params(
+    ::cert_ecc_parameters_message* ecc_params) {
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(ecc_params_);
+  }
+  ecc_params_ = ecc_params;
+  if (ecc_params) {
+    _has_bits_[0] |= 0x00000004u;
+  } else {
+    _has_bits_[0] &= ~0x00000004u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:cert_algorithm_message.ecc_params)
+}
+inline ::cert_ecc_parameters_message* cert_algorithm_message::release_ecc_params() {
+  auto temp = unsafe_arena_release_ecc_params();
+  if (GetArena() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+  return temp;
+}
+inline ::cert_ecc_parameters_message* cert_algorithm_message::unsafe_arena_release_ecc_params() {
+  // @@protoc_insertion_point(field_release:cert_algorithm_message.ecc_params)
+  _has_bits_[0] &= ~0x00000004u;
+  ::cert_ecc_parameters_message* temp = ecc_params_;
+  ecc_params_ = nullptr;
+  return temp;
+}
+inline ::cert_ecc_parameters_message* cert_algorithm_message::_internal_mutable_ecc_params() {
+  _has_bits_[0] |= 0x00000004u;
+  if (ecc_params_ == nullptr) {
+    auto* p = CreateMaybeMessage<::cert_ecc_parameters_message>(GetArena());
+    ecc_params_ = p;
+  }
+  return ecc_params_;
+}
+inline ::cert_ecc_parameters_message* cert_algorithm_message::mutable_ecc_params() {
+  // @@protoc_insertion_point(field_mutable:cert_algorithm_message.ecc_params)
+  return _internal_mutable_ecc_params();
+}
+inline void cert_algorithm_message::set_allocated_ecc_params(::cert_ecc_parameters_message* ecc_params) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  if (message_arena == nullptr) {
+    delete ecc_params_;
+  }
+  if (ecc_params) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(ecc_params);
+    if (message_arena != submessage_arena) {
+      ecc_params = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, ecc_params, submessage_arena);
+    }
+    _has_bits_[0] |= 0x00000004u;
+  } else {
+    _has_bits_[0] &= ~0x00000004u;
+  }
+  ecc_params_ = ecc_params;
+  // @@protoc_insertion_point(field_set_allocated:cert_algorithm_message.ecc_params)
+}
+
+// -------------------------------------------------------------------
+
+// cert_properties_message
+
+// optional string property_name = 1;
+inline bool cert_properties_message::_internal_has_property_name() const {
+  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool cert_properties_message::has_property_name() const {
+  return _internal_has_property_name();
+}
+inline void cert_properties_message::clear_property_name() {
+  property_name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline const std::string& cert_properties_message::property_name() const {
+  // @@protoc_insertion_point(field_get:cert_properties_message.property_name)
+  return _internal_property_name();
+}
+inline void cert_properties_message::set_property_name(const std::string& value) {
+  _internal_set_property_name(value);
+  // @@protoc_insertion_point(field_set:cert_properties_message.property_name)
+}
+inline std::string* cert_properties_message::mutable_property_name() {
+  // @@protoc_insertion_point(field_mutable:cert_properties_message.property_name)
+  return _internal_mutable_property_name();
+}
+inline const std::string& cert_properties_message::_internal_property_name() const {
+  return property_name_.Get();
+}
+inline void cert_properties_message::_internal_set_property_name(const std::string& value) {
+  _has_bits_[0] |= 0x00000001u;
+  property_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void cert_properties_message::set_property_name(std::string&& value) {
+  _has_bits_[0] |= 0x00000001u;
+  property_name_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:cert_properties_message.property_name)
+}
+inline void cert_properties_message::set_property_name(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000001u;
+  property_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:cert_properties_message.property_name)
+}
+inline void cert_properties_message::set_property_name(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000001u;
+  property_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:cert_properties_message.property_name)
+}
+inline std::string* cert_properties_message::_internal_mutable_property_name() {
+  _has_bits_[0] |= 0x00000001u;
+  return property_name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* cert_properties_message::release_property_name() {
+  // @@protoc_insertion_point(field_release:cert_properties_message.property_name)
+  if (!_internal_has_property_name()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000001u;
+  return property_name_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void cert_properties_message::set_allocated_property_name(std::string* property_name) {
+  if (property_name != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  property_name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), property_name,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:cert_properties_message.property_name)
+}
+inline std::string* cert_properties_message::unsafe_arena_release_property_name() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:cert_properties_message.property_name)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000001u;
+  return property_name_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void cert_properties_message::unsafe_arena_set_allocated_property_name(
+    std::string* property_name) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (property_name != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  property_name_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      property_name, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:cert_properties_message.property_name)
+}
+
+// optional string property_value = 2;
+inline bool cert_properties_message::_internal_has_property_value() const {
+  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline bool cert_properties_message::has_property_value() const {
+  return _internal_has_property_value();
+}
+inline void cert_properties_message::clear_property_value() {
+  property_value_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline const std::string& cert_properties_message::property_value() const {
+  // @@protoc_insertion_point(field_get:cert_properties_message.property_value)
+  return _internal_property_value();
+}
+inline void cert_properties_message::set_property_value(const std::string& value) {
+  _internal_set_property_value(value);
+  // @@protoc_insertion_point(field_set:cert_properties_message.property_value)
+}
+inline std::string* cert_properties_message::mutable_property_value() {
+  // @@protoc_insertion_point(field_mutable:cert_properties_message.property_value)
+  return _internal_mutable_property_value();
+}
+inline const std::string& cert_properties_message::_internal_property_value() const {
+  return property_value_.Get();
+}
+inline void cert_properties_message::_internal_set_property_value(const std::string& value) {
+  _has_bits_[0] |= 0x00000002u;
+  property_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void cert_properties_message::set_property_value(std::string&& value) {
+  _has_bits_[0] |= 0x00000002u;
+  property_value_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:cert_properties_message.property_value)
+}
+inline void cert_properties_message::set_property_value(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000002u;
+  property_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:cert_properties_message.property_value)
+}
+inline void cert_properties_message::set_property_value(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000002u;
+  property_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:cert_properties_message.property_value)
+}
+inline std::string* cert_properties_message::_internal_mutable_property_value() {
+  _has_bits_[0] |= 0x00000002u;
+  return property_value_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* cert_properties_message::release_property_value() {
+  // @@protoc_insertion_point(field_release:cert_properties_message.property_value)
+  if (!_internal_has_property_value()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000002u;
+  return property_value_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void cert_properties_message::set_allocated_property_value(std::string* property_value) {
+  if (property_value != nullptr) {
+    _has_bits_[0] |= 0x00000002u;
+  } else {
+    _has_bits_[0] &= ~0x00000002u;
+  }
+  property_value_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), property_value,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:cert_properties_message.property_value)
+}
+inline std::string* cert_properties_message::unsafe_arena_release_property_value() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:cert_properties_message.property_value)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000002u;
+  return property_value_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void cert_properties_message::unsafe_arena_set_allocated_property_value(
+    std::string* property_value) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (property_value != nullptr) {
+    _has_bits_[0] |= 0x00000002u;
+  } else {
+    _has_bits_[0] &= ~0x00000002u;
+  }
+  property_value_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      property_value, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:cert_properties_message.property_value)
+}
+
+// -------------------------------------------------------------------
+
+// certificate_message
+
+// required string version = 1;
+inline bool certificate_message::_internal_has_version() const {
+  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool certificate_message::has_version() const {
+  return _internal_has_version();
+}
+inline void certificate_message::clear_version() {
+  version_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline const std::string& certificate_message::version() const {
+  // @@protoc_insertion_point(field_get:certificate_message.version)
+  return _internal_version();
+}
+inline void certificate_message::set_version(const std::string& value) {
+  _internal_set_version(value);
+  // @@protoc_insertion_point(field_set:certificate_message.version)
+}
+inline std::string* certificate_message::mutable_version() {
+  // @@protoc_insertion_point(field_mutable:certificate_message.version)
+  return _internal_mutable_version();
+}
+inline const std::string& certificate_message::_internal_version() const {
+  return version_.Get();
+}
+inline void certificate_message::_internal_set_version(const std::string& value) {
+  _has_bits_[0] |= 0x00000001u;
+  version_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void certificate_message::set_version(std::string&& value) {
+  _has_bits_[0] |= 0x00000001u;
+  version_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:certificate_message.version)
+}
+inline void certificate_message::set_version(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000001u;
+  version_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:certificate_message.version)
+}
+inline void certificate_message::set_version(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000001u;
+  version_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:certificate_message.version)
+}
+inline std::string* certificate_message::_internal_mutable_version() {
+  _has_bits_[0] |= 0x00000001u;
+  return version_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* certificate_message::release_version() {
+  // @@protoc_insertion_point(field_release:certificate_message.version)
+  if (!_internal_has_version()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000001u;
+  return version_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void certificate_message::set_allocated_version(std::string* version) {
+  if (version != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  version_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), version,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:certificate_message.version)
+}
+inline std::string* certificate_message::unsafe_arena_release_version() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:certificate_message.version)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000001u;
+  return version_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void certificate_message::unsafe_arena_set_allocated_version(
+    std::string* version) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (version != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  version_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      version, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:certificate_message.version)
+}
+
+// repeated .cert_name_message subject = 2;
+inline int certificate_message::_internal_subject_size() const {
+  return subject_.size();
+}
+inline int certificate_message::subject_size() const {
+  return _internal_subject_size();
+}
+inline void certificate_message::clear_subject() {
+  subject_.Clear();
+}
+inline ::cert_name_message* certificate_message::mutable_subject(int index) {
+  // @@protoc_insertion_point(field_mutable:certificate_message.subject)
+  return subject_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_name_message >*
+certificate_message::mutable_subject() {
+  // @@protoc_insertion_point(field_mutable_list:certificate_message.subject)
+  return &subject_;
+}
+inline const ::cert_name_message& certificate_message::_internal_subject(int index) const {
+  return subject_.Get(index);
+}
+inline const ::cert_name_message& certificate_message::subject(int index) const {
+  // @@protoc_insertion_point(field_get:certificate_message.subject)
+  return _internal_subject(index);
+}
+inline ::cert_name_message* certificate_message::_internal_add_subject() {
+  return subject_.Add();
+}
+inline ::cert_name_message* certificate_message::add_subject() {
+  // @@protoc_insertion_point(field_add:certificate_message.subject)
+  return _internal_add_subject();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_name_message >&
+certificate_message::subject() const {
+  // @@protoc_insertion_point(field_list:certificate_message.subject)
+  return subject_;
+}
+
+// optional .cert_algorithm_message subject_key = 3;
+inline bool certificate_message::_internal_has_subject_key() const {
+  bool value = (_has_bits_[0] & 0x00000200u) != 0;
+  PROTOBUF_ASSUME(!value || subject_key_ != nullptr);
+  return value;
+}
+inline bool certificate_message::has_subject_key() const {
+  return _internal_has_subject_key();
+}
+inline void certificate_message::clear_subject_key() {
+  if (subject_key_ != nullptr) subject_key_->Clear();
+  _has_bits_[0] &= ~0x00000200u;
+}
+inline const ::cert_algorithm_message& certificate_message::_internal_subject_key() const {
+  const ::cert_algorithm_message* p = subject_key_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::cert_algorithm_message*>(
+      &::_cert_algorithm_message_default_instance_);
+}
+inline const ::cert_algorithm_message& certificate_message::subject_key() const {
+  // @@protoc_insertion_point(field_get:certificate_message.subject_key)
+  return _internal_subject_key();
+}
+inline void certificate_message::unsafe_arena_set_allocated_subject_key(
+    ::cert_algorithm_message* subject_key) {
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(subject_key_);
+  }
+  subject_key_ = subject_key;
+  if (subject_key) {
+    _has_bits_[0] |= 0x00000200u;
+  } else {
+    _has_bits_[0] &= ~0x00000200u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:certificate_message.subject_key)
+}
+inline ::cert_algorithm_message* certificate_message::release_subject_key() {
+  auto temp = unsafe_arena_release_subject_key();
+  if (GetArena() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+  return temp;
+}
+inline ::cert_algorithm_message* certificate_message::unsafe_arena_release_subject_key() {
+  // @@protoc_insertion_point(field_release:certificate_message.subject_key)
+  _has_bits_[0] &= ~0x00000200u;
+  ::cert_algorithm_message* temp = subject_key_;
+  subject_key_ = nullptr;
+  return temp;
+}
+inline ::cert_algorithm_message* certificate_message::_internal_mutable_subject_key() {
+  _has_bits_[0] |= 0x00000200u;
+  if (subject_key_ == nullptr) {
+    auto* p = CreateMaybeMessage<::cert_algorithm_message>(GetArena());
+    subject_key_ = p;
+  }
+  return subject_key_;
+}
+inline ::cert_algorithm_message* certificate_message::mutable_subject_key() {
+  // @@protoc_insertion_point(field_mutable:certificate_message.subject_key)
+  return _internal_mutable_subject_key();
+}
+inline void certificate_message::set_allocated_subject_key(::cert_algorithm_message* subject_key) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  if (message_arena == nullptr) {
+    delete subject_key_;
+  }
+  if (subject_key) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(subject_key);
+    if (message_arena != submessage_arena) {
+      subject_key = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, subject_key, submessage_arena);
+    }
+    _has_bits_[0] |= 0x00000200u;
+  } else {
+    _has_bits_[0] &= ~0x00000200u;
+  }
+  subject_key_ = subject_key;
+  // @@protoc_insertion_point(field_set_allocated:certificate_message.subject_key)
+}
+
+// repeated .cert_properties_message properties = 4;
+inline int certificate_message::_internal_properties_size() const {
+  return properties_.size();
+}
+inline int certificate_message::properties_size() const {
+  return _internal_properties_size();
+}
+inline void certificate_message::clear_properties() {
+  properties_.Clear();
+}
+inline ::cert_properties_message* certificate_message::mutable_properties(int index) {
+  // @@protoc_insertion_point(field_mutable:certificate_message.properties)
+  return properties_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_properties_message >*
+certificate_message::mutable_properties() {
+  // @@protoc_insertion_point(field_mutable_list:certificate_message.properties)
+  return &properties_;
+}
+inline const ::cert_properties_message& certificate_message::_internal_properties(int index) const {
+  return properties_.Get(index);
+}
+inline const ::cert_properties_message& certificate_message::properties(int index) const {
+  // @@protoc_insertion_point(field_get:certificate_message.properties)
+  return _internal_properties(index);
+}
+inline ::cert_properties_message* certificate_message::_internal_add_properties() {
+  return properties_.Add();
+}
+inline ::cert_properties_message* certificate_message::add_properties() {
+  // @@protoc_insertion_point(field_add:certificate_message.properties)
+  return _internal_add_properties();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_properties_message >&
+certificate_message::properties() const {
+  // @@protoc_insertion_point(field_list:certificate_message.properties)
+  return properties_;
+}
+
+// optional string purpose = 5;
+inline bool certificate_message::_internal_has_purpose() const {
+  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline bool certificate_message::has_purpose() const {
+  return _internal_has_purpose();
+}
+inline void certificate_message::clear_purpose() {
+  purpose_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline const std::string& certificate_message::purpose() const {
+  // @@protoc_insertion_point(field_get:certificate_message.purpose)
+  return _internal_purpose();
+}
+inline void certificate_message::set_purpose(const std::string& value) {
+  _internal_set_purpose(value);
+  // @@protoc_insertion_point(field_set:certificate_message.purpose)
+}
+inline std::string* certificate_message::mutable_purpose() {
+  // @@protoc_insertion_point(field_mutable:certificate_message.purpose)
+  return _internal_mutable_purpose();
+}
+inline const std::string& certificate_message::_internal_purpose() const {
+  return purpose_.Get();
+}
+inline void certificate_message::_internal_set_purpose(const std::string& value) {
+  _has_bits_[0] |= 0x00000002u;
+  purpose_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void certificate_message::set_purpose(std::string&& value) {
+  _has_bits_[0] |= 0x00000002u;
+  purpose_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:certificate_message.purpose)
+}
+inline void certificate_message::set_purpose(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000002u;
+  purpose_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:certificate_message.purpose)
+}
+inline void certificate_message::set_purpose(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000002u;
+  purpose_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:certificate_message.purpose)
+}
+inline std::string* certificate_message::_internal_mutable_purpose() {
+  _has_bits_[0] |= 0x00000002u;
+  return purpose_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* certificate_message::release_purpose() {
+  // @@protoc_insertion_point(field_release:certificate_message.purpose)
+  if (!_internal_has_purpose()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000002u;
+  return purpose_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void certificate_message::set_allocated_purpose(std::string* purpose) {
+  if (purpose != nullptr) {
+    _has_bits_[0] |= 0x00000002u;
+  } else {
+    _has_bits_[0] &= ~0x00000002u;
+  }
+  purpose_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), purpose,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:certificate_message.purpose)
+}
+inline std::string* certificate_message::unsafe_arena_release_purpose() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:certificate_message.purpose)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000002u;
+  return purpose_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void certificate_message::unsafe_arena_set_allocated_purpose(
+    std::string* purpose) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (purpose != nullptr) {
+    _has_bits_[0] |= 0x00000002u;
+  } else {
+    _has_bits_[0] &= ~0x00000002u;
+  }
+  purpose_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      purpose, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:certificate_message.purpose)
+}
+
+// optional string not_before = 6;
+inline bool certificate_message::_internal_has_not_before() const {
+  bool value = (_has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline bool certificate_message::has_not_before() const {
+  return _internal_has_not_before();
+}
+inline void certificate_message::clear_not_before() {
+  not_before_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline const std::string& certificate_message::not_before() const {
+  // @@protoc_insertion_point(field_get:certificate_message.not_before)
+  return _internal_not_before();
+}
+inline void certificate_message::set_not_before(const std::string& value) {
+  _internal_set_not_before(value);
+  // @@protoc_insertion_point(field_set:certificate_message.not_before)
+}
+inline std::string* certificate_message::mutable_not_before() {
+  // @@protoc_insertion_point(field_mutable:certificate_message.not_before)
+  return _internal_mutable_not_before();
+}
+inline const std::string& certificate_message::_internal_not_before() const {
+  return not_before_.Get();
+}
+inline void certificate_message::_internal_set_not_before(const std::string& value) {
+  _has_bits_[0] |= 0x00000004u;
+  not_before_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void certificate_message::set_not_before(std::string&& value) {
+  _has_bits_[0] |= 0x00000004u;
+  not_before_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:certificate_message.not_before)
+}
+inline void certificate_message::set_not_before(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000004u;
+  not_before_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:certificate_message.not_before)
+}
+inline void certificate_message::set_not_before(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000004u;
+  not_before_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:certificate_message.not_before)
+}
+inline std::string* certificate_message::_internal_mutable_not_before() {
+  _has_bits_[0] |= 0x00000004u;
+  return not_before_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* certificate_message::release_not_before() {
+  // @@protoc_insertion_point(field_release:certificate_message.not_before)
+  if (!_internal_has_not_before()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000004u;
+  return not_before_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void certificate_message::set_allocated_not_before(std::string* not_before) {
+  if (not_before != nullptr) {
+    _has_bits_[0] |= 0x00000004u;
+  } else {
+    _has_bits_[0] &= ~0x00000004u;
+  }
+  not_before_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), not_before,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:certificate_message.not_before)
+}
+inline std::string* certificate_message::unsafe_arena_release_not_before() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:certificate_message.not_before)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000004u;
+  return not_before_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void certificate_message::unsafe_arena_set_allocated_not_before(
+    std::string* not_before) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (not_before != nullptr) {
+    _has_bits_[0] |= 0x00000004u;
+  } else {
+    _has_bits_[0] &= ~0x00000004u;
+  }
+  not_before_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      not_before, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:certificate_message.not_before)
+}
+
+// optional string not_after = 7;
+inline bool certificate_message::_internal_has_not_after() const {
+  bool value = (_has_bits_[0] & 0x00000008u) != 0;
+  return value;
+}
+inline bool certificate_message::has_not_after() const {
+  return _internal_has_not_after();
+}
+inline void certificate_message::clear_not_after() {
+  not_after_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline const std::string& certificate_message::not_after() const {
+  // @@protoc_insertion_point(field_get:certificate_message.not_after)
+  return _internal_not_after();
+}
+inline void certificate_message::set_not_after(const std::string& value) {
+  _internal_set_not_after(value);
+  // @@protoc_insertion_point(field_set:certificate_message.not_after)
+}
+inline std::string* certificate_message::mutable_not_after() {
+  // @@protoc_insertion_point(field_mutable:certificate_message.not_after)
+  return _internal_mutable_not_after();
+}
+inline const std::string& certificate_message::_internal_not_after() const {
+  return not_after_.Get();
+}
+inline void certificate_message::_internal_set_not_after(const std::string& value) {
+  _has_bits_[0] |= 0x00000008u;
+  not_after_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void certificate_message::set_not_after(std::string&& value) {
+  _has_bits_[0] |= 0x00000008u;
+  not_after_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:certificate_message.not_after)
+}
+inline void certificate_message::set_not_after(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000008u;
+  not_after_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:certificate_message.not_after)
+}
+inline void certificate_message::set_not_after(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000008u;
+  not_after_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:certificate_message.not_after)
+}
+inline std::string* certificate_message::_internal_mutable_not_after() {
+  _has_bits_[0] |= 0x00000008u;
+  return not_after_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* certificate_message::release_not_after() {
+  // @@protoc_insertion_point(field_release:certificate_message.not_after)
+  if (!_internal_has_not_after()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000008u;
+  return not_after_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void certificate_message::set_allocated_not_after(std::string* not_after) {
+  if (not_after != nullptr) {
+    _has_bits_[0] |= 0x00000008u;
+  } else {
+    _has_bits_[0] &= ~0x00000008u;
+  }
+  not_after_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), not_after,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:certificate_message.not_after)
+}
+inline std::string* certificate_message::unsafe_arena_release_not_after() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:certificate_message.not_after)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000008u;
+  return not_after_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void certificate_message::unsafe_arena_set_allocated_not_after(
+    std::string* not_after) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (not_after != nullptr) {
+    _has_bits_[0] |= 0x00000008u;
+  } else {
+    _has_bits_[0] &= ~0x00000008u;
+  }
+  not_after_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      not_after, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:certificate_message.not_after)
+}
+
+// optional bytes nonce = 8;
+inline bool certificate_message::_internal_has_nonce() const {
+  bool value = (_has_bits_[0] & 0x00000010u) != 0;
+  return value;
+}
+inline bool certificate_message::has_nonce() const {
+  return _internal_has_nonce();
+}
+inline void certificate_message::clear_nonce() {
+  nonce_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline const std::string& certificate_message::nonce() const {
+  // @@protoc_insertion_point(field_get:certificate_message.nonce)
+  return _internal_nonce();
+}
+inline void certificate_message::set_nonce(const std::string& value) {
+  _internal_set_nonce(value);
+  // @@protoc_insertion_point(field_set:certificate_message.nonce)
+}
+inline std::string* certificate_message::mutable_nonce() {
+  // @@protoc_insertion_point(field_mutable:certificate_message.nonce)
+  return _internal_mutable_nonce();
+}
+inline const std::string& certificate_message::_internal_nonce() const {
+  return nonce_.Get();
+}
+inline void certificate_message::_internal_set_nonce(const std::string& value) {
+  _has_bits_[0] |= 0x00000010u;
+  nonce_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void certificate_message::set_nonce(std::string&& value) {
+  _has_bits_[0] |= 0x00000010u;
+  nonce_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:certificate_message.nonce)
+}
+inline void certificate_message::set_nonce(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000010u;
+  nonce_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:certificate_message.nonce)
+}
+inline void certificate_message::set_nonce(const void* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000010u;
+  nonce_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:certificate_message.nonce)
+}
+inline std::string* certificate_message::_internal_mutable_nonce() {
+  _has_bits_[0] |= 0x00000010u;
+  return nonce_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* certificate_message::release_nonce() {
+  // @@protoc_insertion_point(field_release:certificate_message.nonce)
+  if (!_internal_has_nonce()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000010u;
+  return nonce_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void certificate_message::set_allocated_nonce(std::string* nonce) {
+  if (nonce != nullptr) {
+    _has_bits_[0] |= 0x00000010u;
+  } else {
+    _has_bits_[0] &= ~0x00000010u;
+  }
+  nonce_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), nonce,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:certificate_message.nonce)
+}
+inline std::string* certificate_message::unsafe_arena_release_nonce() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:certificate_message.nonce)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000010u;
+  return nonce_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void certificate_message::unsafe_arena_set_allocated_nonce(
+    std::string* nonce) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (nonce != nullptr) {
+    _has_bits_[0] |= 0x00000010u;
+  } else {
+    _has_bits_[0] &= ~0x00000010u;
+  }
+  nonce_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      nonce, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:certificate_message.nonce)
+}
+
+// optional bytes canonical = 9;
+inline bool certificate_message::_internal_has_canonical() const {
+  bool value = (_has_bits_[0] & 0x00000020u) != 0;
+  return value;
+}
+inline bool certificate_message::has_canonical() const {
+  return _internal_has_canonical();
+}
+inline void certificate_message::clear_canonical() {
+  canonical_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline const std::string& certificate_message::canonical() const {
+  // @@protoc_insertion_point(field_get:certificate_message.canonical)
+  return _internal_canonical();
+}
+inline void certificate_message::set_canonical(const std::string& value) {
+  _internal_set_canonical(value);
+  // @@protoc_insertion_point(field_set:certificate_message.canonical)
+}
+inline std::string* certificate_message::mutable_canonical() {
+  // @@protoc_insertion_point(field_mutable:certificate_message.canonical)
+  return _internal_mutable_canonical();
+}
+inline const std::string& certificate_message::_internal_canonical() const {
+  return canonical_.Get();
+}
+inline void certificate_message::_internal_set_canonical(const std::string& value) {
+  _has_bits_[0] |= 0x00000020u;
+  canonical_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void certificate_message::set_canonical(std::string&& value) {
+  _has_bits_[0] |= 0x00000020u;
+  canonical_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:certificate_message.canonical)
+}
+inline void certificate_message::set_canonical(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000020u;
+  canonical_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:certificate_message.canonical)
+}
+inline void certificate_message::set_canonical(const void* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000020u;
+  canonical_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:certificate_message.canonical)
+}
+inline std::string* certificate_message::_internal_mutable_canonical() {
+  _has_bits_[0] |= 0x00000020u;
+  return canonical_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* certificate_message::release_canonical() {
+  // @@protoc_insertion_point(field_release:certificate_message.canonical)
+  if (!_internal_has_canonical()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000020u;
+  return canonical_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void certificate_message::set_allocated_canonical(std::string* canonical) {
+  if (canonical != nullptr) {
+    _has_bits_[0] |= 0x00000020u;
+  } else {
+    _has_bits_[0] &= ~0x00000020u;
+  }
+  canonical_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), canonical,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:certificate_message.canonical)
+}
+inline std::string* certificate_message::unsafe_arena_release_canonical() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:certificate_message.canonical)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000020u;
+  return canonical_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void certificate_message::unsafe_arena_set_allocated_canonical(
+    std::string* canonical) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (canonical != nullptr) {
+    _has_bits_[0] |= 0x00000020u;
+  } else {
+    _has_bits_[0] &= ~0x00000020u;
+  }
+  canonical_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      canonical, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:certificate_message.canonical)
+}
+
+// optional string revocation_address = 10;
+inline bool certificate_message::_internal_has_revocation_address() const {
+  bool value = (_has_bits_[0] & 0x00000040u) != 0;
+  return value;
+}
+inline bool certificate_message::has_revocation_address() const {
+  return _internal_has_revocation_address();
+}
+inline void certificate_message::clear_revocation_address() {
+  revocation_address_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000040u;
+}
+inline const std::string& certificate_message::revocation_address() const {
+  // @@protoc_insertion_point(field_get:certificate_message.revocation_address)
+  return _internal_revocation_address();
+}
+inline void certificate_message::set_revocation_address(const std::string& value) {
+  _internal_set_revocation_address(value);
+  // @@protoc_insertion_point(field_set:certificate_message.revocation_address)
+}
+inline std::string* certificate_message::mutable_revocation_address() {
+  // @@protoc_insertion_point(field_mutable:certificate_message.revocation_address)
+  return _internal_mutable_revocation_address();
+}
+inline const std::string& certificate_message::_internal_revocation_address() const {
+  return revocation_address_.Get();
+}
+inline void certificate_message::_internal_set_revocation_address(const std::string& value) {
+  _has_bits_[0] |= 0x00000040u;
+  revocation_address_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void certificate_message::set_revocation_address(std::string&& value) {
+  _has_bits_[0] |= 0x00000040u;
+  revocation_address_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:certificate_message.revocation_address)
+}
+inline void certificate_message::set_revocation_address(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000040u;
+  revocation_address_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:certificate_message.revocation_address)
+}
+inline void certificate_message::set_revocation_address(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000040u;
+  revocation_address_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:certificate_message.revocation_address)
+}
+inline std::string* certificate_message::_internal_mutable_revocation_address() {
+  _has_bits_[0] |= 0x00000040u;
+  return revocation_address_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* certificate_message::release_revocation_address() {
+  // @@protoc_insertion_point(field_release:certificate_message.revocation_address)
+  if (!_internal_has_revocation_address()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000040u;
+  return revocation_address_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void certificate_message::set_allocated_revocation_address(std::string* revocation_address) {
+  if (revocation_address != nullptr) {
+    _has_bits_[0] |= 0x00000040u;
+  } else {
+    _has_bits_[0] &= ~0x00000040u;
+  }
+  revocation_address_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), revocation_address,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:certificate_message.revocation_address)
+}
+inline std::string* certificate_message::unsafe_arena_release_revocation_address() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:certificate_message.revocation_address)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000040u;
+  return revocation_address_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void certificate_message::unsafe_arena_set_allocated_revocation_address(
+    std::string* revocation_address) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (revocation_address != nullptr) {
+    _has_bits_[0] |= 0x00000040u;
+  } else {
+    _has_bits_[0] &= ~0x00000040u;
+  }
+  revocation_address_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      revocation_address, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:certificate_message.revocation_address)
+}
+
+// optional string date_signed = 11;
+inline bool certificate_message::_internal_has_date_signed() const {
+  bool value = (_has_bits_[0] & 0x00000080u) != 0;
+  return value;
+}
+inline bool certificate_message::has_date_signed() const {
+  return _internal_has_date_signed();
+}
+inline void certificate_message::clear_date_signed() {
+  date_signed_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline const std::string& certificate_message::date_signed() const {
+  // @@protoc_insertion_point(field_get:certificate_message.date_signed)
+  return _internal_date_signed();
+}
+inline void certificate_message::set_date_signed(const std::string& value) {
+  _internal_set_date_signed(value);
+  // @@protoc_insertion_point(field_set:certificate_message.date_signed)
+}
+inline std::string* certificate_message::mutable_date_signed() {
+  // @@protoc_insertion_point(field_mutable:certificate_message.date_signed)
+  return _internal_mutable_date_signed();
+}
+inline const std::string& certificate_message::_internal_date_signed() const {
+  return date_signed_.Get();
+}
+inline void certificate_message::_internal_set_date_signed(const std::string& value) {
+  _has_bits_[0] |= 0x00000080u;
+  date_signed_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void certificate_message::set_date_signed(std::string&& value) {
+  _has_bits_[0] |= 0x00000080u;
+  date_signed_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:certificate_message.date_signed)
+}
+inline void certificate_message::set_date_signed(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000080u;
+  date_signed_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:certificate_message.date_signed)
+}
+inline void certificate_message::set_date_signed(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000080u;
+  date_signed_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:certificate_message.date_signed)
+}
+inline std::string* certificate_message::_internal_mutable_date_signed() {
+  _has_bits_[0] |= 0x00000080u;
+  return date_signed_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* certificate_message::release_date_signed() {
+  // @@protoc_insertion_point(field_release:certificate_message.date_signed)
+  if (!_internal_has_date_signed()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000080u;
+  return date_signed_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void certificate_message::set_allocated_date_signed(std::string* date_signed) {
+  if (date_signed != nullptr) {
+    _has_bits_[0] |= 0x00000080u;
+  } else {
+    _has_bits_[0] &= ~0x00000080u;
+  }
+  date_signed_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), date_signed,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:certificate_message.date_signed)
+}
+inline std::string* certificate_message::unsafe_arena_release_date_signed() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:certificate_message.date_signed)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000080u;
+  return date_signed_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void certificate_message::unsafe_arena_set_allocated_date_signed(
+    std::string* date_signed) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (date_signed != nullptr) {
+    _has_bits_[0] |= 0x00000080u;
+  } else {
+    _has_bits_[0] &= ~0x00000080u;
+  }
+  date_signed_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      date_signed, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:certificate_message.date_signed)
+}
+
+// repeated .cert_name_message issuer = 12;
+inline int certificate_message::_internal_issuer_size() const {
+  return issuer_.size();
+}
+inline int certificate_message::issuer_size() const {
+  return _internal_issuer_size();
+}
+inline void certificate_message::clear_issuer() {
+  issuer_.Clear();
+}
+inline ::cert_name_message* certificate_message::mutable_issuer(int index) {
+  // @@protoc_insertion_point(field_mutable:certificate_message.issuer)
+  return issuer_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_name_message >*
+certificate_message::mutable_issuer() {
+  // @@protoc_insertion_point(field_mutable_list:certificate_message.issuer)
+  return &issuer_;
+}
+inline const ::cert_name_message& certificate_message::_internal_issuer(int index) const {
+  return issuer_.Get(index);
+}
+inline const ::cert_name_message& certificate_message::issuer(int index) const {
+  // @@protoc_insertion_point(field_get:certificate_message.issuer)
+  return _internal_issuer(index);
+}
+inline ::cert_name_message* certificate_message::_internal_add_issuer() {
+  return issuer_.Add();
+}
+inline ::cert_name_message* certificate_message::add_issuer() {
+  // @@protoc_insertion_point(field_add:certificate_message.issuer)
+  return _internal_add_issuer();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::cert_name_message >&
+certificate_message::issuer() const {
+  // @@protoc_insertion_point(field_list:certificate_message.issuer)
+  return issuer_;
+}
+
+// optional .cert_algorithm_message signing_key = 13;
+inline bool certificate_message::_internal_has_signing_key() const {
+  bool value = (_has_bits_[0] & 0x00000400u) != 0;
+  PROTOBUF_ASSUME(!value || signing_key_ != nullptr);
+  return value;
+}
+inline bool certificate_message::has_signing_key() const {
+  return _internal_has_signing_key();
+}
+inline void certificate_message::clear_signing_key() {
+  if (signing_key_ != nullptr) signing_key_->Clear();
+  _has_bits_[0] &= ~0x00000400u;
+}
+inline const ::cert_algorithm_message& certificate_message::_internal_signing_key() const {
+  const ::cert_algorithm_message* p = signing_key_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::cert_algorithm_message*>(
+      &::_cert_algorithm_message_default_instance_);
+}
+inline const ::cert_algorithm_message& certificate_message::signing_key() const {
+  // @@protoc_insertion_point(field_get:certificate_message.signing_key)
+  return _internal_signing_key();
+}
+inline void certificate_message::unsafe_arena_set_allocated_signing_key(
+    ::cert_algorithm_message* signing_key) {
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(signing_key_);
+  }
+  signing_key_ = signing_key;
+  if (signing_key) {
+    _has_bits_[0] |= 0x00000400u;
+  } else {
+    _has_bits_[0] &= ~0x00000400u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:certificate_message.signing_key)
+}
+inline ::cert_algorithm_message* certificate_message::release_signing_key() {
+  auto temp = unsafe_arena_release_signing_key();
+  if (GetArena() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+  return temp;
+}
+inline ::cert_algorithm_message* certificate_message::unsafe_arena_release_signing_key() {
+  // @@protoc_insertion_point(field_release:certificate_message.signing_key)
+  _has_bits_[0] &= ~0x00000400u;
+  ::cert_algorithm_message* temp = signing_key_;
+  signing_key_ = nullptr;
+  return temp;
+}
+inline ::cert_algorithm_message* certificate_message::_internal_mutable_signing_key() {
+  _has_bits_[0] |= 0x00000400u;
+  if (signing_key_ == nullptr) {
+    auto* p = CreateMaybeMessage<::cert_algorithm_message>(GetArena());
+    signing_key_ = p;
+  }
+  return signing_key_;
+}
+inline ::cert_algorithm_message* certificate_message::mutable_signing_key() {
+  // @@protoc_insertion_point(field_mutable:certificate_message.signing_key)
+  return _internal_mutable_signing_key();
+}
+inline void certificate_message::set_allocated_signing_key(::cert_algorithm_message* signing_key) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  if (message_arena == nullptr) {
+    delete signing_key_;
+  }
+  if (signing_key) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(signing_key);
+    if (message_arena != submessage_arena) {
+      signing_key = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, signing_key, submessage_arena);
+    }
+    _has_bits_[0] |= 0x00000400u;
+  } else {
+    _has_bits_[0] &= ~0x00000400u;
+  }
+  signing_key_ = signing_key;
+  // @@protoc_insertion_point(field_set_allocated:certificate_message.signing_key)
+}
+
+// optional bytes signature = 14;
+inline bool certificate_message::_internal_has_signature() const {
+  bool value = (_has_bits_[0] & 0x00000100u) != 0;
+  return value;
+}
+inline bool certificate_message::has_signature() const {
+  return _internal_has_signature();
+}
+inline void certificate_message::clear_signature() {
+  signature_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000100u;
+}
+inline const std::string& certificate_message::signature() const {
+  // @@protoc_insertion_point(field_get:certificate_message.signature)
+  return _internal_signature();
+}
+inline void certificate_message::set_signature(const std::string& value) {
+  _internal_set_signature(value);
+  // @@protoc_insertion_point(field_set:certificate_message.signature)
+}
+inline std::string* certificate_message::mutable_signature() {
+  // @@protoc_insertion_point(field_mutable:certificate_message.signature)
+  return _internal_mutable_signature();
+}
+inline const std::string& certificate_message::_internal_signature() const {
+  return signature_.Get();
+}
+inline void certificate_message::_internal_set_signature(const std::string& value) {
+  _has_bits_[0] |= 0x00000100u;
+  signature_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void certificate_message::set_signature(std::string&& value) {
+  _has_bits_[0] |= 0x00000100u;
+  signature_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:certificate_message.signature)
+}
+inline void certificate_message::set_signature(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000100u;
+  signature_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:certificate_message.signature)
+}
+inline void certificate_message::set_signature(const void* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000100u;
+  signature_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:certificate_message.signature)
+}
+inline std::string* certificate_message::_internal_mutable_signature() {
+  _has_bits_[0] |= 0x00000100u;
+  return signature_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* certificate_message::release_signature() {
+  // @@protoc_insertion_point(field_release:certificate_message.signature)
+  if (!_internal_has_signature()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000100u;
+  return signature_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void certificate_message::set_allocated_signature(std::string* signature) {
+  if (signature != nullptr) {
+    _has_bits_[0] |= 0x00000100u;
+  } else {
+    _has_bits_[0] &= ~0x00000100u;
+  }
+  signature_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), signature,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:certificate_message.signature)
+}
+inline std::string* certificate_message::unsafe_arena_release_signature() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:certificate_message.signature)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  _has_bits_[0] &= ~0x00000100u;
+  return signature_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void certificate_message::unsafe_arena_set_allocated_signature(
+    std::string* signature) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (signature != nullptr) {
+    _has_bits_[0] |= 0x00000100u;
+  } else {
+    _has_bits_[0] &= ~0x00000100u;
+  }
+  signature_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      signature, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:certificate_message.signature)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

@@ -39,13 +39,17 @@ bool time_convert_test() {
   t.print_time();
   printf("\n");
 
-  string* s1= t.encodeTime();
+  string s1;
+  if (!t.encodeTime(&s1))
+    return false;
   time_point t1;
-  printf("Encoded string: %s\n", s1->c_str());
-  t1.decodeTime(*s1);
-  string* s2= t1.encodeTime();
-  printf("Re-encoded string: %s\n", s2->c_str());
-  if (s1->compare(*s2) != 0)
+  printf("Encoded string: %s\n", s1.c_str());
+  t1.decodeTime(s1);
+  string s2;
+  if (!t1.encodeTime(&s2))
+    return false;
+          printf("Re-encoded string: %s\n", s2.c_str());
+  if (s1.compare(s2) != 0)
     return false;
   return true;
 }

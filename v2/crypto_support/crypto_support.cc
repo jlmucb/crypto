@@ -13,11 +13,8 @@
 // File: crypto_support.cc
 
 #include "crypto_support.h"
-#include "gtest/gtest.h"
-#include <gflags/gflags.h>
-#include <stdio.h>
 #include "support.pb.h"
-#include <cmath>
+#include <stdio.h>
 
 time_point::time_point() {
   year_ = 0;
@@ -40,7 +37,7 @@ bool time_point::time_now() {
 }
 
 bool time_point::add_interval_to_time(time_point& from, double seconds_later) {
-  // This doesn't do leap years, seconds, month irregularities ... correctly
+  // This doesn't do leap years, seconds, month or other stuff... correctly
   int days = seconds_later / (double)seconds_in_day;
   seconds_later -= (double) (days * seconds_in_day);
   int yrs = days /365;
@@ -93,16 +90,17 @@ void time_point::print_time() {
       hour_, minutes_, seconds_);
 }
 
-string* time_point::encodeTime() {
+bool time_point::encodeTime(string* the_time) {
   int m = month_ - 1;
   if (m < 0 || m > 11)
-    return nullptr;
+    return false;
   char time_str[256];
   *time_str = '\0';
   snprintf(time_str,255, "%d %s %d, %02d:%02d:%lfZ", day_in_month_, s_months[m], year_,
       hour_, minutes_, seconds_);
   m = strlen(time_str);
-  return new string(time_str);
+  *the_time = time_str;
+  return true;
 }
 
 const char* m_months[12] = {
@@ -136,7 +134,7 @@ bool time_point::decodeTime(string& encoded_time) {
 }
 
 bool time_point::time_point_to_unix_tm(struct tm* time_now) {
-  return true;
+  return false;
 }
 
 bool time_point::unix_tm_to_time_point(struct tm* the_time) {
@@ -573,11 +571,25 @@ bool have_intel_aes_ni() {
   return false;
 }
 
+ofstream logging_descriptor;
 bool init_log(const char* log_file) {
+  time_point tp;
+  tp.time_now();
+  string the_time;
+  if (!tp.encodeTime(&the_time))
+    return false;
+  logging_descriptor.open(log_file);
+  LOG(INFO) << "Log file " << log_file << " opened " << the_time << ".\n";
   return true;
 }
 
 void close_log() {
+  time_point tp;
+  tp.time_now();
+  string the_time;
+  tp.encodeTime(&the_time);
+  LOG(INFO) << "Log file closed " << the_time << ".\n";
+  logging_descriptor.close();
 }
 
 uint64_t readRdtsc() {
@@ -632,7 +644,12 @@ bool file_util::create(const char* filename) {
 }
 
 bool file_util::open(const char* filename) {
-  // Todo: stat file and get bytes_in_file_
+  struct stat file_info;
+  if (stat(filename, &file_info) != 0)
+    return false;
+  if (!S_ISREG(file_info.st_mode))
+    return false;
+  bytes_in_file_ = (int)file_info.st_size;
   fd_ = ::open(filename, O_RDONLY);
   initialized_ = fd_ > 0;
   write_ = false;
@@ -658,13 +675,17 @@ void file_util::close() {
 
 int file_util::read_a_block(int size, byte* buf) {
   if (!initialized_)
-    return false;
+    return -1;
+  if (write_)
+    return -1;
   bytes_read_ += size;
   return read(fd_, buf, size);
 }
 
 bool file_util::write_a_block(int size, byte* buf) {
   if (!initialized_)
+    return false;
+  if (!write_)
     return false;
   bytes_written_ += size;
   return write(fd_, buf, size) > 0;

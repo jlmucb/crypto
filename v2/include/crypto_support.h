@@ -96,7 +96,7 @@ class time_point {
   bool time_now();
   bool add_interval_to_time(time_point& from, double seconds_later);
   void print_time();
-  string* encodeTime();
+  bool encodeTime(string* the_time);
   bool decodeTime(string& encoded_time);
   bool time_point_to_unix_tm(struct tm* time_now);
   bool unix_tm_to_time_point(struct tm* time_now);
