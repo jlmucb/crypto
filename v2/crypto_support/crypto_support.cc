@@ -40,6 +40,44 @@ bool time_point::time_now() {
 }
 
 bool time_point::add_interval_to_time(time_point& from, double seconds_later) {
+  // This doesn't do leap years, seconds, month irregularities ... correctly
+  int days = seconds_later / (double)seconds_in_day;
+  seconds_later -= (double) (days * seconds_in_day);
+  int yrs = days /365;
+  days -= yrs * 365;
+  year_ += yrs;
+  int months = days / 30; // not right;
+  days -= months * 30;
+  month_ +=  months;
+  day_in_month_ += days;
+  int mins = (int)seconds_later / 60.0;
+  seconds_later -= (double) (mins * 60);
+  int hrs = (int)mins / 60.0;
+  mins -= hrs * 60;
+  hour_ += hrs;
+  minutes_ += mins;
+  seconds_+= seconds_later;
+  // now fix overflows
+  if (seconds_ >= 60.0) {
+    seconds_ -= 60.0;
+    minutes_ += 1;
+  }
+  if (minutes_ >= 60) {
+    minutes_ -= 60;
+    hour_ += 1;
+  }
+  if (hour_ >= 24) {
+    day_in_month_ += 1;
+    hour_ -= 24;
+  }
+  if(day_in_month_ > 30) {
+    month_ += 1;
+    day_in_month_ -= 30;
+  }
+  if (month_ > 12) {
+    year_ += 1;
+    month_ -= 12;
+  }
   return true;
 }
 
