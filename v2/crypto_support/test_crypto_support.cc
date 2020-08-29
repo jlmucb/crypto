@@ -241,6 +241,37 @@ bool time_increment_test() {
   return true;
 }
 
+
+bool endian_test() {
+  uint64_t l64, b64, r64;
+  uint32_t l32, b32, r32;
+  uint16_t l16, b16, r16;
+
+  l64 = (0x12345678ULL<<32) | 0x90abcdef;
+  l32 = 0x90abcdf;
+  l16 = 0xbcdf;
+
+  little_to_big_endian_64(&l64, &b64);
+  big_to_little_endian_64(&b64, &r64);
+  little_to_big_endian_32(&l32, &b32);
+  big_to_little_endian_32(&b32, &r32);
+  little_to_big_endian_16(&l16, &b16);
+  big_to_little_endian_16(&b16, &r16);
+
+  if (FLAGS_print_all) {
+    printf("l64: %016lx, b64: %016lx, r64: %016lx\n", l64, b64, r64);
+    printf("l32: %08lx, b32: %08lx, r32: %08lx\n", l32, b32, r32);
+    printf("l16: %04lx, b16: %04lx, r16: %04lx\n", l16, b16, r16);
+  }
+  if (l64 != r64)
+    return false;
+  if (l32 != r32)
+    return false;
+  if (l16 != r16)
+    return false;
+  return true;
+}
+
 TEST (algs, test_alg_names) {
   EXPECT_TRUE(test_alg_names());
 }
@@ -256,6 +287,9 @@ TEST (convertutilities, base64_convert_test) {
 }
 TEST (randomutilities, random_test) {
   EXPECT_TRUE(random_test());
+}
+TEST (endian, endian_test) {
+  EXPECT_TRUE(endian_test());
 }
 #if 0
 TEST (fileutilities, file_test) {

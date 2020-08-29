@@ -130,10 +130,10 @@ bool bytes_to_base64(string& b, string* b64, bool reverse=false);
 
 void little_to_big_endian_32(uint32_t* in, uint32_t* out);
 void big_to_little_endian_32(uint32_t* in, uint32_t* out);
-void little_to_big_endian_64(uint32_t* in, uint32_t* out);
-void big_to_little_endian_64(uint32_t* in, uint32_t* out);
-void little_to_big_endian_16(uint32_t* in, uint32_t* out);
-void big_to_little_endian_16(uint32_t* in, uint32_t* out);
+void little_to_big_endian_64(uint64_t* in, uint64_t* out);
+void big_to_little_endian_64(uint64_t* in, uint64_t* out);
+void little_to_big_endian_16(uint16_t* in, uint16_t* out);
+void big_to_little_endian_16(uint16_t* in, uint16_t* out);
 
 bool have_intel_rd_rand();
 bool have_intel_aes_ni();

@@ -528,19 +528,19 @@ void big_to_little_endian_32(uint32_t* in, uint32_t* out) {
   reverse_bytes(sizeof(uint32_t), (byte*) in, (byte*) out);
 }
 
-void little_to_big_endian_64(uint32_t* in, uint32_t* out) {
+void little_to_big_endian_64(uint64_t* in, uint64_t* out) {
   reverse_bytes(sizeof(uint64_t), (byte*) in, (byte*) out);
 }
 
-void big_to_little_endian_64(uint32_t* in, uint32_t* out) {
+void big_to_little_endian_64(uint64_t* in, uint64_t* out) {
   reverse_bytes(sizeof(uint64_t), (byte*) in, (byte*) out);
 }
 
-void little_to_big_endian_16(uint32_t* in, uint32_t* out) {
+void little_to_big_endian_16(uint16_t* in, uint16_t* out) {
   reverse_bytes(sizeof(uint16_t), (byte*) in, (byte*) out);
 }
 
-void big_to_little_endian_16(uint32_t* in, uint32_t* out) {
+void big_to_little_endian_16(uint16_t* in, uint16_t* out) {
   reverse_bytes(sizeof(uint16_t), (byte*) in, (byte*) out);
 }
 
