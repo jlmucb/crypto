@@ -19,16 +19,20 @@
 #include "support.pb.h"
 #include "crypto_names.h"
 
+DEFINE_bool(print_all, false, "Print intermediate test computations");
+
 bool test_alg_names() {
-  printf("schemes:\n");
-  print_schemes();
-  printf("\n");
-  printf("algorithms:\n");
-  print_algorithms();
-  printf("\n");
-  printf("operations:\n");
-  print_operations();
-  printf("\n");
+  if (FLAGS_print_all) {
+    printf("schemes:\n");
+    print_schemes();
+    printf("\n");
+    printf("algorithms:\n");
+    print_algorithms();
+    printf("\n");
+    printf("operations:\n");
+    print_operations();
+    printf("\n");
+  }
   return true;
 }
 
@@ -36,19 +40,24 @@ bool time_convert_test() {
   time_point t;
   
   t.time_now();
-  t.print_time();
-  printf("\n");
+  if (FLAGS_print_all) {
+    t.print_time();
+    printf("\n");
+  }
 
   string s1;
   if (!t.encodeTime(&s1))
     return false;
   time_point t1;
-  printf("Encoded string: %s\n", s1.c_str());
+  if (FLAGS_print_all)
+    printf("Encoded string: %s\n", s1.c_str());
   t1.decodeTime(s1);
   string s2;
   if (!t1.encodeTime(&s2))
     return false;
-          printf("Re-encoded string: %s\n", s2.c_str());
+  if (FLAGS_print_all) {
+    printf("Re-encoded string: %s\n", s2.c_str());
+  }
   if (s1.compare(s2) != 0)
     return false;
   return true;
@@ -64,7 +73,9 @@ bool random_test() {
   int m = rs.get_random_bytes(64, b);
   if (m < 0)
     return false;
-  print_bytes(m, b);
+  if (FLAGS_print_all) {
+    print_bytes(m, b);
+  }
   return rs.close_random_source();
 }
 
@@ -77,18 +88,24 @@ bool hex_convert_test() {
   b1.clear();
   b2.clear();
 
-  printf("hex 1: %s\n", test_hex_string1.c_str());
-  printf("hex 2: %s\n", test_hex_string2.c_str());
+  if (FLAGS_print_all) {
+    printf("hex 1: %s\n", test_hex_string1.c_str());
+    printf("hex 2: %s\n", test_hex_string2.c_str());
+  }
+
   if (!hex_to_bytes(test_hex_string1, &b1, false))
     return false;
   if (!hex_to_bytes(test_hex_string1, &b1, false))
     return false;
   if (!hex_to_bytes(test_hex_string2, &b2, false))
     return false;
-  printf("b1: ");
-  print_bytes((int)b1.size(), (byte*)b1.data());
-  printf("b2: ");
-  print_bytes((int)b2.size(), (byte*)b2.data());
+
+  if (FLAGS_print_all) {
+    printf("b1: ");
+    print_bytes((int)b1.size(), (byte*)b1.data());
+    printf("b2: ");
+    print_bytes((int)b2.size(), (byte*)b2.data());
+  }
   
   string c1(50, 0);
   string c2(50, 0);
@@ -96,8 +113,11 @@ bool hex_convert_test() {
     return false;
   if (!bytes_to_hex(b2, &c2, false))
     return false;
-  printf("c1: %s\n", c1.c_str());
-  printf("c2: %s\n", c2.c_str());
+
+  if (FLAGS_print_all) {
+    printf("c1: %s\n", c1.c_str());
+    printf("c2: %s\n", c2.c_str());
+  }
 
   string d1(50, 0);
   string d2(50, 0);
@@ -105,10 +125,13 @@ bool hex_convert_test() {
     return false;
   if (!hex_to_bytes(c2, &d2, false))
     return false;
-  printf("d1: ");
-  print_bytes((int)d1.size(), (byte*)d1.data());
-  printf("d2: ");
-  print_bytes((int)d2.size(), (byte*)d2.data());
+
+  if (FLAGS_print_all) {
+    printf("d1: ");
+    print_bytes((int)d1.size(), (byte*)d1.data());
+    printf("d2: ");
+    print_bytes((int)d2.size(), (byte*)d2.data());
+  }
 
   if (d1.compare(b1) != 0)
     return false;
@@ -144,14 +167,16 @@ bool base64_convert_test() {
   b4.append(1, 0xcc);
   b4.append(1, 0x20);
 
-  printf("b1: ");
-  print_bytes((int)b1.size(), (byte*)b1.data());
-  printf("b2: ");
-  print_bytes((int)b2.size(), (byte*)b2.data());
-  printf("b3: ");
-  print_bytes((int)b3.size(), (byte*)b3.data());
-  printf("b4: ");
-  print_bytes((int)b4.size(), (byte*)b4.data());
+  if (FLAGS_print_all) {
+    printf("b1: ");
+    print_bytes((int)b1.size(), (byte*)b1.data());
+    printf("b2: ");
+    print_bytes((int)b2.size(), (byte*)b2.data());
+    printf("b3: ");
+    print_bytes((int)b3.size(), (byte*)b3.data());
+    printf("b4: ");
+    print_bytes((int)b4.size(), (byte*)b4.data());
+  }
 
   string h1, h2, h3, h4;
   string d1, d2, d3, d4;
@@ -164,10 +189,13 @@ bool base64_convert_test() {
     return false;
   if (!bytes_to_base64(b4, &h4, false))
     return false;
-  printf("h1: %s\n", h1.c_str());
-  printf("h2: %s\n", h2.c_str());
-  printf("h3: %s\n", h3.c_str());
-  printf("h4: %s\n", h4.c_str());
+
+  if (FLAGS_print_all) {
+    printf("h1: %s\n", h1.c_str());
+    printf("h2: %s\n", h2.c_str());
+    printf("h3: %s\n", h3.c_str());
+    printf("h4: %s\n", h4.c_str());
+  }
 
   if (!base64_to_bytes(h1, &d1, false))
     return false;
@@ -177,14 +205,17 @@ bool base64_convert_test() {
     return false;
   if (!base64_to_bytes(h4, &d4, false))
     return false;
-  printf("d1: ");
-  print_bytes((int)d1.size(), (byte*)d1.data());
-  printf("d2: ");
-  print_bytes((int)d2.size(), (byte*)d2.data());
-  printf("d3: ");
-  print_bytes((int)d3.size(), (byte*)d3.data());
-  printf("d4: ");
-  print_bytes((int)d4.size(), (byte*)d4.data());
+
+  if (FLAGS_print_all) {
+    printf("d1: ");
+    print_bytes((int)d1.size(), (byte*)d1.data());
+    printf("d2: ");
+    print_bytes((int)d2.size(), (byte*)d2.data());
+    printf("d3: ");
+    print_bytes((int)d3.size(), (byte*)d3.data());
+    printf("d4: ");
+    print_bytes((int)d4.size(), (byte*)d4.data());
+  }
 
   if (d1.compare(b1) != 0)
     return false;
@@ -192,10 +223,8 @@ bool base64_convert_test() {
     return false;
   if (d3.compare(b3) != 0)
     return false;
-/*
   if (d4.compare(b4) != 0)
     return false;
-*/
 
   return true;
 }
@@ -228,7 +257,7 @@ TEST (keyutilities, key_test) {
 #endif
 
 int main(int an, char** av) {
-  //gflags::ParseCommandLineFlags(&an, &av, true);
+  gflags::ParseCommandLineFlags(&an, &av, true);
   an = 1;
   ::testing::InitGoogleTest(&an, av);
 
