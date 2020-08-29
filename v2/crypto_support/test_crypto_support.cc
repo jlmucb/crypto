@@ -229,11 +229,24 @@ bool base64_convert_test() {
   return true;
 }
 
+bool time_increment_test() {
+  time_point t1, t2;
+  t1.time_now();
+  t2.add_interval_to_time(t1, 377 * 86400.0);
+  printf("\n");
+  t1.print_time();
+  printf("\n");
+  t2.print_time();
+  printf("\n");
+  return true;
+}
+
 TEST (algs, test_alg_names) {
   EXPECT_TRUE(test_alg_names());
 }
 TEST (timeutilities, time_convert_test) {
   EXPECT_TRUE(time_convert_test());
+  EXPECT_TRUE(time_increment_test());
 }
 TEST (convertutilities, hex_convert_test) {
   EXPECT_TRUE(hex_convert_test());
@@ -245,9 +258,6 @@ TEST (randomutilities, random_test) {
   EXPECT_TRUE(random_test());
 }
 #if 0
-TEST (convertutilities, convert_test) {
-  EXPECT_TRUE(time_convert_test());
-}
 TEST (fileutilities, file_test) {
   EXPECT_TRUE(time_convert_test());
 }

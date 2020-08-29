@@ -38,6 +38,13 @@ bool time_point::time_now() {
 
 bool time_point::add_interval_to_time(time_point& from, double seconds_later) {
   // This doesn't do leap years, seconds, month or other stuff... correctly
+  year_ = from.year_;
+  day_in_month_ = from.day_in_month_;
+  month_= from.month_;
+  minutes_= from.minutes_;
+  hour_= from.hour_;
+  seconds_= from.seconds_;
+
   int days = seconds_later / (double)seconds_in_day;
   seconds_later -= (double) (days * seconds_in_day);
   int yrs = days /365;
