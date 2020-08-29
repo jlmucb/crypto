@@ -451,7 +451,7 @@ bool random_source::have_intel_rd_rand() {
 }
 
 bool random_source::start_random_source() {
-  fd_ = open("/dev/urandom", O_RDONLY);
+  fd_ = ::open("/dev/urandom", O_RDONLY);
   initialized_ = fd_ > 0;
   return initialized_;
 }
@@ -626,10 +626,15 @@ file_util::file_util() {
 
 bool file_util::create(const char* filename) {
   write_ = true;
+  fd_ = creat(filename, S_IRWXU | S_IRWXG);
+  initialized_ = fd_ > 0;
   return initialized_;
 }
 
 bool file_util::open(const char* filename) {
+  // Todo: stat file and get bytes_in_file_
+  fd_ = ::open(filename, O_RDONLY);
+  initialized_ = fd_ > 0;
   write_ = false;
   return initialized_;
 }
@@ -654,20 +659,34 @@ void file_util::close() {
 int file_util::read_a_block(int size, byte* buf) {
   if (!initialized_)
     return false;
+  bytes_read_ += size;
   return read(fd_, buf, size);
 }
 
 bool file_util::write_a_block(int size, byte* buf) {
   if (!initialized_)
     return false;
+  bytes_written_ += size;
   return write(fd_, buf, size) > 0;
 }
 
-int file_util::read_file(int size, byte* buf) {
-  return 0;
+int file_util::read_file(char* filename, int size, byte* buf) {
+  if (!open(filename))
+    return -1;
+  if (bytes_in_file_ < size) {
+      close();
+      return -1;
+  }
+  int n = read_a_block(size, buf);
+  close();
+  return n;
 }
 
-bool file_util::write_file(int size, byte* buf) {
-  return true;
+bool file_util::write_file(char* filename, int size, byte* buf) {
+  if (!create(filename))
+    return -1;
+  int n = write_a_block(size, buf);
+  close();
+  return n > 0;
 }
 
