@@ -44,7 +44,8 @@ PROTO=protoc
 AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
-dobj=	$(O)/test_hash.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o $(O)/hash.o $(O)/sha1.o
+dobj=	$(O)/test_hash.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o $(O)/hash.o \
+        $(O)/sha1.o $(O)/sha256.o
 
 all:	test_hash.exe
 clean:
@@ -83,3 +84,7 @@ $(O)/hash.o: $(S)/hash.cc
 $(O)/sha1.o: $(S)/sha1.cc
 	@echo "compiling sha1.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/sha1.o $(S)/sha1.cc
+
+$(O)/sha256.o: $(S)/sha256.cc
+	@echo "compiling sha256.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/sha256.o $(S)/sha256.cc
