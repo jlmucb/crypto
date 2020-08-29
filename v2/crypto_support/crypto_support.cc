@@ -150,6 +150,30 @@ bool time_point::unix_tm_to_time_point(struct tm* the_time) {
 }
 
 int compare_time_points(time_point& l, time_point& r) {
+  if (l.year_ > r.year_)
+    return 1;
+  if (l.year_ < r.year_)
+    return -1;
+  if (l.month_ > r.month_)
+    return 1;
+  if (l.month_ < r.month_)
+    return -1;
+  if (l.day_in_month_ > r.day_in_month_)
+    return 1;
+  if (l.day_in_month_ < r.day_in_month_)
+    return -1;
+  if (l.hour_ > r.hour_)
+    return 1;
+  if (l.hour_ < r.hour_)
+    return -1;
+  if (l.minutes_ > r.minutes_)
+    return 1;
+  if (l.minutes_ < r.minutes_)
+    return -1;
+  if (l.seconds_ > r.seconds_)
+    return 1;
+  if (l.seconds_ < r.seconds_)
+    return -1;
   return 0;
 }
 
@@ -601,34 +625,42 @@ file_util::file_util() {
 }
 
 bool file_util::create(const char* filename) {
+  write_ = true;
   return initialized_;
 }
 
 bool file_util::open(const char* filename) {
-  return true;
+  write_ = false;
+  return initialized_;
 }
 
 int file_util::bytes_in_file() {
-  return 0;
+  return bytes_in_file_;
 }
 
 int file_util::bytes_left_in_file() {
-  return 0;
+  return bytes_in_file_ - bytes_read_;
 }
 
 int file_util::bytes_written_to_file() {
-  return 0;
+  return bytes_written_;
 }
 
 void file_util::close() {
+  ::close(fd_);
+  initialized_ = false;
 }
 
 int file_util::read_a_block(int size, byte* buf) {
-  return 0;
+  if (!initialized_)
+    return false;
+  return read(fd_, buf, size);
 }
 
 bool file_util::write_a_block(int size, byte* buf) {
-  return true;
+  if (!initialized_)
+    return false;
+  return write(fd_, buf, size) > 0;
 }
 
 int file_util::read_file(int size, byte* buf) {
