@@ -14,13 +14,7 @@
 // Project: New Cloudproxy Crypto
 // File: sha1.cc
 
-#include "cryptotypes.h"
-#include <string>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
-#include "util.h"
+#include "crypto_support.h"
 #include "hash.h"
 #include "sha1.h"
 
@@ -55,14 +49,14 @@ inline uint32_t rotlFixed(uint32_t x, uint32_t y) {
   z += f4(w, x, y) + blk1(i) + 0xCA62C1D6 + rotlFixed(v, 5); \
   w = rotlFixed(w, 30);
 
-Sha1::Sha1() {
+sha1::sha1() {
   num_bytes_waiting_ = 0;
   num_bits_processed_ = 0;
 }
 
-Sha1::~Sha1() {}
+sha1::~sha1() {}
 
-bool Sha1::Init() {
+bool sha1::init() {
   if (hash_name_ == nullptr) {
     hash_name_ = new string("sha-1");
   }
@@ -78,7 +72,8 @@ bool Sha1::Init() {
   return true;
 }
 
-void Sha1::TransformBlock(const uint32_t* block) {
+void sha1::transform_block(const uint32_t* block) {
+
   uint32_t data[16];
   uint32_t W[16];
   uint32_t a = state_[0];
@@ -88,7 +83,8 @@ void Sha1::TransformBlock(const uint32_t* block) {
   uint32_t e = state_[4];
 
 #ifndef BIGENDIAN
-  LittleEndian32(16, block, data);
+  for(int i = 0; i < 16; i++)
+    little_to_big_endian_32((uint32_t*)&block[i], &data[i]);
 #else
   for (int i = 0; i < 16; i++) data[i] = block[i];
 #endif
@@ -182,7 +178,7 @@ void Sha1::TransformBlock(const uint32_t* block) {
   state_[4] += e;
 }
 
-void Sha1::AddToHash(int size, const byte* in) {
+void sha1::add_to_hash(int size, const byte* in) {
   if (num_bytes_waiting_ > 0) {
     int needed = BLOCKBYTESIZE - num_bytes_waiting_;
     if (size < needed) {
@@ -191,14 +187,14 @@ void Sha1::AddToHash(int size, const byte* in) {
       return;
     }
     memcpy(&bytes_waiting_[num_bytes_waiting_], in, needed);
-    TransformBlock((const uint32_t*)bytes_waiting_);
+    transform_block((const uint32_t*)bytes_waiting_);
     num_bits_processed_ += BLOCKBYTESIZE * NBITSINBYTE;
     size -= needed;
     in += needed;
     num_bytes_waiting_ = 0;
   }
   while (size >= BLOCKBYTESIZE) {
-    TransformBlock((const uint32_t*)in);
+    transform_block((const uint32_t*)in);
     num_bits_processed_ += BLOCKBYTESIZE * NBITSINBYTE;
     size -= BLOCKBYTESIZE;
     in += BLOCKBYTESIZE;
@@ -209,14 +205,14 @@ void Sha1::AddToHash(int size, const byte* in) {
   }
 }
 
-bool Sha1::GetDigest(int size, byte* out) {
+bool sha1::get_digest(int size, byte* out) {
   if (!finalized_) return false;
   if (size < DIGESTBYTESIZE) return false;
   memcpy(out, digest_, DIGESTBYTESIZE);
   return true;
 }
 
-void Sha1::Final() {
+void sha1::finalize() {
   uint64_t num_bits = num_bits_processed_ + num_bytes_waiting_ * NBITSINBYTE;
 
   // append 1
@@ -224,20 +220,20 @@ void Sha1::Final() {
   if ((num_bytes_waiting_ + sizeof(uint64_t)) > BLOCKBYTESIZE) {
     memset(&bytes_waiting_[num_bytes_waiting_], 0,
            BLOCKBYTESIZE - num_bytes_waiting_);
-    TransformBlock((const uint32_t*)bytes_waiting_);
+    transform_block((const uint32_t*)bytes_waiting_);
     num_bytes_waiting_ = 0;
   }
 
   // zero and set bits processed
   memset(&bytes_waiting_[num_bytes_waiting_], 0,
          (BLOCKBYTESIZE - num_bytes_waiting_ - sizeof(uint64_t)));
-  uint64_t* psize = &bytes_waiting_[BLOCKBYTESIZE - sizeof(uint64_t)];
+  uint64_t* psize = (uint64_t*)&bytes_waiting_[BLOCKBYTESIZE - sizeof(uint64_t)];
 #ifndef BIGENDIAN
   little_to_big_endian_64(&num_bits, psize);
 #else
   *psize = num_bits;
 #endif
-  TransformBlock((const uint32_t*)bytes_waiting_);
+  transform_block((const uint32_t*)bytes_waiting_);
   // 8 bytes of length (bit length)
   memcpy(digest_, (byte*)state_, DIGESTBYTESIZE);
   finalized_ = true;

@@ -18,12 +18,12 @@
 #ifndef _CRYPTO_HASH_H__
 #define _CRYPTO_HASH_H__
 
-class CryptographicHash {
+class crypto_hash {
  public:
   string* hash_name_;
   bool finalized_;
 
-  CryptographicHash();
-  virtual ~CryptographicHash();
+  crypto_hash();
+  virtual ~crypto_hash();
 };
 #endif

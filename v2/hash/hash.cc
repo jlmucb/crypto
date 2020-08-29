@@ -12,32 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License
 // Project: New Cloudproxy Crypto
-// File: sha1.h
+// File: hash.cc
 
 #include "crypto_support.h"
 #include "hash.h"
 
-#ifndef _CRYPTO_SHA1_H__
-#define _CRYPTO_SHA1_H__
+crypto_hash::crypto_hash() {
+  hash_name_ = nullptr;
+  finalized_ = false;
+}
 
-class sha1 : public crypto_hash {
- public:
-  enum { BLOCKBYTESIZE = 64, DIGESTBYTESIZE = 20 };
-
-  int num_bytes_waiting_;
-  byte bytes_waiting_[BLOCKBYTESIZE];
-  uint32_t state_[DIGESTBYTESIZE / sizeof(uint32_t)];
-  byte digest_[DIGESTBYTESIZE];
-  uint64_t num_bits_processed_;
-
-  sha1();
-  ~sha1();
-
-  void transform_block(const uint32_t* data);
-
-  bool init();
-  void add_to_hash(int size, const byte* in);
-  bool get_digest(int size, byte* out);
-  void finalize();
-};
-#endif
+crypto_hash::~crypto_hash() {
+  if (hash_name_ != nullptr) {
+    delete hash_name_;
+    hash_name_ = nullptr;
+  }
+  finalized_ = false;
+}
