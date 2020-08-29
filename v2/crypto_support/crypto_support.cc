@@ -229,30 +229,154 @@ bool valid_base64(char* s) {
     a = *(s++);
     if (a >= '0' && a <= '9')
       continue;
-    if (a >= 'A' && a <= 'F')
+    if (a >= 'A' && a <= 'Z')
       continue;
-    if (a >= 'a' && a <= 'f')
+    if (a >= 'a' && a <= 'z')
       continue;
-    if (a == '-' || a == '_')
+    if (a == '-' || a == '_' || a == '=')
       continue;
     return false;
   }
   return true;
 }
+byte base64_value(char a) {
+  for (int i = 0; i < strlen(web_safe_base64_characters); i++) {
+    if (a == web_safe_base64_characters[i])
+      return i;
+  }
+  return -1;
+}
+char base64_char(byte a) {
+  if (a >= 0x3f)
+   return ' ';
+  return web_safe_base64_characters[(int)a];
+}
 bool base64_to_bytes(string& b64, string* b, bool reverse) {
   if (!valid_base64((char*)b64.c_str()) || reverse)
     return false;
+  b->clear();
   int b64_size = strlen(b64.c_str());
-  if (b->capacity() < (b64_size + 1) / 2)
+  if (b->capacity() < ((b64_size / 4) * 3 + 1))
     return false;
-  return false;
+  int i;
+  byte x1, x2, x3, x4, z;
+  for (i = 0; i < (b64_size - 4); i += 4) {
+    x1 = base64_value(b64[i]);
+    x2 = base64_value(b64[i + 1]);
+    x3 = base64_value(b64[i + 2]);
+    x4 = base64_value(b64[i + 3]);
+    z = (x1 << 2) | (x2 >> 4);
+    b->append(1, (char)z);
+    x2 &= 0x0f;
+    z = (x2 << 4) | (x3 >> 2);
+    b->append(1, (char)z);
+    x3 &= 0x03;
+    z = (x3 << 6) | x4;
+    b->append(1, (char)z);
+  }
+  // the possibilities for the remaining base64 characters are
+  //  c1 (6 bits), c2 (2 bits), =, =
+  //  c1 (6 bits), c2 (6 bits), c3 (4bits), =
+  // sanity check
+  if ((b64_size - i) != 4)
+    return false;
+  if (b64[b64_size - 1] == '=' && b64[b64_size - 2] != '=') {
+    x1 = base64_value(b64[b64_size - 4]);
+    x2 = base64_value(b64[b64_size - 3]);
+    x3 = base64_value(b64[b64_size - 2]);
+    z = (x1 << 2) | (x2 >> 4);
+    b->append(1, (char)z);
+    z = (x2 << 4) | x3;
+    b->append(1, (char)z);
+  } else if (b64[b64_size - 1] == '=' && b64[b64_size - 2] == '=') {
+    x1 = base64_value((char)b64[b64_size - 4]);
+    x2 = base64_value((char)b64[b64_size - 3]);
+    z = (x1 << 2) | x2;
+    b->append(1, (char)z);
+  } else {
+    x1 = base64_value((char)b64[b64_size - 4]);
+    x2 = base64_value((char)b64[b64_size - 3]);
+    x3 = base64_value((char)b64[b64_size - 2]);
+    x4 = base64_value((char)b64[b64_size - 1]);
+    z = (x1 << 2) | (x2 >> 4);
+    b->append(1, (char)z);
+    x2 &= 0x0f;
+    z = (x2 << 4) | (x3 >> 2);
+    b->append(1, (char)z);
+    x3 &= 0x03;
+    z = (x3 << 6) | x4;
+    b->append(1, (char)z);
+  }
+  return true;
 }
 
 bool bytes_to_base64(string& b, string* b64, bool reverse) {
   if (reverse)
     return false;
-  // int b_size = b.size();
-  return false;
+  b64->clear();
+  int b_size = b.size();
+  byte x1, x2, x3, z;
+  char c;
+  int i;
+  for (i = 0; i < (b_size - 3); i += 3) {
+    x1 = b[i];
+    z = x1 >> 2;
+    c = base64_char(z);
+    b64->append(1, c);
+    x2 = b[i + 1];
+    z = (x1 & 0x03) << 4 | x2>>4;
+    c = base64_char(z);
+    b64->append(1, c);
+    x3 = b[i + 2];
+    z = (x2 & 0x0f) << 2 | x3 >> 6; 
+    c = base64_char(z);
+    b64->append(1, c);
+    z = x3 & 0x3f;
+    c = base64_char(z);
+    b64->append(1, c);
+  }
+  // there can be 1, 2 or 3 bytes left
+  if ((b_size - i) == 1) {
+    x1 = b[i];
+    z = x1 >> 2;
+    c = base64_char(z);
+    b64->append(1, c);
+    z = (x1 & 0x03);
+    c = base64_char(z);
+    b64->append(1, c);
+    b64->append(2, '=');
+  } else if ((b_size - i) == 2) {
+    x1 = b[i];
+    x2 = b[i + 1];
+    z = x1 >> 2;
+    c = base64_char(z);
+    b64->append(1, c);
+    z = (x1 & 0x03) << 4 | x2 >> 4;
+    c = base64_char(z);
+    b64->append(1, c);
+    z =  x2 & 0x0f;
+    c = base64_char(z);
+    b64->append(1, c);
+    b64->append(1, '=');
+  } else if ((b_size - i) == 3) {
+    x1 = b[i];
+    x2 = b[i + 1];
+    x3 = b[i + 2];
+    z = x1 >> 2;
+    c = base64_char(z);
+    b64->append(1, c);
+    z = (x1 & 0x03) << 4 | x2 >> 4;
+    c = base64_char(z);
+    b64->append(1, c);
+    z =  (x2 & 0x0f) << 2 | x3 >> 6;
+    c = base64_char(z);
+    b64->append(1, c);
+    z =  x3 & 0x03f;
+    c = base64_char(z);
+    b64->append(1, c);
+  }
+  b64->append(1, '\0');
+  return true;
 }
 
 random_source::random_source() {

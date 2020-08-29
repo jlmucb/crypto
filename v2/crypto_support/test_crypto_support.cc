@@ -112,6 +112,89 @@ bool hex_convert_test() {
     return false;
   return true;
 }
+bool base64_convert_test() {
+  string b1, b2, b3, b4;
+  b1.clear();
+  b1.append(1, 0x11);
+  b1.append(1, 0xab);
+  b1.append(1, 0x89);
+
+  b2.clear();
+  b2.append(1, 0x40);
+  b2.append(1, 0x11);
+  b2.append(1, 0xab);
+  b2.append(1, 0x89);
+
+  b3.clear();
+  b3.append(1, 0x40);
+  b3.append(1, 0x11);
+  b3.append(1, 0xab);
+  b3.append(1, 0x89);
+  b3.append(1, 0xcc);
+
+  b4.clear();
+  b4.append(1, 0x40);
+  b4.append(1, 0x11);
+  b4.append(1, 0xab);
+  b4.append(1, 0x89);
+  b4.append(1, 0xcc);
+  b4.append(1, 0x20);
+
+  printf("b1: ");
+  print_bytes((int)b1.size(), (byte*)b1.data());
+  printf("b2: ");
+  print_bytes((int)b2.size(), (byte*)b2.data());
+  printf("b3: ");
+  print_bytes((int)b3.size(), (byte*)b3.data());
+  printf("b4: ");
+  print_bytes((int)b4.size(), (byte*)b4.data());
+
+  string h1, h2, h3, h4;
+  string d1, d2, d3, d4;
+
+  if (!bytes_to_base64(b1, &h1, false))
+    return false;
+  if (!bytes_to_base64(b2, &h2, false))
+    return false;
+  if (!bytes_to_base64(b3, &h3, false))
+    return false;
+  if (!bytes_to_base64(b4, &h4, false))
+    return false;
+  printf("h1: %s\n", h1.c_str());
+  printf("h2: %s\n", h2.c_str());
+  printf("h3: %s\n", h3.c_str());
+  printf("h4: %s\n", h4.c_str());
+
+  if (!base64_to_bytes(h1, &d1, false))
+    return false;
+  if (!base64_to_bytes(h2, &d2, false))
+    return false;
+  if (!base64_to_bytes(h3, &d3, false))
+    return false;
+  if (!base64_to_bytes(h4, &d4, false))
+    return false;
+  printf("d1: ");
+  print_bytes((int)d1.size(), (byte*)d1.data());
+  printf("d2: ");
+  print_bytes((int)d2.size(), (byte*)d2.data());
+  printf("d3: ");
+  print_bytes((int)d3.size(), (byte*)d3.data());
+  printf("d4: ");
+  print_bytes((int)d4.size(), (byte*)d4.data());
+
+  if (d1.compare(b1) != 0)
+    return false;
+  if (d2.compare(b2) != 0)
+    return false;
+  if (d3.compare(b3) != 0)
+    return false;
+/*
+  if (d4.compare(b4) != 0)
+    return false;
+*/
+
+  return true;
+}
 
 TEST (algs, test_alg_names) {
   EXPECT_TRUE(test_alg_names());
@@ -121,6 +204,9 @@ TEST (timeutilities, time_convert_test) {
 }
 TEST (convertutilities, hex_convert_test) {
   EXPECT_TRUE(hex_convert_test());
+}
+TEST (convertutilities, base64_convert_test) {
+  EXPECT_TRUE(base64_convert_test());
 }
 TEST (randomutilities, random_test) {
   EXPECT_TRUE(random_test());
