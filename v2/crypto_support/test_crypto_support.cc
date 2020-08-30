@@ -93,11 +93,11 @@ bool hex_convert_test() {
     printf("hex 2: %s\n", test_hex_string2.c_str());
   }
 
-  if (!hex_to_bytes(test_hex_string1, &b1, false))
+  if (!hex_to_bytes(test_hex_string1, &b1))
     return false;
-  if (!hex_to_bytes(test_hex_string1, &b1, false))
+  if (!hex_to_bytes(test_hex_string1, &b1))
     return false;
-  if (!hex_to_bytes(test_hex_string2, &b2, false))
+  if (!hex_to_bytes(test_hex_string2, &b2))
     return false;
 
   if (FLAGS_print_all) {
@@ -109,9 +109,9 @@ bool hex_convert_test() {
   
   string c1(50, 0);
   string c2(50, 0);
-  if (!bytes_to_hex(b1, &c1, false))
+  if (!bytes_to_hex(b1, &c1))
     return false;
-  if (!bytes_to_hex(b2, &c2, false))
+  if (!bytes_to_hex(b2, &c2))
     return false;
 
   if (FLAGS_print_all) {
@@ -121,9 +121,9 @@ bool hex_convert_test() {
 
   string d1(50, 0);
   string d2(50, 0);
-  if (!hex_to_bytes(c1, &d1, false))
+  if (!hex_to_bytes(c1, &d1))
     return false;
-  if (!hex_to_bytes(c2, &d2, false))
+  if (!hex_to_bytes(c2, &d2))
     return false;
 
   if (FLAGS_print_all) {
@@ -181,13 +181,13 @@ bool base64_convert_test() {
   string h1, h2, h3, h4;
   string d1, d2, d3, d4;
 
-  if (!bytes_to_base64(b1, &h1, false))
+  if (!bytes_to_base64(b1, &h1))
     return false;
-  if (!bytes_to_base64(b2, &h2, false))
+  if (!bytes_to_base64(b2, &h2))
     return false;
-  if (!bytes_to_base64(b3, &h3, false))
+  if (!bytes_to_base64(b3, &h3))
     return false;
-  if (!bytes_to_base64(b4, &h4, false))
+  if (!bytes_to_base64(b4, &h4))
     return false;
 
   if (FLAGS_print_all) {
@@ -197,13 +197,13 @@ bool base64_convert_test() {
     printf("h4: %s\n", h4.c_str());
   }
 
-  if (!base64_to_bytes(h1, &d1, false))
+  if (!base64_to_bytes(h1, &d1))
     return false;
-  if (!base64_to_bytes(h2, &d2, false))
+  if (!base64_to_bytes(h2, &d2))
     return false;
-  if (!base64_to_bytes(h3, &d3, false))
+  if (!base64_to_bytes(h3, &d3))
     return false;
-  if (!base64_to_bytes(h4, &d4, false))
+  if (!base64_to_bytes(h4, &d4))
     return false;
 
   if (FLAGS_print_all) {
@@ -270,8 +270,8 @@ bool endian_test() {
 
   if (FLAGS_print_all) {
     printf("l64: %016lx, b64: %016lx, r64: %016lx\n", l64, b64, r64);
-    printf("l32: %08lx, b32: %08lx, r32: %08lx\n", l32, b32, r32);
-    printf("l16: %04lx, b16: %04lx, r16: %04lx\n", l16, b16, r16);
+    printf("l32: %08x, b32: %08x, r32: %08x\n", l32, b32, r32);
+    printf("l16: %04x, b16: %04x, r16: %04x\n", l16, b16, r16);
   }
   if (l64 != r64)
     return false;

@@ -229,13 +229,13 @@ bool valid_hex(char* s) {
   return true;
 }
 
-bool hex_to_bytes(string& h, string* b, bool reverse) {
+bool hex_to_bytes(string& h, string* b) {
   b->clear();
-  if (!valid_hex((char*)h.c_str()) || reverse)
+  if (!valid_hex((char*)h.c_str()))
     return false;
   int h_size = strlen(h.c_str());
   // if odd first 4 bits is 0
-  if (b->capacity() < (h_size + 1) / 2)
+  if (((int)b->capacity()) < (h_size + 1) / 2)
     return false;
   byte b1, b2;
   int k;
@@ -266,13 +266,11 @@ char hex_char(byte b) {
   return s_hex_chars[b];
 }
 
-bool bytes_to_hex(string& b, string* h, bool reverse) {
+bool bytes_to_hex(string& b, string* h) {
   // always returns even number of hex characters
-  if (reverse)
-    return false;
   h->clear();
   int b_size = b.size();
-  if (h->capacity() < 2 * b_size + 1)
+  if (((int)h->capacity()) < 2 * b_size + 1)
     return false;
   char c1, c2;
   byte b1, b2;
@@ -307,7 +305,7 @@ bool valid_base64(char* s) {
   return true;
 }
 byte base64_value(char a) {
-  for (int i = 0; i < strlen(web_safe_base64_characters); i++) {
+  for (int i = 0; i < (int)strlen(web_safe_base64_characters); i++) {
     if (a == web_safe_base64_characters[i])
       return i;
   }
@@ -318,12 +316,12 @@ char base64_char(byte a) {
    return ' ';
   return web_safe_base64_characters[(int)a];
 }
-bool base64_to_bytes(string& b64, string* b, bool reverse) {
-  if (!valid_base64((char*)b64.c_str()) || reverse)
+bool base64_to_bytes(string& b64, string* b) {
+  if (!valid_base64((char*)b64.c_str()))
     return false;
   b->clear();
   int b64_size = strlen(b64.c_str());
-  if (b->capacity() < ((b64_size / 4) * 3 + 1))
+  if (((int)b->capacity()) < ((b64_size / 4) * 3 + 1))
     return false;
   int i;
   byte x1, x2, x3, x4, z;
@@ -377,9 +375,7 @@ bool base64_to_bytes(string& b64, string* b, bool reverse) {
   return true;
 }
 
-bool bytes_to_base64(string& b, string* b64, bool reverse) {
-  if (reverse)
-    return false;
+bool bytes_to_base64(string& b, string* b64) {
   b64->clear();
   int b_size = b.size();
   byte x1, x2, x3, z;
