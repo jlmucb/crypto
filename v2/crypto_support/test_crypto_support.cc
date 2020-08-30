@@ -300,11 +300,11 @@ bool key_test() {
 
   string ns;
   m->SerializeToString(&ns);
-  // delete m;
+  delete m;
   key_message nm;
   nm.ParseFromString(ns);
   printf("\nrecovered\n");
-  print_key_message(*m);
+  print_key_message(nm);
   return true;
 }
 
