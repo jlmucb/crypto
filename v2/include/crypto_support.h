@@ -32,6 +32,7 @@
 #include <fstream>
 
 #include <cstddef>
+#include <support.pb.h>
 
 #ifndef byte
 typedef unsigned char byte;
