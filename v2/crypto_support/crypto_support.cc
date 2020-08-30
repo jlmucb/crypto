@@ -718,3 +718,65 @@ bool file_util::write_file(char* filename, int size, byte* buf) {
   return n > 0;
 }
 
+void print_binary_blob(binary_blob_message& m) {
+}
+
+void print_encrypted_message(encrypted_message& m) {
+}
+
+void print_signature_message(signature_message& m) {
+}
+
+void print_rsa_parameters_message(rsa_parameters_message& m) {
+}
+
+void print_ecc_parameters_message(ecc_parameters_message& m) {
+}
+
+void print_rsa_public_parameters_message(rsa_public_parameters_message& m) {
+}
+
+void print_ecc_public_parameters_message(ecc_public_parameters_message& m) {
+}
+
+void print_rsa_private_parameters_message(rsa_private_parameters_message& m) {
+}
+
+void print_ecc_private_parameters_message(ecc_private_parameters_message& m) {
+}
+
+void print_curve_parameters_message(curve_parameters_message& m) {
+}
+
+void print_hmac_parameters_message(hmac_parameters_message& m) {
+}
+
+void print_key_message(key_message& m) {
+}
+
+void print_scheme_message(scheme_message& m) {
+}
+
+void print_crypto_signature_message(crypto_signature_message& m) {
+}
+
+void print_cert_name_message(cert_name_message& m) {
+}
+
+void print_cert_principal_name_message(cert_principal_name_message& m) {
+}
+
+void print_cert_rsa_parameters_message(cert_rsa_parameters_message& m) {
+}
+
+void print_cert_ecc_parameters_message(cert_ecc_parameters_message& m) {
+}
+
+void print_cert_algorithm_message(cert_algorithm_message& m) {
+}
+
+void print_cert_properties_message(cert_properties_message& m) {
+}
+
+void print_certificate_message(certificate_message& m) {
+}
