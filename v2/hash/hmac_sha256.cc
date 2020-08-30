@@ -42,9 +42,9 @@ bool hmac_sha256::init(int size, byte* key) {
   macvalid_ = false;
 
   int i;
-  byte padded[BLOCKBYTESIZE];
+  byte padded[sha256::BLOCKBYTESIZE];
   memset(key_, 0, sha256::BLOCKBYTESIZE);
-  memset(padded, 0, BLOCKBYTESIZE);
+  memset(padded, 0, sha256::BLOCKBYTESIZE);
 
   if (size > sha256::BLOCKBYTESIZE) {
     sha256 compressed_key;
@@ -54,13 +54,13 @@ bool hmac_sha256::init(int size, byte* key) {
     compressed_key.get_digest(sha256::BLOCKBYTESIZE, key_);
   } else {
     memcpy(key_, key, size);
-    memset(&key_[size], 0, BLOCKBYTESIZE - size);
+    memset(&key_[size], 0, sha256::BLOCKBYTESIZE - size);
   }
-  for (i = 0; i < BLOCKBYTESIZE; i++) padded[i] = key_[i] ^ 0x36;
+  for (i = 0; i < sha256::BLOCKBYTESIZE; i++) padded[i] = key_[i] ^ 0x36;
   if (!inner_sha256_.init()) {
     return false;
   }
-  inner_sha256_.add_to_hash(BLOCKBYTESIZE, (byte*)padded);
+  inner_sha256_.add_to_hash(sha256::BLOCKBYTESIZE, (byte*)padded);
   return true;
 }
 
@@ -74,7 +74,7 @@ bool hmac_sha256::get_hmac(int size, byte* out) {
 #ifndef BIGENDIAN
  uint32_t* p_mac = (uint32_t*)mac_;
  uint32_t* p_out = (uint32_t*)out;
- for(int i = 0; i < 16; i++)
+ for(int i = 0; i < 8; i++)
     little_to_big_endian_32(&p_mac[i], &p_out[i]);
 #else
   memcpy(out, mac_, MACBYTESIZE);

@@ -21,6 +21,7 @@
 #include "hash.h"
 #include "sha1.h"
 #include "sha256.h"
+#include "hmac_sha256.h"
 
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
@@ -145,6 +146,50 @@ const byte sha3_test3_answer[128] = {
     0xD9, 0x40, 0x11, 0x98, 0x9D, 0xC6, 0xEB, 0xC4
 };
 
+int hmacsha256_test1_keysize = 20;
+byte hmacsha256_test1_key[] = {
+    0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
+    0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
+    0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b
+};
+byte* hmacsha256_test1_input = (byte*)"Hi There";
+int hmacsha256_test1_size_input = 8;
+byte hmacsha256_test1_mac[32] = {
+    0xb0, 0x34, 0x4c, 0x61, 0xd8, 0xdb, 0x38, 0x53, 0x5c, 0xa8, 0xaf,
+    0xce, 0xaf, 0x0b, 0xf1, 0x2b, 0x88, 0x1d, 0xc2, 0x00, 0xc9, 0x83,
+    0x3d, 0xa7, 0x26, 0xe9, 0x37, 0x6c, 0x2e, 0x32, 0xcf, 0xf7
+};
+
+int hmacsha256_test2_keysize = 4;
+byte* hmacsha256_test2_key = (byte*)"Jefe";
+byte* hmacsha256_test2_input = (byte*)"what do ya want for nothing?";
+int hmacsha256_test2_size_input = 28;
+byte hmacsha256_test2_mac[32] = {
+    0x5b, 0xdc, 0xc1, 0x46, 0xbf, 0x60, 0x75, 0x4e, 0x6a, 0x04, 0x24,
+    0x26, 0x08, 0x95, 0x75, 0xc7, 0x5a, 0x00, 0x3f, 0x08, 0x9d, 0x27,
+    0x39, 0x83, 0x9d, 0xec, 0x58, 0xb9, 0x64, 0xec, 0x38, 0x43
+};
+
+int hmacsha256_test3_keysize = 20;
+byte hmacsha256_test3_key[20] = {
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa
+};
+int hmacsha256_test3_size_input = 50;
+byte hmacsha256_test3_input[50] = {
+    0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+    0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+    0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+    0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+    0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd
+};
+byte hmacsha256_test3_mac[32] = {
+    0x77, 0x3e, 0xa9, 0x1e, 0x36, 0x80, 0x0e, 0x46, 0x85, 0x4d, 0xb8,
+    0xeb, 0xd0, 0x91, 0x81, 0xa7, 0x29, 0x59, 0x09, 0x8b, 0x3e, 0xf8,
+    0xc1, 0x22, 0xd9, 0x63, 0x55, 0x14, 0xce, 0xd5, 0x65, 0xfe
+};
+
 
 bool test_sha1() {
   sha1 hash_object;
@@ -233,14 +278,105 @@ bool test_ghash() {
 }
 
 bool test_hmac_sha256() {
+  byte test1_hmac[sha256::DIGESTBYTESIZE];
+  byte test2_hmac[sha256::DIGESTBYTESIZE];
+  byte test3_hmac[sha256::DIGESTBYTESIZE];
+  hmac_sha256 mac1;
+  hmac_sha256 mac2;
+  hmac_sha256 mac3;
+
+  if (!mac1.init(hmacsha256_test1_keysize, hmacsha256_test1_key)) {
+    return false;
+  }
+  mac1.add_to_inner_hash(hmacsha256_test1_size_input, hmacsha256_test1_input);
+  mac1.finalize();
+  if (!mac1.get_hmac(32, (byte*)test1_hmac)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("\tMac key     : ");
+    print_bytes(hmacsha256_test1_keysize, (byte*)hmacsha256_test1_key);
+    printf("\tMac input   : ");
+    print_bytes(hmacsha256_test1_size_input, hmacsha256_test1_input);
+    printf("\tComputed mac: ");
+    print_bytes(sha256::DIGESTBYTESIZE, (byte*)test1_hmac);
+    printf("\tCorrect mac : ");
+    print_bytes(sha256::DIGESTBYTESIZE, (byte*)hmacsha256_test1_mac);
+  }
+  if (memcmp((byte*)test1_hmac, (byte*)hmacsha256_test1_mac, sha256::DIGESTBYTESIZE) != 0) {
+    return false;
+  }
+
   return true;
 }
 
-bool test_pkcs1() {
+bool test_pkcs() {
+/* byte in[64];
+  byte out[256];
+  int new_out_size = 256;
+  byte new_out[256];
+
+  memset(in, 0xbb, 64);
+  if (!PkcsEncode("sha-256", in, 256, out)) {
+    printf("PkcsEncode failed\n");
+    return false;
+  }
+  if (print_all) {
+    printf("encoded hash: ");
+    print_bytes(256, out);
+    printf("\n");
+  }
+  if (!PkcsVerify("sha-256", in, 256, out)) {
+    printf("PkcsVerify failed\n");
+    return false;
+  }
+  memset(out, 0, 256);
+  memset(new_out, 0, 256);
+  if (!PkcsEmbed(64, in, 256, out)) {
+    printf("PkcsEmbed failed\n");
+    return false;
+  }
+  if (print_all) {
+    printf("embedded message: ");
+    print_bytes(256, out);
+    printf("\n");
+  }
+  if (!PkcsExtract(256, out, &new_out_size, new_out)) {
+    printf("PkcsExtract failed\n");
+    return false;
+  }
+  if (print_all) {
+    printf("retrieved message: ");
+    print_bytes(new_out_size, new_out);
+    printf("\n");
+  }
+  if (new_out_size != 64 || memcmp(new_out, in, new_out_size) != 0)
+    return false;
+  return true;
+*/
   return true;
 }
 
 bool test_pkdf2() {
+/*
+ byte out[256];
+  int salt_size = 24;
+  byte salt[256];
+  
+  memset(out, 0, 256); 
+  memset(salt, 0x09, salt_size);
+
+  if (!pbkdf2("My voice is my password, hear me speak", salt_size, salt, 10, 72,
+              out)) {
+    printf("pbkdf2 failed\n");
+    return false;
+  }
+  if (print_all) {
+    printf("password derived key: ");
+    print_bytes(80, out);
+    printf("\n");
+  }
+*/
   return true;
 }
 
@@ -248,14 +384,17 @@ bool test_cmac() {
   return true;
 }
 
-TEST (pkcs1, test_pkcs1) {
-  EXPECT_TRUE(test_pkcs1());
-}
 TEST (sha1, test_sha1) {
   EXPECT_TRUE(test_sha1());
 }
 TEST (sha2, sha2) {
   EXPECT_TRUE(test_sha256());
+}
+TEST (pkcs1, test_pkcs) {
+  EXPECT_TRUE(test_pkcs());
+}
+TEST (pkdf, test_pkdf2) {
+  EXPECT_TRUE(test_pkdf2());
 }
 TEST (sha3, test_sha3) {
   EXPECT_TRUE(test_sha1());
@@ -263,14 +402,11 @@ TEST (sha3, test_sha3) {
 TEST (ghash, test_ghash) {
   EXPECT_TRUE(test_ghash());
 }
-TEST (hmac, test_hmac_sha256) {
-  EXPECT_TRUE(test_hmac_sha256());
-}
-TEST (pkdf, test_pkdf2) {
-  EXPECT_TRUE(test_pkdf2());
-}
 TEST (cmac, test_cmac) {
   EXPECT_TRUE(test_cmac());
+}
+TEST(hmac, test_hmac_sha256) {
+  EXPECT_TRUE(test_hmac_sha256());
 }
 
 
