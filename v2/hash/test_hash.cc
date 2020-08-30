@@ -21,6 +21,7 @@
 #include "hash.h"
 #include "sha1.h"
 #include "sha256.h"
+#include "sha3.h"
 #include "hmac_sha256.h"
 #include "pkcs.h"
 #include "pbkdf.h"
@@ -272,6 +273,68 @@ bool test_sha256() {
 }
 
 bool test_sha3() {
+  sha3 hash_object(1024);
+  byte digest[1024 / NBITSINBYTE];
+
+  memset(digest, 0, 1024 / NBITSINBYTE);
+  if (!hash_object.init()) {
+    return false;
+  }
+  hash_object.add_to_hash(sizeof(sha3_test1_input), (byte*)sha3_test1_input);
+  hash_object.finalize();
+  if (!hash_object.get_digest(1024 / NBITSINBYTE, digest)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("\tInput        : ");
+    print_bytes(sizeof(sha3_test1_input), (byte*)sha3_test1_input);
+    printf("\tComputed hash: ");
+    print_bytes(1024 / NBITSINBYTE, digest);
+    printf("\tCorrect hash:  ");
+    print_bytes(1024 / NBITSINBYTE, (byte*)sha3_test1_answer);
+    printf("\n");
+  }
+  if (memcmp((byte*)sha3_test1_answer, digest, 1024 / NBITSINBYTE) != 0) return false;
+
+  memset(digest, 0, 1024 / NBITSINBYTE);
+  if (!hash_object.init()) {
+    return false;
+  }
+  hash_object.add_to_hash(sizeof(sha3_test2_input), (byte*)sha3_test2_input);
+  hash_object.finalize();
+  if (!hash_object.get_digest(1024 / NBITSINBYTE, digest)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("\tInput        : ");
+    print_bytes(sizeof(sha3_test2_input), (byte*)sha3_test2_input);
+    printf("\tComputed hash: ");
+    print_bytes(1024 / NBITSINBYTE, digest);
+    printf("\tCorrect hash:  ");
+    print_bytes(1024 / NBITSINBYTE, (byte*)sha3_test2_answer);
+    printf("\n");
+  }
+  if (memcmp((byte*)sha3_test2_answer, digest, 1024 / NBITSINBYTE) != 0) return false;
+  memset(digest, 0, 1024 / NBITSINBYTE);
+  if (!hash_object.init()) {
+    return false;
+  }
+  hash_object.add_to_hash(sizeof(sha3_test3_input), (byte*)sha3_test3_input);
+  hash_object.finalize();
+  if (!hash_object.get_digest(1024 / NBITSINBYTE, digest)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("\tInput        : ");
+    print_bytes(sizeof(sha3_test3_input), (byte*)sha3_test3_input);
+    printf("\tComputed hash: ");
+    print_bytes(1024 / NBITSINBYTE, digest);
+    printf("\tCorrect hash:  ");
+    print_bytes(1024 / NBITSINBYTE, (byte*)sha3_test3_answer);
+    printf("\n");
+  }
+  if (memcmp((byte*)sha3_test3_answer, digest, 1024 / NBITSINBYTE) != 0) return false;
+
   return true;
 }
 
@@ -433,9 +496,6 @@ bool test_cmac() {
   return true;
 }
 
-TEST (sha3, test_sha3) {
-  EXPECT_TRUE(test_sha1());
-}
 TEST (ghash, test_ghash) {
   EXPECT_TRUE(test_ghash());
 }
@@ -456,6 +516,9 @@ TEST (pkcs1, test_pkcs) {
 }
 TEST (pkdf, test_pkdf2) {
   EXPECT_TRUE(test_pkdf2());
+}
+TEST (sha3, test_sha3) {
+  EXPECT_TRUE(test_sha1());
 }
 
 
