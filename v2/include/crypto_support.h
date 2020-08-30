@@ -136,6 +136,11 @@ void big_to_little_endian_64(uint64_t* in, uint64_t* out);
 void little_to_big_endian_16(uint16_t* in, uint16_t* out);
 void big_to_little_endian_16(uint16_t* in, uint16_t* out);
 
+void print_u64_array(int n, uint64_t* x);
+
+int u64_array_to_bytes(int size_n, uint64_t* n, string* b);
+int bytes_to_u64_array(string& b, int size_n, uint64_t* n);
+
 bool have_intel_rd_rand();
 bool have_intel_aes_ni();
 

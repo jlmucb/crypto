@@ -714,6 +714,72 @@ bool file_util::write_file(char* filename, int size, byte* buf) {
   return n > 0;
 }
 
+void print_u64_array(int n, uint64_t* x) {
+  for (int i = (n - 1); i >= 0; i--)
+    printf("%016llx ", x[i]);
+}
+
+int u64_array_to_bytes(int size_n, uint64_t* n, string* b) {
+  int real_size_n = size_n;
+
+  for (int i = size_n; i > 0; i--) {
+    if (n[i - 1] != 0ULL)
+      break;
+    real_size_n--;
+  }
+  uint64_t little_endian;
+  for (int i = (real_size_n - 1); i >= 0; i--) {
+#ifndef BIG_ENDIAN
+  little_endian = n[i];
+#else
+  big_to_little_endian_64(&n[i], &little_endian);
+#endif
+    byte* p = (byte*) &little_endian;
+    for (int j = 0; j < (int)sizeof(uint64_t); j++)
+      b->append(1, (char)p[j]);
+  }
+  return b->size();
+}
+
+int bytes_to_u64_array(string& b, int size_n, uint64_t* n) {
+  int real_size_b = (int)b.size();
+  for (int i = 0; i < (int)b.size(); i++) {
+    if (b[i] != 0)
+      break;
+    real_size_b--;
+  }
+  if (real_size_b == 0) {
+    n[0] = 0ULL;
+    return 1;
+  }
+  int real_size_n = (real_size_b + (int)sizeof(uint64_t) - 1) / (int)sizeof(uint64_t);
+  int start_b = (int)b.size() - real_size_b;
+  int partial_64_size = real_size_b - (real_size_n - 1) * (int)sizeof(uint64_t);
+  byte* p = (byte*)b.data() + start_b;
+  uint64_t x = 0ULL;
+#ifndef BIG_ENDIAN
+  memcpy((byte*)&x, p, partial_64_size);
+  n[real_size_n - 1] = x;
+#else
+  uint64_t big_endian = 0ULL;
+  reverse_bytes(partial_64_size, p, (byte*)&big_endian);
+  n[real_size_n - 1] = big_endian;
+#endif
+  p+= partial_64_size;
+  for (int i = real_size_n - 2; i >=0; i--) {
+#ifndef BIG_ENDIAN
+    memcpy((byte*)&x, p, sizeof(uint64_t));
+    n[i] = x;
+#else
+    reverse_bytes((int)sizeof(uint64_t), p, (byte*)&big_endian);
+    n[i] = big_endian;
+#endif
+    p += (int)sizeof(uint64_t);
+  }
+  return real_size_n;
+}
+
+
 void print_binary_blob(binary_blob_message& m) {
 }
 

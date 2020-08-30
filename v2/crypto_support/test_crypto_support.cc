@@ -290,6 +290,29 @@ bool key_test() {
   return true;
 }
 
+bool u64_array_bytes_test() {
+  uint64_t n_in[3] = {
+    0x01020104, 0xffeeddccbbaa9988, 0x7766554433221100
+  };
+  string b_out;
+  uint64_t n_out[3];
+
+  int k= u64_array_to_bytes(3, n_in, &b_out);
+  int m = bytes_to_u64_array(b_out, 3, n_out);
+  if (FLAGS_print_all) {
+    printf("n in   : "); print_u64_array(3, n_in); printf("\n");
+    printf("b      : "); print_bytes(k, (byte*)b_out.data()); 
+    printf("n out  : "); print_u64_array(m, n_out); printf("\n");
+  }
+  if (m != 3)
+    return false;
+  for (int i = 0; i < m; i++) {
+    if (n_in[i] != n_out[i])
+      return false;
+  }
+  return true;
+}
+
 TEST (algs, test_alg_names) {
   EXPECT_TRUE(test_alg_names());
 }
@@ -315,6 +338,10 @@ TEST (fileutilities, file_test) {
 TEST (keyutilities, key_test) {
   EXPECT_TRUE(key_test());
 }
+TEST (u64stuff, u64_array_bytes_test) {
+  EXPECT_TRUE(u64_array_bytes_test());
+}
+
 
 int main(int an, char** av) {
   gflags::ParseCommandLineFlags(&an, &av, true);
