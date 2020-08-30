@@ -175,17 +175,34 @@ class file_util {
 key_message* make_symmetrickey(const char* alg, const char* name, int bit_size,
                                const char* purpose, const char* not_before,
                                const char* not_after, string& secret);
+key_message* make_rsakey(const char* alg, const char* name, int bit_size,
+                           const char* purpose, const char* not_before,
+                           const char* not_after, string& m,
+                           string& e, string& d, string& p, string& q);
+key_message* make_ecckey(const char* name, int bit_size, const char* purpose,
+                         const char* not_before, const char* not_after,
+                         const char * curve_name,
+                         string& p,
+                         string& secret_multiplier,
+                         string& private_base_point_x,
+                         string& private_base_point_y,
+                         string& public_base_point_x,
+                         string& public_base_point_y);
+
+scheme_message* make_scheme(const char* name, const char* id,
+  const char* encryption_alg, const char* encryption_key_name,
+  int encryption_key_bit_size, const char* encryption_key_purpose,
+  const char* encryption_key_not_before, const char* encryption_key_not_after,
+  string& encryption_key_secret, const char* hmac_alg, int hmac_key_size,
+  string& hmac_secret, string& nonce);
 
 void print_binary_blob(binary_blob_message& m);
 void print_encrypted_message(encrypted_message& m);
 void print_signature_message(signature_message& m);
-void print_rsa_parameters_message(rsa_parameters_message& m);
-void print_ecc_parameters_message(ecc_parameters_message& m);
 void print_rsa_public_parameters_message(rsa_public_parameters_message& m);
 void print_ecc_public_parameters_message(ecc_public_parameters_message& m);
 void print_rsa_private_parameters_message(rsa_private_parameters_message& m);
 void print_ecc_private_parameters_message(ecc_private_parameters_message& m);
-void print_curve_parameters_message(curve_parameters_message& m);
 void print_hmac_parameters_message(hmac_parameters_message& m);
 void print_key_message(key_message& m);
 void print_scheme_message(scheme_message& m);

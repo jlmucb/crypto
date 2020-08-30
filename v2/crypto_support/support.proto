@@ -30,38 +30,42 @@ message encrypted_message {
 message signature_message {
 };
 
-message rsa_parameters_message {
-};
-
-message ecc_parameters_message {
-};
-
 message rsa_public_parameters_message {
    optional bytes modulus                      = 1;
-   optional bytes exponent                     = 2;
-};
-
-message ecc_public_parameters_message {
- optional bytes p                              = 1;
- //, base, curveParameters
+   optional bytes e                            = 2;
 };
 
 message rsa_private_parameters_message {
+   optional bytes d                            = 1;
+   optional bytes p                            = 2;
+   optional bytes q                            = 3;
+};
+
+message point_message {
+ optional bytes x                              = 1;
+ optional bytes y                              = 2;
+};
+
+message ecc_public_parameters_message {
+ optional string curve_name                    = 1;
+ optional bytes p                              = 2;
+ optional point_message public_point           = 3;
 };
 
 message ecc_private_parameters_message {
-};
-
-message curve_parameters_message {
+ optional point_message private_point          = 1;
+ optional bytes private_mlutiplier             = 2;
 };
 
 message hmac_parameters_message {
  optional string algorithm                     = 1;
- optional int32 size                             = 2;
+ optional int32 size                           = 2;
  optional bytes secret                         = 3;
 };
 
 // family: symmetric, public, hmac
+// algorithm: aes, twofish, rc4, simon, spec, tea
+//    des, rsa, ecc, sha256, sha1
 message key_message {
   optional string family_type                   = 1;
   optional string algorithm_type                = 2;
@@ -75,9 +79,10 @@ message key_message {
 
 message scheme_message {
   optional string scheme_type                   = 1;
-  optional key_message encryption_key           = 2;
-  optional hmac_parameters_message parameters   = 3;
-  optional bytes public_nonce                   = 4;
+  optional string scheme_instance_identifier    = 2;
+  optional key_message encryption_key           = 3;
+  optional hmac_parameters_message parameters   = 4;
+  optional bytes public_nonce                   = 5;
 };
 
 message crypto_signature_message {

@@ -282,7 +282,34 @@ bool endian_test() {
   return true;
 }
 
+const int test_file_data_size = 32;
+byte test_file_data[test_file_data_size] = {
+  0, 1, 2, 3, 4, 5, 6, 7,
+  8, 9, 10, 11,12,13,14,15,
+  0, 1, 2, 3, 4, 5, 6, 7,
+  8, 9, 10, 11,12,13,14,15,
+};
 bool file_test() {
+  file_util file;
+  byte buf_read[64];
+
+  unlink("file_test_file");
+  if (!file.create("file_test_file"))
+    return false;
+  if(!file.write_file("file_test_file", test_file_data_size, test_file_data))
+    return false;
+  file.close();
+  if (!file.open("file_test_file"))
+    return false;
+  if (32 != file.bytes_in_file())
+    return false;
+  int k = file.read_a_block(64, buf_read);
+  if (k != file.bytes_in_file())
+    return false;
+  file.close();
+  if (memcmp(test_file_data, buf_read, 32) != 0)
+    return false;
+
   return true;
 }
 
