@@ -23,10 +23,9 @@ class symmetric_cipher {
   enum { NONE = 0, ENCRYPT = 1, DECRYPT = 2, BOTH = 3 };
   int direction_;
   bool initialized_;
-
-  string cipher_name_;
-  int num_key_bits_;
-  byte* key_;
+  string algorithm_;
+  int key_size_in_bits_;
+  string secret_;
 
   symmetric_cipher();
   virtual ~symmetric_cipher();

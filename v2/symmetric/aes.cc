@@ -22,10 +22,9 @@
 
 aes::aes() {
   direction_ = NONE;
-  cipher_name_ = nullptr;
   initialized_ = false;
-  num_key_bits_ = 0;
-  key_ = nullptr;
+  key_size_in_bits_ = 0;
+  algorithm_.assign("aes");
   encrypt_round_key_ = nullptr;
   decrypt_round_key_ = nullptr;
 }
@@ -605,21 +604,21 @@ static const uint32_t rcon[] = {
   }
 
 // compute key schedule in encrypt direction
-bool aes::initi_encrypt() {
+bool aes::init_encrypt() {
   encrypt_round_key_ = new uint32_t[4 * (aes::MAXNR + 1) + 1];
   if (encrypt_round_key_ == nullptr) {
-    LOG(ERROR) << "InitEnc cant new key sched\n";
     return false;
   }
   int i = 0;
   uint32_t temp;
   uint32_t* rk = encrypt_round_key_;
+  byte* key = (byte*)secret_.data();
 
-  rk[0] = GETU32(key_);
-  rk[1] = GETU32(key_ + 4);
-  rk[2] = GETU32(key_ + 8);
-  rk[3] = GETU32(key_ + 12);
-  if (num_key_bits_ == 128) {
+  rk[0] = GETU32(key);
+  rk[1] = GETU32(key + 4);
+  rk[2] = GETU32(key + 8);
+  rk[3] = GETU32(key + 12);
+  if (key_size_in_bits_ == 128) {
     for (;;) {
       temp = rk[3];
       rk[4] = rk[0] ^ (Te4[(temp >> 16) & 0xff] & 0xff000000) ^
@@ -635,9 +634,9 @@ bool aes::initi_encrypt() {
       rk += 4;
     }
   }
-  rk[4] = GETU32(key_ + 16);
-  rk[5] = GETU32(key_ + 20);
-  if (num_key_bits_ == 192) {
+  rk[4] = GETU32(key + 16);
+  rk[5] = GETU32(key + 20);
+  if (key_size_in_bits_ == 192) {
     for (;;) {
       temp = rk[5];
       rk[6] = rk[0] ^ (Te4[(temp >> 16) & 0xff] & 0xff000000) ^
@@ -655,9 +654,9 @@ bool aes::initi_encrypt() {
       rk += 6;
     }
   }
-  rk[6] = GETU32(key_ + 24);
-  rk[7] = GETU32(key_ + 28);
-  if (num_key_bits_ == 256) {
+  rk[6] = GETU32(key + 24);
+  rk[7] = GETU32(key + 28);
+  if (key_size_in_bits_ == 256) {
     for (;;) {
       temp = rk[7];
       rk[8] = rk[0] ^ (Te4[(temp >> 16) & 0xff] & 0xff000000) ^
@@ -687,7 +686,6 @@ bool aes::initi_encrypt() {
 bool aes::init_decrypt() {
   decrypt_round_key_ = new uint32_t[4 * (aes::MAXNR + 1) + 1];
   if (decrypt_round_key_ == nullptr) {
-    LOG(ERROR) << "InitDec cant new key sched\n";
     return false;
   }
   int i, j;
@@ -695,7 +693,7 @@ bool aes::init_decrypt() {
   uint32_t* rk = decrypt_round_key_;
 
   if (encrypt_round_key_ == nullptr)
-    if (!InitEnc()) {
+    if (!init_encrypt()) {
       return false;
     }
   memcpy((byte*)decrypt_round_key_, (byte*)encrypt_round_key_,
@@ -1033,39 +1031,27 @@ void aes::decrypt_block(const byte* ct, byte* pt) {
 
 bool aes::init(int key_bit_size, byte* key_buf, int directionflag) {
   if (key_bit_size == 128) {
-    cipher_name_ = new string("aes-128");
-    num_key_bits_ = key_bit_size;
+    key_size_in_bits_ = key_bit_size;
     num_rounds_ = 10;
   } else if (key_bit_size == 256) {
-    cipher_name_ = new string("aes-256");
-    num_key_bits_ = key_bit_size;
+    key_size_in_bits_ = key_bit_size;
     num_rounds_ = 14;
   } else {
-    LOG(ERROR) << "aes::Init bad key size\n";
     return false;
   }
   if (key_buf == nullptr) {
-    LOG(ERROR) << "aes::Init key_buf is nullptr\n";
     return false;
   }
-  key_ = new byte[key_bit_size / NBITSINBYTE];
-  if (key_ == nullptr) {
-    LOG(ERROR) << "aes::Init key is nullptr\n";
-    return false;
-  }
-  memcpy(key_, key_buf, key_bit_size / NBITSINBYTE);
+  secret_.append((const char*) key_buf, key_size_in_bits_ / NBITSINBYTE);
   if (directionflag == DECRYPT || directionflag == BOTH) {
-    if (!InitDec()) {
-      LOG(ERROR) << "InitDec failed\n";
+    if (!init_decrypt()) {
       return false;
     }
   } else if (directionflag == ENCRYPT) {
-    if (!InitEnc()) {
-      LOG(ERROR) << "InitEnc failed\n";
+    if (!init_encrypt()) {
       return false;
     }
   } else {
-    LOG(ERROR) << "Bad init options\n";
     return false;
   }
   initialized_ = true;

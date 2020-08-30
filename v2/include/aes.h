@@ -39,7 +39,7 @@ class aes : public symmetric_cipher {
   bool init_encrypt();
   bool init_decrypt();
   bool init(int key_bit_size, byte* key_buf, int directionflag);
-  void encrypt_blocklock(const byte* in, byte* out);
+  void encrypt_block(const byte* in, byte* out);
   void decrypt_block(const byte* in, byte* out);
   void encrypt(int byte_size, byte* in, byte* out);
   void decrypt(int byte_size, byte* in, byte* out);
@@ -61,13 +61,13 @@ class aesni : public symmetric_cipher {
   aesni();
   virtual ~aesni();
 
-  bool InitEnc();
-  bool InitDec();
-  bool Init(int key_bit_size, byte* key_buf, int directionflag);
-  void EncryptBlock(const byte* in, byte* out);
-  void DecryptBlock(const byte* in, byte* out);
-  void Encrypt(int byte_size, byte* in, byte* out);
-  void Decrypt(int byte_size, byte* in, byte* out);
+  bool init_encrypt();
+  bool init_decrypt();
+  bool init(int key_bit_size, byte* key_buf, int directionflag);
+  void encrypt_block(const byte* in, byte* out);
+  void decrypt_block(const byte* in, byte* out);
+  void encrypt(int byte_size, byte* in, byte* out);
+  void decrypt(int byte_size, byte* in, byte* out);
 };
 
 #endif

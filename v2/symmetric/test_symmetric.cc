@@ -1,4 +1,4 @@
-// Copyright 2014 John Manferdelli, All Rights Reserved.
+// Copyright 2020 John Manferdelli, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 #include "support.pb.h"
 #include "crypto_names.h"
 #include "symmetric_cipher.h"
-#include "pbkdf.h"
+#include "aes.h"
 
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
@@ -87,19 +87,37 @@ uint64_t simon_test1_cipher[2] = {
     0x49681b1e1e54fe3f, 0x65aa832af84e0bbc,
 };
 
+bool test_aes_test1() {
+  aes aes_obj;
+  byte test_cipher_out[16];
+  byte test_plain_out[16];
 
-bool test_aes() {
+   if(!aes_obj.init(128, aes128_test1_key, aes::BOTH))
+    return false;
+  aes_obj.encrypt_block(aes128_test1_plain, test_cipher_out);
+  aes_obj.decrypt_block(test_cipher_out, test_plain_out);
+  if (FLAGS_print_all) {
+    printf("  Key            : ");
+    print_bytes(16, aes128_test1_key);
+    printf("  Correct plain  : ");
+    print_bytes(16, aes128_test1_plain);
+    printf("  Correct cipher : ");
+    print_bytes(16, aes128_test1_cipher);
+    printf("  Computed cipher: ");
+    print_bytes(16, test_cipher_out);
+    printf("  Computed plain : ");
+    print_bytes(16, test_plain_out);
+  }
+  if (memcmp(aes128_test1_cipher, test_cipher_out, 16) != 0) return false;
+  if (memcmp(aes128_test1_plain, test_plain_out, 16) != 0) return false;
   return true;
 }
 bool test_aesni() {
   return true;
 }
 
-TEST (aes, test_aes) {
-  EXPECT_TRUE(test_aes());
-}
-TEST (aes, test_aesni) {
-  EXPECT_TRUE(test_aesni());
+TEST (aes, test_aes_test1) {
+  EXPECT_TRUE(test_aes_test1());
 }
 
 
