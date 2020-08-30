@@ -22,6 +22,8 @@
 #include "sha1.h"
 #include "sha256.h"
 #include "hmac_sha256.h"
+#include "pkcs.h"
+#include "pbkdf.h"
 
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
@@ -290,7 +292,7 @@ bool test_hmac_sha256() {
   }
   mac1.add_to_inner_hash(hmacsha256_test1_size_input, hmacsha256_test1_input);
   mac1.finalize();
-  if (!mac1.get_hmac(32, (byte*)test1_hmac)) {
+  if (!mac1.get_hmac(sha256::DIGESTBYTESIZE, (byte*)test1_hmac)) {
     return false;
   }
   if (FLAGS_print_all) {
@@ -307,59 +309,107 @@ bool test_hmac_sha256() {
     return false;
   }
 
+  if (!mac2.init(hmacsha256_test2_keysize, hmacsha256_test2_key)) {
+    return false;
+  }
+  mac2.add_to_inner_hash(hmacsha256_test2_size_input, hmacsha256_test2_input);
+  mac2.finalize();
+  if (!mac2.get_hmac(sha256::DIGESTBYTESIZE, (byte*)test2_hmac)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("\tMac key     : ");
+    print_bytes(hmacsha256_test2_keysize, (byte*)hmacsha256_test2_key);
+    printf("\tMac input   : ");
+    print_bytes(hmacsha256_test2_size_input, hmacsha256_test2_input);
+    printf("\tComputed mac: ");
+    print_bytes(sha256::DIGESTBYTESIZE, (byte*)test2_hmac);
+    printf("\tCorrect mac : ");
+    print_bytes(sha256::DIGESTBYTESIZE, (byte*)hmacsha256_test2_mac);
+  }
+  if (memcmp((byte*)test2_hmac, (byte*)hmacsha256_test2_mac, sha256::DIGESTBYTESIZE) != 0) {
+    return false;
+  }
+
+  if (!mac3.init(hmacsha256_test3_keysize, hmacsha256_test3_key)) {
+    return false;
+  }
+  mac3.add_to_inner_hash(hmacsha256_test3_size_input, hmacsha256_test3_input);
+  mac3.finalize();
+  if (!mac3.get_hmac(sha256::DIGESTBYTESIZE, (byte*)test3_hmac)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("\tMac key     : ");
+    print_bytes(hmacsha256_test3_keysize, (byte*)hmacsha256_test3_key);
+    printf("\tMac input   : ");
+    print_bytes(hmacsha256_test3_size_input, hmacsha256_test3_input);
+    printf("\tComputed mac: ");
+    print_bytes(sha256::DIGESTBYTESIZE, (byte*)test3_hmac);
+    printf("\tCorrect mac : ");
+    print_bytes(sha256::DIGESTBYTESIZE, (byte*)hmacsha256_test3_mac);
+  }
+  if (memcmp((byte*)test3_hmac, (byte*)hmacsha256_test3_mac, sha256::DIGESTBYTESIZE) != 0) {
+    return false;
+  }
+
   return true;
 }
 
 bool test_pkcs() {
-/* byte in[64];
+  byte in[64];
   byte out[256];
   int new_out_size = 256;
   byte new_out[256];
 
+  random_source rs;
+
+  if (!rs.start_random_source())
+    return false;
+
   memset(in, 0xbb, 64);
-  if (!PkcsEncode("sha-256", in, 256, out)) {
+  if (!pkcs_encode("sha-256", in, 256, out)) {
     printf("PkcsEncode failed\n");
     return false;
   }
-  if (print_all) {
+  if (FLAGS_print_all) {
     printf("encoded hash: ");
     print_bytes(256, out);
     printf("\n");
   }
-  if (!PkcsVerify("sha-256", in, 256, out)) {
+  if (!pkcs_verify("sha-256", in, 256, out)) {
     printf("PkcsVerify failed\n");
     return false;
   }
   memset(out, 0, 256);
   memset(new_out, 0, 256);
-  if (!PkcsEmbed(64, in, 256, out)) {
+  if (!pkcs_embed(rs, 64, in, 256, out)) {
     printf("PkcsEmbed failed\n");
     return false;
   }
-  if (print_all) {
+  if (FLAGS_print_all) {
     printf("embedded message: ");
     print_bytes(256, out);
     printf("\n");
   }
-  if (!PkcsExtract(256, out, &new_out_size, new_out)) {
+  if (!pkcs_extract(256, out, &new_out_size, new_out)) {
     printf("PkcsExtract failed\n");
     return false;
   }
-  if (print_all) {
+  if (FLAGS_print_all) {
     printf("retrieved message: ");
     print_bytes(new_out_size, new_out);
     printf("\n");
   }
   if (new_out_size != 64 || memcmp(new_out, in, new_out_size) != 0)
     return false;
-  return true;
-*/
+
+  rs.close_random_source();
   return true;
 }
 
 bool test_pkdf2() {
-/*
- byte out[256];
+  byte out[256];
   int salt_size = 24;
   byte salt[256];
   
@@ -368,15 +418,14 @@ bool test_pkdf2() {
 
   if (!pbkdf2("My voice is my password, hear me speak", salt_size, salt, 10, 72,
               out)) {
-    printf("pbkdf2 failed\n");
     return false;
   }
-  if (print_all) {
+  if (FLAGS_print_all) {
     printf("password derived key: ");
     print_bytes(80, out);
     printf("\n");
   }
-*/
+
   return true;
 }
 
@@ -384,18 +433,6 @@ bool test_cmac() {
   return true;
 }
 
-TEST (sha1, test_sha1) {
-  EXPECT_TRUE(test_sha1());
-}
-TEST (sha2, sha2) {
-  EXPECT_TRUE(test_sha256());
-}
-TEST (pkcs1, test_pkcs) {
-  EXPECT_TRUE(test_pkcs());
-}
-TEST (pkdf, test_pkdf2) {
-  EXPECT_TRUE(test_pkdf2());
-}
 TEST (sha3, test_sha3) {
   EXPECT_TRUE(test_sha1());
 }
@@ -405,8 +442,20 @@ TEST (ghash, test_ghash) {
 TEST (cmac, test_cmac) {
   EXPECT_TRUE(test_cmac());
 }
+TEST (sha1, test_sha1) {
+  EXPECT_TRUE(test_sha1());
+}
+TEST (sha2, sha2) {
+  EXPECT_TRUE(test_sha256());
+}
 TEST(hmac, test_hmac_sha256) {
   EXPECT_TRUE(test_hmac_sha256());
+}
+TEST (pkcs1, test_pkcs) {
+  EXPECT_TRUE(test_pkcs());
+}
+TEST (pkdf, test_pkdf2) {
+  EXPECT_TRUE(test_pkdf2());
 }
 
 
