@@ -45,7 +45,7 @@ AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=	$(O)/test_hash.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o $(O)/hash.o \
-        $(O)/sha1.o $(O)/sha256.o
+        $(O)/sha1.o $(O)/sha256.o $(O)/hmac_sha256.o $(O)/pkcs.o $(O)/pbkdf2.o
 
 all:	test_hash.exe
 clean:
@@ -88,3 +88,15 @@ $(O)/sha1.o: $(S)/sha1.cc
 $(O)/sha256.o: $(S)/sha256.cc
 	@echo "compiling sha256.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/sha256.o $(S)/sha256.cc
+
+$(O)/hmac_sha256.o: $(S)/hmac_sha256.cc
+	@echo "compiling hmac_sha256.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/hmac_sha256.o $(S)/hmac_sha256.cc
+
+$(O)/pkcs.o: $(S)/pkcs.cc
+	@echo "compiling pkcs.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/pkcs.o $(S)/pkcs.cc
+
+$(O)/pbkdf2.o: $(S)/pbkdf2.cc
+	@echo "compiling pbkdf2.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/pbkdf2.o $(S)/pbkdf2.cc
