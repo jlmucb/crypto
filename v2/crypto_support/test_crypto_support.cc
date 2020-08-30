@@ -291,20 +291,47 @@ bool key_test() {
 }
 
 bool u64_array_bytes_test() {
-  uint64_t n_in[3] = {
-    0x01020104, 0xffeeddccbbaa9988, 0x7766554433221100
+  uint64_t n_in[4] = {
+    0x01020104, 0xffeeddccbbaa9988, 0x7766554433221100, 0x4455
   };
   string b_out;
-  uint64_t n_out[3];
+  uint64_t n_out[4];
 
   int k= u64_array_to_bytes(3, n_in, &b_out);
+  if (k <= 0)
+    return false;
   int m = bytes_to_u64_array(b_out, 3, n_out);
+  if (m <= 0)
+    return false;
   if (FLAGS_print_all) {
+    printf("\n");
     printf("n in   : "); print_u64_array(3, n_in); printf("\n");
-    printf("b      : "); print_bytes(k, (byte*)b_out.data()); 
+    printf("b out  : "); print_bytes(k, (byte*)b_out.data()); 
     printf("n out  : "); print_u64_array(m, n_out); printf("\n");
   }
   if (m != 3)
+    return false;
+  for (int i = 0; i < m; i++) {
+    if (n_in[i] != n_out[i])
+      return false;
+  }
+
+  for (int i = 0; i < 4; i++) {
+    n_out[0] = 0ULL;
+  }
+  k= u64_array_to_bytes(4, n_in, &b_out);
+  if (k <= 0)
+    return false;
+  m = bytes_to_u64_array(b_out, 4, n_out);
+  if (m <= 0)
+    return false;
+  if (FLAGS_print_all) {
+    printf("\n");
+    printf("n in   : "); print_u64_array(4, n_in); printf("\n");
+    printf("b out  : "); print_bytes(k, (byte*)b_out.data()); 
+    printf("n out  : "); print_u64_array(m, n_out); printf("\n");
+  }
+  if (m != 4)
     return false;
   for (int i = 0; i < m; i++) {
     if (n_in[i] != n_out[i])

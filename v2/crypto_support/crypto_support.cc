@@ -722,17 +722,19 @@ void print_u64_array(int n, uint64_t* x) {
 int u64_array_to_bytes(int size_n, uint64_t* n, string* b) {
   int real_size_n = size_n;
 
+  b->clear();
   for (int i = size_n; i > 0; i--) {
     if (n[i - 1] != 0ULL)
       break;
     real_size_n--;
   }
-  uint64_t little_endian;
+  uint64_t little_endian = 0ULL;
   for (int i = (real_size_n - 1); i >= 0; i--) {
+    little_endian = 0ULL;
 #ifndef BIG_ENDIAN
-  little_endian = n[i];
+    little_endian = n[i];
 #else
-  big_to_little_endian_64(&n[i], &little_endian);
+    big_to_little_endian_64(&n[i], &little_endian);
 #endif
     byte* p = (byte*) &little_endian;
     for (int j = 0; j < (int)sizeof(uint64_t); j++)
@@ -779,6 +781,23 @@ int bytes_to_u64_array(string& b, int size_n, uint64_t* n) {
   return real_size_n;
 }
 
+
+key_message* make_symmetrickey(const char* alg, const char* name, int bit_size,
+                               const char* purpose, const char* not_before,
+                               const char* not_after, string& secret) {
+  key_message* m = new(key_message);
+  m->set_family_type("symmetric");
+  if (alg  != nullptr)
+    m->set_algorithm_type(alg);
+  // key_name
+  // key_size
+  // purpose
+  // notBefore
+  // notAfter
+  // secret 
+
+  return nullptr;
+}
 
 void print_binary_blob(binary_blob_message& m) {
 }
