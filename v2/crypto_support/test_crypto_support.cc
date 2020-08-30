@@ -287,6 +287,24 @@ bool file_test() {
 }
 
 bool key_test() {
+  string s;
+
+  for(int i = 0; i < 32; i++)
+    s.append(1, (char)i);
+  key_message* m = make_symmetrickey("aes", "test_key", 256,
+                               nullptr, "30 August 2020, 20:52:28.000000Z",
+                               "30 August 2025, 20:52:28.000000Z", s);
+  if (m == nullptr)
+    return false;
+  print_key_message(*m);
+
+  string ns;
+  m->SerializeToString(&ns);
+  // delete m;
+  key_message nm;
+  nm.ParseFromString(ns);
+  printf("\nrecovered\n");
+  print_key_message(*m);
   return true;
 }
 

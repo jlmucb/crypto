@@ -750,6 +750,8 @@ int bytes_to_u64_array(string& b, int size_n, uint64_t* n) {
       break;
     real_size_b--;
   }
+  if (((real_size_b + (int)sizeof(uint64_t) -1) / (int)sizeof(uint64_t)) > size_n)
+    return false;
   if (real_size_b == 0) {
     n[0] = 0ULL;
     return 1;
@@ -785,18 +787,23 @@ int bytes_to_u64_array(string& b, int size_n, uint64_t* n) {
 key_message* make_symmetrickey(const char* alg, const char* name, int bit_size,
                                const char* purpose, const char* not_before,
                                const char* not_after, string& secret) {
+  // has_algorithm_type
   key_message* m = new(key_message);
   m->set_family_type("symmetric");
   if (alg  != nullptr)
     m->set_algorithm_type(alg);
-  // key_name
-  // key_size
-  // purpose
-  // notBefore
-  // notAfter
-  // secret 
+  if (name != nullptr)
+    m->set_key_name(name);
+  m->set_key_size(bit_size);
+  if (purpose != nullptr)
+    m->set_purpose(purpose);
+  if (not_before != nullptr)
+    m->set_notbefore(not_before);
+  if (not_after != nullptr)
+    m->set_notafter(not_after);
+  m->set_secret(secret);
 
-  return nullptr;
+  return m;
 }
 
 void print_binary_blob(binary_blob_message& m) {
@@ -833,6 +840,27 @@ void print_hmac_parameters_message(hmac_parameters_message& m) {
 }
 
 void print_key_message(key_message& m) {
+  if (!m.has_family_type())
+    return;
+  printf("%s key\n", m.family_type().c_str());
+  if (m.has_algorithm_type())
+    printf("  Algorithm: %s\n", m.algorithm_type().c_str());
+  if (m.has_key_size())
+    printf("  Key size : %d bits\n", m.key_size());
+  if (m.has_key_name())
+    printf("  Key name : %s\n", m.key_name().c_str());
+  if (m.has_algorithm_type())
+    printf("  Purpose  : %s\n", m.purpose().c_str());
+  if (m.has_notbefore())
+    printf("  Not before %s\n", m.notbefore().c_str());
+  if (m.has_notafter())
+    printf("  not after: %s\n", m.notafter().c_str());
+  if (m.has_algorithm_type())
+    printf("  Key name : %s\n", m.algorithm_type().c_str());
+  if (m.has_secret()) {
+    printf("  Secret   : "); print_bytes((int)m.secret().size(),
+                                (byte*)m.secret().data());
+  }
 }
 
 void print_scheme_message(scheme_message& m) {

@@ -172,6 +172,10 @@ class file_util {
   bool write_file(char* filename, int size, byte* buf);
 };
 
+key_message* make_symmetrickey(const char* alg, const char* name, int bit_size,
+                               const char* purpose, const char* not_before,
+                               const char* not_after, string& secret);
+
 void print_binary_blob(binary_blob_message& m);
 void print_encrypted_message(encrypted_message& m);
 void print_signature_message(signature_message& m);
