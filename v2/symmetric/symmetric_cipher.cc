@@ -11,32 +11,30 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// File: sha1.h
+// File: symmetric_cipher.cc
 
 #include "crypto_support.h"
-#include "hash.h"
+#include "aes.h"
+#include "symmetric_cipher.h"
 
-#ifndef _CRYPTO_SHA1_H__
-#define _CRYPTO_SHA1_H__
+symmetric_cipher::symmetric_cipher() {
+  direction_ = NONE;
+  cipher_name_ = nullptr;
+  initialized_ = false;
+  num_key_bits_ = 0;
+  key_ = nullptr;
+}
 
-class sha1 : public crypto_hash {
- public:
-  enum { BLOCKBYTESIZE = 64, DIGESTBYTESIZE = 20 };
-
-  int num_bytes_waiting_;
-  byte bytes_waiting_[BLOCKBYTESIZE];
-  uint32_t state_[DIGESTBYTESIZE / sizeof(uint32_t)];
-  byte digest_[DIGESTBYTESIZE];
-  uint64_t num_bits_processed_;
-
-  sha1();
-  ~sha1();
-
-  void transform_block(const uint32_t* data);
-
-  bool init();
-  void add_to_hash(int size, const byte* in);
-  bool get_digest(int size, byte* out);
-  void finalize();
-};
-#endif
+symmetric_cipher::~symmetric_cipher() {
+  if (cipher_name_ != nullptr) {
+    delete cipher_name_;
+    cipher_name_ = nullptr;
+  }
+  initialized_ = false;
+  num_key_bits_ = 0;
+  if (key_ != nullptr) {
+    memset(key_, 0, num_key_bits_ / NBITSINBYTE);
+    delete key_;
+    key_ = nullptr;
+  }
+}

@@ -11,32 +11,33 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// File: sha1.h
+// File: rc4.h
 
 #include "crypto_support.h"
-#include "hash.h"
 
-#ifndef _CRYPTO_SHA1_H__
-#define _CRYPTO_SHA1_H__
+#ifndef _CRYPTO_RC4_H__
+#define _CRYPTO_RC4_H__
 
-class sha1 : public crypto_hash {
+class rc4 {
  public:
-  enum { BLOCKBYTESIZE = 64, DIGESTBYTESIZE = 20 };
+  enum {
+    BLOCKBYTESIZE = 8,
+  };
 
-  int num_bytes_waiting_;
-  byte bytes_waiting_[BLOCKBYTESIZE];
-  uint32_t state_[DIGESTBYTESIZE / sizeof(uint32_t)];
-  byte digest_[DIGESTBYTESIZE];
-  uint64_t num_bits_processed_;
+ private:
+  bool initialized_;
+  int key_size_;
+  byte key_[256];
+  byte state_[256];
+  int index1_;
+  int index2_;
 
-  sha1();
-  ~sha1();
+ public:
+  rc4();
+  ~rc4();
 
-  void transform_block(const uint32_t* data);
-
-  bool init();
-  void add_to_hash(int size, const byte* in);
-  bool get_digest(int size, byte* out);
-  void finalize();
+  bool init(int size, byte* key);
+  byte next();
+  void encrypt(int size, byte* in, byte* out);
 };
 #endif

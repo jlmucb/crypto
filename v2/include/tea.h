@@ -11,32 +11,28 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// File: sha1.h
+// File: tea.h
 
 #include "crypto_support.h"
-#include "hash.h"
+#include "symmetric_cipher.h"
+#include <iostream>
 
-#ifndef _CRYPTO_SHA1_H__
-#define _CRYPTO_SHA1_H__
+#ifndef _CRYPTO_TEA_H__
+#define _CRYPTO_TEA_H__
+class tea : public symmetric_cipher {
+ private:
+  bool initialized_;
+  uint32_t key_[4];
 
-class sha1 : public crypto_hash {
  public:
-  enum { BLOCKBYTESIZE = 64, DIGESTBYTESIZE = 20 };
+  enum { BLOCKBYTESIZE = 16, MAXKB = (256 / 8), MAXKC = (256 / 32) };
+  tea();
+  ~tea();
 
-  int num_bytes_waiting_;
-  byte bytes_waiting_[BLOCKBYTESIZE];
-  uint32_t state_[DIGESTBYTESIZE / sizeof(uint32_t)];
-  byte digest_[DIGESTBYTESIZE];
-  uint64_t num_bits_processed_;
-
-  sha1();
-  ~sha1();
-
-  void transform_block(const uint32_t* data);
-
-  bool init();
-  void add_to_hash(int size, const byte* in);
-  bool get_digest(int size, byte* out);
-  void finalize();
+  bool init(int key_bit_size, byte* key, int direction);
+  void encrypt_block(const byte* in, byte* out);
+  void decrypt_block(const byte* in, byte* out);
+  void encrypt(int size, byte* in, byte* out);
+  void decrypt(int size, byte* in, byte* out);
 };
 #endif

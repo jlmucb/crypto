@@ -11,32 +11,30 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// File: sha1.h
+// File: symmetric_cipher.h
 
 #include "crypto_support.h"
-#include "hash.h"
 
-#ifndef _CRYPTO_SHA1_H__
-#define _CRYPTO_SHA1_H__
+#ifndef _CRYPTO_SYMMETRIC_CIPHERS_H__
+#define _CRYPTO_SYMMETRIC_CIPHERS_H__
 
-class sha1 : public crypto_hash {
+class symmetric_cipher {
  public:
-  enum { BLOCKBYTESIZE = 64, DIGESTBYTESIZE = 20 };
+  enum { NONE = 0, ENCRYPT = 1, DECRYPT = 2, BOTH = 3 };
+  int direction_;
+  bool initialized_;
 
-  int num_bytes_waiting_;
-  byte bytes_waiting_[BLOCKBYTESIZE];
-  uint32_t state_[DIGESTBYTESIZE / sizeof(uint32_t)];
-  byte digest_[DIGESTBYTESIZE];
-  uint64_t num_bits_processed_;
+  string cipher_name_;
+  int num_key_bits_;
+  byte* key_;
 
-  sha1();
-  ~sha1();
+  symmetric_cipher();
+  virtual ~symmetric_cipher();
 
-  void transform_block(const uint32_t* data);
-
-  bool init();
-  void add_to_hash(int size, const byte* in);
-  bool get_digest(int size, byte* out);
-  void finalize();
+  // direction: encrypt= 0, decrypt=
+  virtual bool init(int key_bit_size, byte* key_buf, int directionflag) = 0;
+  virtual void encrypt(int byte_size, byte* in, byte* out) = 0;
+  virtual void decrypt(int byte_size, byte* in, byte* out) = 0;
 };
+
 #endif

@@ -11,32 +11,35 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// File: sha1.h
+// File: simonspeck.h
 
 #include "crypto_support.h"
-#include "hash.h"
+#include "symmetric_cipher.h"
 
-#ifndef _CRYPTO_SHA1_H__
-#define _CRYPTO_SHA1_H__
+#ifndef _CRYPTO_SIMON_SPECK_H__
+#define _CRYPTO_SIMON_SPECK_H__
 
-class sha1 : public crypto_hash {
+class simon128 : public symmetric_cipher {
+ private:
+  bool initialized_;
+  int size_;
+  uint64_t key_[4];
+  uint64_t round_key_[72];
+  int num_rounds_;
+  bool calculate_ks();
+  uint64_t calculate_constants(int cn, int sn);
+
  public:
-  enum { BLOCKBYTESIZE = 64, DIGESTBYTESIZE = 20 };
+  enum {
+    BLOCKBYTESIZE = 16,
+  };
+  simon128();
+  virtual ~simon128();
 
-  int num_bytes_waiting_;
-  byte bytes_waiting_[BLOCKBYTESIZE];
-  uint32_t state_[DIGESTBYTESIZE / sizeof(uint32_t)];
-  byte digest_[DIGESTBYTESIZE];
-  uint64_t num_bits_processed_;
-
-  sha1();
-  ~sha1();
-
-  void transform_block(const uint32_t* data);
-
-  bool init();
-  void add_to_hash(int size, const byte* in);
-  bool get_digest(int size, byte* out);
-  void finalize();
+  bool init(int key_bit_size, byte* key, int directionflag);
+  void encrypt_block(const byte* in, byte* out);
+  void decrypt_block(const byte* in, byte* out);
+  void encrypt(int size, byte* in, byte* out);
+  void decrypt(int size, byte* in, byte* out);
 };
 #endif
