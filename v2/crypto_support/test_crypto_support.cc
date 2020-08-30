@@ -282,6 +282,14 @@ bool endian_test() {
   return true;
 }
 
+bool file_test() {
+  return true;
+}
+
+bool key_test() {
+  return true;
+}
+
 TEST (algs, test_alg_names) {
   EXPECT_TRUE(test_alg_names());
 }
@@ -301,14 +309,12 @@ TEST (randomutilities, random_test) {
 TEST (endian, endian_test) {
   EXPECT_TRUE(endian_test());
 }
-#if 0
 TEST (fileutilities, file_test) {
-  EXPECT_TRUE(time_convert_test());
+  EXPECT_TRUE(file_test());
 }
 TEST (keyutilities, key_test) {
-  EXPECT_TRUE(time_convert_test());
+  EXPECT_TRUE(key_test());
 }
-#endif
 
 int main(int an, char** av) {
   gflags::ParseCommandLineFlags(&an, &av, true);
