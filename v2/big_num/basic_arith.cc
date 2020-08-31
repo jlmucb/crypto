@@ -15,7 +15,6 @@
 
 #include "crypto_support.h"
 #include "big_num.h"
-#include "intel64_arith.h"
 
 // returns  1, if l>r
 // returns  0, if l==r
@@ -42,7 +41,7 @@ int big_high_digit(big_num& a) {
 }
 
 int big_high_bit(big_num& a) {
-  return NBITSINUINT64 * (a.size_ - 1) + high_bitInDigit(a.value_[a.size_ - 1]);
+  return NBITSINUINT64 * (a.size_ - 1) + high_bit_in_digit(a.value_[a.size_ - 1]);
 }
 
 bool big_bit_position_on(big_num& a, int n) {
@@ -131,15 +130,15 @@ bool big_unsigned_mult(big_num& a, big_num& b, big_num& r) {
   return true;
 }
 
-bool big_unsigned_Euclid(big_num& a, big_num& b, big_num& q, big_num& r) {
+bool big_unsigned_euclid(big_num& a, big_num& b, big_num& q, big_num& r) {
   int size_q = q.capacity_;
   int size_r = r.capacity_;
   if (!digit_array_divisionAlgorithm(a.size_, a.value_, b.size_, b.value_,
                                    &size_q, q.value_, &size_r, r.value_)) {
     return false;
   }
-  q.size_ = digit_array_ComputedSize(size_q, q.value_);
-  r.size_ = digit_array_ComputedSize(size_r, r.value_);
+  q.size_ = digit_array_real_size(size_q, q.value_);
+  r.size_ = digit_array_real_size(size_r, r.value_);
   if (r.size_ > b.size_) {
     r.ZeroNum();
     return false;
@@ -149,7 +148,7 @@ bool big_unsigned_Euclid(big_num& a, big_num& b, big_num& q, big_num& r) {
 
 bool big_unsigned_div(big_num& a, big_num& b, big_num& q) {
   big_num tmp(2 * a.capacity_ + 1);
-  return big_unsigned_Euclid(a, b, q, tmp);
+  return big_unsigned_euclid(a, b, q, tmp);
 }
 
 bool big_unsigned_square(big_num& a, big_num& r) {
@@ -160,33 +159,33 @@ bool big_unsigned_square(big_num& a, big_num& r) {
   return true;
 }
 
-bool big_unsigned_addTo(big_num& a, big_num& b) {
-  int k = digit_array_addTo(a.capacity_, a.size_, a.value_, b.size_, b.value_);
+bool big_unsigned_add_to(big_num& a, big_num& b) {
+  int k = digit_array_add_to(a.capacity_, a.size_, a.value_, b.size_, b.value_);
   if (k < 0)
     return false;
   a.size_ = k;
   return true;
 }
 
-bool big_unsigned_subFrom(big_num& a, big_num& b) {
-  int k = digit_array_subFrom(a.capacity_, a.size_, a.value_, b.size_, b.value_);
+bool big_unsigned_sub_from(big_num& a, big_num& b) {
+  int k = digit_array_sub_from(a.capacity_, a.size_, a.value_, b.size_, b.value_);
   if (k < 0)
     return false;
   a.size_ = k;
   return true;
 }
 
-bool big_unsigned_Inc(big_num& a) {
+bool big_unsigned_inc(big_num& a) {
   uint64_t one = 1ULL;
-  int k = digit_array_addTo(a.size_, a.size_, a.value_, 1, &one);
+  int k = digit_array_add_to(a.size_, a.size_, a.value_, 1, &one);
   if (k < 0)
     return false;
   return true;
 }
 
-bool big_unsigned_Dec(big_num& a) {
+bool big_unsigned_dec(big_num& a) {
   uint64_t one = 1ULL;
-  int k = digit_array_subFrom(a.size_, a.size_, a.value_, 1, &one);
+  int k = digit_array_sub_from(a.size_, a.size_, a.value_, 1, &one);
   if (k < 0)
     return false;
   return true;
@@ -199,7 +198,7 @@ bool big_add(big_num& a, big_num& b, big_num& r) {
     r.sign_ = false;
     r.normalize();
     return true;
-  } else if (a.is_negative() && b.IsNegative()) {
+  } else if (a.is_negative() && b.is_negative()) {
     if (!big_unsigned_add(a, b, r)) return false;
     r.sign_ = true;
     r.normalize();
@@ -288,7 +287,7 @@ string* big_ConvertToDecimal(big_num& a) {
   int k = 32 * a.size_;
   char* str = new char[k];
 
-  if (!digit_array_ConvertToDecimal(a.size_, a.value_, &k, str)) {
+  if (!digit_array_convert_to_decimal(a.size_, a.value_, &k, str)) {
     if (str != nullptr) {
       delete []str;
       str = nullptr;
@@ -303,19 +302,19 @@ string* big_ConvertToDecimal(big_num& a) {
   return s;
 }
 
-big_num* big_ConvertFromDecimal(const char* in) {
+big_num* big_convert_from_decimal(const char* in) {
   int k = strlen(in);
   int m = ((k + 29) / 30) + 6;
   big_num* n = new big_num(m);
-  n->size_ = digit_array_ConvertFromDecimal(in, n->capacity_, n->value_);
+  n->size_ = digit_array_convert_from_decimal(in, n->capacity_, n->value_);
   return n;
 }
 
-string* big_ConvertToHex(big_num& a) {
+string* big_convert_to_hex(big_num& a) {
   int k = 18 * a.size_;
   char* str = new char[k];
 
-  if (!digit_array_ConvertToHex(a.size_, a.value_, &k, str)) {
+  if (!digit_array_convert_to_hex(a.size_, a.value_, &k, str)) {
     if (str != nullptr) {
       delete []str;
       str = nullptr;
@@ -330,12 +329,12 @@ string* big_ConvertToHex(big_num& a) {
   return s;
 }
 
-big_num* big_ConvertFromHex(const char* in) {
+big_num* big_convert_from_hex(const char* in) {
   int k = strlen(in);
   int m = ((k + 31) / 16) + 1;
   big_num* n = new big_num(m);
 
-  n->size_ = digit_array_ConvertFromHex(in, n->capacity_, n->value_);
+  n->size_ = digit_array_convert_from_hex(in, n->capacity_, n->value_);
   if (n->size_ < 0) {
     delete n;
     return nullptr;

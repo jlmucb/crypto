@@ -72,14 +72,14 @@ uint64_t* big_num::value_ptr() { return value_; }
 bool big_num::is_positive() { return !sign_; }
 
 bool big_num::is_zero() {
-  size_ = digit_array_ComputedSize(capacity_, value_);
+  size_ = digit_array_real_size(capacity_, value_);
   if (size_ == 1 && value_[0] == 0ULL)
     return true;
   return false;
 }
 
-bool big_num::IsOne() {
-  size_ = digit_array_ComputedSize(capacity_, value_);
+bool big_num::is_one() {
+  size_ = digit_array_real_size(capacity_, value_);
   if (size_ == 1 && value_[0] == 1ULL)
     return true;
   return false;
@@ -95,7 +95,7 @@ void big_num::normalize() {
     sign_ = false;
     return;
   }
-  size_ = digit_array_ComputedSize(capacity_, value_);
+  size_ = digit_array_real_size(capacity_, value_);
 }
 
 void big_num::zero_num() {
@@ -111,7 +111,7 @@ bool big_num::copy_from(big_num& old) {
   sign_ = old.sign_;
   if (!digit_array_copy_(old.size_, old.value_, capacity_, value_))
     return false;
-  size_ = digit_array_ComputedSize(capacity_, value_);
+  size_ = digit_array_real_size(capacity_, value_);
   return true;
 }
 
@@ -122,6 +122,6 @@ bool big_num::copy_to(big_num& other) {
   other.sign_ = sign_;
   if (!digit_array_copy_(size_, value_, other.capacity_, other.value_))
     return false;
-  other.size_ = digit_array_ComputedSize(other.capacity_, other.value_);
+  other.size_ = digit_array_real_size(other.capacity_, other.value_);
   return true;
 }
