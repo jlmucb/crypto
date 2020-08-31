@@ -265,7 +265,55 @@ bool test_simon_test1() {
   return true;
 }
 
-bool test_aesni() {
+bool test_aesni_test1() {
+  aesni aes_obj;
+  byte test_cipher_out[16];
+  byte test_plain_out[16];
+
+   if(!aes_obj.init(128, aes128_test1_key, aes::BOTH))
+    return false;
+  aes_obj.encrypt_block(aes128_test1_plain, test_cipher_out);
+  aes_obj.decrypt_block(test_cipher_out, test_plain_out);
+  if (FLAGS_print_all) {
+    printf("  Key            : ");
+    print_bytes(16, aes128_test1_key);
+    printf("  Correct plain  : ");
+    print_bytes(16, aes128_test1_plain);
+    printf("  Correct cipher : ");
+    print_bytes(16, aes128_test1_cipher);
+    printf("  Computed cipher: ");
+    print_bytes(16, test_cipher_out);
+    printf("  Computed plain : ");
+    print_bytes(16, test_plain_out);
+  }
+  if (memcmp(aes128_test1_cipher, test_cipher_out, 16) != 0) return false;
+  if (memcmp(aes128_test1_plain, test_plain_out, 16) != 0) return false;
+  return true;
+}
+
+bool test_aesni_test2() {
+  aesni aes_obj;
+  byte test_cipher_out[16];
+  byte test_plain_out[16];
+
+  if(!aes_obj.init(256, aes256_test1_key, aes::BOTH))
+    return false;
+  aes_obj.encrypt_block(aes256_test1_plain, test_cipher_out);
+  aes_obj.decrypt_block(test_cipher_out, test_plain_out);
+  if (FLAGS_print_all) {
+    printf("  Key            : ");
+    print_bytes(32, aes256_test1_key);
+    printf("  Correct plain  : ");
+    print_bytes(16, aes256_test1_plain);
+    printf("  Correct cipher : ");
+    print_bytes(16, aes256_test1_cipher);
+    printf("  Computed cipher: ");
+    print_bytes(16, test_cipher_out);
+    printf("  Computed plain : ");
+    print_bytes(16, test_plain_out);
+  }
+  if (memcmp(aes256_test1_cipher, test_cipher_out, 16) != 0) return false;
+  if (memcmp(aes256_test1_plain, test_plain_out, 16) != 0) return false;
   return true;
 }
 
@@ -287,6 +335,12 @@ TEST (twofish, test_aes_test1) {
 }
 TEST (simon, test_aes_test1) {
   EXPECT_TRUE(test_simon_test1());
+}
+TEST (aesni, test_aesni_test1) {
+  EXPECT_TRUE(test_aesni_test1());
+}
+TEST (aesni, test_aesni_test2) {
+  EXPECT_TRUE(test_aesni_test2());
 }
 
 

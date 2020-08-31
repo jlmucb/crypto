@@ -10,7 +10,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// File: intel64_arith.cc
+// File: intel_digit_arith.cc
 
 #include "crypto_support.h"
 
@@ -136,41 +136,6 @@ int shift_to_top_bit(uint64_t a) {
   return NBITSINUINT64;
 }
 
-// estimate quotient (cf: Knuth v2)
-// *est-2<= q <= *est
-// note b1>0 and (a1 a2)_b >= b1_b, b= 2^64
-void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
-                      uint64_t b2, uint64_t* est) {
-  uint64_t n1 = 0ULL;
-  uint64_t n2 = 0ULL;
-  uint64_t d1;
-  int den_shift = shift_to_top_bit(b1);
-
-  if (den_shift == 0) {
-    d1 = b1;
-    n1 = a1;
-    n2 = a2;
-  } else {
-    n1 = (a1 << den_shift) | (a2 >> (NBITSINUINT64 - den_shift));
-    n2 = (a2 << den_shift) | (a3 >> (NBITSINUINT64 - den_shift));
-    d1 = (b1 << den_shift) | (b2 >> (NBITSINUINT64 - den_shift));
-  }
-
-  if (n1 > d1) {
-    *est = (uint64_t)-1;
-    return;
-  }
-
-  asm volatile(
-      "\tmovq   %[est], %%rcx\n"
-      "\tmovq   %[n1], %%rdx\n"
-      "\tmovq   %[n2], %%rax\n"
-      "\tdivq   %[d1]\n"
-      "\tmovq   %%rax, (%%rcx)\n" 
-      ::[est] "g"(est), [n1] "g"(n1), [n2] "g"(n2), [d1] "g"(d1)
-      : "cc", "memory", "%rax", "%rcx", "%rdx");
-}
-
 //  carry:result= a+b
 void u64_add_step(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry) {
   asm volatile(
@@ -290,6 +255,161 @@ voidu64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
       : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx");
 }
 
+
+// result = a+b.  returns size of result.  Error if <0
+int digit_array_add(int size_a, uint64_t* a, int size_b, uint64_t* b,
+                  int size_result, uint64_t* result) {
+  if (size_b > size_a)
+    return digit_array_add(size_b, b, size_a, a, size_result, result);
+  if (size_result < size_a)
+    return -1;
+
+  uint64_t carry_in = 0ULL;
+  uint64_t carry_out = 0ULL;
+  int i;
+
+  digit_array_zero_num(size_result, result);
+  for (i = 0; i < size_b; i++) {
+    u64_add_with_carry_step(a[i], b[i], carry_in, &result[i], &carry_out);
+    carry_in = carry_out;
+  }
+  for (; i < size_a; i++) {
+    u64_add_with_carry_step(a[i], 0ULL, carry_in, &result[i], &carry_out);
+    carry_in = carry_out;
+  }
+  if (carry_out != 0) {
+    if (i >= size_result)
+      return -1;
+    result[i] = carry_out;
+  }
+  return digit_array_real_size(size_result, result);
+}
+
+// result = a-b.  returns size of result.  Error if <0
+// constraint: a>b
+int digit_array_sub(int size_a, uint64_t* a, int size_b, uint64_t* b,
+                    int size_result, uint64_t* result) {
+  uint64_t borrow_in = 0;
+  uint64_t borrow_out = 0;
+
+  // note: size_a>=size_b
+  if (size_a > size_result) {
+    return -1;
+  }
+
+  int i;
+  digit_array_zero_num(size_result, result);
+  for (i = 0; i < size_b; i++) {
+    u64_subWithBorrowStep(a[i], b[i], borrow_in, &result[i], &borrow_out);
+    borrow_in = borrow_out;
+  }
+  for (; i < size_a; i++) {
+    u64_sub_with_borrow_step(a[i], 0ULL, borrow_in, &result[i], &borrow_out);
+    borrow_in = borrow_out;
+  }
+  return digit_array_real_size(size_result, result);
+}
+
+// a+= b
+int digit_array_add_to(int capacity_a, int size_a, uint64_t* a, int size_b,
+                    uint64_t* b) {
+  int64_t len_a = (int64_t)size_a;
+  int64_t len_b = (int64_t)size_b;
+
+  asm volatile(
+      "\tmovq   %[len_b],%%r9\n"  // ctr
+      "\txorq   %%r12, %%r12\n"   // old carry
+      "\tmovq   %[b], %%rbx\n"    // b
+      "\tmovq   %[a], %%rcx\n"    // a
+      "1:\n"
+      "\txorq   %%r8, %%r8\n"  // new carry
+      "\tmovq   (%%rbx),%%rax\n"
+      "\taddq   %%rax,(%%rcx)\n"
+      "\tjnc    2f\n"
+      "\tmovq   $1,%%r8\n"
+      "2:\n"
+      "\taddq   %%r12,(%%rcx)\n"
+      "\tjnc    3f\n"
+      "\tmovq   $1,%%r8\n"
+      "3:\n"
+      "\tmovq   %%r8,%%r12\n"
+      "\taddq   $8,%%rbx\n"
+      "\taddq   $8,%%rcx\n"
+      "\tsubq   $1,%%r9\n"
+      "\tcmpq   $0,%%r9\n"
+      "\tjg     1b\n"
+      "\tmovq   %[len_a], %%r9\n"
+      "\tsubq   %[len_b],%%r9\n"
+      "\t3:\n"
+      "\txorq   %%r8, %%r8\n"  // new carry
+      "\tmovq   (%%rbx),%%rax\n"
+      "\taddq   %%r12,(%%rcx)\n"
+      "\tjnc    5f\n"
+      "\tmovq   $1,%%r8\n"
+      "5:\n"
+      "\tmovq   %%r8,%%r12\n"
+      "\taddq   $8,%%rbx\n"
+      "\taddq   $8,%%rcx\n"
+      "\tsubq   $1,%%r9\n"
+      "\tcmpq   $0,%%r9\n"
+      "\tjg     3b\n"
+      "7:\n"
+      "\tmovq   %%r8,(%%rcx)\n"
+      ::[a] "g"(a), [b] "g"(b), [len_a] "g"(len_a), [len_b] "g"(len_b)
+      : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9", "%r12");
+
+  return digit_array_real_size(capacity_a, a);
+}
+
+// a-= b
+int digit_array_sub_from(int capacity_a, int size_a, uint64_t* a, int size_b,
+                      uint64_t* b) {
+  if (size_a < size_b)
+    return -1;
+
+  int64_t len_a = (int64_t)size_a;
+  int64_t len_b = (int64_t)size_b;
+
+  asm volatile(
+      "\tmovq   %[len_b],%%r9\n"  // ctr
+      "\txorq   %%r12, %%r12\n"   // old borrow
+      "\tmovq   %[b], %%rbx\n"    // b
+      "\tmovq   %[a], %%rcx\n"    // a
+      "1:\n"
+      "\txorq   %%r8, %%r8\n"  // new borrow
+      "\tmovq   (%%rbx),%%rax\n"
+      "\tsubq   %%rax,(%%rcx)\n"
+      "\tjnc    2f\n"
+      "\tmovq   $1,%%r8\n"
+      "2:\n"
+      "\tsubq   %%r12,(%%rcx)\n"
+      "\tjnc    5f\n"
+      "\tmovq   $1,%%r8\n"
+      "5:\n"
+      "\tmovq   %%r8,%%r12\n"
+      "\taddq   $8,%%rbx\n"
+      "\taddq   $8,%%rcx\n"
+      "\tsubq   $1,%%r9\n"
+      "\tcmpq   $0,%%r9\n"
+      "\tjg     1b\n"
+      "\tmovq   %[len_a], %%r9\n"
+      "\tsubq   %[len_b],%%r9\n"
+      "\t3:\n"
+      "\tsubq   %%r12,(%%rcx)\n"
+      "\tjnc    6f\n"
+      "\tmovq   $1,%%r8\n"
+      "6:\n"
+      "\tmovq   %%r8,%%r12\n"
+      "\taddq   $8,%%rbx\n"
+      "\taddq   $8,%%rcx\n"
+      "\tsubq   $1,%%r9\n"
+      "\tcmpq   $0,%%r9\n"
+      "\tjg     3b\n"
+      ::[a] "g"(a), [b] "g"(b), [len_a] "g"(len_a), [len_b] "g"(len_b)
+      : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9", "%r12");
+
+  return digit_array_real_size(capacity_a, a);
+}
 #define FASTMULT
 // result = a*b.  returns size of result.  Error if <0
 int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
@@ -488,13 +608,8 @@ int digit_array_mult_by(int capacity_a, int size_a, uint64_t* a, uint64_t x) {
       "\t.balign  16\n"
       "1:\n"
       "\tmovq   (%%rcx), %%rax\n"
-#if 1
       "\tmovq   %[x], %%r9\n"
       "\tmulq   %%r9\n"
-#else
-      // OSX has a problem with this.
-      "\tmulq   %[x]\n"
-#endif
       "\taddq   %%r8,%%rax\n"
       "\tmovq   $0, %%r8\n"
       "\tjnc    2f\n"
@@ -512,107 +627,6 @@ int digit_array_mult_by(int capacity_a, int size_a, uint64_t* a, uint64_t x) {
       : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9");
 
   return digit_array_real_size(size_a, a);
-}
-
-// a+= b
-int digit_array_add_to(int capacity_a, int size_a, uint64_t* a, int size_b,
-                    uint64_t* b) {
-  int64_t len_a = (int64_t)size_a;
-  int64_t len_b = (int64_t)size_b;
-
-  asm volatile(
-      "\tmovq   %[len_b],%%r9\n"  // ctr
-      "\txorq   %%r12, %%r12\n"   // old carry
-      "\tmovq   %[b], %%rbx\n"    // b
-      "\tmovq   %[a], %%rcx\n"    // a
-      "1:\n"
-      "\txorq   %%r8, %%r8\n"  // new carry
-      "\tmovq   (%%rbx),%%rax\n"
-      "\taddq   %%rax,(%%rcx)\n"
-      "\tjnc    2f\n"
-      "\tmovq   $1,%%r8\n"
-      "2:\n"
-      "\taddq   %%r12,(%%rcx)\n"
-      "\tjnc    3f\n"
-      "\tmovq   $1,%%r8\n"
-      "3:\n"
-      "\tmovq   %%r8,%%r12\n"
-      "\taddq   $8,%%rbx\n"
-      "\taddq   $8,%%rcx\n"
-      "\tsubq   $1,%%r9\n"
-      "\tcmpq   $0,%%r9\n"
-      "\tjg     1b\n"
-      "\tmovq   %[len_a], %%r9\n"
-      "\tsubq   %[len_b],%%r9\n"
-      "\t3:\n"
-      "\txorq   %%r8, %%r8\n"  // new carry
-      "\tmovq   (%%rbx),%%rax\n"
-      "\taddq   %%r12,(%%rcx)\n"
-      "\tjnc    5f\n"
-      "\tmovq   $1,%%r8\n"
-      "5:\n"
-      "\tmovq   %%r8,%%r12\n"
-      "\taddq   $8,%%rbx\n"
-      "\taddq   $8,%%rcx\n"
-      "\tsubq   $1,%%r9\n"
-      "\tcmpq   $0,%%r9\n"
-      "\tjg     3b\n"
-      "7:\n"
-      "\tmovq   %%r8,(%%rcx)\n"
-      ::[a] "g"(a), [b] "g"(b), [len_a] "g"(len_a), [len_b] "g"(len_b)
-      : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9", "%r12");
-
-  return digit_array_real_size(capacity_a, a);
-}
-
-// a-= b
-int digit_array_sub_from(int capacity_a, int size_a, uint64_t* a, int size_b,
-                      uint64_t* b) {
-  if (size_a < size_b)
-    return -1;
-
-  int64_t len_a = (int64_t)size_a;
-  int64_t len_b = (int64_t)size_b;
-
-  asm volatile(
-      "\tmovq   %[len_b],%%r9\n"  // ctr
-      "\txorq   %%r12, %%r12\n"   // old borrow
-      "\tmovq   %[b], %%rbx\n"    // b
-      "\tmovq   %[a], %%rcx\n"    // a
-      "1:\n"
-      "\txorq   %%r8, %%r8\n"  // new borrow
-      "\tmovq   (%%rbx),%%rax\n"
-      "\tsubq   %%rax,(%%rcx)\n"
-      "\tjnc    2f\n"
-      "\tmovq   $1,%%r8\n"
-      "2:\n"
-      "\tsubq   %%r12,(%%rcx)\n"
-      "\tjnc    5f\n"
-      "\tmovq   $1,%%r8\n"
-      "5:\n"
-      "\tmovq   %%r8,%%r12\n"
-      "\taddq   $8,%%rbx\n"
-      "\taddq   $8,%%rcx\n"
-      "\tsubq   $1,%%r9\n"
-      "\tcmpq   $0,%%r9\n"
-      "\tjg     1b\n"
-      "\tmovq   %[len_a], %%r9\n"
-      "\tsubq   %[len_b],%%r9\n"
-      "\t3:\n"
-      "\tsubq   %%r12,(%%rcx)\n"
-      "\tjnc    6f\n"
-      "\tmovq   $1,%%r8\n"
-      "6:\n"
-      "\tmovq   %%r8,%%r12\n"
-      "\taddq   $8,%%rbx\n"
-      "\taddq   $8,%%rcx\n"
-      "\tsubq   $1,%%r9\n"
-      "\tcmpq   $0,%%r9\n"
-      "\tjg     3b\n"
-      ::[a] "g"(a), [b] "g"(b), [len_a] "g"(len_a), [len_b] "g"(len_b)
-      : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9", "%r12");
-
-  return digit_array_real_size(capacity_a, a);
 }
 
 bool digit_array_short_division_algorithm(int size_a, uint64_t* a, uint64_t b,
@@ -642,6 +656,40 @@ bool digit_array_short_division_algorithm(int size_a, uint64_t* a, uint64_t b,
       : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx", "%r8");
   *size_q = digit_array_real_size(*size_q, q);
   return true;
+}
+
+// estimate quotient (cf: Knuth v2)
+// *est-2<= q <= *est
+// note b1>0 and (a1 a2)_b >= b1_b, b= 2^64
+void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
+  uint64_t n1 = 0ULL;
+  uint64_t n2 = 0ULL;
+  uint64_t d1;
+  int den_shift = shift_to_top_bit(b1);
+
+  if (den_shift == 0) {
+    d1 = b1;
+    n1 = a1;
+    n2 = a2;
+  } else {
+    n1 = (a1 << den_shift) | (a2 >> (NBITSINUINT64 - den_shift));
+    n2 = (a2 << den_shift) | (a3 >> (NBITSINUINT64 - den_shift));
+    d1 = (b1 << den_shift) | (b2 >> (NBITSINUINT64 - den_shift));
+  }
+
+  if (n1 > d1) {
+    *est = (uint64_t)-1;
+    return;
+  }
+
+  asm volatile(
+      "\tmovq   %[est], %%rcx\n"
+      "\tmovq   %[n1], %%rdx\n"
+      "\tmovq   %[n2], %%rax\n"
+      "\tdivq   %[d1]\n"
+      "\tmovq   %%rax, (%%rcx)\n" 
+      ::[est] "g"(est), [n1] "g"(n1), [n2] "g"(n2), [d1] "g"(d1)
+      : "cc", "memory", "%rax", "%rcx", "%rdx");
 }
 
 // q= a/b. r is remainder.
@@ -719,58 +767,3 @@ bool digit_array_division_algorithm(int size_a, uint64_t* a, int size_b,
   *size_r = nr;
   return true;
 }
-
-// result = a+b.  returns size of result.  Error if <0
-int digit_array_add(int size_a, uint64_t* a, int size_b, uint64_t* b,
-                  int size_result, uint64_t* result) {
-  if (size_b > size_a)
-    return digit_array_add(size_b, b, size_a, a, size_result, result);
-  if (size_result < size_a)
-    return -1;
-
-  uint64_t carry_in = 0ULL;
-  uint64_t carry_out = 0ULL;
-  int i;
-
-  digit_array_zero_num(size_result, result);
-  for (i = 0; i < size_b; i++) {
-    u64_add_with_carry_step(a[i], b[i], carry_in, &result[i], &carry_out);
-    carry_in = carry_out;
-  }
-  for (; i < size_a; i++) {
-    u64_add_with_carry_step(a[i], 0ULL, carry_in, &result[i], &carry_out);
-    carry_in = carry_out;
-  }
-  if (carry_out != 0) {
-    if (i >= size_result)
-      return -1;
-    result[i] = carry_out;
-  }
-  return digit_array_real_size(size_result, result);
-}
-
-// result = a-b.  returns size of result.  Error if <0
-// constraint: a>b
-int digit_array_sub(int size_a, uint64_t* a, int size_b, uint64_t* b,
-                    int size_result, uint64_t* result) {
-  uint64_t borrow_in = 0;
-  uint64_t borrow_out = 0;
-
-  // note: size_a>=size_b
-  if (size_a > size_result) {
-    return -1;
-  }
-
-  int i;
-  digit_array_zero_num(size_result, result);
-  for (i = 0; i < size_b; i++) {
-    u64_subWithBorrowStep(a[i], b[i], borrow_in, &result[i], &borrow_out);
-    borrow_in = borrow_out;
-  }
-  for (; i < size_a; i++) {
-    u64_sub_with_borrow_step(a[i], 0ULL, borrow_in, &result[i], &borrow_out);
-    borrow_in = borrow_out;
-  }
-  return digit_array_real_size(size_result, result);
-}
-

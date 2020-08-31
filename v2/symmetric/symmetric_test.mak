@@ -44,10 +44,11 @@ PROTO=protoc
 AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
-dobj=	$(O)/test_symmetric.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
-        $(O)/symmetric_cipher.o $(O)/aes.o $(O)/tea.o $(O)/rc4.o $(O)/twofish.o $(O)/simonspeck.o
+dobj=   $(O)/test_symmetric.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
+	$(O)/symmetric_cipher.o $(O)/aes.o $(O)/tea.o $(O)/rc4.o $(O)/twofish.o \
+	$(O)/simonspeck.o $(O)/aesni.o
 
-all:	test_symmetric.exe
+all:    test_symmetric.exe
 clean:
 	@echo "removing object files"
 	rm $(O)/*.o
@@ -100,3 +101,7 @@ $(O)/twofish.o: $(S)/twofish.cc
 $(O)/simonspeck.o: $(S)/simonspeck.cc
 	@echo "compiling simonspeck.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/simonspeck.o $(S)/simonspeck.cc
+
+$(O)/aesni.o: $(S)/aesni.cc
+	@echo "compiling aesni.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/aesni.o $(S)/aesni.cc

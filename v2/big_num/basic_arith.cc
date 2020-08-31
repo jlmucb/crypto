@@ -283,9 +283,8 @@ bool big_square(big_num& a, big_num& r) {
   return big_unsigned_square(a, r);
 }
 
-
-// u64_div_step(uint64_t a, uint64_t b, uint64_t c, uint64_t* result, uint64_t* carry) 
 bool convert_to_decimal(int size_a, uint64_t* n, string* s) {
+// u64_div_step(uint64_t a, uint64_t b, uint64_t c, uint64_t* result, uint64_t* carry) 
   return false;
 }
 
@@ -307,7 +306,7 @@ big_num* big_convert_from_decimal(string& s) {
 bool big_convert_to_hex(big_num& a, string* hex) {
   int k = u64_array_to_bytes(a.size_, a.value_ptr(), hex);
 
-` if (k < 0)
+  if (k < 0)
     return false;
   return true;
 }

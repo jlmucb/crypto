@@ -620,15 +620,13 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& s) {
   return true;
 }
 
-/*
- *  a>0, p!=2
- *  Find x: x^2=n (mod p)
- *  if(p==3 (mod 4)) x= a^((p+1)/4 (mod p)
- *  if(p==5 (mod 8)) put b= n^((p-1)/4) (mod p)
- *    if(b==1) x= a^((p+3)/8) (mod p)
- *    otherwise, x= (2a)(4a)^((p-5)/8)
- *  in all other cases, apply Tonneli-Shanks
- */
+//  a>0, p!=2
+//  Find x: x^2=n (mod p)
+//  if(p==3 (mod 4)) x= a^((p+1)/4 (mod p)
+//  if(p==5 (mod 8)) put b= n^((p-1)/4) (mod p)
+//    if(b==1) x= a^((p+3)/8) (mod p)
+//    otherwise, x= (2a)(4a)^((p-5)/8)
+//  in all other cases, apply Tonneli-Shanks
 bool big_mod_square_root(big_num& n, big_num& p, big_num& r) {
   uint64_t bot = p.value_[0] & 0x7;
   big_num p_temp(p.size_);
