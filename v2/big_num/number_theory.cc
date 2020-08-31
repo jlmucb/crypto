@@ -1,5 +1,5 @@
 //
-// Copyright 2014 John Manferdelli, All Rights Reserved.
+// copy_right 2014 John Manferdelli, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,11 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// Project: New Cloudproxy Crypto
 // File: number_theory.cc
 
 #include "crypto_support.h"
-#include "intel64_arith.h"
+#include "big_num.h"
 
 bool big_extended_gcd(big_num& a, big_num& b, big_num& x, big_num& y, big_num& g) {
   big_num* a_coeff[3] = {nullptr, nullptr, nullptr};
@@ -39,28 +38,28 @@ bool big_extended_gcd(big_num& a, big_num& b, big_num& x, big_num& y, big_num& g
     c[i] = new big_num(2 * n + 1);
   }
 
-  a_coeff[0]->CopyFrom(big__one);
-  b_coeff[0]->CopyFrom(big__Zero);
-  a_coeff[1]->CopyFrom(big__Zero);
-  b_coeff[1]->CopyFrom(big__one);
-  a.CopyTo(*c[0]);
-  b.CopyTo(*c[1]);
+  a_coeff[0]->copy_from(big_one);
+  b_coeff[0]->copy_from(big_Zero);
+  a_coeff[1]->copy_from(big_Zero);
+  b_coeff[1]->copy_from(big_one);
+  a.copy_to(*c[0]);
+  b.copy_to(*c[1]);
 
   for (;;) {
-    r.ZeroNum();
-    q.ZeroNum();
-    t1.ZeroNum();
-    t2.ZeroNum();
+    r.zero_num();
+    q.zero_num();
+    t1.zero_num();
+    t2.zero_num();
 
     // c[new]= q*c[old] +r;
-    ret = big_UnsignedEuclid(*c[old], *c[current], q, r);
+    ret = big_unsigned_euclid(*c[old], *c[current], q, r);
     if (!ret)
       goto done;
-    if (r.IsZero())
+    if (r.is_zero())
       break;
-    r.CopyTo(*c[next]);
-    big_Mult(q, *a_coeff[current], t1);
-    big_Mult(q, *b_coeff[current], t2);
+    r.copy_to(*c[next]);
+    big_mult(q, *a_coeff[current], t1);
+    big_mult(q, *b_coeff[current], t2);
     big_Sub(*a_coeff[old], t1, *a_coeff[next]);
     big_Sub(*b_coeff[old], t2, *b_coeff[next]);
     old = (old + 1) % 3;
@@ -68,9 +67,9 @@ bool big_extended_gcd(big_num& a, big_num& b, big_num& x, big_num& y, big_num& g
     next = (next + 1) % 3;
   }
 
-  a_coeff[current]->CopyTo(x);
-  b_coeff[current]->CopyTo(y);
-  c[current]->CopyTo(g);
+  a_coeff[current]->copy_to(x);
+  b_coeff[current]->copy_to(y);
+  c[current]->copy_to(g);
 
 done:
   for (i = 0; i < 3; i++) {
@@ -87,7 +86,7 @@ done:
   return ret;
 }
 
-bool big_CRT(big_num& s1, big_num& s2, big_num& m1, big_num& m2, big_num& r) {
+bool big_crt(big_num& s1, big_num& s2, big_num& m1, big_num& m2, big_num& r) {
   int m = m1.size_ > m2.size_ ? m1.size_ : m2.size_;
   if (s1.size_ > m)
     m = s1.size_;
@@ -106,121 +105,121 @@ bool big_CRT(big_num& s1, big_num& s2, big_num& m1, big_num& m2, big_num& r) {
     return false;
 
   // r= u1 m1 s2 + u2 m2 s1
-  if (!big_Mult(u1, m1, t1))
+  if (!big_mult(u1, m1, t1))
     return false;
-  if (!big_Mult(t1, s2, r1))
+  if (!big_mult(t1, s2, r1))
     return false;
-  if (!big_Mult(u2, m2, t2))
+  if (!big_mult(u2, m2, t2))
     return false;
-  if (!big_Mult(t2, s1, r2))
+  if (!big_mult(t2, s1, r2))
     return false;
-  if (!big_Mult(m1, m2, n))
+  if (!big_mult(m1, m2, n))
     return false;
-  if (!big_Add(r1, r2, r))
+  if (!big_add(r1, r2, r))
     return false;
-  if (!big_ModNormalize(r, n))
-    return false;
-  return true;
-}
-
-bool big_Mod(big_num& a, big_num& m, big_num& r) {
-  if (!r.CopyFrom(a))
-    return false;
-  if (!big_ModNormalize(r, m))
+  if (!big_mod_normalize(r, n))
     return false;
   return true;
 }
 
-bool big_ModNormalize(big_num& a, big_num& m) {
-  if (!a.sign_ && big_Compare(a, m) < 0)
+bool big_mod(big_num& a, big_num& m, big_num& r) {
+  if (!r.copy_from(a))
+    return false;
+  if (!big_mod_normalize(r, m))
+    return false;
+  return true;
+}
+
+bool big_mod_normalize(big_num& a, big_num& m) {
+  if (!a.sign_ && big_compare(a, m) < 0)
     return true;
 
-  int n = a.Capacity() > m.Capacity() ? a.Capacity() : m.Capacity();
+  int n = a.capacity() > m.capacity() ? a.capacity() : m.capacity();
   big_num t1(1 + 2 * n);
   big_num t2(1 + 2 * n);
 
   if (a.sign_) {
-    if (!big_UnsignedEuclid(a, m, t1, t2))
+    if (!big_unsigned_euclid(a, m, t1, t2))
       return false;
-    if (!big_UnsignedAddTo(t1, big__one))
+    if (!big_unsigned_addTo(t1, big_one))
       return false;
-    t2.ZeroNum();
-    if (!big_UnsignedMult(t1, m, t2))
+    t2.zero_num();
+    if (!big_unsigned_mult(t1, m, t2))
       return false;
-    t1.ZeroNum();
-    if (!big_Add(a, t2, t1))
+    t1.zero_num();
+    if (!big_add(a, t2, t1))
       return false;
-    t1.CopyTo(a);
+    t1.copy_to(a);
   }
   if (a.sign_)
     return false;
 
-  if (big_Compare(a, m) >= 0) {
-    if (!big_UnsignedEuclid(a, m, t1, t2))
+  if (big_compare(a, m) >= 0) {
+    if (!big_unsigned_euclid(a, m, t1, t2))
       return false;
     t2.Normalize();
-    a.CopyFrom(t2);
+    a.copy_from(t2);
     a.Normalize();
   }
   return true;
 }
 
-bool big_ModAdd(big_num& a, big_num& b, big_num& m, big_num& r) {
-  if (!big_ModNormalize(a, m)) {
+bool big_mod_add(big_num& a, big_num& b, big_num& m, big_num& r) {
+  if (!big_mod_normalize(a, m)) {
     return false;
   }
-  if (!big_ModNormalize(b, m)) {
+  if (!big_mod_normalize(b, m)) {
     return false;
   }
-  if (!big_UnsignedAdd(a, b, r)) {
+  if (!big_unsigned_add(a, b, r)) {
     return false;
   }
-  if (!big_ModNormalize(r, m)) {
+  if (!big_mod_normalize(r, m)) {
     return false;
   }
   return true;
 }
 
-bool big_ModNeg(big_num& a, big_num& m, big_num& r) {
-  if (!a.CopyTo(r))
+bool big_mod_neg(big_num& a, big_num& m, big_num& r) {
+  if (!a.copy_to(r))
     return false;
   r.ToggleSign();
-  if (!big_ModNormalize(r, m))
+  if (!big_mod_normalize(r, m))
     return false;
   return true;
 }
 
-bool big_ModSub(big_num& a, big_num& b, big_num& m, big_num& r) {
-  if (!big_ModNormalize(a, m)) {
+bool big_mod_sub(big_num& a, big_num& b, big_num& m, big_num& r) {
+  if (!big_mod_normalize(a, m)) {
     return false;
   }
-  if (!big_ModNormalize(b, m)) {
+  if (!big_mod_normalize(b, m)) {
     return false;
   }
   if (!big_Sub(a, b, r))
     return false;
-  return big_ModNormalize(r, m);
+  return big_mod_normalize(r, m);
 }
 
-bool checkbig_ModMult(big_num& ab, big_num& m, big_num& r) {
+bool check_big_mod_mult(big_num& ab, big_num& m, big_num& r) {
   big_num q(4 * m.capacity_ + 2);
   big_num nr(4 * m.capacity_ + 2);
   big_num ru(4 * m.capacity_ + 2);
 
-  if (!big_UnsignedEuclid(ab, m, q, nr)) {
-    printf("checkbig_ModMult, big_UnsignedEuclid failed\n");
+  if (!big_unsigned_euclid(ab, m, q, nr)) {
+    printf("check_big_mod_mult, big_unsigned_euclid failed\n");
     return false;
   }
-  if (!big_UnsignedMult(m, q, ru)) {
-    printf("checkbig_ModMult, big_UnsignedMult failed\n");
+  if (!big_unsigned_mult(m, q, ru)) {
+    printf("check_big_mod_mult, big_unsigned_mult failed\n");
     return false;
   }
-  if (!big_UnsignedAdd(ru, r, nr)) {
-    printf("checkbig_ModMult, big_UnsignedAddfailed\n");
+  if (!big_unsigned_add(ru, r, nr)) {
+    printf("check_big_mod_mult, big_unsigned_addfailed\n");
     return false;
   }
-  if (big_Compare(ab, nr) != 0) {
-    printf("checkbig_ModMult failed\n");
+  if (big_compare(ab, nr) != 0) {
+    printf("check_big_mod_mult failed\n");
     printf("ab: ");
     PrintNumToConsole(ab, 16ULL);
     printf("\n");
@@ -232,52 +231,52 @@ bool checkbig_ModMult(big_num& ab, big_num& m, big_num& r) {
   return true;
 }
 
-bool big_ModMult(big_num& a, big_num& b, big_num& m, big_num& r) {
+bool big_mod_mult(big_num& a, big_num& b, big_num& m, big_num& r) {
   int n = a.size_ > b.size_ ? a.size_ : b.size_;
 
   if (m.size_ > n) n = m.size_;
-  if (!big_ModNormalize(a, m))
+  if (!big_mod_normalize(a, m))
     return false;
-  if (!big_ModNormalize(b, m))
+  if (!big_mod_normalize(b, m))
     return false;
   big_num t(2 * n + 2);
-  if (!big_UnsignedMult(a, b, t))
+  if (!big_unsigned_mult(a, b, t))
     return false;
-  return big_Mod(t, m, r);
+  return big_mod(t, m, r);
 }
 
-bool big_ModSquare(big_num& a, big_num& m, big_num& r) {
-  return big_ModMult(a, a, m, r);
+bool big_mod_square(big_num& a, big_num& m, big_num& r) {
+  return big_mod_mult(a, a, m, r);
 }
 
-bool big_ModInv(big_num& a, big_num& m, big_num& r) {
+bool big_mod_inv(big_num& a, big_num& m, big_num& r) {
   big_num x(2 * m.capacity_ + 1);
   big_num y(2 * m.capacity_ + 1);
   big_num g(2 * m.capacity_ + 1);
 
-  if (!big_ModNormalize(a, m))
+  if (!big_mod_normalize(a, m))
     return false;
   if (!big_extended_gcd(a, m, x, y, g))
     return false;
-  r.CopyFrom(x);
-  return big_ModNormalize(r, m);
+  r.copy_from(x);
+  return big_mod_normalize(r, m);
 }
 
 // r= a/b
-bool big_ModDiv(big_num& a, big_num& b, big_num& m, big_num& r) {
+bool big_mod_div(big_num& a, big_num& b, big_num& m, big_num& r) {
   int n = a.size_ > b.size_ ? a.size_ : b.size_;
   if (m.size_ > n)
     n = m.size_;
   big_num x(3 * n + 1);
 
-  if (!big_ModInv(b, m, x))
+  if (!big_mod_inv(b, m, x))
     return false;
-  if (!big_ModMult(a, x, m, r))
+  if (!big_mod_mult(a, x, m, r))
     return false;
-  return big_ModNormalize(r, m);
+  return big_mod_normalize(r, m);
 }
 
-bool big_ModExp(big_num& a, big_num& e, big_num& m, big_num& r) {
+bool big_mod_exp(big_num& a, big_num& e, big_num& m, big_num& r) {
   big_num* accum[2] = {nullptr, nullptr};
   big_num* doubled[2] = {nullptr, nullptr};
   int accum_current = 0;
@@ -289,24 +288,24 @@ bool big_ModExp(big_num& a, big_num& e, big_num& m, big_num& r) {
   int k;
   big_num b(a);
 
-  if (!big_ModNormalize(b, m))
+  if (!big_mod_normalize(b, m))
     return false;
 
-  k = big_HighBit(e);
+  k = big_high_bit(e);
   if (k == 0) {
-    big__one.CopyTo(r);
+    big_one.copy_to(r);
     goto done;
   }
   for (i = 0; i < 2; i++) {
-    accum[i] = new big_num(4 * m.Capacity() + 1);
-    doubled[i] = new big_num(4 * m.Capacity() + 1);
+    accum[i] = new big_num(4 * m.capacity() + 1);
+    doubled[i] = new big_num(4 * m.capacity() + 1);
   }
-  accum[accum_current]->CopyFrom(big__one);
-  doubled[doubler_current]->CopyFrom(b);
+  accum[accum_current]->copy_from(big_one);
+  doubled[doubler_current]->copy_from(b);
   for (i = 1; i < k; i++) {
-    if (big_BitPositionOn(e, i)) {
-      accum[accum_next]->ZeroNum();
-      if (!big_ModMult(*accum[accum_current], *doubled[doubler_current], m,
+    if (big_bit_position_on(e, i)) {
+      accum[accum_next]->zero_num();
+      if (!big_mod_mult(*accum[accum_current], *doubled[doubler_current], m,
                       *accum[accum_next])) {
         ret = false;
         goto done;
@@ -314,26 +313,26 @@ bool big_ModExp(big_num& a, big_num& e, big_num& m, big_num& r) {
       accum_current = (accum_current + 1) % 2;
       accum_next = (accum_next + 1) % 2;
     }
-    doubled[doubler_next]->ZeroNum();
-    if (!big_ModSquare(*doubled[doubler_current], m, *doubled[doubler_next])) {
+    doubled[doubler_next]->zero_num();
+    if (!big_mod_square(*doubled[doubler_current], m, *doubled[doubler_next])) {
       ret = false;
       goto done;
     }
     doubler_current = (doubler_current + 1) % 2;
     doubler_next = (doubler_next + 1) % 2;
   }
-  if (big_BitPositionOn(e, i)) {
-    accum[accum_next]->ZeroNum();
-    big_ModMult(*accum[accum_current], *doubled[doubler_current], m,
+  if (big_bit_position_on(e, i)) {
+    accum[accum_next]->zero_num();
+    big_mod_mult(*accum[accum_current], *doubled[doubler_current], m,
                *accum[accum_next]);
     accum_current = (accum_current + 1) % 2;
     accum_next = (accum_next + 1) % 2;
   }
   if (ret) {
-    r.CopyFrom(*accum[accum_current]);
-    ret = big_ModNormalize(r, m);
+    r.copy_from(*accum[accum_current]);
+    ret = big_mod_normalize(r, m);
 #if 0
-    checkbig_ModMult(*accum[accum_current], m, r);
+    check_big_mod_mult(*accum[accum_current], m, r);
 #endif
   }
 
@@ -351,11 +350,11 @@ done:
 
 #define MAXPRIMETRYS 25000
 
-bool big_GenPrime(big_num& p, uint64_t num_bits) {
+bool big_gen_prime(big_num& p, uint64_t num_bits) {
   int i, j;
 
   for (i = 0; i < MAXPRIMETRYS; i++) {
-    p.ZeroNum();
+    p.zero_num();
     if (!GetCryptoRand(num_bits, (byte*)p.value_)) {
       return false;
     }
@@ -363,10 +362,10 @@ bool big_GenPrime(big_num& p, uint64_t num_bits) {
     p.value_[0] |= 1ULL;
     p.Normalize();
     for (j = 0; j < 250; j++, i++) {
-      if (big_IsPrime(p)) {
+      if (big_is_prime(p)) {
         return true;
       }
-      if (!big_UnsignedAddTo(p, big__Two)) {
+      if (!big_unsigned_addTo(p, big_Two)) {
         return false;
       }
     }
@@ -398,7 +397,7 @@ bool FillRandom(int n, big_num** random_array) {
   return true;
 }
 
-bool big_MillerRabin(big_num& n, big_num** random_a, int trys) {
+bool big_miller_rabin(big_num& n, big_num** random_a, int trys) {
   big_num n_minus_1(2 * n.size_);
   big_num odd_part_n_minus_1(2 * n.size_);
   big_num y(4 * n.size_ + 1);
@@ -407,36 +406,36 @@ bool big_MillerRabin(big_num& n, big_num** random_a, int trys) {
   int j;
   int shift;
 
-  if (!big_Sub(n, big__one, n_minus_1))
+  if (!big_Sub(n, big_one, n_minus_1))
     return false;
-  shift = big_MaxPowerOfTwoDividing(n_minus_1);
+  shift = big_max_power_of_two_dividing(n_minus_1);
   if (shift > 0) {
-    if (!big_Shift(n_minus_1, -shift, odd_part_n_minus_1))
+    if (!big_shift(n_minus_1, -shift, odd_part_n_minus_1))
       return false;
   }
   for (i = 0; i < trys; i++) {
-    y.ZeroNum();
-    if (!big_ModExp(*random_a[i], odd_part_n_minus_1, n, y))
+    y.zero_num();
+    if (!big_mod_exp(*random_a[i], odd_part_n_minus_1, n, y))
       return false;
-    if (big_Compare(y, big__one) == 0 || big_Compare(y, n_minus_1) == 0)
+    if (big_compare(y, big_one) == 0 || big_Compare(y, n_minus_1) == 0)
       continue;
     for (j = 0; j < shift; j++) {
-      z.ZeroNum();
-      if (!big_ModMult(y, y, n, z))
+      z.zero_num();
+      if (!big_mod_mult(y, y, n, z))
         return false;
-      if (big_Compare(z, big__one) == 0)
+      if (big_compare(z, big_one) == 0)
         return false;
     }
-    y.CopyFrom(z);
-    if (big_Compare(y, n_minus_1) == 0)
+    y.copy_from(z);
+    if (big_compare(y, n_minus_1) == 0)
       break;
   }
-  if (big_Compare(y, n_minus_1) != 0)
+  if (big_compare(y, n_minus_1) != 0)
     return false;
   return true;
 }
 
-bool big_IsPrime(big_num& n) {
+bool big_is_prime(big_num& n) {
   extern uint64_t smallest_primes[];
   extern int num_smallest_primes;
   int i, k, m;
@@ -448,7 +447,7 @@ bool big_IsPrime(big_num& n) {
     if (n.size_ == 1 && smallest_primes[i] >= n.value_[0])
       return true;
     k = n.size_;
-    m = DigitArrayShortDivisionAlgorithm(
+    m = digit_array_short_division_algorithm(
         n.size_, n.value_, (uint64_t)smallest_primes[i], &k, q, &r);
     if (m < 0) {
       return false;
@@ -459,30 +458,30 @@ bool big_IsPrime(big_num& n) {
   if (!FillRandom(20, random_a)) {
     return false;
   }
-  return big_MillerRabin(n, random_a);
+  return big_miller_rabin(n, random_a);
 }
 
-bool big_ModIsSquare(big_num& n, big_num& p) {
-  big_num p_minus_1(n.Size());
-  big_num e(n.Size());
-  int m = (n.Capacity() > p.Capacity()) ? n.Capacity() : p.Capacity();
+bool big_mod_is_square(big_num& n, big_num& p) {
+  big_num p_minus_1(n.size());
+  big_num e(n.size());
+  int m = (n.capacity() > p.capacity()) ? n.capacity() : p.capacity();
   big_num residue(4 * m + 1);
   uint64_t unused;
   int size_e;
 
-  big_Sub(p, big__one, p_minus_1);
-  size_e = DigitArrayComputedSize(p_minus_1.size_, p_minus_1.value_);
-  int k = DigitArrayShortDivisionAlgorithm(p_minus_1.size_, p_minus_1.value_,
+  big_Sub(p, big_one, p_minus_1);
+  size_e = digit_array_real_size(p_minus_1.size_, p_minus_1.value_);
+  int k = digit_array_short_division_algorithm(p_minus_1.size_, p_minus_1.value_,
                                            2ULL, &size_e, e.value_, &unused);
   e.size_ = size_e;
   if (k < 0) {
     return false;
   }
-  e.size_ = DigitArrayComputedSize(e.size_, e.value_);
-  if (!big_ModExp(n, e, p, residue)) {
+  e.size_ = digit_array_real_size(e.size_, e.value_);
+  if (!big_mod_exp(n, e, p, residue)) {
     return false;
   }
-  if (!residue.Isone())
+  if (!residue.is_one())
     return false;
   return true;
 }
@@ -504,27 +503,27 @@ bool big_ModIsSquare(big_num& n, big_num& p) {
  *    r= m; x=xt; b=by;
  */
 // find smallest m: b^(2^m)= 1 (mod p) --- note m<r
-int smallestunitaryexponent(big_num& b, big_num& p, int maxm) {
+int smallest_unitary_exponent(big_num& b, big_num& p, int maxm) {
   big_num e(2 * p.capacity_ + 1);
   big_num t(2 * p.capacity_ + 1);
   int i;
 
   for (i = 1; i < maxm; i++) {
-    if (!big_Shift(big__one, i, e))
+    if (!big_shift(big_one, i, e))
       return -1;
-    if (!big_ModExp(b, e, p, t))
+    if (!big_mod_exp(b, e, p, t))
       return -1;
-    if (big_Compare(big__one, t) == 0) {
+    if (big_compare(big_one, t) == 0) {
       break;
     }
-    e.ZeroNum();
-    t.ZeroNum();
+    e.zero_num();
+    t.zero_num();
   }
 
   return i;
 }
 
-bool big_ModTonelliShanks(big_num& a, big_num& p, big_num& s) {
+bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& s) {
   big_num t1(2 * p.size_ + 1);
   big_num t2(2 * p.size_ + 1);
 
@@ -542,81 +541,81 @@ bool big_ModTonelliShanks(big_num& a, big_num& p, big_num& s) {
   big_num b(2 * p.size_ + 1);
   big_num t(2 * p.size_ + 1);
 
-  if (!big_UnsignedSub(p, big__one, p_minus)) {
+  if (!big_unsigned_sub(p, big_one, p_minus)) {
     return false;
   }
-  max_two_power = big_MaxPowerOfTwoDividing(p_minus);
-  if (!big_Shift(p_minus, -max_two_power, q)) {
+  max_two_power = big_max_power_of_two_dividing(p_minus);
+  if (!big_shift(p_minus, -max_two_power, q)) {
     return false;
   }
   n.value_[0] = 2ULL;
-  while (!big_ModIsSquare(n, p)) {
-    if (!big_UnsignedAddTo(n, big__one)) {
+  while (!big_mod_is_square(n, p)) {
+    if (!big_unsigned_addTo(n, big_one)) {
       return false;
     }
   }
-  if (!big_ModExp(n, q, p, z)) {
+  if (!big_mod_exp(n, q, p, z)) {
     return false;
   }
-  if (!z.CopyTo(y)) {
+  if (!z.copy_to(y)) {
     return false;
   }
-  if (!big_UnsignedSub(q, big__one, t1)) {
+  if (!big_unsigned_sub(q, big_one, t1)) {
     return false;
   }
-  if (!big_Shift(t1, -1, t2)) {
+  if (!big_shift(t1, -1, t2)) {
     return false;
   }
-  if (!big_ModExp(a, t2, p, x)) {
+  if (!big_mod_exp(a, t2, p, x)) {
     return false;
   }
-  t1.ZeroNum();
-  t2.ZeroNum();
-  if (!big_ModMult(x, x, p, t1)) {
+  t1.zero_num();
+  t2.zero_num();
+  if (!big_mod_mult(x, x, p, t1)) {
     return false;
   }
-  if (!big_ModMult(t1, a, p, b)) {
+  if (!big_mod_mult(t1, a, p, b)) {
     return false;
   }
-  t1.ZeroNum();
-  if (!big_ModMult(x, a, p, t1)) {
+  t1.zero_num();
+  if (!big_mod_mult(x, a, p, t1)) {
     return false;
   }
-  t1.CopyTo(x);
+  t1.copy_to(x);
 
   for (;;) {
-    if (big_Compare(big__one, b) == 0)
+    if (big_compare(big_one, b) == 0)
       break;
     // at this point ab= x^2, y^(2^(r-1))= -1 (mod p), b^(2^(r-1)) =1
 
     // find smallest m: b^(2^m)= 1 (mod p) --- note m<r
-    m = smallestunitaryexponent(b, p, max_two_power);
+    m = smallest_unitary_exponent(b, p, max_two_power);
 
     // t=y^(2^(r-m-1)) (mod p)
-    if (!big_Shift(big__one, max_two_power - m - 1, e)) {
+    if (!big_shift(big_one, max_two_power - m - 1, e)) {
       return false;
     }
-    if (!big_ModExp(y, t2, p, t)) {
+    if (!big_mod_exp(y, t2, p, t)) {
       return false;
     }
-    y.ZeroNum();
+    y.zero_num();
 
     // y= t^2
-    if (!big_ModMult(t, t, p, y)) {
+    if (!big_mod_mult(t, t, p, y)) {
       return false;
     }
     // r= m; x=xt; b=by;
     max_two_power = m;
-    t1.ZeroNum();
-    if (!big_ModMult(x, t, p, t1)) {
+    t1.zero_num();
+    if (!big_mod_mult(x, t, p, t1)) {
       return false;
     }
-    t1.CopyTo(x);
-    t1.ZeroNum();
-    if (!big_ModMult(y, b, p, t1)) {
+    t1.copy_to(x);
+    t1.zero_num();
+    if (!big_mod_mult(y, b, p, t1)) {
       return false;
     }
-    t1.CopyTo(y);
+    t1.copy_to(y);
   }
   return true;
 }
@@ -630,75 +629,75 @@ bool big_ModTonelliShanks(big_num& a, big_num& p, big_num& s) {
  *    otherwise, x= (2a)(4a)^((p-5)/8)
  *  in all other cases, apply Tonneli-Shanks
  */
-bool big_ModSquareRoot(big_num& n, big_num& p, big_num& r) {
+bool big_mod_square_root(big_num& n, big_num& p, big_num& r) {
   uint64_t bot = p.value_[0] & 0x7;
   big_num p_temp(p.size_);
 
   if (bot == 1)
-    return big_ModTonelliShanks(n, p, r);
+    return big_mod_tonelli_shanks(n, p, r);
 
   big_num t1(1 + 2 * p.size_);
   big_num t2(1 + 2 * p.size_);
   big_num t3(1 + 2 * p.size_);
   if (bot == 3 || bot == 7) {
-    if (!big_UnsignedAdd(p, big__one, p_temp)) {
+    if (!big_unsigned_add(p, big_one, p_temp)) {
       return false;
     }
-    if (!big_Shift(p_temp, -2, t1)) {
+    if (!big_shift(p_temp, -2, t1)) {
       return false;
     }
-    if (!big_ModExp(n, t1, p, r)) {
+    if (!big_mod_exp(n, t1, p, r)) {
       return false;
     }
   } else if (bot == 5) {
-    if (!big_UnsignedSub(p, big__one, p_temp)) {
+    if (!big_unsigned_sub(p, big_one, p_temp)) {
       return false;
     }
-    if (!big_Shift(p_temp, -2, t1)) {
+    if (!big_shift(p_temp, -2, t1)) {
       return false;
     }
-    if (!big_ModExp(n, t1, p, t2)) {
+    if (!big_mod_exp(n, t1, p, t2)) {
       return false;
     }
 
-    if (big_Compare(big__one, t2) == 0) {
-      p_temp.ZeroNum();
+    if (big_compare(big_one, t2) == 0) {
+      p_temp.zero_num();
       // if(b==1) x= a^((p+3)/8) (mod p)
-      p_temp.ZeroNum();
-      t1.ZeroNum();
-      if (!big_UnsignedAdd(p, big__Three, p_temp)) {
+      p_temp.zero_num();
+      t1.zero_num();
+      if (!big_unsigned_add(p, big_Three, p_temp)) {
         return false;
       }
-      if (!big_Shift(p_temp, -3, t1)) {
+      if (!big_shift(p_temp, -3, t1)) {
         return false;
       }
-      if (!big_ModExp(n, t1, p, r)) {
+      if (!big_mod_exp(n, t1, p, r)) {
         return false;
       }
     } else {
-      t1.ZeroNum();
-      t2.ZeroNum();
-      t3.ZeroNum();
-      p_temp.ZeroNum();
+      t1.zero_num();
+      t2.zero_num();
+      t3.zero_num();
+      p_temp.zero_num();
       //  otherwise, x= (2a)(4a)^((p-5)/8)
-      if (!big_UnsignedSub(p, big__Five, p_temp)) {
+      if (!big_unsigned_sub(p, big_Five, p_temp)) {
         return false;
       }
-      if (!big_Shift(p_temp, -3, t1)) {
+      if (!big_shift(p_temp, -3, t1)) {
         return false;
       }
-      if (!big_Shift(n, 2, t2)) {
+      if (!big_shift(n, 2, t2)) {
         return false;
       }
-      if (!big_ModExp(t2, t1, p, t3)) {
+      if (!big_mod_exp(t2, t1, p, t3)) {
         return false;
       }
-      t1.ZeroNum();
-      t2.ZeroNum();
-      if (!big_Shift(n, 1, t2)) {
+      t1.zero_num();
+      t2.zero_num();
+      if (!big_shift(n, 1, t2)) {
         return false;
       }
-      if (!big_ModMult(t2, t3, p, r)) {
+      if (!big_mod_mult(t2, t3, p, r)) {
         return false;
       }
     }
@@ -726,7 +725,7 @@ bool big_ModSquareRoot(big_num& n, big_num& p, big_num& r) {
  *    if(A>=p) A=- p;
  *    return A
  *
- *  Multiply.  0<= x, y <p.  R=b^n.  output: xyR^(-1) (mod p)
+ *  multiply.  0<= x, y <p.  R=b^n.  output: xyR^(-1) (mod p)
  *    A= 0
  *    for(i=0;i<n; i++) {
  *      u[i]= (a[0]+x[i]y[0]) p' mod b  (b is base, R=b^n)
@@ -737,8 +736,8 @@ bool big_ModSquareRoot(big_num& n, big_num& p, big_num& r) {
  *    return A
  */
 
-// big_MakeMont(a,m,r)= a R (mod m)
-bool big_MakeMont(big_num& a, int r, big_num& m, big_num& mont_a) {
+// big_make_mont(a,m,r)= a R (mod m)
+bool big_make_mont(big_num& a, int r, big_num& m, big_num& mont_a) {
   int n = a.size_ > m.size_ ? a.size_ : m.size_;
   int k = (r + NBITSINUINT64 - 1) / NBITSINUINT64;
   if (k > n)
@@ -746,18 +745,18 @@ bool big_MakeMont(big_num& a, int r, big_num& m, big_num& mont_a) {
 
   big_num t1(1 + 2 * n);
 
-  if (m.IsZero()) {
+  if (m.is_zero()) {
     return false;
   }
-  if (!big_Shift(big__one, r, t1)) {
+  if (!big_shift(big_one, r, t1)) {
     return false;
   }
-  return big_ModMult(a, t1, m, mont_a);
+  return big_mod_mult(a, t1, m, mont_a);
 }
 
-// big_MontParams
+// big_mont_params
 //  Calculate m': RR'-mm'=1
-bool big_MontParams(big_num& m, int r, big_num& m_prime) {
+bool big_mont_params(big_num& m, int r, big_num& m_prime) {
   int n = (r + NBITSINUINT64 - 1) / NBITSINUINT64;
   if (m.size_ > n)
     n = m.size_;
@@ -766,13 +765,13 @@ bool big_MontParams(big_num& m, int r, big_num& m_prime) {
   big_num R_prime(2 * n + 1);
   big_num neg_m_prime(2 * n + 1);
 
-  if (!big_Shift(big__one, r, R)) {
+  if (!big_shift(big_one, r, R)) {
     return false;
   }
   if (!big_extended_gcd(m, R, neg_m_prime, R_prime, g)) {
     return false;
   }
-  if (!big_ModNormalize(neg_m_prime, R)) {
+  if (!big_mod_normalize(neg_m_prime, R)) {
     return false;
   }
   if (!big_Sub(R, neg_m_prime, m_prime)) {
@@ -781,8 +780,8 @@ bool big_MontParams(big_num& m, int r, big_num& m_prime) {
   return true;
 }
 
-// big_MontReduce(a,m,r)= a R^(-1) (mod m)
-bool big_MontReduce(big_num& a, int r, big_num& m, big_num& m_prime,
+// big_mont_reduce(a,m,r)= a R^(-1) (mod m)
+bool big_mont_reduce(big_num& a, int r, big_num& m, big_num& m_prime,
                    big_num& mont_a) {
   int n = (r + NBITSINUINT64 - 1) / NBITSINUINT64;
   if (m.size_ > n)
@@ -795,7 +794,7 @@ bool big_MontReduce(big_num& a, int r, big_num& m, big_num& m_prime,
   big_num R(4 * n + 1);
   int i;
 
-  if (!big_Mult(a, m_prime, t))
+  if (!big_mult(a, m_prime, t))
     return false;
 
   // reduce t mod 2^r
@@ -808,28 +807,28 @@ bool big_MontReduce(big_num& a, int r, big_num& m, big_num& m_prime,
   t.value_[k] = t.value_[k] & u;
   t.Normalize();
 
-  if (!big_Mult(t, m, w)) {
+  if (!big_mult(t, m, w)) {
     return false;
   }
-  if (!big_Add(w, a, v)) {
+  if (!big_add(w, a, v)) {
     return false;
   }
-  if (!big_Shift(v, -r, mont_a)) {
+  if (!big_shift(v, -r, mont_a)) {
     return false;
   }
-  if (big_Compare(m, mont_a) <= 0) {
-    if (!big_UnsignedSubFrom(mont_a, m)) {
+  if (big_compare(m, mont_a) <= 0) {
+    if (!big_unsigned_sub_from(mont_a, m)) {
       return false;
     }
   }
-  if (big_Compare(m, mont_a) <= 0) {
+  if (big_compare(m, mont_a) <= 0) {
     // shouldn't need this
-    big_ModNormalize(mont_a, m);
+    big_mod_normalize(mont_a, m);
   }
   return true;
 }
 
-bool big_MontMult(big_num& aR, big_num& bR, big_num& m, uint64_t r, big_num& m_prime,
+bool big_mont_mult(big_num& aR, big_num& bR, big_num& m, uint64_t r, big_num& m_prime,
                  big_num& abR) {
   int n = (r + NBITSINUINT64 - 1) / NBITSINUINT64;
   if (m.size_ > n)
@@ -842,33 +841,33 @@ bool big_MontMult(big_num& aR, big_num& bR, big_num& m, uint64_t r, big_num& m_p
   big_num t(2 * n + 1);
   bool ret = true;
 
-  if (!big_UnsignedMult(aR, bR, t)) {
+  if (!big_unsigned_mult(aR, bR, t)) {
     ret = false;
   }
-  if (ret && !big_MontReduce(t, r, m, m_prime, abR)) {
+  if (ret && !big_mont_reduce(t, r, m, m_prime, abR)) {
     ret = false;
   }
-  if (big_Compare(abR, m) >= 0) {
+  if (big_compare(abR, m) >= 0) {
     // shouldn't need this
-    big_ModNormalize(abR, m);
+    big_mod_normalize(abR, m);
   }
   return ret;
 }
 
 /*
- *  MontExp
- *    Let Mont(a,b)= abR^-1 (mod p)
+ *  mont_exp
+ *    Let mont_(a,b)= abR^-1 (mod p)
  *    R= b^r, m'= -m^(-1) (mod p), e= (e[t]...e[0])_2
- *    X= Mont(x, R^2(mod p))
+ *    X= mont_(x, R^2(mod p))
  *    A= R (mod p)
  *    for(i=t; i>=0; i--) {
- *      A= Mont(A,A)
- *      if(e[i]==1) A= Mont(A,X)
+ *      A= mont_(A,A)
+ *      if(e[i]==1) A= mont_(A,X)
  *    }
- *    A= Mont(A,1)
+ *    A= mont_(A,1)
  *    return A
  */
-bool big_MontExp(big_num& b, big_num& e, int r, big_num& m, big_num& m_prime,
+bool big_mont_exp(big_num& b, big_num& e, int r, big_num& m, big_num& m_prime,
                 big_num& out) {
   int n = (r + NBITSINUINT64 - 1) / NBITSINUINT64;
   if (m.size_ > n)
@@ -881,34 +880,34 @@ bool big_MontExp(big_num& b, big_num& e, int r, big_num& m, big_num& m_prime,
   big_num square(4 * n + 1);
   big_num accum(4 * n + 1);
   big_num t(4 * n + 1);
-  int k = big_HighBit(e);
+  int k = big_high_bit(e);
   int i;
 
-  if (!big_MakeMont(b, r, m, square)) {
+  if (!big_make_mont(b, r, m, square)) {
     return false;
   }
-  if (!big_MakeMont(big__one, r, m, accum)) {
+  if (!big_make_mont(big_one, r, m, accum)) {
                << square.size_ << "\n";
     return false;
   }
   for (i = 1; i <= k; i++) {
-    if (big_BitPositionOn(e, i)) {
-      if (!big_MontMult(accum, square, m, r, m_prime, t)) {
+    if (big_bit_position_on(e, i)) {
+      if (!big_mont_mult(accum, square, m, r, m_prime, t)) {
                    << square.size_ << "\n";
         return false;
       }
-      accum.CopyFrom(t);
+      accum.copy_from(t);
     }
-    t.ZeroNum();
+    t.zero_num();
     if (i != k) {
-      if (!big_MontMult(square, square, m, r, m_prime, t)) {
+      if (!big_mont_mult(square, square, m, r, m_prime, t)) {
         printf(
             "b.size_: %d, square.size_: %d, m.size_: %d, m_prime.size_: %d\n",
             b.size_, square.size_, m.size_, m_prime.size_);
         return false;
       }
-      square.CopyFrom(t);
+      square.copy_from(t);
     }
   }
-  return big_MontReduce(accum, r, m, m_prime, out);
+  return big_mont_reduce(accum, r, m, m_prime, out);
 }
