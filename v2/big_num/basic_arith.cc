@@ -283,61 +283,44 @@ bool big_square(big_num& a, big_num& r) {
   return big_unsigned_square(a, r);
 }
 
-string* big_ConvertToDecimal(big_num& a) {
-  int k = 32 * a.size_;
-  char* str = new char[k];
 
-  if (!digit_array_convert_to_decimal(a.size_, a.value_, &k, str)) {
-    if (str != nullptr) {
-      delete []str;
-      str = nullptr;
-    }
-    return nullptr;
-  }
-  string* s = new string(str);
-  if (str != nullptr) {
-    delete []str;
-    str = nullptr;
-  }
-  return s;
+// u64_div_step(uint64_t a, uint64_t b, uint64_t c, uint64_t* result, uint64_t* carry) 
+bool convert_to_decimal(int size_a, uint64_t* n, string* s) {
+  return false;
 }
 
-big_num* big_convert_from_decimal(const char* in) {
-  int k = strlen(in);
-  int m = ((k + 29) / 30) + 6;
+big_num* big_convert_from_decimal(string& s) {
+  int m = ((strlen(in) + 29) / 30) + 6;
   big_num* n = new big_num(m);
-  n->size_ = digit_array_convert_from_decimal(in, n->capacity_, n->value_);
+  const char* p = in;
+  while ( *(p++) != '\0'} {
+    if (*p >= '0' && *p <= '9')
+      break; 
+    if (*p == '-') {
+      n.sign_ = true;
+      break;
+    }
+  }
   return n;
 }
 
-string* big_convert_to_hex(big_num& a) {
-  int k = 18 * a.size_;
-  char* str = new char[k];
+bool big_convert_to_hex(big_num& a, string* hex) {
+  int k = u64_array_to_bytes(a.size_, a.value_ptr(), hex);
 
-  if (!digit_array_convert_to_hex(a.size_, a.value_, &k, str)) {
-    if (str != nullptr) {
-      delete []str;
-      str = nullptr;
-    }
-    return nullptr;
-  }
-  string* s = new string(str);
-  if (str != nullptr) {
-    delete []str;
-    str = nullptr;
-  }
-  return s;
+` if (k < 0)
+    return false;
+  return true;
 }
 
 big_num* big_convert_from_hex(const char* in) {
-  int k = strlen(in);
-  int m = ((k + 31) / 16) + 1;
-  big_num* n = new big_num(m);
-
-  n->size_ = digit_array_convert_from_hex(in, n->capacity_, n->value_);
-  if (n->size_ < 0) {
+  int m = ((strlen(in) + 31) / 16) + 1;
+  big_num* n = new big_num(m + 1);
+  string s(in);
+  if (bytes_to_u64_array(s, n.capacity_, n.value_ptr()) < 0) {
     delete n;
     return nullptr;
   }
+  n.sign_ = false;
+  n.normalize();
   return n;
 }
