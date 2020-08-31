@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// Project: New Cloudproxy Crypto
 // File: rc4.cc
 
 #include "crypto_support.h"
@@ -31,7 +30,7 @@ rc4::rc4() { initialized_ = false; }
 
 rc4::~rc4() { initialized_ = false; }
 
-bool rc4::Init(int size, byte* key) {
+bool rc4::init(int size, byte* key) {
   int i;
 
   for (i = 0; i < 256; i++) state_[i] = i;
@@ -62,5 +61,5 @@ byte rc4::next() {
 void rc4::encrypt(int size, byte* in, byte* out) {
   int i;
 
-  for (i = 0; i < size; i++) out[i] = in[i] ^ Next();
+  for (i = 0; i < size; i++) out[i] = in[i] ^ next();
 }

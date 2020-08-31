@@ -21,6 +21,7 @@
 #include "symmetric_cipher.h"
 #include "aes.h"
 #include "tea.h"
+#include "rc4.h"
 
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
@@ -64,6 +65,7 @@ byte twofish_test1_cipher[] = {
   0x8F, 0xAA, 0xC3, 0xA3, 0xBA, 0x20, 0xFB, 0xC3
 };
 
+const int rc4_test1_key_size = 5;
 byte rc4_test1_key[5] = {
   0x01, 0x02, 0x03, 0x04, 0x05
 };
@@ -175,6 +177,35 @@ bool test_tea_test1() {
   return true;
 }
 
+bool test_rc4_test1() {
+  rc4 rc4_obj;
+  byte test_cipher_out[16];
+  byte test_plain_out[16];
+
+  if(!rc4_obj.init(5, rc4_test1_key))
+    return false;
+  rc4_obj.encrypt(16, rc4_test1_plain, test_cipher_out);
+  if(!rc4_obj.init(5, rc4_test1_key))
+    return false;
+  rc4_obj.encrypt(16, test_cipher_out, test_plain_out);
+  if (FLAGS_print_all) {
+    printf("  Key            : ");
+    print_bytes(5, rc4_test1_key);
+    printf("  Correct plain  : ");
+    print_bytes(16, rc4_test1_plain);
+    printf("  Correct cipher : ");
+    print_bytes(16, rc4_test1_cipher);
+    printf("  Computed cipher: ");
+    print_bytes(16, test_cipher_out);
+    printf("  Computed plain : ");
+    print_bytes(16, test_plain_out);
+  }
+  if (memcmp(rc4_test1_cipher, test_cipher_out, 16) != 0) return false;
+  if (memcmp(rc4_test1_plain, test_plain_out, 16) != 0) return false;
+
+  return true;
+}
+
 bool test_aesni() {
   return true;
 }
@@ -188,6 +219,9 @@ TEST (aes, test_aes_test2) {
 }
 TEST (tea, test_aes_test1) {
   EXPECT_TRUE(test_tea_test1());
+}
+TEST (rc4, test_aes_test1) {
+  EXPECT_TRUE(test_rc4_test1());
 }
 
 
