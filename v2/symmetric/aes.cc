@@ -612,12 +612,11 @@ bool aes::init_encrypt() {
   int i = 0;
   uint32_t temp;
   uint32_t* rk = encrypt_round_key_;
-  byte* key = (byte*)secret_.data();
 
-  rk[0] = GETU32(key);
-  rk[1] = GETU32(key + 4);
-  rk[2] = GETU32(key + 8);
-  rk[3] = GETU32(key + 12);
+  rk[0] = GETU32(key_);
+  rk[1] = GETU32(key_ + 4);
+  rk[2] = GETU32(key_ + 8);
+  rk[3] = GETU32(key_ + 12);
   if (key_size_in_bits_ == 128) {
     for (;;) {
       temp = rk[3];
@@ -634,8 +633,8 @@ bool aes::init_encrypt() {
       rk += 4;
     }
   }
-  rk[4] = GETU32(key + 16);
-  rk[5] = GETU32(key + 20);
+  rk[4] = GETU32(key_ + 16);
+  rk[5] = GETU32(key_ + 20);
   if (key_size_in_bits_ == 192) {
     for (;;) {
       temp = rk[5];
@@ -654,8 +653,8 @@ bool aes::init_encrypt() {
       rk += 6;
     }
   }
-  rk[6] = GETU32(key + 24);
-  rk[7] = GETU32(key + 28);
+  rk[6] = GETU32(key_ + 24);
+  rk[7] = GETU32(key_ + 28);
   if (key_size_in_bits_ == 256) {
     for (;;) {
       temp = rk[7];
@@ -1043,6 +1042,7 @@ bool aes::init(int key_bit_size, byte* key_buf, int directionflag) {
     return false;
   }
   secret_.append((const char*) key_buf, key_size_in_bits_ / NBITSINBYTE);
+  key_ = (byte*)secret_.data();
   if (directionflag == DECRYPT || directionflag == BOTH) {
     if (!init_decrypt()) {
       return false;

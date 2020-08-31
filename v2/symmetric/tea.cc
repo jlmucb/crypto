@@ -19,6 +19,8 @@
 
 tea::tea() {
   initialized_ = false;
+  key_size_in_bits_ = 0;
+  algorithm_.assign("tea");
 }
 
 tea::~tea() {}
@@ -26,6 +28,7 @@ tea::~tea() {}
 bool tea::init(int key_bit_size, byte* key, int direction) {
   if (key_bit_size != 128)
     return false;
+  secret_.assign((char*)key, key_bit_size / NBITSINBYTE);
   uint32_t* kp = (uint32_t*)key;
   for (int i = 0; i < 4; i++)
     key_[i] = kp[i];

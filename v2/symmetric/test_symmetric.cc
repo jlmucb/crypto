@@ -20,6 +20,7 @@
 #include "crypto_names.h"
 #include "symmetric_cipher.h"
 #include "aes.h"
+#include "tea.h"
 
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
@@ -49,6 +50,7 @@ byte aes256_test1_cipher[] = {
   0x8e, 0xa2, 0xb7, 0xca, 0x51, 0x67, 0x45, 0xbf,
   0xea, 0xfc, 0x49, 0x90, 0x4b, 0x49, 0x60, 0x89
 };
+
 byte twofish_test1_key[] = {
     0x9F, 0x58, 0x9F, 0x5C, 0xF6, 0x12, 0x2C, 0x32,
     0xB6, 0xBF, 0xEC, 0x2F, 0x2A, 0xE8, 0xC3, 0x5A,
@@ -61,6 +63,7 @@ byte twofish_test1_cipher[] = {
   0x01, 0x9F, 0x98, 0x09, 0xDE, 0x17, 0x11, 0x85,
   0x8F, 0xAA, 0xC3, 0xA3, 0xBA, 0x20, 0xFB, 0xC3
 };
+
 byte rc4_test1_key[5] = {
   0x01, 0x02, 0x03, 0x04, 0x05
 };
@@ -71,12 +74,18 @@ byte rc4_test1_cipher[16] = {
   0xb2, 0x39, 0x63, 0x05, 0xf0, 0x3d, 0xc0, 0x27,
   0xcc, 0xc3, 0x52, 0x4a, 0x0a, 0x11, 0x18, 0xa8
 };
+
+byte tea_test1_key[] {
+  0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0
+};
 byte tea_test1_plain[8] = {
   0, 0, 0, 0, 0, 0, 0, 0
 };
 byte tea_test1_cipher[8] = {
   0x0a, 0x3a, 0xea, 0x41, 0x40, 0xa9, 0xba, 0x94
 };
+
 uint64_t simon_test1_key[2] = {
     0x0706050403020100, 0x0f0e0d0c0b0a0908,
 };
@@ -112,12 +121,73 @@ bool test_aes_test1() {
   if (memcmp(aes128_test1_plain, test_plain_out, 16) != 0) return false;
   return true;
 }
+
+bool test_aes_test2() {
+  aes aes_obj;
+  byte test_cipher_out[16];
+  byte test_plain_out[16];
+
+  if(!aes_obj.init(256, aes256_test1_key, aes::BOTH))
+    return false;
+  aes_obj.encrypt_block(aes256_test1_plain, test_cipher_out);
+  aes_obj.decrypt_block(test_cipher_out, test_plain_out);
+  if (FLAGS_print_all) {
+    printf("  Key            : ");
+    print_bytes(32, aes256_test1_key);
+    printf("  Correct plain  : ");
+    print_bytes(16, aes256_test1_plain);
+    printf("  Correct cipher : ");
+    print_bytes(16, aes256_test1_cipher);
+    printf("  Computed cipher: ");
+    print_bytes(16, test_cipher_out);
+    printf("  Computed plain : ");
+    print_bytes(16, test_plain_out);
+  }
+  if (memcmp(aes256_test1_cipher, test_cipher_out, 16) != 0) return false;
+  if (memcmp(aes256_test1_plain, test_plain_out, 16) != 0) return false;
+  return true;
+}
+
+bool test_tea_test1() {
+  tea tea_obj;
+  byte test_cipher_out[16];
+  byte test_plain_out[16];
+
+  if(!tea_obj.init(128, tea_test1_key, tea::BOTH))
+    return false;
+  tea_obj.encrypt_block(tea_test1_plain, test_cipher_out);
+  tea_obj.decrypt_block(test_cipher_out, test_plain_out);
+  if (FLAGS_print_all) {
+    printf("  Key            : ");
+    print_bytes(16, tea_test1_key);
+    printf("  Correct plain  : ");
+    print_bytes(8, tea_test1_plain);
+    printf("  Correct cipher : ");
+    print_bytes(8, tea_test1_cipher);
+    printf("  Computed cipher: ");
+    print_bytes(8, test_cipher_out);
+    printf("  Computed plain : ");
+    print_bytes(8, test_plain_out);
+  }
+  if (memcmp(tea_test1_cipher, test_cipher_out, 8) != 0) return false;
+  if (memcmp(tea_test1_plain, test_plain_out, 8) != 0) return false;
+
+  return true;
+}
+
 bool test_aesni() {
   return true;
 }
 
+
 TEST (aes, test_aes_test1) {
   EXPECT_TRUE(test_aes_test1());
+}
+TEST (aes, test_aes_test2) {
+  EXPECT_TRUE(test_aes_test2());
+}
+TEST (tea, test_aes_test1) {
+  EXPECT_TRUE(test_tea_test1());
 }
 
 

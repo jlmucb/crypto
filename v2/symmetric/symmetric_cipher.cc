@@ -20,8 +20,11 @@
 symmetric_cipher::symmetric_cipher() {
   direction_ = NONE;
   initialized_ = false;
+  key_ = nullptr;
 }
 
 symmetric_cipher::~symmetric_cipher() {
   initialized_ = false;
+  secret_.clear();
+  key_ = nullptr;
 }

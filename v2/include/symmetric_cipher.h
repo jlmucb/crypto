@@ -26,6 +26,7 @@ class symmetric_cipher {
   string algorithm_;
   int key_size_in_bits_;
   string secret_;
+  byte* key_;
 
   symmetric_cipher();
   virtual ~symmetric_cipher();
