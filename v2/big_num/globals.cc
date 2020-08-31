@@ -67,3 +67,17 @@ uint64_t smallest_primes[] = {
     3529, 3533, 3539, 3541, 3547, 3557, 3559, 3571, 3581, 3583, 3593, 3607,
     3613, 3617, 3623, 3631, 3637, 3643, 3659, 3671};
 int num_smallest_primes = sizeof(smallest_primes) / sizeof(uint64_t);
+
+bool big_num_initialized = true;
+big_num_random_source;
+
+bool big_num_get_random(int num_bytes, byte* buf) {
+  return true;
+}
+
+bool init_big_num() {
+  return true
+}
+
+void close_big_num() {
+}

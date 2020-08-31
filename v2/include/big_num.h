@@ -48,3 +48,17 @@ class big_num {
   bool copy_to(big_num&);
 };
 
+extern int num_smallest_primes;
+extern uint64_t smallest_primes[];
+extern big_num big_zero;
+extern big_num big_one;
+extern big_num big_two;
+extern big_num big_three;
+extern big_num big_four;
+extern big_num big_five;
+
+bool big_num_get_random(int num_bytes, byte* buf);
+bool init_big_num();
+void close_big_num();
+
+#endif
