@@ -33,11 +33,12 @@ rc4::~rc4() { initialized_ = false; }
 bool rc4::init(int size, byte* key) {
   int i;
 
+  key_bit_size_ = size;
+  int key_size_ = size / NBITSINBYTE;
   for (i = 0; i < 256; i++) state_[i] = i;
 
-  key_size_ = size;
   for (i = 0; i < 256; i++) {
-    key_[i] = key[i % size];
+    key_[i] = key[i % key_size_];
   }
 
   index2_ = 0;

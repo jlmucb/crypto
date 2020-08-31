@@ -182,10 +182,10 @@ bool test_rc4_test1() {
   byte test_cipher_out[16];
   byte test_plain_out[16];
 
-  if(!rc4_obj.init(5, rc4_test1_key))
+  if(!rc4_obj.init(40, rc4_test1_key))
     return false;
   rc4_obj.encrypt(16, rc4_test1_plain, test_cipher_out);
-  if(!rc4_obj.init(5, rc4_test1_key))
+  if(!rc4_obj.init(40, rc4_test1_key))
     return false;
   rc4_obj.encrypt(16, test_cipher_out, test_plain_out);
   if (FLAGS_print_all) {

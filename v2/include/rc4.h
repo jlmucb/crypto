@@ -26,6 +26,7 @@ class rc4 {
 
  private:
   bool initialized_;
+  int key_bit_size_;
   int key_size_;
   byte key_[256];
   byte state_[256];
