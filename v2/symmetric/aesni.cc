@@ -22,10 +22,9 @@
 
 aesni::aesni() {
   direction_ = NONE;
-  cipher_name_ = nullptr;
+  algorithm_.assign("aes");
   initialized_ = false;
-  num_key_bits_ = 0;
-  key_ = nullptr;
+  key_size_in_bits_ = 0;
   encrypt_round_key_ = nullptr;
   decrypt_round_key_ = nullptr;
 }
@@ -214,7 +213,7 @@ bool aesni::init_decrypt() {
     return false;
   }
   if (encrypt_round_key_ == nullptr) {
-    if (!InitEnc()) {
+    if (!init_encrypt()) {
       return false;
     }
   }
@@ -390,13 +389,12 @@ void aesni::decrypt_block(const byte* ct, byte* pt) {
 }
 
 bool aesni::init(int key_bit_size, byte* key_buf, int directionflag) {
-  if (key_bit_size == 128) {
-    cipher_name_ = new string("aes-128");
-    num_key_bits_ = key_bit_size;
+  direction_= directionflag;
+  key_size_in_bits_ = key_bit_size;
+  secret_.assign((char*)key_buf, key_bit_size / NBITSINBYTE);
+  if (key_size_in_bits_ == 128) {
     num_rounds_ = 10;
   } else if (key_bit_size == 256) {
-    cipher_name_ = new string("aes-256");
-    num_key_bits_ = key_bit_size;
     num_rounds_ = 14;
   } else {
     return false;
@@ -404,30 +402,26 @@ bool aesni::init(int key_bit_size, byte* key_buf, int directionflag) {
   if (key_buf == nullptr) {
     return false;
   }
-  key_ = new byte[key_bit_size / NBITSINBYTE];
-  if (key_ == nullptr) {
-    return false;
-  }
-  memcpy(key_, key_buf, key_bit_size / NBITSINBYTE);
+  key_ = (byte*)secret_.data();
   if (directionflag == DECRYPT || directionflag == BOTH) {
-    if (!InitDec()) {
+    if (!init_decrypt()) {
       return false;
     }
   } else if (directionflag == ENCRYPT) {
-    if (!InitEnc()) {
+    if (!init_encrypt()) {
       return false;
     }
   } else {
     return false;
   }
   initialized_ = true;
-  return true;
+  return initialized_;
 }
 
 void aesni::encrypt(int in_size, byte* in, byte* out) {
   // in_size should be a multiple of block size
   while (in_size > 0) {
-    Encrypt_block(in, out);
+    encrypt_block(in, out);
     in_size -= BLOCKBYTESIZE;
     in += BLOCKBYTESIZE;
     out += BLOCKBYTESIZE;
