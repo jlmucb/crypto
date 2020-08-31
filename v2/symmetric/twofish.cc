@@ -87,9 +87,9 @@ static const byte t_table[2][4][16] = {
 
 two_fish::two_fish() {
   direction_ = NONE;
-  cipher_name_ = nullptr;
+  algorithm_.assign("twofish");
   initialized_ = false;
-  num_key_bits_ = 0;
+  key_size_in_bits_ = 0;
   key_ = nullptr;
 }
 
@@ -176,26 +176,26 @@ void two_fish::fill_keyed_sboxes(byte S[], int kCycles, two_fishKey* xkey) {
   switch (kCycles) {
     case 2:
       for (i = 0; i < 256; i++) {
-        xkey->s[0][i] = H02(i, S);
-        xkey->s[1][i] = H12(i, S);
-        xkey->s[2][i] = H22(i, S);
-        xkey->s[3][i] = H32(i, S);
+	xkey->s[0][i] = H02(i, S);
+	xkey->s[1][i] = H12(i, S);
+	xkey->s[2][i] = H22(i, S);
+	xkey->s[3][i] = H32(i, S);
       }
       break;
     case 3:
       for (i = 0; i < 256; i++) {
-        xkey->s[0][i] = H03(i, S);
-        xkey->s[1][i] = H13(i, S);
-        xkey->s[2][i] = H23(i, S);
-        xkey->s[3][i] = H33(i, S);
+	xkey->s[0][i] = H03(i, S);
+	xkey->s[1][i] = H13(i, S);
+	xkey->s[2][i] = H23(i, S);
+	xkey->s[3][i] = H33(i, S);
       }
       break;
     case 4:
       for (i = 0; i < 256; i++) {
-        xkey->s[0][i] = H04(i, S);
-        xkey->s[1][i] = H14(i, S);
-        xkey->s[2][i] = H24(i, S);
-        xkey->s[3][i] = H34(i, S);
+	xkey->s[0][i] = H04(i, S);
+	xkey->s[1][i] = H14(i, S);
+	xkey->s[2][i] = H24(i, S);
+	xkey->s[3][i] = H34(i, S);
       }
       break;
   }
@@ -204,7 +204,7 @@ void two_fish::fill_keyed_sboxes(byte S[], int kCycles, two_fishKey* xkey) {
 static unsigned int rs_poly_const[] = {0, 0x14d};
 static unsigned int rs_poly_div_const[] = {0, 0xa6};
 
-void two_fish::InitKey(const byte key[], int key_len, two_fishKey* xkey) {
+void two_fish::init_key(int key_len, const byte key[], two_fishKey* xkey) {
   byte K[32 + 32 + 4];
   int kCycles;
   int i;
@@ -258,32 +258,21 @@ void two_fish::InitKey(const byte key[], int key_len, two_fishKey* xkey) {
   memset(K, 0, sizeof(K));
 }
 
-bool two_fish::Init(int key_bit_size, byte* key, int direction) {
-  if (key_bit_size == 128) {
-    cipher_name_ = new string("twofish-128");
-  } else if (key_bit_size == 192) {
-    cipher_name_ = new string("twofish-192");
-  } else if (key_bit_size == 256) {
-    cipher_name_ = new string("twofish-256");
-  } else {
-    LOG(ERROR) << "two_fish::Init bad key size\n";
-    return false;
-  }
-  num_key_bits_ = key_bit_size;
+bool two_fish::init(int key_bit_size, byte* key, int direction) {
+  key_size_in_bits_= key_bit_size;
+  algorithm_.assign("twofish");
+
   if (key == nullptr) {
-    LOG(ERROR) << "two_fish::Init key is nullptr\n";
     return false;
   }
-  key_ = new byte[key_bit_size / NBITSINBYTE];
-  if (key_ == nullptr) {
-    LOG(ERROR) << "two_fish::Init key is nullptr\n";
-    return false;
-  }
-  memcpy(key_, key, key_bit_size / NBITSINBYTE);
+  secret_.assign((char*)key, key_size_in_bits_ / NBITSINBYTE);
+  key_ = (byte*) secret_.data();
   initialise_q_boxes();
   initialise_mds_tables();
-  InitKey(key, key_bit_size / NBITSINBYTE, &round_data);
-  return true;
+  init_key(key_size_in_bits_ / NBITSINBYTE, key_, &round_data);
+  initialized_ = true;
+  direction_ = direction;
+  return initialized_;
 }
 
 #define g0(X, xkey)                                            \

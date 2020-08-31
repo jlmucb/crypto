@@ -45,14 +45,14 @@ class two_fish : public symmetric_cipher {
 
   two_fish();
   ~two_fish();
-  bool Init(int, byte*, int);
+  bool init(int, byte*, int);
 
   void initialise_q_boxes();
   void initialise_mds_tables();
   uint32_t h(int k, byte L[], int kCycles);
   void fill_keyed_sboxes(byte S[], int kCycles, two_fishKey* xkey);
 
-  void initKey(const byte aKeyBytes[], int aKeyLength, two_fishKey* aKey);
+  void init_key(int, const byte aKeyBytes[], two_fishKey* aKey);
   void encrypt(int size, byte* aPlainText, byte* aCipherText);
   void decrypt(int size, byte* aCipherText, byte* aPlainText);
   void encrypt_block(byte* in, byte* out);
