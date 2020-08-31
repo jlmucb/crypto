@@ -23,7 +23,7 @@ class simon128 : public symmetric_cipher {
  private:
   bool initialized_;
   int size_;
-  uint64_t key_[4];
+  uint64_t simon_key_[4];
   uint64_t round_key_[72];
   int num_rounds_;
   bool calculate_ks();

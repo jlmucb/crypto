@@ -25,11 +25,12 @@ inline uint64_t left_rotate_64(uint64_t x, int r) {
 
 simon128::simon128() {
   initialized_ = false;
+  algorithm_.assign("simon");
   size_ = 0;
 }
 
 simon128::~simon128() {
-  memset((byte*)key_, 0, sizeof(uint64_t) * 4);
+  memset((byte*)simon_key_, 0, sizeof(uint64_t) * 4);
   memset((byte*)round_key_, 0, sizeof(uint64_t) * 72);
   initialized_ = false;
 }
@@ -74,7 +75,7 @@ bool simon128::calculate_ks() {
     return false;
 
   for (i = 0; i < size_; i++)
-    round_key_[i] = key_[i];
+    round_key_[i] = simon_key_[i];
   for (i = size_; i < num_rounds_; i++) {
     t = left_rotate_64(round_key_[i - 1], -3);
     if (size_ == 4) {
@@ -82,30 +83,35 @@ bool simon128::calculate_ks() {
     }
     t = t ^ left_rotate_64(t, -1);
     round_key_[i] =
-        (~round_key_[i - size_]) ^ t ^ ConstCalc(2, (i - size_) % 62) ^ 0x3ULL;
+        (~round_key_[i - size_]) ^ t ^ calculate_constants(2, (i - size_) % 62) ^ 0x3ULL;
   }
   return true;
 }
 
 bool simon128::init(int key_bit_size, byte* key, int directionflag) {
   size_ = 0;
+  key_size_in_bits_ = key_bit_size;
+  secret_.assign((char*)key, key_size_in_bits_ / NBITSINBYTE);
+  simon_key_[0] = *(uint64_t*)key;
+  simon_key_[1] = *(uint64_t*)(key + sizeof(uint64_t));
   switch (key_bit_size) {
     case 128:
       size_ = 2;
       num_rounds_ = 68;
-      memcpy((byte*)key_, key, sizeof(uint64_t) * size_);
+      memcpy((byte*)simon_key_, key, sizeof(uint64_t) * size_);
       break;
     case 192:
     case 256:
     default:
       return false;
   }
-  if (!CalculateKS()) {
+  if (!calculate_ks()) {
     initialized_ = false;
     return false;
   }
   initialized_ = true;
-  return true;
+  direction_ = directionflag;
+  return initialized_;
 }
 
 void simon128::encrypt_block(const byte* in, byte* out) {
@@ -151,7 +157,7 @@ void simon128::encrypt(int size, byte* in, byte* out) {
 
 void simon128::decrypt(int size, byte* in, byte* out) {
   while (size > 0) {
-    decrypt_dlock(in, out);
+    decrypt_block(in, out);
     size -= BLOCKBYTESIZE;
     in += BLOCKBYTESIZE;
     out += BLOCKBYTESIZE;

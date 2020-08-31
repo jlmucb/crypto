@@ -22,6 +22,8 @@
 #include "aes.h"
 #include "tea.h"
 #include "rc4.h"
+#include "twofish.h"
+#include "simonspeck.h"
 
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
@@ -52,6 +54,7 @@ byte aes256_test1_cipher[] = {
   0xea, 0xfc, 0x49, 0x90, 0x4b, 0x49, 0x60, 0x89
 };
 
+const int twofish_test1_key_size = 16;
 byte twofish_test1_key[] = {
     0x9F, 0x58, 0x9F, 0x5C, 0xF6, 0x12, 0x2C, 0x32,
     0xB6, 0xBF, 0xEC, 0x2F, 0x2A, 0xE8, 0xC3, 0x5A,
@@ -206,6 +209,62 @@ bool test_rc4_test1() {
   return true;
 }
 
+bool test_twofish_test1() {
+  two_fish twofish_obj;
+  byte test_cipher_out[16];
+  byte test_plain_out[16];
+
+  if(!twofish_obj.init(twofish_test1_key_size * 8, twofish_test1_key, 0)) {
+    return false;
+  }
+  twofish_obj.encrypt(16, twofish_test1_plain, test_cipher_out);
+  twofish_obj.decrypt(16, test_cipher_out, test_plain_out);
+  if (FLAGS_print_all) {
+    printf("  Key            : ");
+    print_bytes(twofish_test1_key_size, twofish_test1_key);
+    printf("  Correct plain  : ");
+    print_bytes(16, twofish_test1_plain);
+    printf("  Correct cipher : ");
+    print_bytes(16, twofish_test1_cipher);
+    printf("  Computed cipher: ");
+    print_bytes(16, test_cipher_out);
+    printf("  Computed plain : ");
+    print_bytes(16, test_plain_out);
+  }
+  if (memcmp(twofish_test1_cipher, test_cipher_out, 16) != 0) return false;
+  if (memcmp(twofish_test1_plain, test_plain_out, 16) != 0) return false;
+
+  return true;
+}
+
+bool test_simon_test1() {
+  simon128 simon_obj;
+  byte test_cipher_out[16];
+  byte test_plain_out[16];
+
+  if(!simon_obj.init(128, (byte*)simon_test1_key, 0)) {
+    return false;
+  }
+  simon_obj.encrypt(16, (byte*)simon_test1_plain, test_cipher_out);
+  simon_obj.decrypt(16, test_cipher_out, test_plain_out);
+  if (FLAGS_print_all) {
+    printf("  Key            : ");
+    print_bytes(32, (byte*)simon_test1_key);
+    printf("  Correct plain  : ");
+    print_bytes(16, (byte*)simon_test1_plain);
+    printf("  Correct cipher : ");
+    print_bytes(16, (byte*)simon_test1_cipher);
+    printf("  Computed cipher: ");
+    print_bytes(16, test_cipher_out);
+    printf("  Computed plain : ");
+    print_bytes(16, test_plain_out);
+  }
+  if (memcmp(simon_test1_cipher, test_cipher_out, 16) != 0) return false;
+  if (memcmp(simon_test1_plain, test_plain_out, 16) != 0) return false;
+
+  return true;
+}
+
 bool test_aesni() {
   return true;
 }
@@ -222,6 +281,12 @@ TEST (tea, test_aes_test1) {
 }
 TEST (rc4, test_aes_test1) {
   EXPECT_TRUE(test_rc4_test1());
+}
+TEST (twofish, test_aes_test1) {
+  EXPECT_TRUE(test_twofish_test1());
+}
+TEST (simon, test_aes_test1) {
+  EXPECT_TRUE(test_simon_test1());
 }
 
 

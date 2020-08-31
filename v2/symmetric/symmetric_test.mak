@@ -45,7 +45,7 @@ AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=	$(O)/test_symmetric.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
-        $(O)/symmetric_cipher.o $(O)/aes.o $(O)/tea.o $(O)/rc4.o
+        $(O)/symmetric_cipher.o $(O)/aes.o $(O)/tea.o $(O)/rc4.o $(O)/twofish.o $(O)/simonspeck.o
 
 all:	test_symmetric.exe
 clean:
@@ -92,3 +92,11 @@ $(O)/tea.o: $(S)/tea.cc
 $(O)/rc4.o: $(S)/rc4.cc
 	@echo "compiling rc4.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/rc4.o $(S)/rc4.cc
+
+$(O)/twofish.o: $(S)/twofish.cc
+	@echo "compiling twofish.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/twofish.o $(S)/twofish.cc
+
+$(O)/simonspeck.o: $(S)/simonspeck.cc
+	@echo "compiling simonspeck.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/simonspeck.o $(S)/simonspeck.cc
