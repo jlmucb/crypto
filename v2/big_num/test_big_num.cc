@@ -182,6 +182,12 @@ bool basic_digit_test2() {
 
   n1[1] = 0xffffffffffff07;
   n2[1] = 0xffffffffffff05;
+  // add: 01fffffffffffe0c 0000000000000002
+  // sub: 0000000000000002 0000000000000000
+  // mult: 0000fffffffffffe 0c0000000000f423 01fffffffffffe0c 0000000000000001
+  uint64_t add_cmp[2] = {0x0000000000000002ULL, 0x01fffffffffffe0cULL};
+  uint64_t sub_cmp[2] = {0x00ULL, 0x02ULL};
+  uint64_t mult_cmp[4] = {0x0000000000000001ULL, 0x01fffffffffffe0cULL, 0x0c0000000000f423ULL, 0x0000fffffffffffe };
   digit_array_zero_num(10, n3);
   if (digit_array_add(10, n1, 10, n2, 10, n3) < 0)
     return false;
@@ -190,6 +196,8 @@ bool basic_digit_test2() {
     digit_array_print(10, n2); printf(" = ");
     digit_array_print(10, n3); printf("\n");
   }
+  if (digit_array_compare(2, add_cmp, 10, n3) != 0)
+    return false;
   digit_array_zero_num(10, n3);
   if (digit_array_sub(10, n1, 10, n2, 10, n3) < 0)
     return false;
@@ -198,6 +206,8 @@ bool basic_digit_test2() {
     digit_array_print(10, n2); printf(" = ");
     digit_array_print(10, n3); printf("\n");
   }
+  if (digit_array_compare(2, sub_cmp, 10, n3) != 0)
+    return false;
   digit_array_zero_num(10, n3);
   if (digit_array_mult(10, n1, 10, n2, 10, n3) < 0)
     return false;
@@ -206,6 +216,9 @@ bool basic_digit_test2() {
     digit_array_print(10, n2); printf(" = ");
     digit_array_print(10, n3); printf("\n");
   }
+  if (digit_array_compare(4, mult_cmp, 10, n3) != 0)
+    return false;
+  
   return true;
 }
 
