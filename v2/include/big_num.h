@@ -57,8 +57,4 @@ extern big_num big_three;
 extern big_num big_four;
 extern big_num big_five;
 
-int big_num_get_random(int num_bytes, byte* buf);
-bool init_big_num();
-void close_big_num();
-
 #endif

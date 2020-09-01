@@ -153,14 +153,14 @@ bool pkcs_verify(const char* hash_alg, byte* hash, int in_size, byte* in) {
   }
 }
 
-bool pkcs_embed(random_source& rs, int in_size, byte* in, int out_size, byte* out) {
+bool pkcs_embed(int in_size, byte* in, int out_size, byte* out) {
   int m = 0;
   int pad_size = 0;
 
   out[m++] = 0;
   out[m++] = 0x02;
   pad_size = out_size - (in_size + 3);
-  if (!rs.get_random_bytes(pad_size, &out[m]))
+  if (crypto_get_random_bytes(pad_size, &out[m]) != pad_size)
     return false;
   for (int i = 0; i < pad_size; i++) {
     if (out[m + i] == 0) out[m + i] = 1;

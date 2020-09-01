@@ -79,6 +79,18 @@ bool random_test() {
   return rs.close_random_source();
 }
 
+bool global_random_test() {
+
+  byte b[64];
+  int m = crypto_get_random_bytes(64, b);
+  if (m < 0)
+    return false;
+  if (FLAGS_print_all) {
+    print_bytes(m, b);
+  }
+  return true;
+}
+
 string test_hex_string1("012ab33");
 string test_hex_string2("a012ab334466557789");
 
@@ -400,6 +412,7 @@ TEST (convertutilities, base64_convert_test) {
 }
 TEST (randomutilities, random_test) {
   EXPECT_TRUE(random_test());
+  EXPECT_TRUE(global_random_test());
 }
 TEST (endian, endian_test) {
   EXPECT_TRUE(endian_test());
@@ -430,8 +443,15 @@ int main(int an, char** av) {
     printf("aes ni present\n");
   else
     printf("aes ni not present\n");
+
+  if (!init_crypto()) {
+    printf("init_crypto failed\n");
+    return 1;
+  }
+
   int result = RUN_ALL_TESTS();
   printf("%d tests\n", result);
-  printf("Tests complete\n");
+
+  close_crypto();
   return 0;
 }

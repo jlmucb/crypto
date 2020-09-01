@@ -446,7 +446,7 @@ bool test_pkcs() {
   }
   memset(out, 0, 256);
   memset(new_out, 0, 256);
-  if (!pkcs_embed(rs, 64, in, 256, out)) {
+  if (!pkcs_embed(64, in, 256, out)) {
     printf("PkcsEmbed failed\n");
     return false;
   }
@@ -527,7 +527,14 @@ int main(int an, char** av) {
   an = 1;
   ::testing::InitGoogleTest(&an, av);
 
+  if (!init_crypto()) {
+    printf("init_crypto failed\n");
+    return 1;
+  }
+
   int result = RUN_ALL_TESTS();
+
+  close_crypto();
   printf("%d tests\n", result);
   printf("Tests complete\n");
   return 0;

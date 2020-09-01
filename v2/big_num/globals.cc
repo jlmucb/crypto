@@ -68,22 +68,3 @@ uint64_t smallest_primes[] = {
     3613, 3617, 3623, 3631, 3637, 3643, 3659, 3671};
 int num_smallest_primes = sizeof(smallest_primes) / sizeof(uint64_t);
 
-bool big_num_initialized = false;
-random_source big_num_random_source;
-
-int big_num_get_random(int num_bytes, byte* buf) {
-  if (!big_num_initialized)
-    return -1;
-  return big_num_random_source.get_random_bytes(num_bytes, buf);
-}
-
-bool init_big_num() {
-  if (!big_num_random_source.start_random_source())
-    return false;
-  big_num_initialized = true;
-  return true;
-}
-
-void close_big_num() {
-  big_num_random_source.close_random_source();
-}

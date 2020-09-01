@@ -215,4 +215,8 @@ void print_cert_algorithm_message(cert_algorithm_message& m);
 void print_cert_properties_message(cert_properties_message& m);
 void print_certificate_message(certificate_message& m);
 
+int crypto_get_random_bytes(int num_bytes, byte* buf);
+bool init_crypto();
+void close_crypto();
+
 #endif

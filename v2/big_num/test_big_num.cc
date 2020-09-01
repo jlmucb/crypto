@@ -33,10 +33,7 @@ TEST(basic_tests, basic_digit_test1) {
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
 int main(int an, char** av) {
-  if (!init_big_num()) {
-    printf("init_big_num() failed\n");
-    return 1;
-  }
+
   uint64_t cycles_per_second = calibrate_rdtsc();
   printf("This computer has %llu cycles per second\n", cycles_per_second);
 
@@ -44,10 +41,15 @@ int main(int an, char** av) {
   an = 1;
   ::testing::InitGoogleTest(&an, av);
 
-  int result = RUN_ALL_TESTS();
-  close_big_num();
+  if (!init_crypto()) {
+    printf("Can't init_crypto\n");
+    return 1;
+  }
 
+  int result = RUN_ALL_TESTS();
   printf("%d Tests complete\n", result);
+
+  close_crypto();
   return 1;
 }
 

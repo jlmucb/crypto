@@ -344,14 +344,12 @@ done:
   return ret;
 }
 
-#define MAXPRIMETRYS 25000
-
 bool big_gen_prime(big_num& p, uint64_t num_bits, int prime_trys) {
   int i, j;
 
-  for (i = 0; i < MAXPRIMETRYS; i++) {
+  for (i = 0; i < prime_trys; i++) {
     p.zero_num();
-    if (big_num_get_random((num_bits + NBITSINBYTE -1) / NBITSINBYTE, (byte*)p.value_) < 0)
+    if (crypto_get_random_bytes((num_bits + NBITSINBYTE -1) / NBITSINBYTE, (byte*)p.value_) < 0)
       return false;
     p.value_[p.size_ - 1] |= (1ULL) << 63;
     p.value_[0] |= 1ULL;
@@ -426,9 +424,10 @@ bool big_is_prime(big_num& n) {
     if (r == 0ULL)
       return false;
   }
+  // Fix
   for (int j = 0; j < 20; j++) {
     random_a[j] = new big_num(20);
-    if (big_num_get_random(32, (byte*)random_a[j]->value_ptr()) < 0)
+    if (crypto_get_random_bytes(32, (byte*)random_a[j]->value_ptr()) < 0)
       return false;
     random_a[j]->normalize();
   }

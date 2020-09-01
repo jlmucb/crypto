@@ -784,6 +784,27 @@ int bytes_to_u64_array(string& b, int size_n, uint64_t* n) {
   return real_size_n;
 }
 
+bool global_crypto_initialized = false;
+random_source global_crypto_random_source;
+
+int crypto_get_random_bytes(int num_bytes, byte* buf) {
+  if (!global_crypto_initialized)
+    return -1;
+  return global_crypto_random_source.get_random_bytes(num_bytes, buf);
+}
+
+bool init_crypto() {
+  if (!global_crypto_random_source.start_random_source())
+    return false;
+  global_crypto_initialized = true;
+  return true;
+}
+
+void close_crypto() {
+  if (global_crypto_initialized)
+    global_crypto_random_source.close_random_source();
+}
+
 
 key_message* make_symmetrickey(const char* alg, const char* name, int bit_size,
                                const char* purpose, const char* not_before,

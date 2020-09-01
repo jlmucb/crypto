@@ -21,6 +21,6 @@
 #define _CRYPTO_PKCS_H__
 bool pkcs_encode(const char* hash_alg, byte* hash, int out_size, byte* out);
 bool pkcs_verify(const char* hash_alg, byte* hash, int in_size, byte* in);
-bool pkcs_embed(random_source& rs, int in_size, byte* in, int out_size, byte* out);
+bool pkcs_embed(int in_size, byte* in, int out_size, byte* out);
 bool pkcs_extract(int in_size, byte* in, int* out_size, byte* out);
 #endif
