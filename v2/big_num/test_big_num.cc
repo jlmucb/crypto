@@ -22,6 +22,13 @@
 #include "big_num.h"
 #include "intel_digit_arith.h"
 
+bool basic_digit_test1() {
+  return true;
+}
+
+TEST(basic_tests, basic_digit_test1) {
+  EXPECT_TRUE(basic_digit_test1());
+}
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
