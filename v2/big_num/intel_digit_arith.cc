@@ -26,6 +26,13 @@ int digit_array_real_size(int size_a, uint64_t* a) {
   return n + 1;
 }
 
+void digit_array_print(int size_a, uint64_t* a) {
+  int n = digit_array_real_size(size_a, a);
+
+  for (int j = (n - 1); j >= 0; j--)
+    printf("%016llx ", a[j]);
+}
+
 bool digit_array_is_zero(int size_a, uint64_t* a) {
   int i;
 
@@ -410,7 +417,7 @@ int digit_array_sub_from(int capacity_a, int size_a, uint64_t* a, int size_b,
   return digit_array_real_size(capacity_a, a);
 }
 
-// result = a*b.  returns size of result.  Error if <0
+// result = a*b.  returns size of result.  Error if < 0
 int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
                    int size_result, uint64_t* result) {
   // output is size_a+size_b or size_a+size_b-1 uint64_t elements
@@ -768,10 +775,10 @@ bool digit_array_division_algorithm(int size_a, uint64_t* a, int size_b,
   return true;
 }
 
-bool digit_convert_to_decimal(int size_a, uint64_t* n, string* s) {
+bool digit_convert_to_decimal(int size_n, uint64_t* n, string* s) {
   s->clear();
 
-  int  ns = digit_array_real_size(size_a, n);
+  int  ns = digit_array_real_size(size_n, n);
   uint64_t* t = new uint64_t[ns];
   if (t == nullptr)
     return false;
@@ -785,10 +792,12 @@ bool digit_convert_to_decimal(int size_a, uint64_t* n, string* s) {
 
   uint64_t q, r;
   while (ns > 0) {
-    if (t[ns] == 0ULL) {
+
+    if (t[ns - 1] == 0ULL) {
       ns--;
       continue;
     }
+   
     r = 0ULL;
     for (int j = (ns - 1); j >= 0; j--) {
       if (r == 0ULL) {
@@ -799,13 +808,10 @@ bool digit_convert_to_decimal(int size_a, uint64_t* n, string* s) {
         u64_div_step(r, t[j], 10, &q, &r) ;
         t[j] = q;
       }
-      if (q == 0)
-        ns--;
-      if (j == 0) {
-        s->append(1, '0' + r);
-      }
     }
+    s->append(1, '0' + r);
   }
+
   reverse_bytes_in_place(s->size(), (byte*) s->data());
   s->append(1, '\0');
 
@@ -813,4 +819,11 @@ done:
   delete []t;
   return true;
 }
+bool digit_convert_from_decimal(string& s, int size_n, uint64_t* n) {
+  digit_array_zero_num(size_n, n);
+// digit_array_add_to(int capacity_a, int size_a, uint64_t* a, int size_b,
+//                     uint64_t* b)
+// int digit_array_mult_by(int capacity_a, int size_a, uint64_t* a, uint64_t x) 
 
+  return true;
+}

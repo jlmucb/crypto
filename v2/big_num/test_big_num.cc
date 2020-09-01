@@ -31,13 +31,17 @@ bool hex_convert_test1() {
 }
 
 bool decimal_convert_test1() {
-  uint64_t n[1];
+  uint64_t n[2];
   n[0]= 301;
+  n[1]= 1;
   string s;
 
   if (!digit_convert_to_decimal(1, n, &s))
     return false;
   printf("n: %lld, %s\n", n[0], s.c_str());
+  if (!digit_convert_to_decimal(2, n, &s))
+    return false;
+  printf("n: %lld %lld, %s\n", n[1], n[0], s.c_str());
   printf("\n");
   return true;
 }
