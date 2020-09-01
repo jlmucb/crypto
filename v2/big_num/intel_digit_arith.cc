@@ -68,10 +68,10 @@ int digit_array_shift_up(int size_a, uint64_t* a, int shift, int size_r,
   int partial_word_shift = shift - word_shift * NBITSINUINT64;
   int i;
   uint64_t x = 0ULL;
+  int real_size_a = digit_array_real_size(size_a, a);
 
-  if ((size_a + word_shift) >= size_r)
+  if ((real_size_a + word_shift) >= size_r)
     return -1;
-
   digit_array_zero_num(size_r, r);
   for (i = (size_a - 1); i >= 0; i--) {
     x = a[i];
@@ -88,8 +88,9 @@ int digit_array_shift_down(int size_a, uint64_t* a, int shift, int size_r,
   int partial_word_shift = shift - word_shift * NBITSINUINT64;
   int i;
   uint64_t x = 0ULL;
+  int real_size_a = digit_array_real_size(size_a, a);
 
-  if ((size_a - word_shift - 1) >= size_r)
+  if ((real_size_a - word_shift - 1) >= size_r)
     return -1;
 
   digit_array_zero_num(size_r, r);
