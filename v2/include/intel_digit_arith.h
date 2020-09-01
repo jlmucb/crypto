@@ -20,6 +20,7 @@
 #define _INTEL_DIGIT_ARITH_H__
 
 int digit_array_real_size(int size_a, uint64_t* a);
+void digit_array_print(int size_a, uint64_t* a);
 bool digit_array_is_zero(int size_a, uint64_t* a);
 void digit_array_zero_num(int size_a, uint64_t* a);
 bool digit_array_copy(int size_a, uint64_t* a, int size_b, uint64_t* b);
@@ -55,4 +56,5 @@ void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
 bool digit_array_division_algorithm(int size_a, uint64_t* a, int size_b,
        uint64_t* b, int* size_q, uint64_t* q, int* size_r, uint64_t* r);
 bool digit_convert_to_decimal(int size_a, uint64_t* n, string* s);
+bool digit_convert_from_decimal(string& s, int size_n, uint64_t* n);
 #endif

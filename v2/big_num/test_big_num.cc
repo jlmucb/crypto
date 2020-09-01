@@ -22,11 +22,9 @@
 #include "big_num.h"
 #include "intel_digit_arith.h"
 
-bool basic_digit_test1() {
-  return true;
-}
+DEFINE_bool(print_all, false, "Print intermediate test computations");
 
-bool hex_convert_test1() {
+bool basic_digit_test1() {
   return true;
 }
 
@@ -35,26 +33,37 @@ bool decimal_convert_test1() {
   n[0]= 301;
   n[1]= 1;
   string s;
+  uint64_t m[3];
 
+  digit_array_zero_num(3, m);
   if (!digit_convert_to_decimal(1, n, &s))
     return false;
-  printf("n: %lld, %s\n", n[0], s.c_str());
+  if (!digit_convert_from_decimal(s, 2, m))
+    return false;
+  if (digit_array_compare(1, n, 2, m) != 0)
+    return false;
+  if (FLAGS_print_all)
+    printf("n: %lld, %s\n", n[0], s.c_str());
+
+  digit_array_zero_num(3, m);
   if (!digit_convert_to_decimal(2, n, &s))
     return false;
-  printf("n: %lld %lld, %s\n", n[1], n[0], s.c_str());
-  printf("\n");
+  if (!digit_convert_from_decimal(s, 3, m))
+    return false;
+  if (digit_array_compare(2, n, 3, m) != 0)
+    return false;
+
+  if (FLAGS_print_all) 
+    printf("n: %lld %lld, %s\n", n[1], n[0], s.c_str());
   return true;
 }
 
 TEST(basic_tests, basic_digit_test1) {
   EXPECT_TRUE(basic_digit_test1());
 }
-TEST(convert, convert) {
-  EXPECT_TRUE(hex_convert_test1());
+TEST(decimal, convert) {
   EXPECT_TRUE(decimal_convert_test1());
 }
-
-DEFINE_bool(print_all, false, "Print intermediate test computations");
 
 int main(int an, char** av) {
 

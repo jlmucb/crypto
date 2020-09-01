@@ -819,11 +819,19 @@ done:
   delete []t;
   return true;
 }
+
 bool digit_convert_from_decimal(string& s, int size_n, uint64_t* n) {
   digit_array_zero_num(size_n, n);
-// digit_array_add_to(int capacity_a, int size_a, uint64_t* a, int size_b,
-//                     uint64_t* b)
-// int digit_array_mult_by(int capacity_a, int size_a, uint64_t* a, uint64_t x) 
+  uint64_t digit;
 
+  const char *p = s.c_str();
+  while (*p != '\0') {
+    if (digit_array_mult_by(size_n, digit_array_real_size(size_n, n), n, 10ULL) < 0)
+      return false;
+    digit = (uint64_t)(*p - '0');
+    if (digit_array_add_to(size_n, digit_array_real_size(size_n, n), n, 1, &digit) < 0)
+      return false;
+    p++;
+  }
   return true;
 }
