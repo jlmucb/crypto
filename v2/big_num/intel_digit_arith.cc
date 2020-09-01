@@ -172,7 +172,7 @@ void u64_mult_step(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry) {
 //         rdx:rem
 //         rax: result
 void u64_div_step(uint64_t a, uint64_t b, uint64_t c, uint64_t* result,
-                   uint64_t* carry) {
+       uint64_t* carry) {
   asm volatile(
       "\tmovq   %[result], %%rcx\n"
       "\tmovq   %[carry], %%rbx\n"
@@ -189,7 +189,7 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c, uint64_t* result,
 
 //  carry_out:result= a+b+carry_in
 void u64_add_with_carry_step(uint64_t a, uint64_t b, uint64_t carry_in,
-                            uint64_t* result, uint64_t* carry_out) {
+       uint64_t* result, uint64_t* carry_out) {
   asm volatile(
       "\tmovq   %[result], %%rcx\n"
       "\tmovq   %[carry_out], %%rbx\n"
@@ -233,8 +233,7 @@ void u64_sub_with_borrow_step(uint64_t a, uint64_t b, uint64_t borrow_in,
 
 //  carry_out:result= a*b+carry1+carry2
 voidu64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
-                             uint64_t carry2, uint64_t* result,
-                             uint64_t* carry_out) {
+      uint64_t carry2, uint64_t* result, uint64_t* carry_out) {
   asm volatile(
       "\tmovq   %[result], %%rcx\n"
       "\tmovq   %[carry_out], %%rbx\n"
@@ -258,7 +257,7 @@ voidu64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
 
 // result = a+b.  returns size of result.  Error if <0
 int digit_array_add(int size_a, uint64_t* a, int size_b, uint64_t* b,
-                  int size_result, uint64_t* result) {
+      int size_result, uint64_t* result) {
   if (size_b > size_a)
     return digit_array_add(size_b, b, size_a, a, size_result, result);
   if (size_result < size_a)
@@ -410,7 +409,7 @@ int digit_array_sub_from(int capacity_a, int size_a, uint64_t* a, int size_b,
 
   return digit_array_real_size(capacity_a, a);
 }
-#define FASTMULT
+
 // result = a*b.  returns size of result.  Error if <0
 int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
                    int size_result, uint64_t* result) {
@@ -420,6 +419,7 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
   }
   digit_array_ZeroNum(size_result, result);
 
+#define FASTMULT
 #ifdef FASTMULT
   uint64_t carry = 0;
   uint64_t size_A = (uint64_t)size_a;
@@ -466,7 +466,7 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
       "\tcmpq   %[size_A], %%r11\n"
       "\tjl     1b\n"
       ::[carry] "m"(carry), [in1] "g"(a), [in2] "g"(b), [size_A] "g"(size_A),
-	[size_B] "g"(size_B), [result] "g"(result)
+        [size_B] "g"(size_B), [result] "g"(result)
       : "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r11", "%r12", "%r13",
         "%r14", "%r15");
 #else
@@ -662,6 +662,7 @@ bool digit_array_short_division_algorithm(int size_a, uint64_t* a, uint64_t b,
 // *est-2<= q <= *est
 // note b1>0 and (a1 a2)_b >= b1_b, b= 2^64
 void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
+                       uint64_t b2, uint64_t* est) {
   uint64_t n1 = 0ULL;
   uint64_t n2 = 0ULL;
   uint64_t d1;
@@ -694,8 +695,7 @@ void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
 
 // q= a/b. r is remainder.
 bool digit_array_division_algorithm(int size_a, uint64_t* a, int size_b,
-                                 uint64_t* b, int* size_q, uint64_t* q,
-                                 int* size_r, uint64_t* r) {
+       uint64_t* b, int* size_q, uint64_t* q, int* size_r, uint64_t* r) {
   int real_size_a = digit_array_real_size(size_a, a);
   int real_size_b = digit_array_real_size(size_b, b);
 

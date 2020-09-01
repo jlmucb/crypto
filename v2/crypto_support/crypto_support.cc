@@ -595,7 +595,7 @@ void close_log() {
   logging_descriptor.close();
 }
 
-uint64_t readRdtsc() {
+uint64_t read_rdtsc() {
   uint64_t out;
   uint64_t* ptr_out = &out;
 
@@ -610,16 +610,16 @@ uint64_t readRdtsc() {
   return out;
 }
 
-uint64_t calibrateRdtsc() {
+uint64_t calibrate_rdtsc() {
   time_t start, end;
   uint64_t start_cycles, end_cycles;
   uint64_t cps;
 
   for (;;) {
-    start_cycles = readRdtsc();
+    start_cycles = read_rdtsc();
     time(&start);
     sleep(2);
-    end_cycles = readRdtsc();
+    end_cycles = read_rdtsc();
     time(&end);
     double delta = difftime(end, start);
     if (start_cycles < end_cycles) {

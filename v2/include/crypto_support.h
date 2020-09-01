@@ -147,8 +147,8 @@ bool have_intel_aes_ni();
 bool init_log(const char* log_file);
 void close_log();
                         
-uint64_t readRdtsc();
-uint64_t calibrateRdtsc();
+uint64_t read_rdtsc();
+uint64_t calibrate_rdtsc();
 
 class file_util {
  public:

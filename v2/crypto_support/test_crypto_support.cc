@@ -420,7 +420,7 @@ int main(int an, char** av) {
   an = 1;
   ::testing::InitGoogleTest(&an, av);
 
-  uint64_t cycles_per_second = calibrateRdtsc();
+  uint64_t cycles_per_second = calibrate_rdtsc();
   printf("This computer runs at %llu cycles per second\n", cycles_per_second);
   if (have_intel_rd_rand())
     printf("rd rand present\n");
