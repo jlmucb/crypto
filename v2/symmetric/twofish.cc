@@ -17,7 +17,6 @@
 // File: twofish.cc
 
 #include "crypto_support.h"
-#include "util.h"
 #include "symmetric_cipher.h"
 #include "twofish.h"
 
