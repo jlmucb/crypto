@@ -266,9 +266,11 @@ void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
 // result = a+b.  returns size of result.  Error if <0
 int digit_array_add(int size_a, uint64_t* a, int size_b, uint64_t* b,
       int size_result, uint64_t* result) {
-  if (size_b > size_a)
-    return digit_array_add(size_b, b, size_a, a, size_result, result);
-  if (size_result < size_a)
+  int real_size_a = digit_array_real_size(size_a, a);
+  int real_size_b = digit_array_real_size(size_b, b);
+  if (real_size_b > real_size_a)
+    return digit_array_add(real_size_b, b, real_size_a, a, size_result, result);
+  if (size_result <= real_size_a)
     return -1;
 
   uint64_t carry_in = 0ULL;
@@ -299,10 +301,13 @@ int digit_array_sub(int size_a, uint64_t* a, int size_b, uint64_t* b,
   uint64_t borrow_in = 0;
   uint64_t borrow_out = 0;
 
-  // note: size_a>=size_b
-  if (size_a > size_result) {
+  int real_size_a = digit_array_real_size(size_a, a);
+  int real_size_b = digit_array_real_size(size_b, b);
+  if (real_size_a > size_result) {
     return -1;
   }
+  if (digit_array_compare(real_size_a, a, real_size_b, b) < 0)
+    return -1;
 
   int i;
   digit_array_zero_num(size_result, result);
@@ -422,16 +427,17 @@ int digit_array_sub_from(int capacity_a, int size_a, uint64_t* a, int size_b,
 int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
                    int size_result, uint64_t* result) {
   // output is size_a+size_b or size_a+size_b-1 uint64_t elements
-  if ((size_a + size_b) > size_result) {
+  int real_size_a = digit_array_real_size(size_a, a);
+  int real_size_b = digit_array_real_size(size_b, b);
+  if ((real_size_a + real_size_b) > size_result) {
     return -1;
   }
   digit_array_zero_num(size_result, result);
 
-#define FASTMULT
+// Fix
+//#define FASTMULT
 #ifdef FASTMULT
   uint64_t carry = 0;
-  uint64_t size_A = (uint64_t)size_a;
-  uint64_t size_B = (uint64_t)size_b;
 
   //  Caller ensures out is large enough
   //    r8 : current op1 location
@@ -465,16 +471,16 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
       "\tmovq   %%rdx, %%r14\n"
       "\taddq   $1, %%r12\n"
       "\taddq   $1, %%r13\n"
-      "\tcmpq   %[size_B], %%r12\n"
+      "\tcmpq   %[real_size_b], %%r12\n"
       "\tjl     2b\n"
 
       "\tmovq   %%r14, (%%r15, %%r13, 8)\n"
       "\txorq   %%r14, %%r14\n"
       "\naddq   $1, %%r11\n"
-      "\tcmpq   %[size_A], %%r11\n"
+      "\tcmpq   %[real_size_a], %%r11\n"
       "\tjl     1b\n"
-      ::[carry] "m"(carry), [in1] "g"(a), [in2] "g"(b), [size_A] "g"(size_A),
-        [size_B] "g"(size_B), [result] "g"(result)
+      ::[carry] "m"(carry), [in1] "g"(a), [in2] "g"(b), [real_size_a] "g"(real_size_a),
+        [real_size_b] "g"(real_size_b), [result] "g"(result)
       : "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r11", "%r12", "%r13",
         "%r14", "%r15");
 #else
@@ -482,9 +488,9 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
   uint64_t carry_in = 0;
   uint64_t carry_out = 0;
 
-  for (i = 0; i < size_a; i++) {
+  for (i = 0; i < real_size_a; i++) {
     carry_in = 0;
-    for (j = 0; j < size_b; j++) {
+    for (j = 0; j < real_size_b; j++) {
       carry_out = 0;
      u64_mult_with_carry_step(a[i], b[j], carry_in, result[i + j],
                               &result[i + j], &carry_out);

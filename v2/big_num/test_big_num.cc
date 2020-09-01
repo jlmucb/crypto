@@ -30,6 +30,7 @@ bool basic_digit_test1() {
   uint64_t d3[10];
   uint64_t d4[10];
   uint64_t d5[10];
+
   digit_array_zero_num(10, d1);
   digit_array_zero_num(10, d2);
   if (!digit_array_is_zero(10, d1))
@@ -101,15 +102,11 @@ void u64_sub_with_borrow_step(uint64_t a, uint64_t b, uint64_t borrow_in,
                              uint64_t* result, uint64_t* borrow_out);
 void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
                              uint64_t carry2, uint64_t* result, uint64_t* carry_out);
-int digit_array_add(int size_a, uint64_t* a, int size_b, uint64_t* b,
-                  int size_result, uint64_t* result);
-int digit_array_sub(int size_a, uint64_t* a, int size_b, uint64_t* b,
-                    int size_result, uint64_t* result);
+ */
+/*
 int digit_array_add_to(int capacity_a, int size_a, uint64_t* a, int size_b,
                     uint64_t* b);
 int digit_array_sub_from(int capacity_a, int size_a, uint64_t* a, int size_b, uint64_t* b);
-int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
-                   int size_result, uint64_t* result);
 int digit_array_square(int size_a, uint64_t* a, int size_result, uint64_t* result);
 int digit_array_mult_by(int capacity_a, int size_a, uint64_t* a, uint64_t x);
 bool digit_array_short_division_algorithm(int size_a, uint64_t* a, uint64_t b,
@@ -120,6 +117,95 @@ bool digit_array_division_algorithm(int size_a, uint64_t* a, int size_b,
        uint64_t* b, int* size_q, uint64_t* q, int* size_r, uint64_t* r);
 */
 bool basic_digit_test2() {
+  uint64_t n1[10];
+  uint64_t n2[10];
+  uint64_t n3[10];
+  uint64_t n4[10];
+  uint64_t n5[10];
+  uint64_t one[1];
+  one[0] = 1ULL;
+  uint64_t two[1];
+  two[0] = 2ULL;
+  
+  digit_array_zero_num(10, n1);
+  digit_array_zero_num(10, n2);
+
+  digit_array_zero_num(10, n3);
+  if (digit_array_add(10, n1, 10, n2, 10, n3) < 0)
+    return false;
+  if (!digit_array_is_zero(10, n3))
+    return false;
+  digit_array_zero_num(10, n3);
+  if (digit_array_sub(10, n1, 10, n2, 10, n3) < 0)
+    return false;
+  if (!digit_array_is_zero(10, n3))
+    return false;
+  digit_array_zero_num(10, n3);
+  if (digit_array_mult(10, n1, 10, n2, 10, n3) < 0)
+    return false;
+  if (!digit_array_is_zero(10, n3))
+    return false;
+
+  n1[0] = 1;
+  digit_array_zero_num(10, n3);
+  if (digit_array_add(10, n1, 10, n2, 10, n3) < 0)
+    return false;
+  if (digit_array_compare(1, one, 10, n3) != 0)
+    return false;
+  digit_array_zero_num(10, n3);
+  if (digit_array_sub(10, n1, 10, n2, 10, n3) < 0)
+    return false;
+  if (digit_array_compare(1, one, 10, n3) != 0)
+    return false;
+  digit_array_zero_num(10, n3);
+  if (digit_array_mult(10, n1, 10, n2, 10, n3) < 0)
+    return false;
+  if (!digit_array_is_zero(10, n3))
+    return false;
+
+  n2[0] = 1;
+  digit_array_zero_num(10, n3);
+  if (digit_array_add(10, n1, 10, n2, 10, n3) < 0)
+    return false;
+  if (digit_array_compare(1, two, 10, n3) != 0)
+    return false;
+  digit_array_zero_num(10, n3);
+  if (digit_array_sub(10, n1, 10, n2, 10, n3) < 0)
+    return false;
+  if (!digit_array_is_zero(10, n3))
+    return false;
+  digit_array_zero_num(10, n3);
+  if (digit_array_mult(10, n1, 10, n2, 10, n3) < 0)
+    return false;
+  if (digit_array_compare(1, one, 10, n3) != 0)
+    return false;
+
+  n1[1] = 0xffffffffffff07;
+  n2[1] = 0xffffffffffff05;
+  digit_array_zero_num(10, n3);
+  if (digit_array_add(10, n1, 10, n2, 10, n3) < 0)
+    return false;
+  if (FLAGS_print_all) {
+    digit_array_print(10, n1); printf(" + ");
+    digit_array_print(10, n2); printf(" = ");
+    digit_array_print(10, n3); printf("\n");
+  }
+  digit_array_zero_num(10, n3);
+  if (digit_array_sub(10, n1, 10, n2, 10, n3) < 0)
+    return false;
+  if (FLAGS_print_all) {
+    digit_array_print(10, n1); printf(" - ");
+    digit_array_print(10, n2); printf(" = ");
+    digit_array_print(10, n3); printf("\n");
+  }
+  digit_array_zero_num(10, n3);
+  if (digit_array_mult(10, n1, 10, n2, 10, n3) < 0)
+    return false;
+  if (FLAGS_print_all) {
+    digit_array_print(10, n1); printf(" * ");
+    digit_array_print(10, n2); printf(" = ");
+    digit_array_print(10, n3); printf("\n");
+  }
   return true;
 }
 
