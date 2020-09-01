@@ -40,7 +40,7 @@ int main(int an, char** av) {
   int result = RUN_ALL_TESTS();
   close_big_num();
 
-  printf("Tests complete\n");
+  printf("%d Tests complete\n", result);
   return 1;
 }
 

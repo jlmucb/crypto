@@ -15,7 +15,7 @@
 
 #include "crypto_support.h"
 #include "big_num.h"
-#include "intel64_arith.h"
+#include "intel_digit_arith.h"
 
 //  num= value_[0]+ 2^64 value_[1] + ... + 2^(64n) value_[n]
 //  bool      sign_;  // true: negative
@@ -90,7 +90,7 @@ bool big_num::is_negative() { return sign_; }
 void big_num::toggle_sign() { sign_ = !sign_; }
 
 void big_num::normalize() {
-  if (IsZero()) {
+  if (is_zero()) {
     size_ = 1;
     sign_ = false;
     return;
@@ -109,7 +109,7 @@ bool big_num::copy_from(big_num& old) {
     return false;
   digit_array_zero_num(capacity_, value_);
   sign_ = old.sign_;
-  if (!digit_array_copy_(old.size_, old.value_, capacity_, value_))
+  if (!digit_array_copy(old.size_, old.value_, capacity_, value_))
     return false;
   size_ = digit_array_real_size(capacity_, value_);
   return true;
@@ -120,7 +120,7 @@ bool big_num::copy_to(big_num& other) {
     return false;
   digit_array_zero_num(other.capacity_, other.value_);
   other.sign_ = sign_;
-  if (!digit_array_copy_(size_, value_, other.capacity_, other.value_))
+  if (!digit_array_copy(size_, value_, other.capacity_, other.value_))
     return false;
   other.size_ = digit_array_real_size(other.capacity_, other.value_);
   return true;

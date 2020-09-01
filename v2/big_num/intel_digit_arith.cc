@@ -232,7 +232,7 @@ void u64_sub_with_borrow_step(uint64_t a, uint64_t b, uint64_t borrow_in,
 }
 
 //  carry_out:result= a*b+carry1+carry2
-voidu64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
+void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
       uint64_t carry2, uint64_t* result, uint64_t* carry_out) {
   asm volatile(
       "\tmovq   %[result], %%rcx\n"
@@ -299,7 +299,7 @@ int digit_array_sub(int size_a, uint64_t* a, int size_b, uint64_t* b,
   int i;
   digit_array_zero_num(size_result, result);
   for (i = 0; i < size_b; i++) {
-    u64_subWithBorrowStep(a[i], b[i], borrow_in, &result[i], &borrow_out);
+    u64_sub_with_borrow_step(a[i], b[i], borrow_in, &result[i], &borrow_out);
     borrow_in = borrow_out;
   }
   for (; i < size_a; i++) {
@@ -417,7 +417,7 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
   if ((size_a + size_b) > size_result) {
     return -1;
   }
-  digit_array_ZeroNum(size_result, result);
+  digit_array_zero_num(size_result, result);
 
 #define FASTMULT
 #ifdef FASTMULT

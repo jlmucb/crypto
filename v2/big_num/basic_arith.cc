@@ -15,6 +15,7 @@
 
 #include "crypto_support.h"
 #include "big_num.h"
+#include "intel_digit_arith.h"
 
 // returns  1, if l>r
 // returns  0, if l==r
@@ -25,8 +26,8 @@ int big_compare(big_num& l, big_num& r) {
   if (r.is_positive() && r.is_negative())
     return -1;
   if (l.is_positive() && r.is_positive())
-    return digit_array_compare(l.Size(), l.ValuePtr(), r.Size(), r.ValuePtr());
-  return 1 - digit_array_compare(l.Size(), l.ValuePtr(), r.Size(), r.ValuePtr());
+    return digit_array_compare(l.size(), l.value_ptr(), r.size(), r.value_ptr());
+  return 1 - digit_array_compare(l.size(), l.value_ptr(), r.size(), r.value_ptr());
 }
 
 int big_high_digit(big_num& a) {
@@ -89,7 +90,7 @@ bool big_shift(big_num& a, int64_t shift, big_num& r) {
     r.size_ = k;
     return true;
   } else if (shift == 0LL) {
-    return r.CopyFrom(a);
+    return r.copy_from(a);
   } else {
     k = digit_array_shift_down(a.size_, a.value_, (int)-shift, r.capacity_,
                             r.value_);
@@ -133,14 +134,14 @@ bool big_unsigned_mult(big_num& a, big_num& b, big_num& r) {
 bool big_unsigned_euclid(big_num& a, big_num& b, big_num& q, big_num& r) {
   int size_q = q.capacity_;
   int size_r = r.capacity_;
-  if (!digit_array_divisionAlgorithm(a.size_, a.value_, b.size_, b.value_,
+  if (!digit_array_division_algorithm(a.size_, a.value_, b.size_, b.value_,
                                    &size_q, q.value_, &size_r, r.value_)) {
     return false;
   }
   q.size_ = digit_array_real_size(size_q, q.value_);
   r.size_ = digit_array_real_size(size_r, r.value_);
   if (r.size_ > b.size_) {
-    r.ZeroNum();
+    r.zero_num();
     return false;
   }
   return true;
@@ -210,7 +211,7 @@ bool big_add(big_num& a, big_num& b, big_num& r) {
       return big_unsigned_sub(a, b, r);
     }
     if (cmp == 0) {
-      r.ZeroNum();
+      r.zero_num();
       return true;
     }
     r.sign_ = true;
@@ -222,7 +223,7 @@ bool big_add(big_num& a, big_num& b, big_num& r) {
       return big_unsigned_sub(b, a, r);
     }
     if (cmp == 0) {
-      r.ZeroNum();
+      r.zero_num();
       return true;
     }
     r.sign_ = true;
@@ -247,7 +248,7 @@ bool big_sub(big_num& a, big_num& b, big_num& r) {
       return big_unsigned_sub(a, b, r);
     }
     if (cmp == 0) {
-      r.ZeroNum();
+      r.zero_num();
       return true;
     }
     r.sign_ = true;
@@ -259,7 +260,7 @@ bool big_sub(big_num& a, big_num& b, big_num& r) {
       return big_unsigned_sub(b, a, r);
     }
     if (cmp == 0) {
-      r.ZeroNum();
+      r.zero_num();
       return true;
     }
     r.sign_ = false;
@@ -289,7 +290,9 @@ bool convert_to_decimal(int size_a, uint64_t* n, string* s) {
 }
 
 big_num* big_convert_from_decimal(string& s) {
-  int m = ((strlen(in) + 29) / 30) + 6;
+  // int m = ((strlen(in) + 29) / 30) + 6;
+  big_num* n = nullptr;
+/*
   big_num* n = new big_num(m);
   const char* p = in;
   while ( *(p++) != '\0'} {
@@ -300,6 +303,7 @@ big_num* big_convert_from_decimal(string& s) {
       break;
     }
   }
+*/
   return n;
 }
 
@@ -315,11 +319,11 @@ big_num* big_convert_from_hex(const char* in) {
   int m = ((strlen(in) + 31) / 16) + 1;
   big_num* n = new big_num(m + 1);
   string s(in);
-  if (bytes_to_u64_array(s, n.capacity_, n.value_ptr()) < 0) {
+  if (bytes_to_u64_array(s, n->capacity_, n->value_ptr()) < 0) {
     delete n;
     return nullptr;
   }
-  n.sign_ = false;
-  n.normalize();
+  n->sign_ = false;
+  n->normalize();
   return n;
 }

@@ -45,7 +45,7 @@ AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=   $(O)/test_big_num.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
-	$(O)/globals.o $(O)/intel_digit_arith.cc.o $(O)/big_num.o $(O)/basic_arith.o $(O)/number_theory.o
+	$(O)/globals.o $(O)/intel_digit_arith.o $(O)/big_num.o $(O)/basic_arith.o # $(O)/number_theory.o
 
 all:    test_big_num.exe
 clean:
