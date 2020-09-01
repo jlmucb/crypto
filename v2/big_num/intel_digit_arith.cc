@@ -767,3 +767,50 @@ bool digit_array_division_algorithm(int size_a, uint64_t* a, int size_b,
   *size_r = nr;
   return true;
 }
+
+bool digit_convert_to_decimal(int size_a, uint64_t* n, string* s) {
+  s->clear();
+
+  int  ns = digit_array_real_size(size_a, n);
+  uint64_t* t = new uint64_t[ns];
+  if (t == nullptr)
+    return false;
+  for (int j = 0; j < ns; j++)
+    t[j] = n[j];
+
+  if (ns == 1 && t[0] == 0ULL) {
+    s->append(1, '0');
+    goto done;
+  }
+
+  uint64_t q, r;
+  while (ns > 0) {
+    if (t[ns] == 0ULL) {
+      ns--;
+      continue;
+    }
+    r = 0ULL;
+    for (int j = (ns - 1); j >= 0; j--) {
+      if (r == 0ULL) {
+        q = t[j] / 10;
+        r = t[j] - q * 10;
+        t[j] = q;
+      } else {
+        u64_div_step(r, t[j], 10, &q, &r) ;
+        t[j] = q;
+      }
+      if (q == 0)
+        ns--;
+      if (j == 0) {
+        s->append(1, '0' + r);
+      }
+    }
+  }
+  reverse_bytes_in_place(s->size(), (byte*) s->data());
+  s->append(1, '\0');
+
+done:
+  delete []t;
+  return true;
+}
+

@@ -54,4 +54,5 @@ void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
                        uint64_t b2, uint64_t* est);
 bool digit_array_division_algorithm(int size_a, uint64_t* a, int size_b,
        uint64_t* b, int* size_q, uint64_t* q, int* size_r, uint64_t* r);
+bool digit_convert_to_decimal(int size_a, uint64_t* n, string* s);
 #endif

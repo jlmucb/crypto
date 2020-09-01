@@ -26,8 +26,28 @@ bool basic_digit_test1() {
   return true;
 }
 
+bool hex_convert_test1() {
+  return true;
+}
+
+bool decimal_convert_test1() {
+  uint64_t n[1];
+  n[0]= 301;
+  string s;
+
+  if (!digit_convert_to_decimal(1, n, &s))
+    return false;
+  printf("n: %lld, %s\n", n[0], s.c_str());
+  printf("\n");
+  return true;
+}
+
 TEST(basic_tests, basic_digit_test1) {
   EXPECT_TRUE(basic_digit_test1());
+}
+TEST(convert, convert) {
+  EXPECT_TRUE(hex_convert_test1());
+  EXPECT_TRUE(decimal_convert_test1());
 }
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");

@@ -285,11 +285,6 @@ bool big_square(big_num& a, big_num& r) {
   return big_unsigned_square(a, r);
 }
 
-bool convert_to_decimal(int size_a, uint64_t* n, string* s) {
-// u64_div_step(uint64_t a, uint64_t b, uint64_t c, uint64_t* result, uint64_t* carry) 
-  return false;
-}
-
 big_num* big_convert_from_decimal(string& s) {
   // int m = ((strlen(in) + 29) / 30) + 6;
   big_num* n = nullptr;

@@ -416,8 +416,8 @@ bool big_is_prime(big_num& n) {
     if (n.size_ == 1 && smallest_primes[i] >= n.value_[0])
       return true;
     k = n.size_;
-    m = digit_array_short_division_algorithm(
-        n.size_, n.value_, (uint64_t)smallest_primes[i], &k, q, &r);
+    m = digit_array_short_division_algorithm( n.size_, n.value_,
+               (uint64_t)smallest_primes[i], &k, q, &r);
     if (m < 0) {
       return false;
     }
