@@ -16,6 +16,7 @@
 #include "crypto_support.h"
 #include "big_num.h"
 #include "intel_digit_arith.h"
+#include "big_num_functions.h"
 
 // returns  1, if l>r
 // returns  0, if l==r

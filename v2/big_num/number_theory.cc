@@ -1,5 +1,5 @@
 //
-// copy_right 2014 John Manferdelli, All Rights Reserved.
+// Copyright 2020 John Manferdelli, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 
 #include "crypto_support.h"
 #include "big_num.h"
+#include "intel_digit_arith.h"
+#include "big_num_functions.h"
 
 bool big_extended_gcd(big_num& a, big_num& b, big_num& x, big_num& y, big_num& g) {
   big_num* a_coeff[3] = {nullptr, nullptr, nullptr};
@@ -39,8 +41,8 @@ bool big_extended_gcd(big_num& a, big_num& b, big_num& x, big_num& y, big_num& g
   }
 
   a_coeff[0]->copy_from(big_one);
-  b_coeff[0]->copy_from(big_Zero);
-  a_coeff[1]->copy_from(big_Zero);
+  b_coeff[0]->copy_from(big_zero);
+  a_coeff[1]->copy_from(big_zero);
   b_coeff[1]->copy_from(big_one);
   a.copy_to(*c[0]);
   b.copy_to(*c[1]);
@@ -60,8 +62,8 @@ bool big_extended_gcd(big_num& a, big_num& b, big_num& x, big_num& y, big_num& g
     r.copy_to(*c[next]);
     big_mult(q, *a_coeff[current], t1);
     big_mult(q, *b_coeff[current], t2);
-    big_Sub(*a_coeff[old], t1, *a_coeff[next]);
-    big_Sub(*b_coeff[old], t2, *b_coeff[next]);
+    big_sub(*a_coeff[old], t1, *a_coeff[next]);
+    big_sub(*b_coeff[old], t2, *b_coeff[next]);
     old = (old + 1) % 3;
     current = (current + 1) % 3;
     next = (next + 1) % 3;
@@ -141,7 +143,7 @@ bool big_mod_normalize(big_num& a, big_num& m) {
   if (a.sign_) {
     if (!big_unsigned_euclid(a, m, t1, t2))
       return false;
-    if (!big_unsigned_addTo(t1, big_one))
+    if (!big_unsigned_add_to(t1, big_one))
       return false;
     t2.zero_num();
     if (!big_unsigned_mult(t1, m, t2))
@@ -157,9 +159,9 @@ bool big_mod_normalize(big_num& a, big_num& m) {
   if (big_compare(a, m) >= 0) {
     if (!big_unsigned_euclid(a, m, t1, t2))
       return false;
-    t2.Normalize();
+    t2.normalize();
     a.copy_from(t2);
-    a.Normalize();
+    a.normalize();
   }
   return true;
 }
@@ -183,7 +185,7 @@ bool big_mod_add(big_num& a, big_num& b, big_num& m, big_num& r) {
 bool big_mod_neg(big_num& a, big_num& m, big_num& r) {
   if (!a.copy_to(r))
     return false;
-  r.ToggleSign();
+  r.toggle_sign();
   if (!big_mod_normalize(r, m))
     return false;
   return true;
@@ -196,7 +198,7 @@ bool big_mod_sub(big_num& a, big_num& b, big_num& m, big_num& r) {
   if (!big_mod_normalize(b, m)) {
     return false;
   }
-  if (!big_Sub(a, b, r))
+  if (!big_sub(a, b, r))
     return false;
   return big_mod_normalize(r, m);
 }
@@ -220,12 +222,6 @@ bool check_big_mod_mult(big_num& ab, big_num& m, big_num& r) {
   }
   if (big_compare(ab, nr) != 0) {
     printf("check_big_mod_mult failed\n");
-    printf("ab: ");
-    PrintNumToConsole(ab, 16ULL);
-    printf("\n");
-    printf("nr: ");
-    PrintNumToConsole(nr, 16ULL);
-    printf("\n");
     return false;
   }
   return true;
@@ -350,51 +346,26 @@ done:
 
 #define MAXPRIMETRYS 25000
 
-bool big_gen_prime(big_num& p, uint64_t num_bits) {
+bool big_gen_prime(big_num& p, uint64_t num_bits, int prime_trys) {
   int i, j;
 
   for (i = 0; i < MAXPRIMETRYS; i++) {
     p.zero_num();
-    if (!GetCryptoRand(num_bits, (byte*)p.value_)) {
+    if (big_num_get_random((num_bits + NBITSINBYTE -1) / NBITSINBYTE, (byte*)p.value_) < 0)
       return false;
-    }
     p.value_[p.size_ - 1] |= (1ULL) << 63;
     p.value_[0] |= 1ULL;
-    p.Normalize();
+    p.normalize();
     for (j = 0; j < 250; j++, i++) {
       if (big_is_prime(p)) {
         return true;
       }
-      if (!big_unsigned_addTo(p, big_Two)) {
+      if (!big_unsigned_add_to(p, big_two)) {
         return false;
       }
     }
   }
   return false;
-}
-
-bool rands_avail = false;
-big_num* random_nums[40];
-
-bool FillRandom(int n, big_num** random_array) {
-  int i;
-
-  if (n > 20)
-    return false;
-
-  if (!rands_avail) {
-    random_nums[0] = new big_num(5, 2ULL);
-    for (i = 0; i < 19; i++) {
-      random_nums[i + 1] = new big_num(5, 2ULL + (uint64_t)(19 * i));
-      random_nums[i + 1]->Normalize();
-    }
-    rands_avail = true;
-  }
-  for (i = 0; i < 20; i++) {
-    random_array[i] = random_nums[i];
-  }
-
-  return true;
 }
 
 bool big_miller_rabin(big_num& n, big_num** random_a, int trys) {
@@ -406,7 +377,7 @@ bool big_miller_rabin(big_num& n, big_num** random_a, int trys) {
   int j;
   int shift;
 
-  if (!big_Sub(n, big_one, n_minus_1))
+  if (!big_sub(n, big_one, n_minus_1))
     return false;
   shift = big_max_power_of_two_dividing(n_minus_1);
   if (shift > 0) {
@@ -417,7 +388,7 @@ bool big_miller_rabin(big_num& n, big_num** random_a, int trys) {
     y.zero_num();
     if (!big_mod_exp(*random_a[i], odd_part_n_minus_1, n, y))
       return false;
-    if (big_compare(y, big_one) == 0 || big_Compare(y, n_minus_1) == 0)
+    if (big_compare(y, big_one) == 0 || big_compare(y, n_minus_1) == 0)
       continue;
     for (j = 0; j < shift; j++) {
       z.zero_num();
@@ -455,10 +426,13 @@ bool big_is_prime(big_num& n) {
     if (r == 0ULL)
       return false;
   }
-  if (!FillRandom(20, random_a)) {
-    return false;
+  for (int j = 0; j < 20; j++) {
+    random_a[j] = new big_num(20);
+    if (big_num_get_random(32, (byte*)random_a[j]->value_ptr()) < 0)
+      return false;
+    random_a[j]->normalize();
   }
-  return big_miller_rabin(n, random_a);
+  return big_miller_rabin(n, random_a, 20);
 }
 
 bool big_mod_is_square(big_num& n, big_num& p) {
@@ -469,7 +443,7 @@ bool big_mod_is_square(big_num& n, big_num& p) {
   uint64_t unused;
   int size_e;
 
-  big_Sub(p, big_one, p_minus_1);
+  big_sub(p, big_one, p_minus_1);
   size_e = digit_array_real_size(p_minus_1.size_, p_minus_1.value_);
   int k = digit_array_short_division_algorithm(p_minus_1.size_, p_minus_1.value_,
                                            2ULL, &size_e, e.value_, &unused);
@@ -550,7 +524,7 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& s) {
   }
   n.value_[0] = 2ULL;
   while (!big_mod_is_square(n, p)) {
-    if (!big_unsigned_addTo(n, big_one)) {
+    if (!big_unsigned_add_to(n, big_one)) {
       return false;
     }
   }
@@ -663,7 +637,7 @@ bool big_mod_square_root(big_num& n, big_num& p, big_num& r) {
       // if(b==1) x= a^((p+3)/8) (mod p)
       p_temp.zero_num();
       t1.zero_num();
-      if (!big_unsigned_add(p, big_Three, p_temp)) {
+      if (!big_unsigned_add(p, big_three, p_temp)) {
         return false;
       }
       if (!big_shift(p_temp, -3, t1)) {
@@ -678,7 +652,7 @@ bool big_mod_square_root(big_num& n, big_num& p, big_num& r) {
       t3.zero_num();
       p_temp.zero_num();
       //  otherwise, x= (2a)(4a)^((p-5)/8)
-      if (!big_unsigned_sub(p, big_Five, p_temp)) {
+      if (!big_unsigned_sub(p, big_five, p_temp)) {
         return false;
       }
       if (!big_shift(p_temp, -3, t1)) {
@@ -772,7 +746,7 @@ bool big_mont_params(big_num& m, int r, big_num& m_prime) {
   if (!big_mod_normalize(neg_m_prime, R)) {
     return false;
   }
-  if (!big_Sub(R, neg_m_prime, m_prime)) {
+  if (!big_sub(R, neg_m_prime, m_prime)) {
     return false;
   }
   return true;
@@ -803,7 +777,7 @@ bool big_mont_reduce(big_num& a, int r, big_num& m, big_num& m_prime,
   int l = r - (k * NBITSINUINT64);
   u = (0xffffffffffffffffULL) >> (NBITSINUINT64 - l);
   t.value_[k] = t.value_[k] & u;
-  t.Normalize();
+  t.normalize();
 
   if (!big_mult(t, m, w)) {
     return false;
@@ -885,13 +859,11 @@ bool big_mont_exp(big_num& b, big_num& e, int r, big_num& m, big_num& m_prime,
     return false;
   }
   if (!big_make_mont(big_one, r, m, accum)) {
-               << square.size_ << "\n";
     return false;
   }
   for (i = 1; i <= k; i++) {
     if (big_bit_position_on(e, i)) {
       if (!big_mont_mult(accum, square, m, r, m_prime, t)) {
-                   << square.size_ << "\n";
         return false;
       }
       accum.copy_from(t);
