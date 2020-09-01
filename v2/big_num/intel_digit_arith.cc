@@ -824,6 +824,14 @@ bool digit_convert_from_decimal(string& s, int size_n, uint64_t* n) {
   digit_array_zero_num(size_n, n);
   uint64_t digit;
 
+  int sn = strlen(s.c_str());
+  sn = (sn + 2) / 3;  // number of 10 bit number slots needed
+  sn *= 10;
+  sn = (sn + NBITSINBYTE - 1) / NBITSINBYTE;
+  int m = (sn + sizeof(uint64_t) - 1) / sizeof(uint64_t);
+  if (m > (size_n - 1))
+    return false;
+
   const char *p = s.c_str();
   while (*p != '\0') {
     if (digit_array_mult_by(size_n, digit_array_real_size(size_n, n), n, 10ULL) < 0)

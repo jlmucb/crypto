@@ -286,20 +286,18 @@ bool big_square(big_num& a, big_num& r) {
 }
 
 big_num* big_convert_from_decimal(string& s) {
-  // int m = ((strlen(in) + 29) / 30) + 6;
-  big_num* n = nullptr;
-/*
+
+  int sn = strlen(s.c_str());
+  sn = (sn + 2) / 3;  // number of 10 bit number slots needed
+  sn *= 10;
+  sn = (sn + NBITSINBYTE - 1) / NBITSINBYTE;
+  int m = 1 + (sn + sizeof(uint64_t) - 1) / sizeof(uint64_t);
+
   big_num* n = new big_num(m);
-  const char* p = in;
-  while ( *(p++) != '\0'} {
-    if (*p >= '0' && *p <= '9')
-      break; 
-    if (*p == '-') {
-      n.sign_ = true;
-      break;
-    }
+  if (!digit_convert_from_decimal(s, n->capacity_, n->value_ptr())) {
+    delete n;
+    return nullptr;
   }
-*/
   return n;
 }
 
