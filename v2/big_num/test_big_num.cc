@@ -1,4 +1,3 @@
-//
 // Copyright 2014 John Manferdelli, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -331,10 +330,6 @@ bool decimal_convert_test1() {
 
 }
 
-/*
-  bool copy_from(big_num&);
-  bool copy_to(big_num&);
-*/
 bool basic_big_num_test1() {
   big_num a(10, 1ULL);
 
@@ -357,36 +352,60 @@ bool basic_big_num_test1() {
   if (!a.is_zero())
     return false;
 
+  big_num b(10);
+  big_num c(10);
+  a.copy_to(b);
+  c.copy_from(a);
+  if (big_compare(b, c) != 0)
+    return false;
+
   return true;
 }
 
-/*
-int big_compare(big_num& l, big_num& r);
-int big_high_digit(big_num& a);
-bool big_bit_position_on(big_num& a, int n);
-int big_max_power_of_two_dividing(big_num& a);
-bool big_shift(big_num& a, int64_t shift, big_num& r);
-bool big_unsigned_add(big_num& a, big_num& b, big_num& r);
-bool big_unsigned_sub(big_num& a, big_num& b, big_num& r);
-bool big_unsigned_mult(big_num& a, big_num& b, big_num& r);
-bool big_unsigned_euclid(big_num& a, big_num& b, big_num& q, big_num& r);
-bool big_unsigned_div(big_num& a, big_num& b, big_num& q);
-bool big_unsigned_square(big_num& a, big_num& r);
-bool big_unsigned_add_to(big_num& a, big_num& b);
-bool big_unsigned_sub_from(big_num& a, big_num& b);
-bool big_unsigned_inc(big_num& a);
-bool big_unsigned_dec(big_num& a);
-bool big_add(big_num& a, big_num& b, big_num& r);
-bool big_sub(big_num& a, big_num& b, big_num& r);
-bool big_mult(big_num& a, big_num& b, big_num& r);
-bool big_div(big_num& a, big_num& b, big_num& r);
-bool big_square(big_num& a, big_num& r);
-bool convert_to_decimal(int size_a, uint64_t* n, string* s);
-big_num* big_convert_from_decimal(string& s);
-bool big_convert_to_hex(big_num& a, string* hex);
-big_num* big_convert_from_hex(const char* in);
-*/
 bool basic_arith_test1() {
+  big_num a(5, 2ULL);
+  a.value_ptr()[1] = 0x08;
+  a.normalize();
+
+  digit_array_print(a.size(), a.value_ptr());
+  int k = big_high_digit(a);
+  if (k != 2)
+    return false;
+  if (FLAGS_print_all) 
+    printf(", high digit: %d, ", k);
+  k = big_high_bit(a);
+  if (FLAGS_print_all) 
+    printf("high bit: %d, ", k);
+  if (k != 68)
+    return false;
+  if (!big_bit_position_on(a, 2))
+    return false;
+  if (!big_bit_position_on(a, 68))
+    return false;
+  k = big_max_power_of_two_dividing(a);
+  if (FLAGS_print_all) 
+    printf("power of 2: %d\n", k);
+  // bool big_shift(big_num& a, int64_t shift, big_num& r);
+  // bool big_unsigned_add(big_num& a, big_num& b, big_num& r);
+  // bool big_unsigned_sub(big_num& a, big_num& b, big_num& r);
+  // bool big_unsigned_mult(big_num& a, big_num& b, big_num& r);
+  // bool big_unsigned_euclid(big_num& a, big_num& b, big_num& q, big_num& r);
+  // bool big_unsigned_div(big_num& a, big_num& b, big_num& q);
+  // bool big_unsigned_square(big_num& a, big_num& r);
+  // bool big_unsigned_add_to(big_num& a, big_num& b);
+  // bool big_unsigned_sub_from(big_num& a, big_num& b);
+  // bool big_unsigned_inc(big_num& a);
+  // bool big_unsigned_dec(big_num& a);
+  // bool big_add(big_num& a, big_num& b, big_num& r);
+  // bool big_sub(big_num& a, big_num& b, big_num& r);
+  // bool big_mult(big_num& a, big_num& b, big_num& r);
+  // bool big_div(big_num& a, big_num& b, big_num& r);
+  // bool big_square(big_num& a, big_num& r);
+  // bool convert_to_decimal(int size_a, uint64_t* n, string* s);
+  // big_num* big_convert_from_decimal(string& s);
+  // bool big_convert_to_hex(big_num& a, string* hex);
+  // big_num* big_convert_from_hex(const char* in);
+
   return true;
 }
 

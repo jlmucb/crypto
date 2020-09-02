@@ -59,23 +59,18 @@ bool big_bit_position_on(big_num& a, int n) {
 }
 
 int big_max_power_of_two_dividing(big_num& a) {
-  int i, j;
-  uint64_t n = 0;
+  int n = 0;
   uint64_t x;
-  bool getout = false;
 
-  for (i = 0; i < a.size_; i++) {
+  for (int i = 0; i < a.size_; i++) {
     x = a.value_[i];
-    for (j = 0; j < NBITSINUINT64; j++) {
+    for (int j = 0; j < NBITSINUINT64; j++) {
       if ((x & 1ULL) != 0) {
-        getout = true;
-        break;
+        return n;
       }
       n++;
       x >>= 1;
     }
-    if (getout)
-      break;
   }
   return n;
 }
