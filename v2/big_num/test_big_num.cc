@@ -213,12 +213,6 @@ bool basic_digit_test2() {
   if (digit_array_compare(4, mult_cmp, 10, n3) != 0)
     return false;
 
-/*
-bool digit_array_short_division_algorithm(int size_a, uint64_t* a, uint64_t b,
-                                      int* size_q, uint64_t* q, uint64_t* r);
-void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
-                       uint64_t b2, uint64_t* est);
- */
   digit_array_zero_num(10, n4);
   digit_array_zero_num(10, n5);
   int size_q = 10;
@@ -233,6 +227,13 @@ void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
   }
   if (digit_array_compare(10, n4, 10, n2) != 0)
     return false;
+
+/*
+  bool digit_array_short_division_algorithm(int size_a, uint64_t* a, uint64_t b,
+                                      int* size_q, uint64_t* q, uint64_t* r);
+  void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
+                       uint64_t b2, uint64_t* est);
+ */
   
   return true;
 }

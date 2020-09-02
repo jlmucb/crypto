@@ -434,12 +434,13 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
   }
   digit_array_zero_num(size_result, result);
 
-// Fix
-//#define FASTMULT
+#define FASTMULT
 #ifdef FASTMULT
   uint64_t carry = 0;
+  uint64_t real_size_A = (uint64_t) real_size_a;
+  uint64_t real_size_B = (uint64_t) real_size_b;
 
-  //  Caller ensures out is large enough
+  //  Caller ensures result area is large enough
   //    r8 : current op1 location
   //    r9 : current op2 location
   //    r11: in1 index
@@ -447,7 +448,7 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
   //    r13: current output index
   //    r14: carry
   //    r15: current out location
-  asm volatile(
+  asm volatile (
       "\tmovq   %[in1], %%r8\n"
       "\tmovq   %[in2], %%r9\n"
       "\tmovq   %[result], %%r15\n"
@@ -471,16 +472,16 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
       "\tmovq   %%rdx, %%r14\n"
       "\taddq   $1, %%r12\n"
       "\taddq   $1, %%r13\n"
-      "\tcmpq   %[real_size_b], %%r12\n"
+      "\tcmpq   %[real_size_B], %%r12\n"
       "\tjl     2b\n"
 
       "\tmovq   %%r14, (%%r15, %%r13, 8)\n"
       "\txorq   %%r14, %%r14\n"
       "\naddq   $1, %%r11\n"
-      "\tcmpq   %[real_size_a], %%r11\n"
+      "\tcmpq   %[real_size_A], %%r11\n"
       "\tjl     1b\n"
-      ::[carry] "m"(carry), [in1] "g"(a), [in2] "g"(b), [real_size_a] "g"(real_size_a),
-        [real_size_b] "g"(real_size_b), [result] "g"(result)
+      ::[carry] "g"(carry), [in1] "g"(a), [in2] "g"(b), [real_size_A] "g"(real_size_A),
+        [real_size_B] "g"(real_size_B), [result] "g"(result)
       : "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r11", "%r12", "%r13",
         "%r14", "%r15");
 #else
