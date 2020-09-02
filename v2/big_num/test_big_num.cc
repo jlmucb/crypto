@@ -483,37 +483,69 @@ return true;
   if (!big_div(n1, n2, r))
     return false;
   if (!big_square(n1, r))
+    return false;
 
   return true;
 }
 
-/*
-bool big_extended_gcd(big_num& a, big_num& b, big_num& x, big_num& y, big_num& g);
-bool big_crt(big_num& s1, big_num& s2, big_num& m1, big_num& m2, big_num& r);
-bool big_mod(big_num& a, big_num& m, big_num& r);
-bool big_mod_add(big_num& a, big_num& b, big_num& m, big_num& r);
-bool big_mod_neg(big_num& a, big_num& m, big_num& r);
-bool big_mod_neg(big_num& a, big_num& m, big_num& r);
-bool big_mod_mult(big_num& a, big_num& b, big_num& m, big_num& r);
-bool big_mod_square(big_num& a, big_num& m, big_num& r);
-bool big_mod_div(big_num& a, big_num& b, big_num& m, big_num& r);
-bool big_mod_exp(big_num& a, big_num& e, big_num& m, big_num& r);
-bool big_gen_prime(big_num& p, uint64_t num_bits, int prime_trys=2500);
-int big_high_bit(big_num& a);
-bool big_miller_rabin(big_num& n, big_num** random_a, int trys);
-bool big_is_prime(big_num& n);
-bool big_mod_is_square(big_num& n, big_num& p);
-bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& s);
-bool big_mod_square_root(big_num& n, big_num& p, big_num& r);
-bool big_make_mont(big_num& a, int r, big_num& m, big_num& mont_a);
-bool big_mont_params(big_num& m, int r, big_num& m_prime);
-bool big_mont_reduce(big_num& a, int r, big_num& m, big_num& m_prime, big_num& mont_a);
-bool big_mont_mult(big_num& aR, big_num& bR, big_num& m, uint64_t r, big_num& m_prime,
-                 big_num& abR);
-bool big_mont_exp(big_num& b, big_num& e, int r, big_num& m, big_num& m_prime, big_num& out);
-bool big_mod_normalize(big_num& a, big_num& m);
- */
 bool basic_number_theory_test1() {
+  big_num a(10);
+  big_num b(10);
+  big_num g(10);
+  big_num m(10);
+  big_num n(10);
+  big_num x(10);
+  big_num y(10);
+  big_num r(10);
+  big_num p(10);
+  big_num e(10);
+  big_num s(10);
+  big_num c1(10);
+  big_num c2(10);
+  big_num n1(10);
+  big_num n2(10);
+
+return true;
+  if (!big_extended_gcd(a, b, x, y, g))
+    return false;
+  if (!big_crt(n1, n2, c1, c2, r))
+    return false;
+  if (!big_mod_normalize(a, m))
+    return false;
+  if (!big_mod(a, m, r))
+    return false;
+  if (!big_mod_add(a, b, m, r))
+    return false;
+  if (!big_mod_neg(a, m, r))
+    return false;
+  if (!big_mod_mult(a, b, m, r))
+    return false;
+  if (!big_mod_square(a, m, r))
+    return false;
+  if (!big_mod_div(a, b, m, r))
+    return false;
+  if (!big_mod_exp(a, e, m, r))
+    return false;
+  int num_bits = 1024;
+  if (!big_gen_prime(p, num_bits, 25))
+    return false;
+  if (!big_high_bit(a))
+    return false;
+  // if (!big_miller_rabin(n, random_a, 20))
+  if (!big_is_prime(n))
+    return false;
+  if (!big_mod_is_square(n, p))
+    return false;
+  if (!big_mod_tonelli_shanks(a, p, s))
+    return false;
+  if (!big_mod_square_root(n, p, r))
+    return false;
+  // if (!big_make_mont(a, int r, m, mont_a))
+  // if (!big_mont_params(m, int r, m_prime))
+  // if (!big_mont_reduce(big_num& a, int r, big_num& m, big_num& m_prime, big_num& mont_a))
+  // if (!big_mont_mult(big_num& aR, big_num& bR, big_num& m, uint64_t r, big_num& m_prime, big_num& abR))
+  // if (!bool big_mont_exp(big_num& b, big_num& e, int r, big_num& m, big_num& m_prime, big_num& out))
+
   return true;
 }
 
