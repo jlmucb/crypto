@@ -21,6 +21,7 @@
 #include "crypto_names.h"
 #include "big_num.h"
 #include "intel_digit_arith.h"
+#include "big_num_functions.h"
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
@@ -228,12 +229,73 @@ bool basic_digit_test2() {
   if (digit_array_compare(10, n4, 10, n2) != 0)
     return false;
 
+  uint64_t addc_cmp[2] = {
+    0xfffffffffffffffeULL, 0x0000000000000004ULL
+  };
+  uint64_t subc_cmp[2] = {
+    0ULL,
+    1ULL
+  };
+  uint64_t multc_cmp[3] = {
+    0x0000000000000001ULL,
+    0xfffffffffffffffbULL,
+    0x0000000000000005ULL
+  };
+  digit_array_zero_num(10, n1);
+  digit_array_zero_num(10, n2);
+  digit_array_zero_num(10, n3);
+  digit_array_zero_num(10, n4);
+  n1[0] = 0xffffffffffffffffULL;
+  n1[1] = 0x02;
+  n2[0] = 0xffffffffffffffffULL;
+  n2[1] = 0x01;
+  if (digit_array_add(10, n1, 10, n2, 10, n3) < 0)
+    return false;
+  if (FLAGS_print_all) {
+    digit_array_print(10, n1); printf(" + ");
+    digit_array_print(10, n2); printf(" = ");
+    digit_array_print(10, n3); printf("\n");
+  }
+  if (digit_array_compare(2, addc_cmp, 10, n3) != 0)
+    return false;
+  digit_array_zero_num(10, n3);
+  if (digit_array_sub(10, n1, 10, n2, 10, n3) < 0)
+    return false;
+  if (FLAGS_print_all) {
+    digit_array_print(10, n1); printf(" - ");
+    digit_array_print(10, n2); printf(" = ");
+    digit_array_print(10, n3); printf("\n");
+  }
+  if (digit_array_compare(2, subc_cmp, 10, n3) != 0)
+    return false;
+  digit_array_zero_num(10, n3);
+  if (digit_array_mult(10, n1, 10, n2, 10, n3) < 0)
+    return false;
+  if (FLAGS_print_all) {
+    digit_array_print(10, n1); printf(" * ");
+    digit_array_print(10, n2); printf(" = ");
+    digit_array_print(10, n3); printf("\n");
+  }
+  if (digit_array_compare(3, multc_cmp, 10, n3) != 0)
+    return false;
+
 /*
-  bool digit_array_short_division_algorithm(int size_a, uint64_t* a, uint64_t b,
-                                      int* size_q, uint64_t* q, uint64_t* r);
   void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
                        uint64_t b2, uint64_t* est);
  */
+  digit_array_zero_num(10, n1);
+  digit_array_zero_num(10, n2);
+  n1[1] = 1ULL;
+  size_q = 10;
+  uint64_t rr = 0ULL;
+  if (!digit_array_short_division_algorithm(10, n1, 5ULL, &size_q, n2, &rr))
+    return false;
+  if (FLAGS_print_all) {
+    digit_array_print(10, n1); printf(" /  %lld = ", 5ULL);
+    digit_array_print(size_q, n2); printf(", remainder %lld\n", rr);
+  }
+  if (rr != 1ULL)
+    return false;
   
   return true;
 }
@@ -270,33 +332,31 @@ bool decimal_convert_test1() {
 }
 
 /*
-  big_num(int size);
-  big_num(big_num& n);
-  big_num(big_num& n, int capacity);
-  big_num(int size, uint64_t);  // big_num with one initialized digit
-  ~big_num();
-  int capacity();  // total number of digits (64 bits) allocated
-  int size();      // number of digit required to hold current value
-  uint64_t* value_ptr();
-  bool is_positive();
-  bool is_zero();
-  bool is_one();
-  bool is_negative();
-  void toggle_sign();
-  void normalize();
-  void zero_num();
   bool copy_from(big_num&);
   bool copy_to(big_num&);
-
-extern uint64_t smallest_primes[];
-extern big_num big_zero;
-extern big_num big_one;
-extern big_num big_two;
-extern big_num big_three;
-extern big_num big_four;
-extern big_num big_five;
 */
 bool basic_big_num_test1() {
+  big_num a(10, 1ULL);
+
+  if (a.size() != 1 || a.capacity() != 10)
+    return false;
+  a.size_ = 4;
+  a.normalize();
+  if (a.size() != 1 || a.capacity() != 10)
+    return false;
+  if (!a.is_positive() || a.is_negative())
+    return false;
+  if (big_compare(a, big_one) != 0 || big_compare(a, big_two) != -1)
+    return false;
+  if (big_compare(a, big_one) != 0 || big_compare(a, big_zero) != 1)
+    return false;
+  a.toggle_sign();
+  if (a.is_positive() || !a.is_negative())
+    return false;
+  a.zero_num();
+  if (!a.is_zero())
+    return false;
+
   return true;
 }
 
@@ -397,7 +457,6 @@ int main(int an, char** av) {
   }
 
   int result = RUN_ALL_TESTS();
-  printf("%d Tests complete\n", result);
 
   close_crypto();
   return 1;

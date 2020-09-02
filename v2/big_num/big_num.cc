@@ -32,9 +32,10 @@ big_num::big_num(int size) {
 }
 
 big_num::big_num(int size, uint64_t x) {
-  value_ = new uint64_t[1];
-  capacity_ = 1;
+  value_ = new uint64_t[size];
+  capacity_ = size;
   size_ = 1;
+  digit_array_zero_num(capacity_, value_);
   value_[0] = x;
   sign_ = false;
 }

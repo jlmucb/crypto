@@ -507,7 +507,8 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
 // result = a*a.  returns size of result.  Error if <0
 int digit_array_square(int size_a, uint64_t* a, int size_result,
                      uint64_t* result) {
-  if ((size_a + size_a) > size_result) {
+  int real_size_a = digit_array_real_size(size_a, a);
+  if ((real_size_a + real_size_a) > size_result) {
     return -1;
   }
 
@@ -519,7 +520,7 @@ int digit_array_square(int size_a, uint64_t* a, int size_result,
       "\tmovq   %[result], %%r15\n"  // %%r15 <-- address of output place
       "\tmovq   %[a], %%r8\n"        // %%r8 <-- address of low input digit
       "\txorq   %%rax,%%rax\n"
-      "\tmovl   %[size_a], %%eax\n"  // number of output words
+      "\tmovl   %[real_size_a], %%eax\n"  // number of output words
       "\tmovq   %%rax, %%r12\n"      // number of output words
       "\tshlq   $3, %%r12\n"
       "\taddq   %%r8, %%r12\n"  // %%r12>address of last input digit
@@ -602,7 +603,7 @@ int digit_array_square(int size_a, uint64_t* a, int size_result,
       "\t.balign 16\n"
       "11:\n"
       : [cur_in] "=m"(cur_in), [cur_out] "=m"(cur_out)
-      : [a] "m"(a), [result] "m"(result), [size_a] "m"(size_a),
+      : [a] "m"(a), [result] "m"(result), [real_size_a] "m"(real_size_a),
         [size_result] "m"(size_result)
       : "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r12", "%r11", "%r14",
         "%r15");
@@ -670,6 +671,7 @@ bool digit_array_short_division_algorithm(int size_a, uint64_t* a, uint64_t b,
       ::[r] "g"(r), [len_a] "g"(len_a), [a_high] "g"(a_high), [b] "g"(b),
         [q_high] "g"(q_high)
       : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx", "%r8");
+
   *size_q = digit_array_real_size(*size_q, q);
   return true;
 }
