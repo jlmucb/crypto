@@ -46,6 +46,7 @@ class big_num {
   void zero_num();
   bool copy_from(big_num&);
   bool copy_to(big_num&);
+  void print();
 };
 
 extern int num_smallest_primes;

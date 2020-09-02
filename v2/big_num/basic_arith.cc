@@ -293,22 +293,29 @@ big_num* big_convert_from_decimal(string& s) {
     delete n;
     return nullptr;
   }
+  n->normalize();
   return n;
 }
 
 bool big_convert_to_hex(big_num& a, string* hex) {
-  int k = u64_array_to_bytes(a.size_, a.value_ptr(), hex);
-
+  string b;
+  int k = u64_array_to_bytes(a.size_, a.value_ptr(), &b);
   if (k < 0)
+    return false;
+  if (!bytes_to_hex(b, hex))
     return false;
   return true;
 }
 
 big_num* big_convert_from_hex(const char* in) {
-  int m = ((strlen(in) + 31) / 16) + 1;
+  int m = ((((strlen(in) + 1) / 2) + sizeof(uint64_t) - 1) / sizeof(uint64_t)) + 1;
+
+  string h(in);
+  string b;
+  if (!hex_to_bytes(h, &b))
+    return nullptr;
   big_num* n = new big_num(m + 1);
-  string s(in);
-  if (bytes_to_u64_array(s, n->capacity_, n->value_ptr()) < 0) {
+  if (bytes_to_u64_array(b, n->capacity_, n->value_ptr()) < 0) {
     delete n;
     return nullptr;
   }

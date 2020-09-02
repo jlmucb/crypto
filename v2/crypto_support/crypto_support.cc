@@ -234,9 +234,8 @@ bool hex_to_bytes(string& h, string* b) {
   if (!valid_hex((char*)h.c_str()))
     return false;
   int h_size = strlen(h.c_str());
+
   // if odd first 4 bits is 0
-  if (((int)b->capacity()) < (h_size + 1) / 2)
-    return false;
   byte b1, b2;
   int k;
   if ((h_size % 2) != 0) {
@@ -270,8 +269,6 @@ bool bytes_to_hex(string& b, string* h) {
   // always returns even number of hex characters
   h->clear();
   int b_size = b.size();
-  if (((int)h->capacity()) < 2 * b_size + 1)
-    return false;
   char c1, c2;
   byte b1, b2;
   for (int i = 0; i < b_size; i++) {

@@ -385,26 +385,104 @@ bool basic_arith_test1() {
   k = big_max_power_of_two_dividing(a);
   if (FLAGS_print_all) 
     printf("power of 2: %d\n", k);
-  // bool big_shift(big_num& a, int64_t shift, big_num& r);
-  // bool big_unsigned_add(big_num& a, big_num& b, big_num& r);
-  // bool big_unsigned_sub(big_num& a, big_num& b, big_num& r);
-  // bool big_unsigned_mult(big_num& a, big_num& b, big_num& r);
-  // bool big_unsigned_euclid(big_num& a, big_num& b, big_num& q, big_num& r);
-  // bool big_unsigned_div(big_num& a, big_num& b, big_num& q);
-  // bool big_unsigned_square(big_num& a, big_num& r);
-  // bool big_unsigned_add_to(big_num& a, big_num& b);
-  // bool big_unsigned_sub_from(big_num& a, big_num& b);
-  // bool big_unsigned_inc(big_num& a);
-  // bool big_unsigned_dec(big_num& a);
-  // bool big_add(big_num& a, big_num& b, big_num& r);
-  // bool big_sub(big_num& a, big_num& b, big_num& r);
-  // bool big_mult(big_num& a, big_num& b, big_num& r);
-  // bool big_div(big_num& a, big_num& b, big_num& r);
-  // bool big_square(big_num& a, big_num& r);
-  // bool convert_to_decimal(int size_a, uint64_t* n, string* s);
-  // big_num* big_convert_from_decimal(string& s);
-  // bool big_convert_to_hex(big_num& a, string* hex);
-  // big_num* big_convert_from_hex(const char* in);
+  big_num b(10);
+  big_num c(10);
+  if (!big_shift(a, 10, b))
+    return false;
+  if (!big_shift(b, -10, c))
+    return false;
+  if (FLAGS_print_all)  {
+    a.print(); printf(" shifted %d ", 10);
+    b.print(); printf(" shifted %d ", -10);
+    c.print(); printf("\n");
+  }
+  if (big_compare(a, c) != 0)
+    return false;
+  string decimal_str;
+  if (!digit_convert_to_decimal(b.size(), b.value_ptr(), &decimal_str))
+    return false;
+  if (FLAGS_print_all)  {
+    b.print(); printf(" as decimal is %s\n", decimal_str.c_str());
+  }
+  big_num* d = big_convert_from_decimal(decimal_str);
+  if (d == nullptr)
+    return false;
+  if (FLAGS_print_all)  {
+    d->print(); printf(" converted back\n");
+  }
+  if (big_compare(b, *d) !=0)
+    return false;
+  delete d;
+  d = nullptr;
+
+  string hex_str;
+  if (!big_convert_to_hex(b, &hex_str))
+    return false;
+  if (FLAGS_print_all)  {
+    b.print(); printf(" as hex is %s\n", hex_str.c_str());
+  }
+  d = big_convert_from_hex(hex_str.c_str());
+  if (d == nullptr)
+    return false;
+  if (FLAGS_print_all)  {
+    d->print(); printf(" converted back\n");
+  }
+  if (big_compare(b, *d) !=0)
+    return false;
+  delete d;
+  d = nullptr;
+
+  if (FLAGS_print_all)  {
+    a.print();
+  }
+  if (!big_unsigned_inc(a))
+    return false;
+  if (FLAGS_print_all)  {
+    printf(" incremented: "); a.print();
+  }
+  if (!big_unsigned_dec(a))
+    return false;
+  if (FLAGS_print_all)  {
+    printf(" incremented: "); a.print();
+  }
+
+  big_num n1(10);
+  big_num n2(10);
+  big_num q(10);
+  big_num r(10);
+
+  n1.value_ptr()[0] = 0xffffffffffffffff;
+  n1.value_ptr()[1] = 0x01;
+  n2.value_ptr()[0] = 0xffffffffffffffff;
+  n1.normalize();
+  n2.normalize();
+  if (!big_unsigned_add(n1, n2, r))
+    return false;
+return true;
+  if (!big_unsigned_sub(n1, n2, r))
+    return false;
+  if (!big_unsigned_mult(n1, n2, r))
+    return false;
+  if (!big_unsigned_euclid(n1, n2, q, r))
+    return false;
+  if (!big_unsigned_div(n1, n2, q))
+    return false;
+  if (!big_unsigned_square(n1, r))
+    return false;
+  if (!big_unsigned_add_to(n1, b))
+    return false;
+  if (!big_unsigned_sub_from(n1, n2))
+    return false;
+
+  if (!big_add(n1, n2, r))
+    return false;
+  if (!big_sub(n1, n2, r))
+    return false;
+  if (!big_mult(n1, n2, r))
+    return false;
+  if (!big_div(n1, n2, r))
+    return false;
+  if (!big_square(n1, r))
 
   return true;
 }

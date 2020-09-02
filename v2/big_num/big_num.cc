@@ -126,3 +126,10 @@ bool big_num::copy_to(big_num& other) {
   other.size_ = digit_array_real_size(other.capacity_, other.value_);
   return true;
 }
+
+void big_num::print() {
+  if (is_negative())
+    printf("-");
+  digit_array_print(size_, value_);
+}
+
