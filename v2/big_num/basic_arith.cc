@@ -24,11 +24,13 @@
 int big_compare(big_num& l, big_num& r) {
   if (l.is_positive() && r.is_negative())
     return 1;
-  if (r.is_positive() && r.is_negative())
+  if (r.is_positive() && l.is_negative())
     return -1;
   if (l.is_positive() && r.is_positive())
     return digit_array_compare(l.size(), l.value_ptr(), r.size(), r.value_ptr());
-  return 1 - digit_array_compare(l.size(), l.value_ptr(), r.size(), r.value_ptr());
+  if (l.is_negative() && r.is_negative())
+    return -digit_array_compare(l.size(), l.value_ptr(), r.size(), r.value_ptr());
+  return 0;
 }
 
 int big_high_digit(big_num& a) {

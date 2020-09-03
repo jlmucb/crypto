@@ -1,4 +1,4 @@
-// Copyright 2014 John Manferdelli, All Rights Reserved.
+// Copyright 2020 John Manferdelli, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -286,6 +286,7 @@ bool basic_digit_test2() {
   n1[1] = 1ULL;
   size_q = 10;
   uint64_t rr = 0ULL;
+  digit_array_zero_num(10, n2);
   if (!digit_array_short_division_algorithm(10, n1, 5ULL, &size_q, n2, &rr))
     return false;
   if (FLAGS_print_all) {
@@ -498,7 +499,9 @@ bool basic_arith_test1() {
   mult_cmp.normalize();
   if (big_compare(mult_cmp, r) != 0)
     return false;
+
   r.zero_num();
+  q.zero_num();
   if (!big_unsigned_euclid(n1, n2, q, r))
     return false;
   if (FLAGS_print_all)  {
@@ -523,24 +526,120 @@ bool basic_arith_test1() {
   }
   if (q.value_ptr()[0] != 0x2aULL)
      return false;
+
   q.zero_num();
-return true;
+  big_num n3(10);
+  n3.zero_num();
+  n3.copy_from(n1);
+  n3.normalize();
+  
+  if (!big_unsigned_add_to(n3, big_five))
+    return false;
+  if (FLAGS_print_all)  {
+    n1.print(); printf(" +=  5 is ");
+    n3.print(); printf("\n");
+  }
+  if (!big_unsigned_sub_from(n3, big_five))
+    return false;
+  if (FLAGS_print_all)  {
+    printf(" -=  5 is ");
+    n3.print(); printf("\n");
+  }
+  if (big_compare(n1, n3) != 0)
+      return false;
+
+  r.zero_num();
   if (!big_unsigned_square(n1, r))
     return false;
-  if (!big_unsigned_add_to(n1, b))
+  if (FLAGS_print_all)  {
+    n1.print(); printf("**2 = ");
+    r.print(); printf("\n");
+  }
+
+  big_num b_cmp_sq(3);
+  uint64_t cmp_sq[3] = {
+    0x1ULL, 0xfffffffffffffe00ULL, 0x000000000000ffffULL
+  };
+  for (int j = 0; j < 3; j++)
+    b_cmp_sq.value_ptr()[j] = cmp_sq[j];
+  b_cmp_sq.normalize();
+  r.zero_num();
+  n1.toggle_sign();
+  if (!big_square(n1, r))
     return false;
-  if (!big_unsigned_sub_from(n1, n2))
+  if (big_compare(r, b_cmp_sq) != 0)
     return false;
 
+  big_num s_add_cmp(10);
+  big_num s_sub_cmp(10);
+  big_num s_mult_cmp(10);
+  big_num s_div_cmp(10);
+
+  s_add_cmp.value_ptr()[0] = 0x00ULL;
+  s_add_cmp.value_ptr()[1] = 0xfaULL;
+  s_add_cmp.toggle_sign();
+  s_add_cmp.normalize();
+  
+  s_sub_cmp.value_ptr()[0] = 0xfffffffffffffffeULL;
+  s_sub_cmp.value_ptr()[1] = 0x0105ULL;
+  s_sub_cmp.toggle_sign();
+  s_sub_cmp.normalize();
+
+  s_mult_cmp.value_ptr()[0] = 0x1ULL;
+  s_mult_cmp.value_ptr()[1] = 0xfffffffffffffefaULL;
+  s_mult_cmp.value_ptr()[2] = 0x05ffULL;
+  s_mult_cmp.toggle_sign();
+  s_mult_cmp.normalize();
+
+  s_div_cmp.value_ptr()[0] = 0x2aULL;
+  s_div_cmp.toggle_sign();
+  s_div_cmp.normalize();
+
+  r.zero_num();
   if (!big_add(n1, n2, r))
     return false;
+  if (FLAGS_print_all)  {
+    n1.print(); printf(" + ");
+    n2.print(); printf(" = ");
+    r.print(); printf("\n");
+    s_add_cmp.print(); printf("\n");
+  int bc = big_compare(r, s_add_cmp);
+    printf("bc: %d\n", bc);
+  }
+  if (big_compare(r, s_add_cmp) != 0)
+    return false;
+
+  r.zero_num();
   if (!big_sub(n1, n2, r))
     return false;
+  if (FLAGS_print_all)  {
+    n1.print(); printf(" - ");
+    n2.print(); printf(" = ");
+    r.print(); printf("\n");
+  }
+  if (big_compare(r, s_sub_cmp) != 0)
+    return false;
+
+  r.zero_num();
   if (!big_mult(n1, n2, r))
     return false;
+  if (FLAGS_print_all)  {
+    n1.print(); printf(" * ");
+    n2.print(); printf(" = ");
+    r.print(); printf("\n");
+  }
+  if (big_compare(r, s_mult_cmp) != 0)
+    return false;
+
+  r.zero_num();
   if (!big_div(n1, n2, r))
     return false;
-  if (!big_square(n1, r))
+  if (FLAGS_print_all)  {
+    n1.print(); printf(" / ");
+    n2.print(); printf(" = ");
+    r.print(); printf("\n");
+  }
+  if (big_compare(r, s_div_cmp) != 0)
     return false;
 
   return true;
