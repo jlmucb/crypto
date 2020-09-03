@@ -434,7 +434,8 @@ bool basic_arith_test1() {
   a.value_ptr()[1] = 0x08;
   a.normalize();
 
-  digit_array_print(a.size(), a.value_ptr());
+  if (FLAGS_print_all) 
+    digit_array_print(a.size(), a.value_ptr());
   int k = big_high_digit(a);
   if (k != 2)
     return false;
