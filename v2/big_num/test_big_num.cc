@@ -278,10 +278,9 @@ bool basic_digit_test2() {
   if (digit_array_compare(3, multc_cmp, 10, n3) != 0)
     return false;
 
-/*
-  void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
-                       uint64_t b2, uint64_t* est);
- */
+  // void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
+  //                     uint64_t b2, uint64_t* est);
+
   digit_array_zero_num(10, n1);
   digit_array_zero_num(10, n2);
   n1[1] = 1ULL;
@@ -452,21 +451,80 @@ bool basic_arith_test1() {
   big_num r(10);
 
   n1.value_ptr()[0] = 0xffffffffffffffff;
-  n1.value_ptr()[1] = 0x01;
+  n1.value_ptr()[1] = 0xff;
   n2.value_ptr()[0] = 0xffffffffffffffff;
+  n2.value_ptr()[1] = 0x05;
   n1.normalize();
   n2.normalize();
   if (!big_unsigned_add(n1, n2, r))
     return false;
-return true;
+  if (FLAGS_print_all)  {
+    n1.print(); printf(" + ");
+    n2.print(); printf(" = ");
+    r.print(); printf("\n");
+  }
+  big_num add_cmp(2);
+  add_cmp.value_ptr()[0] = 0xfffffffffffffffe;
+  add_cmp.value_ptr()[1] = 0x0000000000000105;
+  add_cmp.normalize();
+  if (big_compare(add_cmp, r) != 0)
+    return false;
+  r.zero_num();
   if (!big_unsigned_sub(n1, n2, r))
     return false;
+  if (FLAGS_print_all)  {
+    n1.print(); printf(" - ");
+    n2.print(); printf(" = ");
+    r.print(); printf("\n");
+  }
+  big_num sub_cmp(2);
+  sub_cmp.value_ptr()[0] = 0x0;
+  sub_cmp.value_ptr()[1] = 0xfa;
+  sub_cmp.normalize();
+  if (big_compare(sub_cmp, r) != 0)
+    return false;
+  r.zero_num();
   if (!big_unsigned_mult(n1, n2, r))
     return false;
+  if (FLAGS_print_all)  {
+    n1.print(); printf(" * ");
+    n2.print(); printf(" = ");
+    r.print(); printf("\n");
+  }
+  big_num mult_cmp(3);
+  mult_cmp.value_ptr()[0] = 1ULL;
+  mult_cmp.value_ptr()[1] = 0xfffffffffffffefaULL;
+  mult_cmp.value_ptr()[2] = 0x00000000000005ffULL;
+  mult_cmp.normalize();
+  if (big_compare(mult_cmp, r) != 0)
+    return false;
+  r.zero_num();
   if (!big_unsigned_euclid(n1, n2, q, r))
     return false;
+  if (FLAGS_print_all)  {
+    n1.print(); printf(" = ");
+    n2.print(); printf(" * ");
+    q.print(); printf(", remainder: ");
+    r.print(); printf("\n");
+  }
+  big_num rem_cmp(2);
+  rem_cmp.value_ptr()[0] = 0x0000000000000029ULL;
+  rem_cmp.value_ptr()[1] = 0x0000000000000004;
+  rem_cmp.normalize();
+  if (big_compare(rem_cmp, r) != 0 || q.value_ptr()[0] != 0x2aULL)
+     return false;
+  q.zero_num();
   if (!big_unsigned_div(n1, n2, q))
     return false;
+  if (FLAGS_print_all)  {
+    n1.print(); printf(" = ");
+    n2.print(); printf(" * ");
+    q.print(); printf("\n");
+  }
+  if (q.value_ptr()[0] != 0x2aULL)
+     return false;
+  q.zero_num();
+return true;
   if (!big_unsigned_square(n1, r))
     return false;
   if (!big_unsigned_add_to(n1, b))

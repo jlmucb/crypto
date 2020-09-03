@@ -103,6 +103,7 @@ bool big_unsigned_add(big_num& a, big_num& b, big_num& r) {
   if (k < 0)
     return false;
   r.size_ = k;
+  r.normalize();
   return true;
 }
 
@@ -131,7 +132,7 @@ bool big_unsigned_euclid(big_num& a, big_num& b, big_num& q, big_num& r) {
   int size_q = q.capacity_;
   int size_r = r.capacity_;
   if (!digit_array_division_algorithm(a.size_, a.value_, b.size_, b.value_,
-                                   &size_q, q.value_, &size_r, r.value_)) {
+                  &size_q, q.value_, &size_r, r.value_)) {
     return false;
   }
   q.size_ = digit_array_real_size(size_q, q.value_);
