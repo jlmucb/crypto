@@ -646,14 +646,21 @@ int digit_array_mult_by(int capacity_a, int size_a, uint64_t* a, uint64_t x) {
 }
 
 bool digit_array_short_division_algorithm(int size_a, uint64_t* a, uint64_t b,
-                                      int* size_q, uint64_t* q, uint64_t* r) {
-  int64_t len_a = (int64_t)size_a;
+         int* size_q, uint64_t* q, uint64_t* r) {
   int real_size_a = digit_array_real_size(size_a, a);
-  uint64_t* a_high = a + real_size_a - 1;
-  uint64_t* q_high = q + real_size_a - 1;
+  uint64_t len_a = (uint64_t)real_size_a;
+  uint64_t* a_high = &a[real_size_a - 1];
+  uint64_t* q_high = &q[real_size_a - 1];
 
-  asm volatile(
+  // r8: len_a
+  // a_high: rbx
+  // q_high: rcx
+  // remainder: rdx
+  asm volatile (
+      "\txorq   %%r8, %%r8\n"
       "\txorq   %%rdx, %%rdx\n"
+      "\txorq   %%rax, %%rax\n"
+      "\txorq   %%rcx, %%rcx\n"
       "\tmovq   %[len_a], %%r8\n"
       "\tmovq   %[a_high], %%rbx\n"
       "\tmovq   %[q_high], %%rcx\n"
