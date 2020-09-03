@@ -125,54 +125,90 @@ bool basic_digit_test2() {
   digit_array_zero_num(10, n2);
 
   digit_array_zero_num(10, n3);
-  if (digit_array_add(10, n1, 10, n2, 10, n3) < 0)
+  if (digit_array_add(10, n1, 10, n2, 10, n3) < 0) {
+    printf("*****ERROR 1***\n");
     return false;
-  if (!digit_array_is_zero(10, n3))
+  }
+  if (!digit_array_is_zero(10, n3)) {
+    printf("*****ERROR 2***\n");
     return false;
+  }
   digit_array_zero_num(10, n3);
-  if (digit_array_sub(10, n1, 10, n2, 10, n3) < 0)
+  if (digit_array_sub(10, n1, 10, n2, 10, n3) < 0) {
+    printf("*****ERROR 3***\n");
     return false;
-  if (!digit_array_is_zero(10, n3))
+  }
+  if (!digit_array_is_zero(10, n3)) {
+    printf("*****ERROR 4***\n");
     return false;
+  }
   digit_array_zero_num(10, n3);
-  if (digit_array_mult(10, n1, 10, n2, 10, n3) < 0)
+  if (digit_array_mult(10, n1, 10, n2, 10, n3) < 0) {
+    printf("*****ERROR 5***\n");
     return false;
-  if (!digit_array_is_zero(10, n3))
+  }
+  if (!digit_array_is_zero(10, n3)) {
+    printf("*****ERROR 6***\n");
     return false;
+  }
 
   n1[0] = 1;
   digit_array_zero_num(10, n3);
-  if (digit_array_add(10, n1, 10, n2, 10, n3) < 0)
+  if (digit_array_add(10, n1, 10, n2, 10, n3) < 0) {
+    printf("*****ERROR 7***\n");
     return false;
-  if (digit_array_compare(1, one, 10, n3) != 0)
+  }
+  if (digit_array_compare(1, one, 10, n3) != 0) {
+    printf("*****ERROR 8***\n");
     return false;
+  }
   digit_array_zero_num(10, n3);
-  if (digit_array_sub(10, n1, 10, n2, 10, n3) < 0)
+  if (digit_array_sub(10, n1, 10, n2, 10, n3) < 0) {
+    printf("*****ERROR 9***\n");
     return false;
-  if (digit_array_compare(1, one, 10, n3) != 0)
+  }
+  if (digit_array_compare(1, one, 10, n3) != 0) {
+    printf("*****ERROR 10***\n");
     return false;
+  }
   digit_array_zero_num(10, n3);
-  if (digit_array_mult(10, n1, 10, n2, 10, n3) < 0)
+  if (digit_array_mult(10, n1, 10, n2, 10, n3) < 0) {
+    printf("*****ERROR 11***\n");
     return false;
-  if (!digit_array_is_zero(10, n3))
+  }
+  if (!digit_array_is_zero(10, n3)) {
+    printf("*****ERROR 12***\n");
     return false;
+  }
 
   n2[0] = 1;
   digit_array_zero_num(10, n3);
-  if (digit_array_add(10, n1, 10, n2, 10, n3) < 0)
+  if (digit_array_add(10, n1, 10, n2, 10, n3) < 0) {
+    printf("*****ERROR 13***\n");
     return false;
-  if (digit_array_compare(1, two, 10, n3) != 0)
+  }
+  if (digit_array_compare(1, two, 10, n3) != 0) {
+    printf("*****ERROR 14***\n");
     return false;
+  }
   digit_array_zero_num(10, n3);
-  if (digit_array_sub(10, n1, 10, n2, 10, n3) < 0)
+  if (digit_array_sub(10, n1, 10, n2, 10, n3) < 0) {
+    printf("*****ERROR 15***\n");
     return false;
-  if (!digit_array_is_zero(10, n3))
+  }
+  if (!digit_array_is_zero(10, n3)) {
+    printf("*****ERROR 16***\n");
     return false;
+  }
   digit_array_zero_num(10, n3);
-  if (digit_array_mult(10, n1, 10, n2, 10, n3) < 0)
+  if (digit_array_mult(10, n1, 10, n2, 10, n3) < 0) {
+    printf("*****ERROR 17***\n");
     return false;
-  if (digit_array_compare(1, one, 10, n3) != 0)
+  }
+  if (digit_array_compare(1, one, 10, n3) != 0) {
+    printf("*****ERROR 18***\n");
     return false;
+  }
 
   n1[1] = 0xffffffffffff07;
   n2[1] = 0xffffffffffff05;
@@ -183,50 +219,66 @@ bool basic_digit_test2() {
   uint64_t sub_cmp[2] = {0x00ULL, 0x02ULL};
   uint64_t mult_cmp[4] = {0x0000000000000001ULL, 0x01fffffffffffe0cULL, 0x0c0000000000f423ULL, 0x0000fffffffffffe };
   digit_array_zero_num(10, n3);
-  if (digit_array_add(10, n1, 10, n2, 10, n3) < 0)
+  if (digit_array_add(10, n1, 10, n2, 10, n3) < 0) {
+    printf("*****ERROR 19***\n");
     return false;
+  }
   if (FLAGS_print_all) {
     digit_array_print(10, n1); printf(" + ");
     digit_array_print(10, n2); printf(" = ");
     digit_array_print(10, n3); printf("\n");
   }
-  if (digit_array_compare(2, add_cmp, 10, n3) != 0)
+  if (digit_array_compare(2, add_cmp, 10, n3) != 0) {
+    printf("*****ERROR 20***\n");
     return false;
+  }
   digit_array_zero_num(10, n3);
-  if (digit_array_sub(10, n1, 10, n2, 10, n3) < 0)
+  if (digit_array_sub(10, n1, 10, n2, 10, n3) < 0) {
+    printf("*****ERROR 21***\n");
     return false;
+  }
   if (FLAGS_print_all) {
     digit_array_print(10, n1); printf(" - ");
     digit_array_print(10, n2); printf(" = ");
     digit_array_print(10, n3); printf("\n");
   }
-  if (digit_array_compare(2, sub_cmp, 10, n3) != 0)
+  if (digit_array_compare(2, sub_cmp, 10, n3) != 0) {
+    printf("*****ERROR 22***\n");
     return false;
+  }
   digit_array_zero_num(10, n3);
-  if (digit_array_mult(10, n1, 10, n2, 10, n3) < 0)
+  if (digit_array_mult(10, n1, 10, n2, 10, n3) < 0) {
+    printf("*****ERROR 23***\n");
     return false;
+  }
   if (FLAGS_print_all) {
     digit_array_print(10, n1); printf(" * ");
     digit_array_print(10, n2); printf(" = ");
     digit_array_print(10, n3); printf("\n");
   }
-  if (digit_array_compare(4, mult_cmp, 10, n3) != 0)
+  if (digit_array_compare(4, mult_cmp, 10, n3) != 0) {
+    printf("*****ERROR 24***\n");
     return false;
+  }
 
   digit_array_zero_num(10, n4);
   digit_array_zero_num(10, n5);
   int size_q = 10;
   int size_r = 10;
   if (!digit_array_division_algorithm(10, n3, 10,
-         n1, &size_q, n4, &size_r, n5))
+         n1, &size_q, n4, &size_r, n5)) {
+    printf("*****ERROR 25***\n");
     return false;
+  }
   if (FLAGS_print_all) {
     digit_array_print(10, n3); printf(" / ");
     digit_array_print(10, n1); printf(" = ");
     digit_array_print(10, n4); printf("\n");
   }
-  if (digit_array_compare(10, n4, 10, n2) != 0)
+  if (digit_array_compare(10, n4, 10, n2) != 0) {
+    printf("*****ERROR 26***\n");
     return false;
+  }
 
   uint64_t addc_cmp[2] = {
     0xfffffffffffffffeULL, 0x0000000000000004ULL
@@ -248,35 +300,47 @@ bool basic_digit_test2() {
   n1[1] = 0x02;
   n2[0] = 0xffffffffffffffffULL;
   n2[1] = 0x01;
-  if (digit_array_add(10, n1, 10, n2, 10, n3) < 0)
+  if (digit_array_add(10, n1, 10, n2, 10, n3) < 0) {
+    printf("*****ERROR 27***\n");
     return false;
+  }
   if (FLAGS_print_all) {
     digit_array_print(10, n1); printf(" + ");
     digit_array_print(10, n2); printf(" = ");
     digit_array_print(10, n3); printf("\n");
   }
-  if (digit_array_compare(2, addc_cmp, 10, n3) != 0)
+  if (digit_array_compare(2, addc_cmp, 10, n3) != 0) {
+    printf("*****ERROR 28***\n");
     return false;
+  }
   digit_array_zero_num(10, n3);
-  if (digit_array_sub(10, n1, 10, n2, 10, n3) < 0)
+  if (digit_array_sub(10, n1, 10, n2, 10, n3) < 0) {
+    printf("*****ERROR 29***\n");
     return false;
+  }
   if (FLAGS_print_all) {
     digit_array_print(10, n1); printf(" - ");
     digit_array_print(10, n2); printf(" = ");
     digit_array_print(10, n3); printf("\n");
   }
-  if (digit_array_compare(2, subc_cmp, 10, n3) != 0)
+  if (digit_array_compare(2, subc_cmp, 10, n3) != 0) {
+    printf("*****ERROR 30***\n");
     return false;
+  }
   digit_array_zero_num(10, n3);
-  if (digit_array_mult(10, n1, 10, n2, 10, n3) < 0)
+  if (digit_array_mult(10, n1, 10, n2, 10, n3) < 0) {
+    printf("*****ERROR 31***\n");
     return false;
+  }
   if (FLAGS_print_all) {
     digit_array_print(10, n1); printf(" * ");
     digit_array_print(10, n2); printf(" = ");
     digit_array_print(10, n3); printf("\n");
   }
-  if (digit_array_compare(3, multc_cmp, 10, n3) != 0)
+  if (digit_array_compare(3, multc_cmp, 10, n3) != 0) {
+    printf("*****ERROR 32***\n");
     return false;
+  }
 
   // void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
   //                     uint64_t b2, uint64_t* est);
@@ -286,15 +350,18 @@ bool basic_digit_test2() {
   n1[1] = 1ULL;
   size_q = 10;
   uint64_t rr = 0ULL;
-  digit_array_zero_num(10, n2);
-  if (!digit_array_short_division_algorithm(10, n1, 5ULL, &size_q, n2, &rr))
+  if (!digit_array_short_division_algorithm(10, n1, 5ULL, &size_q, n2, &rr)) {
+    printf("*****ERROR 33***\n");
     return false;
+  }
   if (FLAGS_print_all) {
     digit_array_print(10, n1); printf(" /  %lld = ", 5ULL);
     digit_array_print(size_q, n2); printf(", remainder %lld\n", rr);
   }
-  if (rr != 1ULL)
+  if (rr != 1ULL) {
+    printf("*****ERROR 34***  %llx\n", rr);
     return false;
+  }
   
   return true;
 }
@@ -602,9 +669,6 @@ bool basic_arith_test1() {
     n1.print(); printf(" + ");
     n2.print(); printf(" = ");
     r.print(); printf("\n");
-    s_add_cmp.print(); printf("\n");
-  int bc = big_compare(r, s_add_cmp);
-    printf("bc: %d\n", bc);
   }
   if (big_compare(r, s_add_cmp) != 0)
     return false;
