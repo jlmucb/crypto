@@ -26,6 +26,22 @@
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
 bool test_rsa1() {
+  rsa r;
+  int num_bits = 512;
+
+  if (!r.generate_rsa(num_bits))
+    return false;
+  if (!r.make_rsa_key("rsa-tst-key1", "testing", 86400.0 * 365.0))
+    return false;
+
+  string ser;
+  if (!r.get_serialized_key_message(&ser))
+    return false;
+
+  key_message* km = r.get_key();
+  if (km != nullptr)
+    print_key_message(*km);
+
   return true;
 }
 

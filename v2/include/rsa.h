@@ -34,6 +34,8 @@ class rsa {
   big_num* m_prime_;
   big_num* p_prime_;
   big_num* q_prime_;
+  string not_before_;
+  string not_after_;
 
  public:
   rsa();
@@ -48,5 +50,6 @@ class rsa {
   bool make_rsa_key(const char* name, const char* purpose, double secondstolive);
   bool encrypt(int size_in, byte* in, int* size_out, byte* out, int speed);
   bool decrypt(int size_in, byte* in, int* size_out, byte* out, int speed);
+  key_message* get_key() {return rsa_key_;}
 };
 #endif

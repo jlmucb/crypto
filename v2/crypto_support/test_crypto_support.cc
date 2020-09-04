@@ -263,7 +263,6 @@ bool time_increment_test() {
   return true;
 }
 
-
 bool endian_test() {
   uint64_t l64, b64, r64;
   uint32_t l32, b32, r32;

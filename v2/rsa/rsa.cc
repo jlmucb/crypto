@@ -181,10 +181,10 @@ bool rsa::set_parameters_in_key_message() {
 bool rsa::generate_rsa(int num_bits) {
   bit_size_modulus_ = num_bits;
 
-  big_num m(1 + 2 * num_bits / NBITSINUINT64);
-  big_num p(1 + num_bits / NBITSINUINT64);
-  big_num q(1 + num_bits / NBITSINUINT64);
-  big_num e(1, 0x010001ULL);
+  m_ = new big_num(1 + 2 * num_bits / NBITSINUINT64);
+  p_ = new big_num(1 + num_bits / NBITSINUINT64);
+  q_ = new big_num(1 + num_bits / NBITSINUINT64);
+  e_ = new big_num(1, 0x010001ULL);
 
   if (!big_gen_prime(*p_, num_bits / 2)) {
     return false;
@@ -195,7 +195,7 @@ bool rsa::generate_rsa(int num_bits) {
   if (!big_mult(*p_, *q_, *m_)) {
     return false;
   }
-  // compute d_
+  // compute d_, and the others
   if (!compute_fast_decrypt_parameters()) {
     return false;
   }
@@ -209,12 +209,52 @@ bool rsa::make_rsa_key(const char* name, const char* purpose, double secondstoli
   string p, q, m, e, d, dp, dq;
   string m_prime, p_prime, q_prime;
 
+  time_point t_now;
+
+  if (!t_now.time_now())
+    return false;
+  time_point t_expire;
+  t_expire.add_interval_to_time(t_now, secondstolive);
+
+  if (!t_now.encodeTime(&not_before))
+    return false;
+
+  if (!t_expire.encodeTime(&not_after))
+    return false;
+  not_before_.assign(not_before);
+  not_after_.assign(not_after);
+
   if (m_ != nullptr) {
     if (u64_array_to_bytes(m_->size(), m_->value_ptr(), &m) < 0) {
       success = false;
       goto done;
     }
   }
+  if (e_ != nullptr) {
+    if (u64_array_to_bytes(e_->size(), e_->value_ptr(), &e) < 0) {
+      success = false;
+      goto done;
+    }
+  }
+  if (p_ != nullptr) {
+    if (u64_array_to_bytes(p_->size(), p_->value_ptr(), &p) < 0) {
+      success = false;
+      goto done;
+    }
+  }
+  if (q_ != nullptr) {
+    if (u64_array_to_bytes(q_->size(), q_->value_ptr(), &q) < 0) {
+      success = false;
+      goto done;
+    }
+  }
+  if (d_ != nullptr) {
+    if (u64_array_to_bytes(d_->size(), d_->value_ptr(), &d) < 0) {
+      success = false;
+      goto done;
+    }
+  }
+
   rsa_key_ = make_rsakey("rsa", name, bit_size_modulus_,
     purpose, not_before.c_str(), not_after.c_str(), m, e,
     d, p, q, dp, dq, m_prime,

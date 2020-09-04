@@ -1,4 +1,4 @@
-// Copyright 2020 John Manferdelli, All Rights Reserved.
+// Cepyright 2020 John Manferdelli, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -914,6 +914,8 @@ void print_key_message(key_message& m) {
   printf("%s key\n", m.family_type().c_str());
   if (m.has_algorithm_type())
     printf("  Algorithm: %s\n", m.algorithm_type().c_str());
+  if (m.has_algorithm_type())
+    printf("  Key name : %s\n", m.algorithm_type().c_str());
   if (m.has_key_size())
     printf("  Key size : %d bits\n", m.key_size());
   if (m.has_key_name())
@@ -923,9 +925,7 @@ void print_key_message(key_message& m) {
   if (m.has_notbefore())
     printf("  Not before %s\n", m.notbefore().c_str());
   if (m.has_notafter())
-    printf("  not after: %s\n", m.notafter().c_str());
-  if (m.has_algorithm_type())
-    printf("  Key name : %s\n", m.algorithm_type().c_str());
+    printf("  Not after: %s\n", m.notafter().c_str());
   if (m.has_secret()) {
     printf("  Secret   : "); print_bytes((int)m.secret().size(),
                                 (byte*)m.secret().data());
