@@ -727,27 +727,207 @@ bool basic_number_theory_test1() {
   big_num n1(10);
   big_num n2(10);
 
-return true;
-  if (!big_extended_gcd(a, b, x, y, g))
-    return false;
-  if (!big_crt(n1, n2, c1, c2, r))
-    return false;
+  m.value_ptr()[0] = 0ULL;
+  m.value_ptr()[1] = 0x4ULL;
+  a.value_ptr()[0] = 0x08f0ULL;
+  a.value_ptr()[1] = 0x8000ULL;
+  a.normalize();
+  m. normalize();
+  if (FLAGS_print_all)  {
+    printf("Before mod: ");
+    a.print(); printf(" (mod ");
+    m.print(); printf(")\n");
+  }
   if (!big_mod_normalize(a, m))
     return false;
+  if (FLAGS_print_all)  {
+    printf("After mod : ");
+    a.print(); printf(" (mod ");
+    m.print(); printf(")\n");
+  }
+  big_num norm_cmp(2, 0x08f0);
+  if (big_compare(a, norm_cmp) != 0)
+     return false;
+  a.value_ptr()[0] = 93;
+  b.value_ptr()[0] = 37;
+  a.normalize();
+  b.normalize();
+  if (!big_extended_gcd(a, b, x, y, g))
+    return false;
+  if (FLAGS_print_all)  {
+    printf("(");
+    a.print();
+    printf(") (");
+    x.print();
+    printf(") + (");
+    b.print();
+    printf(") (");
+    y.print();
+    printf(") = (");
+    g.print();
+    printf(")\n");
+  }
+
+  a.zero_num();
+  a.value_ptr()[0] = 93;
+  m.zero_num();
+  m.value_ptr()[0] = 37;
+  a.normalize();
   if (!big_mod(a, m, r))
     return false;
+  if (FLAGS_print_all)  {
+    printf("(");
+    a.print();
+    printf(") (mod ");
+    m.print();
+    printf(") = (");
+    r.print();
+    printf(")\n");
+  }
+  if (r.value_ptr()[0] != 0x13)
+    return false;
+
+  b.zero_num();
+  b.value_ptr()[0] = 93;
+  a.normalize();
+  b.normalize();
+  r.zero_num();
   if (!big_mod_add(a, b, m, r))
     return false;
+  if (FLAGS_print_all)  {
+    printf("(");
+    a.print();
+    printf(") + (");
+    b.print();
+    printf(")  (mod ");
+    m.print();
+    printf(") = (");
+    r.print();
+    printf(")\n");
+  }
+  if (r.value_ptr()[0] != 0x1)
+    return false;
+
+  r.zero_num();
   if (!big_mod_neg(a, m, r))
     return false;
+  if (FLAGS_print_all)  {
+    printf("-(");
+    a.print();
+    printf(")  (mod ");
+    m.print();
+    printf(") = (");
+    r.print();
+    printf(")\n");
+  }
+  if (r.value_ptr()[0] != 0x12)
+    return false;
+
+  r.zero_num();
   if (!big_mod_mult(a, b, m, r))
     return false;
+  if (FLAGS_print_all)  {
+    printf("(");
+    a.print();
+    printf(") * (");
+    b.print();
+    printf(")  (mod ");
+    m.print();
+    printf(") = (");
+    r.print();
+    printf(")\n");
+  }
+  if (r.value_ptr()[0] != 0x1c)
+    return false;
+
+  r.zero_num();
   if (!big_mod_square(a, m, r))
     return false;
+  if (FLAGS_print_all)  {
+    printf("(");
+    a.print();
+    printf(") ** 2 (");
+    m.print();
+    printf(")  (mod ");
+    printf(") = (");
+    r.print();
+    printf(")\n");
+  }
+  if (r.value_ptr()[0] != 0x1c)
+    return false;
+
+  r.zero_num();
   if (!big_mod_div(a, b, m, r))
     return false;
+  if (FLAGS_print_all)  {
+    printf("(");
+    a.print();
+    printf(") / (");
+    b.print();
+    printf(")  (mod ");
+    m.print();
+    printf(") = (");
+    r.print();
+    printf(")\n");
+  }
+  if (r.value_ptr()[0] != 0x1)
+    return false;
+
+  r.zero_num();
+  e.value_ptr()[0] = 4ULL;
+  e.normalize();
   if (!big_mod_exp(a, e, m, r))
     return false;
+  if (FLAGS_print_all)  {
+    printf("(");
+    a.print();
+    printf(") ** (");
+    e.print();
+    printf(")  (mod ");
+    m.print();
+    printf(") = (");
+    r.print();
+    printf(")\n");
+  }
+  if (r.value_ptr()[0] != 0x7)
+    return false;
+
+  r.zero_num();
+  x.zero_num();
+  c1.value_ptr()[0] = 37;
+  c2.value_ptr()[0] = 93;
+  a.value_ptr()[0] = 140 % 37;
+  b.value_ptr()[0] = 140 % 93;
+  c1.normalize();
+  c2.normalize();
+  a.normalize();
+  b.normalize();
+  if (!big_crt(a, b, c1, c2, r))
+    return false;
+  if (!big_mult(c1, c2, x))
+    return false;
+  if (FLAGS_print_all)  {
+    printf("x = (");
+    a.print();
+    printf(")  (mod ");
+    c1.print();
+    printf(")\n");
+    printf("x = (");
+    b.print();
+    printf(")  (mod ");
+    c2.print();
+    printf(")\n");
+    printf("x = (");
+    r.print();
+    printf(") (mod ");
+    x.print();
+    printf(")\n");
+  }
+  if (r.value_ptr()[0] != 140)
+    return false;
+
+  return true;
+
   int num_bits = 1024;
   if (!big_gen_prime(p, num_bits, 25))
     return false;
@@ -762,6 +942,7 @@ return true;
     return false;
   if (!big_mod_square_root(n, p, r))
     return false;
+
   // if (!big_make_mont(a, int r, m, mont_a))
   // if (!big_mont_params(m, int r, m_prime))
   // if (!big_mont_reduce(big_num& a, int r, big_num& m, big_num& m_prime, big_num& mont_a))
