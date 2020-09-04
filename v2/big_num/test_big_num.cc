@@ -996,6 +996,21 @@ bool basic_number_theory_test1() {
   }
   if (s.value_ptr()[0] != 4)
     return false;
+
+  r.zero_num();
+  if (!big_mod_inv(n, p, r))
+    return false;
+  if (FLAGS_print_all)  {
+    printf("(");
+    n.print();
+    printf(") ^ -1  (mod ");
+    p.print();
+    printf(") = (");
+    r.print();
+    printf(")\n");
+  }
+  if (r.value_ptr()[0] != 224)
+    return false;
  
  
   return true;

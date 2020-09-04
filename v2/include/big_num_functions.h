@@ -52,6 +52,7 @@ bool big_mod_neg(big_num& a, big_num& m, big_num& r);
 bool big_mod_neg(big_num& a, big_num& m, big_num& r);
 bool big_mod_mult(big_num& a, big_num& b, big_num& m, big_num& r);
 bool big_mod_square(big_num& a, big_num& m, big_num& r);
+bool big_mod_inv(big_num& a, big_num& m, big_num& r);
 bool big_mod_div(big_num& a, big_num& b, big_num& m, big_num& r);
 bool big_mod_exp(big_num& a, big_num& e, big_num& m, big_num& r);
 bool big_gen_prime(big_num& p, uint64_t num_bits, int prime_trys=2500);
