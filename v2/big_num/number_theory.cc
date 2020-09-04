@@ -522,6 +522,7 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& s) {
     return false;
   }
   n.value_[0] = 2ULL;
+  n.normalize();
   while (!big_mod_is_square(n, p)) {
     if (!big_unsigned_add_to(n, big_one)) {
       return false;
@@ -590,6 +591,7 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& s) {
     }
     t1.copy_to(y);
   }
+  s.copy_from(x);
   return true;
 }
 
@@ -602,10 +604,11 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& s) {
 //  in all other cases, apply Tonneli-Shanks
 bool big_mod_square_root(big_num& n, big_num& p, big_num& r) {
   uint64_t bot = p.value_[0] & 0x7;
-  big_num p_temp(p.size_);
+  big_num p_temp(1 + 2 * p.size_);
 
-  if (bot == 1)
+  if (bot == 1) {
     return big_mod_tonelli_shanks(n, p, r);
+  }
 
   big_num t1(1 + 2 * p.size_);
   big_num t2(1 + 2 * p.size_);

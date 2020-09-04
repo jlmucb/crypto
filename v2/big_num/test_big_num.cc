@@ -926,6 +926,61 @@ bool basic_number_theory_test1() {
   if (r.value_ptr()[0] != 140)
     return false;
 
+  p.value_ptr()[0]= 3583;
+  p.normalize();
+  n.zero_num();
+  n.value_ptr()[0]= 4;
+  n.normalize();
+  if (FLAGS_print_all)  {
+    printf("(");
+    n.print();
+  }
+  if (big_mod_is_square(n, p)) {
+    if (FLAGS_print_all)  {
+      printf(") is a square (mod ");
+    }
+  }  else {
+    if (FLAGS_print_all)  {
+      printf(") is NOT a square (mod ");
+    }
+  }
+  if (FLAGS_print_all)  {
+    p.print();
+    printf(")\n");
+  }
+
+  r.zero_num();
+  p.normalize();
+  n.normalize();
+  if (!big_mod_square_root(n, p, r))
+    return false;
+  if (FLAGS_print_all)  {
+    printf("sqrt (");
+    n.print();
+    printf(")  (mod ");
+    p.print();
+    printf(") = ");
+    r.print();
+    printf(")\n");
+  }
+  if (r.value_ptr()[0] != 2)
+    return false;
+
+  s.zero_num();
+  if (!big_mod_tonelli_shanks(n, p, s))
+    return false;
+  if (FLAGS_print_all)  {
+    printf("tonelli-shanks sqrt (");
+    n.print();
+    printf(")  (mod ");
+    p.print();
+    printf(") = ");
+    s.print();
+    printf(")\n");
+  }
+  if (s.value_ptr()[0] != 2)
+    return false;
+ 
   return true;
 
   int num_bits = 1024;
@@ -935,12 +990,6 @@ bool basic_number_theory_test1() {
     return false;
   // if (!big_miller_rabin(n, random_a, 20))
   if (!big_is_prime(n))
-    return false;
-  if (!big_mod_is_square(n, p))
-    return false;
-  if (!big_mod_tonelli_shanks(a, p, s))
-    return false;
-  if (!big_mod_square_root(n, p, r))
     return false;
 
   // if (!big_make_mont(a, int r, m, mont_a))
