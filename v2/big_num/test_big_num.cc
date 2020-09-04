@@ -1012,15 +1012,15 @@ bool basic_number_theory_test1() {
   if (r.value_ptr()[0] != 224)
     return false;
  
- 
   return true;
 
-  int num_bits = 1024;
+  int num_bits = 128;
+  // if (!big_miller_rabin(n, random_a, 20))
+  //  return false;
   if (!big_gen_prime(p, num_bits, 25))
     return false;
   if (!big_high_bit(a))
     return false;
-  // if (!big_miller_rabin(n, random_a, 20))
   if (!big_is_prime(n))
     return false;
 
