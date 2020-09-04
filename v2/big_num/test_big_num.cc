@@ -1011,18 +1011,35 @@ bool basic_number_theory_test1() {
   }
   if (r.value_ptr()[0] != 224)
     return false;
- 
-  return true;
 
   int num_bits = 128;
-  // if (!big_miller_rabin(n, random_a, 20))
-  //  return false;
-  if (!big_gen_prime(p, num_bits, 25))
+  big_num** random_a = new big_num*[20];
+  for (int j = 0; j < 20; j++) {
+    random_a[j] = new big_num(5);
+    if (crypto_get_random_bytes((num_bits + NBITSINBYTE - 1)/ NBITSINBYTE, (byte*)random_a[j]->value_ptr()) < 0)
+      return false;
+    random_a[j]->normalize();
+  }
+  if (big_miller_rabin(n, random_a, 20)) {
+    printf("miller rabin returns true\n");
+  } else {
+    printf("miller rabin returns false\n");
+  }
+
+  printf("gen prime\n");
+  p.zero_num();
+  if (!big_gen_prime(p, num_bits, 250))
     return false;
-  if (!big_high_bit(a))
+  if (FLAGS_print_all)  {
+    printf("proposed prime: (");
+    p.print();
+    printf(")\n");
+  }
+  if (!big_high_bit(p))
     return false;
-  if (!big_is_prime(n))
+  if (!big_is_prime(p))
     return false;
+  return true;
 
   // if (!big_make_mont(a, int r, m, mont_a))
   // if (!big_mont_params(m, int r, m_prime))

@@ -351,10 +351,11 @@ bool big_gen_prime(big_num& p, uint64_t num_bits, int prime_trys) {
     p.zero_num();
     if (crypto_get_random_bytes((num_bits + NBITSINBYTE -1) / NBITSINBYTE, (byte*)p.value_) < 0)
       return false;
+    p.normalize();
     p.value_[p.size_ - 1] |= (1ULL) << 63;
     p.value_[0] |= 1ULL;
     p.normalize();
-    for (j = 0; j < 250; j++, i++) {
+    for (j = 0; j < prime_trys; j++, i++) {
       if (big_is_prime(p)) {
         return true;
       }
@@ -424,10 +425,9 @@ bool big_is_prime(big_num& n) {
     if (r == 0ULL)
       return false;
   }
-  // Fix
   for (int j = 0; j < 20; j++) {
     random_a[j] = new big_num(20);
-    if (crypto_get_random_bytes(32, (byte*)random_a[j]->value_ptr()) < 0)
+    if (crypto_get_random_bytes(n.size(), (byte*)random_a[j]->value_ptr()) < 0)
       return false;
     random_a[j]->normalize();
   }
