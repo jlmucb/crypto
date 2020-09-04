@@ -844,10 +844,19 @@ key_message* make_rsakey(const char* alg, const char* name, int bit_size,
     const char* purpose, const char* not_before, const char* not_after,
     string& mod, string& e, string& d, string& p, string& q, string& dp,
     string& dq, string& m_prime, string& p_prime, string& q_prime) {
-  key_message* m = new(key_message);
-  m->set_family_type("public");
-  m->set_algorithm_type("rsa");
-  return m;
+  key_message* km = new(key_message);
+  km->set_family_type("public");
+  km->set_algorithm_type("rsa");
+  if (name != nullptr)
+    km->set_key_name(name);
+  km->set_key_size(bit_size);
+  if (purpose != nullptr)
+    km->set_purpose(purpose);
+  if (not_before != nullptr)
+    km->set_notbefore(not_before);
+  if (not_after != nullptr)
+    km->set_notafter(not_after);
+  return km;
 }
 
 scheme_message* make_scheme(const char* name, const char* id,
