@@ -450,7 +450,6 @@ int main(int an, char** av) {
   }
 
   int result = RUN_ALL_TESTS();
-  printf("%d tests\n", result);
 
   close_crypto();
   return 0;

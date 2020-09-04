@@ -535,7 +535,6 @@ int main(int an, char** av) {
   int result = RUN_ALL_TESTS();
 
   close_crypto();
-  printf("%d tests\n", result);
-  printf("Tests complete\n");
+  printf("\n");
   return 0;
 }

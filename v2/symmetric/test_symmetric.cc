@@ -350,7 +350,7 @@ int main(int an, char** av) {
   ::testing::InitGoogleTest(&an, av);
 
   int result = RUN_ALL_TESTS();
-  printf("%d tests\n", result);
-  printf("Tests complete\n");
+
+  printf("\n");
   return 0;
 }
