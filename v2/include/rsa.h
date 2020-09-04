@@ -14,6 +14,7 @@
 // File: rsa.h
 
 #include "crypto_support.h"
+#include "big_num.h"
 #include <iostream>
 
 #ifndef _CRYPTO_RSA_H__
@@ -21,7 +22,7 @@
 class rsa {
  private:
   bool initialized_;
-  key_message rsa_key_;
+  key_message *rsa_key_;
   int bit_size_modulus_;
   big_num* m_;
   big_num* e_;
@@ -39,10 +40,12 @@ class rsa {
   ~rsa();
 
   bool compute_fast_decrypt_parameters();
+  bool get_serialized_key_message(string* s);
+  bool set_parameters_in_key_message();
   bool retrieve_parameters_from_key_message();
-  bool extract_key_message_from_serialized(string* s);
+  bool extract_key_message_from_serialized(string& s);
   bool generate_rsa(int num_bits);
-  bool make_rsa(const char* name, const char* purpose, double secondstolive);
+  bool make_rsa_key(const char* name, const char* purpose, double secondstolive);
   bool encrypt(int size_in, byte* in, int* size_out, byte* out, int speed);
   bool decrypt(int size_in, byte* in, int* size_out, byte* out, int speed);
 };

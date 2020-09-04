@@ -34,6 +34,7 @@ endif
 S= $(SRC_DIR)/rsa
 O= $(OBJ_DIR)/rsa
 S_SUPPORT=$(SRC_DIR)/crypto_support
+S_BIG_NUM=$(SRC_DIR)/big_num
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(S_SUPPORT) -I/usr/local/include
 
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
@@ -44,7 +45,8 @@ PROTO=protoc
 AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
-dobj=	$(O)/test_rsa.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o $(O)/rsa.o
+dobj=	$(O)/test_rsa.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o $(O)/rsa.o \
+	$(O)/globals.o $(O)/big_num.o $(O)/intel_digit_arith.o $(O)/basic_arith.o $(O)/number_theory.o
 
 all:	test_rsa.exe
 clean:
@@ -79,4 +81,24 @@ $(O)/crypto_names.o: $(S_SUPPORT)/crypto_names.cc
 $(O)/rsa.o: $(S)/rsa.cc
 	@echo "compiling rsa.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/rsa.o $(S)/rsa.cc
+
+$(O)/big_num.o: $(S_BIG_NUM)/big_num.cc
+	@echo "compiling big_num.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/big_num.o $(S_BIG_NUM)/big_num.cc
+
+$(O)/globals.o: $(S_BIG_NUM)/globals.cc
+	@echo "compiling globals.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/globals.o $(S_BIG_NUM)/globals.cc
+
+$(O)/intel_digit_arith.o: $(S_BIG_NUM)/intel_digit_arith.cc
+	@echo "compiling intel_digit_arith.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/intel_digit_arith.o $(S_BIG_NUM)/intel_digit_arith.cc
+
+$(O)/number_theory.o: $(S_BIG_NUM)/number_theory.cc
+	@echo "compiling number_theory.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/number_theory.o $(S_BIG_NUM)/number_theory.cc
+
+$(O)/basic_arith.o: $(S_BIG_NUM)/basic_arith.cc
+	@echo "compiling basic_arith.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/basic_arith.o $(S_BIG_NUM)/basic_arith.cc
 

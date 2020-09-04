@@ -14,6 +14,9 @@
 // File: rsa.cc
 
 #include "crypto_support.h"
+#include "big_num.h"
+#include "rsa.h"
+#include "big_num_functions.h"
 
 rsa::rsa() {
   initialized_ = true;
@@ -28,11 +31,16 @@ rsa::rsa() {
   m_prime_ = nullptr;
   p_prime_ = nullptr;
   q_prime_ = nullptr;
+  rsa_key_ = nullptr;
 }
 
 rsa::~rsa() {
   initialized_ = false;
   bit_size_modulus_ = 0;
+  if (rsa_key_ != nullptr) {
+    delete rsa_key_;
+    rsa_key_ = nullptr;
+  }
   if (m_ != nullptr) {
     m_->zero_num();
     delete m_;
@@ -86,20 +94,25 @@ rsa::~rsa() {
 }
 
 bool rsa::get_serialized_key_message(string* s) {
-  if (!rsa_key_.SerializeToString(*s);
+  if (rsa_key_ == nullptr)
+    return false;
+  if (!rsa_key_->SerializeToString(s))
     return false;
   return true;
 }
 
-bool rsa::extract_key_message_from_serialized_message(string& s) {
-  if (!rsa_key_.ParseFromString(*s);
+bool rsa::extract_key_message_from_serialized(string& s) {
+  if (rsa_key_ == nullptr)
     return false;
-  if (!rsa_key_retrieve_parameters_from_key_message())
+  if (!rsa_key_->ParseFromString(s))
+    return false;
+  if (!retrieve_parameters_from_key_message())
     return false;
   return true;
 }
 
 bool rsa::compute_fast_decrypt_parameters() {
+#if 0
   if (m_ == nullptr) {
     return false;
   }
@@ -152,14 +165,16 @@ bool rsa::compute_fast_decrypt_parameters() {
   if (!big_montParams(*q_, r, *q_prime_)) {
     return false;
   }
+#endif
   return true;
 }
 
 bool rsa::retrieve_parameters_from_key_message() {
+  // int bytes_to_u64_array(string& b, int size_n, uint64_t* n);
   return true;
 }
 
-bool rsa::set_parameters_in_key_message(key_message& msg) {
+bool rsa::set_parameters_in_key_message() {
   return true;
 }
 
@@ -171,13 +186,13 @@ bool rsa::generate_rsa(int num_bits) {
   big_num q(1 + num_bits / NBITSINUINT64);
   big_num e(1, 0x010001ULL);
 
-  if (!big_gen_prime(p_, num_bits / 2)) {
+  if (!big_gen_prime(*p_, num_bits / 2)) {
     return false;
   }
-  if (!big_gen_prime(q_, num_bits / 2)) {
+  if (!big_gen_prime(*q_, num_bits / 2)) {
     return false;
   }
-  if (!big_mult(p_, q_, m_)) {
+  if (!big_mult(*p_, *q_, *m_)) {
     return false;
   }
   // compute d_
@@ -187,12 +202,33 @@ bool rsa::generate_rsa(int num_bits) {
   return true;
 }
 
-bool rsa::make_rsa(const char* name, const char* purpose, double secondstolive) {
-  return true;
+bool rsa::make_rsa_key(const char* name, const char* purpose, double secondstolive) {
+  bool success = true;
+  string not_before;
+  string not_after;
+  string p, q, m, e, d, dp, dq;
+  string m_prime, p_prime, q_prime;
+
+  if (m_ != nullptr) {
+    if (u64_array_to_bytes(m_->size(), m_->value_ptr(), &m) < 0) {
+      success = false;
+      goto done;
+    }
+  }
+  rsa_key_ = make_rsakey("rsa", name, bit_size_modulus_,
+    purpose, not_before.c_str(), not_after.c_str(), m, e,
+    d, p, q, dp, dq, m_prime,
+    p_prime, q_prime);
+  if (rsa_key_ == nullptr)
+    return false;
+
+done:
+  return success;
 }
 
 bool rsa::encrypt(int size_in, byte* in, int* size_out, byte* out,
                      int speed) {
+#if 0
   int bytes_in_block = bit_size_modulus_ / NBITSINBYTE;
 
   if (size_in > bytes_in_block) {
@@ -259,11 +295,13 @@ bool rsa::encrypt(int size_in, byte* in, int* size_out, byte* out,
   }
   // ReverseCpy(new_byte_size, (byte*)int_out.value_, out);
   *size_out = new_byte_size;
+#endif
   return true;
 }
 
 bool rsa::decrypt(int size_in, byte* in, int* size_out, byte* out,
                      int speed) {
+#if 0
   int bytes_in_block = bit_size_modulus_ / NBITSINBYTE;
 
   if (size_in > bytes_in_block) {
@@ -327,5 +365,6 @@ bool rsa::decrypt(int size_in, byte* in, int* size_out, byte* out,
   }
   // ReverseCpy(new_byte_size, (byte*)int_out.value_, (byte*)out);
   *size_out = new_byte_size;
+#endif
   return true;
 }

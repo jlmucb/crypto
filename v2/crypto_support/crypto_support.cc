@@ -841,9 +841,9 @@ key_message* make_ecckey(const char* name, int bit_size, const char* purpose,
 }
 
 key_message* make_rsakey(const char* alg, const char* name, int bit_size,
-                           const char* purpose, const char* not_before,
-                           const char* not_after, string& mod,
-                           string& e, string& d, string& p, string& q) {
+    const char* purpose, const char* not_before, const char* not_after,
+    string& mod, string& e, string& d, string& p, string& q, string& dp,
+    string& dq, string& m_prime, string& p_prime, string& q_prime) {
   key_message* m = new(key_message);
   m->set_family_type("public");
   m->set_algorithm_type("rsa");

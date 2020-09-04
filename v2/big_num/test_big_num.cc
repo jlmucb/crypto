@@ -1089,6 +1089,6 @@ int main(int an, char** av) {
   int result = RUN_ALL_TESTS();
 
   close_crypto();
-  return 1;
+  return result;
 }
 

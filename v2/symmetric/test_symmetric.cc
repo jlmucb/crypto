@@ -352,5 +352,5 @@ int main(int an, char** av) {
   int result = RUN_ALL_TESTS();
 
   printf("\n");
-  return 0;
+  return result;
 }
