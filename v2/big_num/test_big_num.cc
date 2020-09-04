@@ -980,6 +980,23 @@ bool basic_number_theory_test1() {
   }
   if (s.value_ptr()[0] != 2)
     return false;
+
+  s.zero_num();
+  n.value_ptr()[0]= 16;
+  if (!big_mod_tonelli_shanks(n, p, s))
+    return false;
+  if (FLAGS_print_all)  {
+    printf("tonelli-shanks sqrt (");
+    n.print();
+    printf(")  (mod ");
+    p.print();
+    printf(") = ");
+    s.print();
+    printf(")\n");
+  }
+  if (s.value_ptr()[0] != 4)
+    return false;
+ 
  
   return true;
 
