@@ -16,6 +16,7 @@
 #include "crypto_support.h"
 
 rsa::rsa() {
+  initialized_ = true;
   bit_size_modulus_ = 0;
   m_ = nullptr;
   e_ = nullptr;
@@ -30,6 +31,7 @@ rsa::rsa() {
 }
 
 rsa::~rsa() {
+  initialized_ = false;
   bit_size_modulus_ = 0;
   if (m_ != nullptr) {
     m_->zero_num();
@@ -83,7 +85,17 @@ rsa::~rsa() {
   }
 }
 
-bool rsa::extract_key_message_from_serialized(string* s) {
+bool rsa::get_serialized_key_message(string* s) {
+  if (!rsa_key_.SerializeToString(*s);
+    return false;
+  return true;
+}
+
+bool rsa::extract_key_message_from_serialized_message(string& s) {
+  if (!rsa_key_.ParseFromString(*s);
+    return false;
+  if (!rsa_key_retrieve_parameters_from_key_message())
+    return false;
   return true;
 }
 
@@ -110,7 +122,6 @@ bool rsa::compute_fast_decrypt_parameters() {
     return false;
   }
   if (!big_mod_normalize(*d_, t)) {
-                  "exponent\n";
     return false;
   }
   t.zero_num();
@@ -119,7 +130,6 @@ bool rsa::compute_fast_decrypt_parameters() {
     return false;
   }
   if (!big_mod_normalize(*dp_, p_minus_1)) {
-                  "exponent\n";
     return false;
   }
   t.zero_num();
@@ -128,7 +138,6 @@ bool rsa::compute_fast_decrypt_parameters() {
     return false;
   }
   if (!big_mod_normalize(*dq_, q_minus_1)) {
-                  "exponent\n";
     return false;
   }
   r_ = big_high_bit(*m_);
@@ -146,7 +155,7 @@ bool rsa::compute_fast_decrypt_parameters() {
   return true;
 }
 
-bool rsa::retrieve_parameters_from_key_message(key_message& msg) {
+bool rsa::retrieve_parameters_from_key_message() {
   return true;
 }
 
@@ -154,55 +163,31 @@ bool rsa::set_parameters_in_key_message(key_message& msg) {
   return true;
 }
 
-bool rsa::generate_rsa(const char* name, const char* usage,
-                            const char* owner, int num_bits,
-                            double seconds_to_live) {
+bool rsa::generate_rsa(int num_bits) {
+  bit_size_modulus_ = num_bits;
+
   big_num m(1 + 2 * num_bits / NBITSINUINT64);
   big_num p(1 + num_bits / NBITSINUINT64);
   big_num q(1 + num_bits / NBITSINUINT64);
   big_num e(1, 0x010001ULL);
 
-  if (!big_gen_prime(p, num_bits / 2)) {
+  if (!big_gen_prime(p_, num_bits / 2)) {
     return false;
   }
-  if (!big_gen_prime(q, num_bits / 2)) {
+  if (!big_gen_prime(q_, num_bits / 2)) {
     return false;
   }
-  if (!big_mult(p, q, m)) {
+  if (!big_mult(p_, q_, m_)) {
     return false;
   }
-  return make_rsa(name, usage, owner, num_bits, seconds_to_live, m, e, p, q);
-}
-
-bool rsa::make_rsa(const char* name, const char* usage, const char* owner,
-                        int num_bits, double secondstolive, big_num& m,
-                        big_num& e, big_num& p, big_num& q) {
-  char mod_len[256];
-
-  sprintf(mod_len, "rsa-%d", num_bits);
-  bit_size_modulus_ = num_bits;
-  key_valid_ = true;
-  key_type_ = new string(mod_len);
-  key_name_ = new string(name);
-  key_usage_ = new string(usage);
-  key_owner_ = new string(owner);
-  not_before_ = new TimePoint();
-  not_after_ = new TimePoint();
-  not_before_->TimePointNow();
-  not_after_->TimePointLaterBySeconds(*not_before_, secondstolive);
-  m_ = new big_num(m);
-  e_ = new big_num(e);
-  p_ = new big_num(p);
-  q_ = new big_num(q);
-  d_ = new big_num(1 + 2 * num_bits / NBITSINUINT64);
-  dp_ = new big_num(1 + 2 * num_bits / (NBITSINUINT64));
-  dq_ = new big_num(1 + 2 * num_bits / (NBITSINUINT64));
-  m_prime_ = new big_num(1 + 2 * num_bits / (NBITSINUINT64));
-  p_prime_ = new big_num(1 + num_bits / (NBITSINUINT64));
-  q_prime_ = new big_num(1 + num_bits / (NBITSINUINT64));
+  // compute d_
   if (!compute_fast_decrypt_parameters()) {
     return false;
   }
+  return true;
+}
+
+bool rsa::make_rsa(const char* name, const char* purpose, double secondstolive) {
   return true;
 }
 

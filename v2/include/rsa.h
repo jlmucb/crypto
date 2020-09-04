@@ -21,7 +21,7 @@
 class rsa {
  private:
   bool initialized_;
-  key_message rsa_key;
+  key_message rsa_key_;
   int bit_size_modulus_;
   big_num* m_;
   big_num* e_;
@@ -39,13 +39,10 @@ class rsa {
   ~rsa();
 
   bool compute_fast_decrypt_parameters();
-  bool retrieve_parameters_from_key_message(key_message& msg);
-  bool set_parameters_in_key_message(key_message& msg);
+  bool retrieve_parameters_from_key_message();
   bool extract_key_message_from_serialized(string* s);
-  bool generate_rsa(const char* name, const char* usage, const char* owner,
-                         int num_bits, double seconds_to_live);
-  make_rsa(const char* name, const char* usage, const char* owner, int num_bits,
-                double secondstolive, big_num& m, big_num& e, big_num& p, big_num& q);
+  bool generate_rsa(int num_bits);
+  bool make_rsa(const char* name, const char* purpose, double secondstolive);
   bool encrypt(int size_in, byte* in, int* size_out, byte* out, int speed);
   bool decrypt(int size_in, byte* in, int* size_out, byte* out, int speed);
 };
