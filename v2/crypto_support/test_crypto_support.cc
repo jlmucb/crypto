@@ -325,7 +325,7 @@ bool file_test() {
   return true;
 }
 
-bool key_test() {
+bool symmetric_key_test() {
   string s;
 
   for(int i = 0; i < 32; i++)
@@ -344,6 +344,46 @@ bool key_test() {
   nm.ParseFromString(ns);
   printf("\nrecovered\n");
   print_key_message(nm);
+  return true;
+}
+
+bool rsa_key_test() {
+  string empty;
+  string mod;
+  string e;
+  string d;
+  string p;
+  string q;
+
+  empty.clear();
+  mod.clear();
+  e.clear();
+  d.clear();
+  p.clear();
+  q.clear();
+
+  byte mod_set[5] = { 1, 2, 3, 4, 5};
+  mod.assign((char*)mod_set, 5);
+
+  byte e_set[5] = {6, 7, 8, 9, 10};
+  e.assign((char*)e_set, 5);
+
+  byte d_set[5] = {0xa, 0xb, 0xc, 0xd, 0xe};
+  d.assign((char*)d_set, 5);
+
+  byte p_set[5] = {0x1a, 0x1b, 0x1c, 0x1d, 0x1e};
+  p.assign((char*)p_set, 5);
+
+  byte q_set[5] = {0x2a, 0x2b, 0x2c, 0x2d, 0x2e};
+  q.assign((char*)q_set, 5);
+
+  key_message* km = make_rsakey("rsa", "test_key", 256, nullptr,
+                     "30 August 2020, 20:52:28.000000Z", "30 August 2025, 20:52:28.000000Z", 
+                     mod, e, d, p, q, empty, empty, empty, empty, empty);
+
+  if (km == nullptr)
+    return false;
+  print_key_message(*km);
   return true;
 }
 
@@ -420,8 +460,9 @@ TEST (endian, endian_test) {
 TEST (fileutilities, file_test) {
   EXPECT_TRUE(file_test());
 }
-TEST (keyutilities, key_test) {
-  EXPECT_TRUE(key_test());
+TEST (keyutilities, key_tests) {
+  EXPECT_TRUE(symmetric_key_test());
+  EXPECT_TRUE(rsa_key_test());
 }
 TEST (u64stuff, u64_array_bytes_test) {
   EXPECT_TRUE(u64_array_bytes_test());

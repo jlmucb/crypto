@@ -168,8 +168,8 @@ class file_util {
   void close();
   int read_a_block(int size, byte* buf);
   bool write_a_block(int size, byte* buf);
-  int read_file(char* filename, int size, byte* buf);
-  bool write_file(char* filename, int size, byte* buf);
+  int read_file(const char* filename, int size, byte* buf);
+  bool write_file(const char* filename, int size, byte* buf);
 };
 
 key_message* make_symmetrickey(const char* alg, const char* name, int bit_size,

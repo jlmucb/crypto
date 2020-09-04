@@ -39,6 +39,11 @@ message rsa_private_parameters_message {
    optional bytes d                            = 1;
    optional bytes p                            = 2;
    optional bytes q                            = 3;
+   optional bytes dp                           = 4;
+   optional bytes dq                           = 5;
+   optional bytes m_prime                      = 6;
+   optional bytes p_prime                      = 7;
+   optional bytes q_prime                      = 8;
 };
 
 message point_message {
@@ -67,14 +72,18 @@ message hmac_parameters_message {
 // algorithm: aes, twofish, rc4, simon, spec, tea
 //    des, rsa, ecc, sha256, sha1
 message key_message {
-  optional string family_type                   = 1;
-  optional string algorithm_type                = 2;
-  optional string key_name                      = 3;
-  optional int32 key_size                       = 4;
-  optional string purpose                       = 5;
-  optional string notBefore                     = 6;
-  optional string notAfter                      = 7;
-  optional bytes secret                         = 8;
+  optional string family_type                         = 1;
+  optional string algorithm_type                      = 2;
+  optional string key_name                            = 3;
+  optional int32 key_size                             = 4;
+  optional string purpose                             = 5;
+  optional string notBefore                           = 6;
+  optional string notAfter                            = 7;
+  optional bytes secret                               = 8;
+  optional rsa_public_parameters_message rsa_pub      = 9;
+  optional rsa_private_parameters_message rsa_priv    =10;
+  optional ecc_public_parameters_message ecc_pub      =11;
+  optional ecc_private_parameters_message ecc_priv    =12;
 }
 
 message scheme_message {

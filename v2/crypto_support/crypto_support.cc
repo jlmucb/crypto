@@ -692,7 +692,7 @@ bool file_util::write_a_block(int size, byte* buf) {
   return write(fd_, buf, size) > 0;
 }
 
-int file_util::read_file(char* filename, int size, byte* buf) {
+int file_util::read_file(const char* filename, int size, byte* buf) {
   if (!open(filename))
     return -1;
   if (bytes_in_file_ < size) {
@@ -704,7 +704,7 @@ int file_util::read_file(char* filename, int size, byte* buf) {
   return n;
 }
 
-bool file_util::write_file(char* filename, int size, byte* buf) {
+bool file_util::write_file(const char* filename, int size, byte* buf) {
   if (!create(filename))
     return -1;
   int n = write_a_block(size, buf);
@@ -856,6 +856,20 @@ key_message* make_rsakey(const char* alg, const char* name, int bit_size,
     km->set_notbefore(not_before);
   if (not_after != nullptr)
     km->set_notafter(not_after);
+
+  rsa_public_parameters_message* pub = km->mutable_rsa_pub();
+  pub->set_modulus((void*)mod.data(), (int)mod.size());
+  pub->set_e((void*)e.data(), (int)e.size());
+
+  rsa_private_parameters_message* priv = km->mutable_rsa_priv();
+  priv->set_d((void*)d.data(), (int)d.size());
+  priv->set_p((void*)p.data(), (int)p.size());
+  priv->set_q((void*)q.data(), (int)q.size());
+  priv->set_dq((void*)dq.data(), (int)dq.size());
+  priv->set_m_prime((void*) m_prime.data(), (int)m_prime.size());
+  priv->set_p_prime((void*) p_prime.data(), (int)p_prime.size());
+  priv->set_q_prime((void*) q_prime.data(), (int)q_prime.size());
+
   return km;
 }
 
@@ -915,6 +929,42 @@ void print_key_message(key_message& m) {
   if (m.has_secret()) {
     printf("  Secret   : "); print_bytes((int)m.secret().size(),
                                 (byte*)m.secret().data());
+  }
+  if (m.has_rsa_pub()) {
+    if (m.rsa_pub().has_modulus() && (int)m.rsa_pub().modulus().size() > 0) {
+      printf("modulus: ");
+      print_bytes((int)m.rsa_pub().modulus().size(), (byte*)m.rsa_pub().modulus().data());
+    }
+    if (m.rsa_pub().has_e() && (int)m.rsa_pub().e().size() > 0) {
+      printf("e      : ");
+      print_bytes((int)m.rsa_pub().e().size(), (byte*)m.rsa_pub().e().data());
+    }
+  }
+  if (m.has_rsa_priv() && (int)m.rsa_priv().d().size() > 0) {
+    if (m.rsa_priv().has_d()) {
+      printf("d      : ");
+      print_bytes((int)m.rsa_priv().d().size(), (byte*)m.rsa_priv().d().data());
+    }
+    if (m.rsa_priv().has_p() && (int)m.rsa_priv().p().size() > 0) {
+      printf("p      : ");
+      print_bytes((int)m.rsa_priv().p().size(), (byte*)m.rsa_priv().p().data());
+    }
+    if (m.rsa_priv().has_q() && (int)m.rsa_priv().q().size() > 0) {
+      printf("q      : ");
+      print_bytes((int)m.rsa_priv().q().size(), (byte*)m.rsa_priv().q().data());
+    }
+    if (m.rsa_priv().has_m_prime() && (int)m.rsa_priv().m_prime().size() > 0) {
+      printf("m_prime: ");
+      print_bytes((int)m.rsa_priv().m_prime().size(), (byte*)m.rsa_priv().m_prime().data());
+    }
+    if (m.rsa_priv().has_p_prime() && (int)m.rsa_priv().p_prime().size() > 0) {
+      printf("p_prime: ");
+      print_bytes((int)m.rsa_priv().p_prime().size(), (byte*)m.rsa_priv().p_prime().data());
+    }
+    if (m.rsa_priv().has_q_prime() && (int)m.rsa_priv().q_prime().size() > 0) {
+      printf("q_prime: ");
+      print_bytes((int)m.rsa_priv().q_prime().size(), (byte*)m.rsa_priv().q_prime().data());
+    }
   }
 }
 
