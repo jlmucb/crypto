@@ -36,6 +36,7 @@ class rsa {
   big_num* q_prime_;
   string not_before_;
   string not_after_;
+  int r_;
 
   rsa();
   ~rsa();

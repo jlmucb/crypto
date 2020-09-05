@@ -112,7 +112,6 @@ bool rsa::extract_key_message_from_serialized(string& s) {
 }
 
 bool rsa::compute_fast_decrypt_parameters() {
-#if 0
   if (m_ == nullptr) {
     return false;
   }
@@ -131,12 +130,17 @@ bool rsa::compute_fast_decrypt_parameters() {
   if (!big_mult(p_minus_1, q_minus_1, t)) {
     return false;
   }
+  t.normalize();
+  d_->zero_num();
   if (!big_extended_gcd(t, *e_, y, *d_, g)) {
     return false;
   }
-  if (!big_mod_normalize(*d_, t)) {
+  if (!big_mod_normalize(*d_, t))
     return false;
-  }
+
+return true;
+// Fix
+
   t.zero_num();
   y.zero_num();
   if (!big_extended_gcd(p_minus_1, *e_, y, *dp_, g)) {
@@ -153,19 +157,20 @@ bool rsa::compute_fast_decrypt_parameters() {
   if (!big_mod_normalize(*dq_, q_minus_1)) {
     return false;
   }
+return true;
   r_ = big_high_bit(*m_);
-  if (!big_montParams(*m_, r_, *m_prime_)) {
+  if (!big_mont_params(*m_, r_, *m_prime_)) {
     return false;
   }
   int r = big_high_bit(*p_);
-  if (!big_montParams(*p_, r, *p_prime_)) {
+  if (!big_mont_params(*p_, r, *p_prime_)) {
     return false;
   }
   r = big_high_bit(*q_);
-  if (!big_montParams(*q_, r, *q_prime_)) {
+  if (!big_mont_params(*q_, r, *q_prime_)) {
     return false;
   }
-#endif
+
   return true;
 }
 
@@ -372,6 +377,7 @@ bool rsa::generate_rsa(int num_bits) {
   p_ = new big_num(1 + num_bits / NBITSINUINT64);
   q_ = new big_num(1 + num_bits / NBITSINUINT64);
   e_ = new big_num(1, 0x010001ULL);
+  d_ = new big_num(1 + num_bits / NBITSINUINT64);
 
   if (!big_gen_prime(*p_, num_bits / 2)) {
     return false;
@@ -382,6 +388,7 @@ bool rsa::generate_rsa(int num_bits) {
   if (!big_mult(*p_, *q_, *m_)) {
     return false;
   }
+
   // compute d_, and the others
   if (!compute_fast_decrypt_parameters()) {
     return false;
@@ -455,7 +462,6 @@ done:
 
 bool rsa::encrypt(int size_in, byte* in, int* size_out, byte* out,
                      int speed) {
-#if 0
   int bytes_in_block = bit_size_modulus_ / NBITSINBYTE;
 
   if (size_in > bytes_in_block) {
@@ -471,7 +477,7 @@ bool rsa::encrypt(int size_in, byte* in, int* size_out, byte* out,
   big_num int_outp(1 + 4 * new_byte_size / sizeof(uint64_t));
   big_num int_outq(1 + 4 * new_byte_size / sizeof(uint64_t));
 
-  // ReverseCpy(new_byte_size, in, (byte*)int_in.value_);
+  reverse_bytes(new_byte_size, in, (byte*)int_in.value_);
   int_in.normalize();
   if (speed == 0) {
     if (!big_mod_exp(int_in, *e_, *m_, int_out)) {
@@ -520,15 +526,13 @@ bool rsa::encrypt(int size_in, byte* in, int* size_out, byte* out,
   } else {
     return false;
   }
-  // ReverseCpy(new_byte_size, (byte*)int_out.value_, out);
+  reverse_bytes(new_byte_size, (byte*)int_out.value_, out);
   *size_out = new_byte_size;
-#endif
   return true;
 }
 
 bool rsa::decrypt(int size_in, byte* in, int* size_out, byte* out,
                      int speed) {
-#if 0
   int bytes_in_block = bit_size_modulus_ / NBITSINBYTE;
 
   if (size_in > bytes_in_block) {
@@ -544,7 +548,7 @@ bool rsa::decrypt(int size_in, byte* in, int* size_out, byte* out,
   big_num int_outp(1 + 4 * new_byte_size / sizeof(uint64_t));
   big_num int_outq(1 + 4 * new_byte_size / sizeof(uint64_t));
 
-  //ReverseCpy(new_byte_size, in, (byte*)int_in.value_);
+  reverse_bytes(new_byte_size, in, (byte*)int_in.value_);
   int_in.normalize();
   if (speed == 0) {
     if (!big_mod_exp(int_in, *d_, *m_, int_out)) {
@@ -590,8 +594,8 @@ bool rsa::decrypt(int size_in, byte* in, int* size_out, byte* out,
   } else {
     return false;
   }
-  // ReverseCpy(new_byte_size, (byte*)int_out.value_, (byte*)out);
+  reverse_bytes(new_byte_size, (byte*)int_out.value_, (byte*)out);
   *size_out = new_byte_size;
-#endif
+
   return true;
 }

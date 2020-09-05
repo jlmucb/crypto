@@ -334,15 +334,18 @@ bool symmetric_key_test() {
                                "30 August 2025, 20:52:28.000000Z", s);
   if (m == nullptr)
     return false;
-  print_key_message(*m);
+  if (FLAGS_print_all)
+    print_key_message(*m);
 
   string ns;
   m->SerializeToString(&ns);
   delete m;
   key_message nm;
   nm.ParseFromString(ns);
-  printf("\nrecovered\n");
-  print_key_message(nm);
+  if (FLAGS_print_all) {
+    printf("\nrecovered\n");
+    print_key_message(nm);
+  }
   return true;
 }
 
@@ -382,7 +385,8 @@ bool rsa_key_test() {
 
   if (km == nullptr)
     return false;
-  print_key_message(*km);
+  if (FLAGS_print_all)
+    print_key_message(*km);
   return true;
 }
 

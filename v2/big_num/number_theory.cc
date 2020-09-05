@@ -151,6 +151,7 @@ bool big_mod_normalize(big_num& a, big_num& m) {
     t1.zero_num();
     if (!big_add(a, t2, t1))
       return false;
+    a.zero_num();
     t1.copy_to(a);
   }
   if (a.sign_)
@@ -160,6 +161,7 @@ bool big_mod_normalize(big_num& a, big_num& m) {
     if (!big_unsigned_euclid(a, m, t1, t2))
       return false;
     t2.normalize();
+    a.zero_num();
     a.copy_from(t2);
     a.normalize();
   }
