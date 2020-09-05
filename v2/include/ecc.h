@@ -67,8 +67,9 @@ class ecc {
   ecc_curve* c_;
   string not_before_;
   string not_after_;
-  curve_point* public_point_;
   curve_point* private_point_;
+  big_num* order_of_private_point_;
+  curve_point* public_point_;  // public_point = private_point * secret
   string secret_;
   
   ecc();
