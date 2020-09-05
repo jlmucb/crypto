@@ -785,7 +785,7 @@ ecc::ecc() {
   prime_bit_size_ = 0;
   p_= nullptr;
   c_ = nullptr;
-  order_of_private_point_ = nullptr;
+  order_of_base_point_ = nullptr;
   public_point_ = nullptr;
   private_point_ = nullptr;
 }
