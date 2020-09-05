@@ -1,5 +1,5 @@
 //
-// Copyright 2014 John Manferdelli, All Rights Reserved.
+// Copyright 2014 John Manferdelli, All r_ptights r_pteserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -82,36 +82,36 @@ void curve_point::make_zero() {
   z_->zero_num();
 }
 
-bool curve_point::copy_from(curve_point& P) {
-  x_->copy_from(*P.x_);
-  y_->copy_from(*P.y_);
-  z_->copy_from(*P.z_);
+bool curve_point::copy_from(curve_point& pt) {
+  x_->copy_from(*pt.x_);
+  y_->copy_from(*pt.y_);
+  z_->copy_from(*pt.z_);
   return true;
 }
 
-bool curve_point::copy_to(curve_point& P) {
-  x_->copy_to(*P.x_);
-  y_->copy_to(*P.y_);
-  z_->copy_to(*P.z_);
+bool curve_point::copy_to(curve_point& pt) {
+  x_->copy_to(*pt.x_);
+  y_->copy_to(*pt.y_);
+  z_->copy_to(*pt.z_);
   return true;
 }
 
-curve_point::curve_point(curve_point& P) {
-  x_ = new big_num(P.x_->capacity_);
-  x_->copy_from(*P.x_);
-  y_ = new big_num(P.y_->capacity_);
-  y_->copy_from(*P.y_);
-  z_ = new big_num(P.z_->capacity_);
-  z_->copy_from(*P.z_);
+curve_point::curve_point(curve_point& pt) {
+  x_ = new big_num(pt.x_->capacity_);
+  x_->copy_from(*pt.x_);
+  y_ = new big_num(pt.y_->capacity_);
+  y_->copy_from(*pt.y_);
+  z_ = new big_num(pt.z_->capacity_);
+  z_->copy_from(*pt.z_);
 }
 
-curve_point::curve_point(curve_point& P, int capacity) {
+curve_point::curve_point(curve_point& pt, int capacity) {
   x_ = new big_num(capacity);
-  x_->copy_from(*P.x_);
+  x_->copy_from(*pt.x_);
   y_ = new big_num(capacity);
-  y_->copy_from(*P.y_);
+  y_->copy_from(*pt.y_);
   z_ = new big_num(capacity);
-  z_->copy_from(*P.z_);
+  z_->copy_from(*pt.z_);
 }
 
 void curve_point::clear() {
@@ -187,11 +187,11 @@ void ecc_curve::clear() {
 void ecc_curve::print_curve() {
   if (a_ != nullptr) {
     printf("Curve: y^2= x^3 + ");
-    PrintNumToConsole(*a_, 10ULL);
+    ptrintNumToConsole(*a_, 10ULL);
     printf(" x + ");
-    PrintNumToConsole(*b_, 10ULL);
+    ptrintNumToConsole(*b_, 10ULL);
     printf(" (mod ");
-    PrintNumToConsole(*p_, 10ULL);
+    ptrintNumToConsole(*p_, 10ULL);
     printf(")\n");
   }
 }
@@ -199,12 +199,12 @@ void ecc_curve::print_curve() {
 // Disc= -(4a^3+27b^2) (mod p)
 
 /*
- *  Pick parameter k.
+ *  pick parameter k.
  *  x= m<<shift+j
  *  for the first j: x^3+ax+b (mod p) is has a square root, y
- *  Point is (x,y)
+ *  point is (x,y)
  */
-bool ecc_embed(ecc_curve& c, big_num& m, curve_point& P, int shift, int trys) {
+bool ecc_embed(ecc_curve& c, big_num& m, curve_point& pt, int shift, int trys) {
   big_num m_x(2 * c.p_->capacity_);
   big_num t1(2 * c.p_->capacity_);
   big_num t2(2 * c.p_->capacity_);
@@ -237,12 +237,12 @@ bool ecc_embed(ecc_curve& c, big_num& m, curve_point& P, int shift, int trys) {
       return false;
     }
     if (big_mod_IsSquare(t1, *c.p_)) {
-      if (!big_mod_SquareRoot(t1, *c.p_, *P.y_)) {
+      if (!big_mod_Squarer_ptoot(t1, *c.p_, *pt.y_)) {
         return false;
       }
-      P.x_->copy_from(m_x);
-      P.z_->zero_num();
-      P.z_->value_[0] = 1ULL;
+      pt.x_->copy_from(m_x);
+      pt.z_->zero_num();
+      pt.z_->value_[0] = 1ULL;
       break;
     }
     if (!BigUnsignedaddTo(m_x, big_one)) {
@@ -255,20 +255,20 @@ bool ecc_embed(ecc_curve& c, big_num& m, curve_point& P, int shift, int trys) {
   return true;
 }
 
-bool ecc_extract(ecc_curve& c, curve_point& P, big_num& m, int shift) {
+bool ecc_extract(ecc_curve& c, curve_point& pt, big_num& m, int shift) {
   big_num t1(2 * c.p_->capacity_);
   big_num t2(2 * c.p_->capacity_);
   big_num t3(2 * c.p_->capacity_);
 
   m.zero_num();
-  if (!big_mod_mult(*P.x_, *P.x_, *c.p_, t1)) {
+  if (!big_mod_mult(*pt.x_, *pt.x_, *c.p_, t1)) {
     return false;
   }
-  if (!big_mod_mult(*P.x_, t1, *c.p_, t2)) {
+  if (!big_mod_mult(*pt.x_, t1, *c.p_, t2)) {
     return false;
   }
   t1.zero_num();
-  if (!big_mod_mult(*P.x_, *c.a_, *c.p_, t1)) {
+  if (!big_mod_mult(*pt.x_, *c.a_, *c.p_, t1)) {
     return false;
   }
   if (!big_mod_add(t1, t2, *c.p_, t3)) {
@@ -279,13 +279,13 @@ bool ecc_extract(ecc_curve& c, curve_point& P, big_num& m, int shift) {
     return false;
   }
   t1.zero_num();
-  if (!big_mod_mult(*P.y_, *P.y_, *c.p_, t1)) {
+  if (!big_mod_mult(*pt.y_, *pt.y_, *c.p_, t1)) {
     return false;
   }
   if (big_compare(t1, t2) != 0) {
     return false;
   }
-  if (!big_shift(*P.x_, -shift, m)) {
+  if (!big_shift(*pt.x_, -shift, m)) {
     return false;
   }
   return true;
@@ -293,49 +293,49 @@ bool ecc_extract(ecc_curve& c, curve_point& P, big_num& m, int shift) {
 
 /*
  *  y^2= x^3+ax+b (mod p)
- *  P=(x1, y1) and Q=(x2, y2).  Want P+Q=R=(x3,y3).
- *  if P= O, R=Q.
- *  if Q= O, R=P.
- *  if x1=x2 and y1=-y2, R= O
+ *  pt=(x1, y1) and q_pt=(x2, y2).  Want pt+q_pt=r_pt=(x3,y3).
+ *  if pt= O, r_pt=q_pt.
+ *  if q_pt= O, r_pt=pt.
+ *  if x1=x2 and y1=-y2, r_pt= O
  *  if x1=x2 and y1+y2!=0, m= (3a1^2+a)/(y1+y2) otherwise
  *    m= (y2-y1)/(x2-x1)
  *    x3= m^2-x1-x2, y3= m(x1-x3)-y1
  */
-bool ecc_add(ecc_curve& c, curve_point& P, curve_point& Q, curve_point& R) {
-  P.normalize(*c.p_);
-  Q.normalize(*c.p_);
+bool ecc_add(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_point& r_pt) {
+  pt.normalize(*c.p_);
+  q_pt.normalize(*c.p_);
 
-  if (P.is_zero()) {
-    return Q.copy_to(R);
+  if (pt.is_zero()) {
+    return q_pt.copy_to(r_pt);
   }
-  if (Q.is_zero()) {
-    return P.copy_to(R);
+  if (q_pt.is_zero()) {
+    return pt.copy_to(r_pt);
   }
   big_num m(2 * c.p_->size_);
   big_num t1(2 * c.p_->size_);
   big_num t2(2 * c.p_->size_);
   big_num t3(2 * c.p_->size_);
 
-  R.z_->copy_from(big_one);
-  if (big_compare(*P.x_, *Q.x_) != 0) {
-    if (!big_mod_sub(*Q.x_, *P.x_, *c.p_, t1)) {
+  r_pt.z_->copy_from(big_one);
+  if (big_compare(*pt.x_, *q_pt.x_) != 0) {
+    if (!big_mod_sub(*q_pt.x_, *pt.x_, *c.p_, t1)) {
       return false;
     }
-    if (!big_mod_sub(*Q.y_, *P.y_, *c.p_, t2)) {
+    if (!big_mod_sub(*q_pt.y_, *pt.y_, *c.p_, t2)) {
       return false;
     }
     if (!big_mod_Div(t2, t1, *c.p_, m)) {
       return false;
     }
   } else {
-    if (!big_mod_add(*P.y_, *Q.y_, *c.p_, t1)) {
+    if (!big_mod_add(*pt.y_, *q_pt.y_, *c.p_, t1)) {
       return false;
     }
     if (t1.is_zero()) {
-      R.make_zero();
+      r_pt.make_zero();
       return true;
     }
-    if (!big_mod_mult(*P.x_, *P.x_, *c.p_, t3)) {
+    if (!big_mod_mult(*pt.x_, *pt.x_, *c.p_, t3)) {
       return false;
     }
     if (!big_mod_mult(big_three, t3, *c.p_, t2)) {
@@ -354,90 +354,90 @@ bool ecc_add(ecc_curve& c, curve_point& P, curve_point& Q, curve_point& R) {
   if (!big_mod_mult(m, m, *c.p_, t1)) {
     return false;
   }
-  if (!big_mod_sub(t1, *P.x_, *c.p_, t2)) {
+  if (!big_mod_sub(t1, *pt.x_, *c.p_, t2)) {
     return false;
   }
-  if (!big_mod_sub(t2, *Q.x_, *c.p_, *R.x_)) {
+  if (!big_mod_sub(t2, *q_pt.x_, *c.p_, *r_pt.x_)) {
     return false;
   }
   t1.zero_num();
   t2.zero_num();
   t3.zero_num();
-  if (!big_mod_sub(*P.x_, *R.x_, *c.p_, t1)) {
+  if (!big_mod_sub(*pt.x_, *r_pt.x_, *c.p_, t1)) {
     return false;
   }
   if (!big_mod_mult(m, t1, *c.p_, t2)) {
     return false;
   }
-  if (!big_mod_sub(t2, *P.y_, *c.p_, *R.y_)) {
+  if (!big_mod_sub(t2, *pt.y_, *c.p_, *r_pt.y_)) {
     return false;
   }
   return true;
 }
 
-bool ecc_sub(ecc_curve& c, curve_point& P, curve_point& Q, curve_point& R) {
-  if (Q.is_zero()) {
-    R.copy_from(P);
+bool ecc_sub(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_point& r_pt) {
+  if (q_pt.is_zero()) {
+    r_pt.copy_from(pt);
     return true;
   }
 
-  curve_point minus_Q(Q);
+  curve_point minus_q_pt(q_pt);
   big_num t(2 * c.p_->capacity_);
-  if (!big_sub(*c.p_, *Q.y_, t)) {
+  if (!big_sub(*c.p_, *q_pt.y_, t)) {
     return false;
   }
   if (!big_mod_normalize(t, *c.p_)) {
     return false;
   }
-  minus_Q.y_->copy_from(t);
-  return ecc_add(c, P, minus_Q, R);
+  minus_q_pt.y_->copy_from(t);
+  return ecc_add(c, pt, minus_q_pt, r_pt);
 }
 
-bool ecc_double(ecc_curve& c, curve_point& P, curve_point& R) {
-  return ecc_add(c, P, P, R);
+bool ecc_double(ecc_curve& c, curve_point& pt, curve_point& r_pt) {
+  return ecc_add(c, pt, pt, r_pt);
 }
 
 //  For Jacobian projective coordinates, see hyperellitptic.org
 
 //  From Cohen, Miyaka, Ono
-//  Projective addition
+//  ptrojective addition
 //    y^2z=x^3+axz^2+bz^3
-//    P != +- Q
+//    pt != +- q_pt
 //    u= y2z1-y1z2, v=x2z1-x1z2, A= u^2z1z2-v^3-2v^2x1z2
 //    x3= vA, y3= u(v^2x1z2-A)-v^3y1z2, z3= v^3z1z2
 //    A=u^2z[1]z[2]-v^3-2v^2x[1]z[2]
 //  Doubling
-//    R= 2P
+//    r_pt= 2pt
 //    x3=2hs, y3= w(4B-h) -8y[1]^2s^2, z3= 8s^3
 //    w=az1^2+3x1^2, s=y1z1, B= x1y1s, h= w^2-8B
 //
 
-bool projective_to_affine(ecc_curve& c, curve_point& P) {
+bool projective_to_affine(ecc_curve& c, curve_point& pt) {
   big_num x(1 + 2 * c.p_->size_);
   big_num y(1 + 2 * c.p_->size_);
   big_num zinv(1 + 2 * c.p_->size_);
 
-  if (P.z_->is_zero()) {
-    P.make_zero();
+  if (pt.z_->is_zero()) {
+    pt.make_zero();
     return true;
   }
-  if (P.z_->is_one()) return true;
-  if (!big_mod_Inv(*P.z_, *c.p_, zinv)) {
+  if (pt.z_->is_one()) return true;
+  if (!big_mod_Inv(*pt.z_, *c.p_, zinv)) {
     return false;
   }
-  if (!big_mod_mult(*P.x_, zinv, *c.p_, x)) {
+  if (!big_mod_mult(*pt.x_, zinv, *c.p_, x)) {
     return false;
   }
-  if (!big_mod_mult(*P.y_, zinv, *c.p_, y)) {
+  if (!big_mod_mult(*pt.y_, zinv, *c.p_, y)) {
     return false;
   }
-  P.x_->copy_from(x);
-  P.y_->copy_from(y);
-  P.z_->copy_from(big_one);
+  pt.x_->copy_from(x);
+  pt.y_->copy_from(y);
+  pt.z_->copy_from(big_one);
   return true;
 }
 
-bool projective_add(ecc_curve& c, curve_point& P, curve_point& Q, curve_point& R) {
+bool projective_add(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_point& r_pt) {
   big_num u(1 + 2 * c.p_->size_);
   big_num v(1 + 2 * c.p_->size_);
   big_num A(1 + 2 * c.p_->size_);
@@ -454,56 +454,56 @@ bool projective_add(ecc_curve& c, curve_point& P, curve_point& Q, curve_point& R
   big_num b1(1 + 2 * c.p_->size_);
   big_num b2(1 + 2 * c.p_->size_);
 
-  // If P=O, Q
-  if (P.z_->is_zero()) {
-    R.copy_from(Q);
+  // If pt=O, q_pt
+  if (pt.z_->is_zero()) {
+    r_pt.copy_from(q_pt);
     return true;
   }
-  // If Q=O, P
-  if (Q.z_->is_zero()) {
-    R.copy_from(P);
+  // If q_pt=O, pt
+  if (q_pt.z_->is_zero()) {
+    r_pt.copy_from(pt);
     return true;
   }
-  if (!big_mod_mult(*P.x_, *Q.z_, *c.p_, a1)) {
+  if (!big_mod_mult(*pt.x_, *q_pt.z_, *c.p_, a1)) {
     return false;
   }
-  if (!big_mod_mult(*P.y_, *Q.z_, *c.p_, a2)) {
+  if (!big_mod_mult(*pt.y_, *q_pt.z_, *c.p_, a2)) {
     return false;
   }
-  if (!big_mod_mult(*Q.x_, *P.z_, *c.p_, b1)) {
+  if (!big_mod_mult(*q_pt.x_, *pt.z_, *c.p_, b1)) {
     return false;
   }
-  if (!big_mod_mult(*Q.y_, *P.z_, *c.p_, b2)) {
+  if (!big_mod_mult(*q_pt.y_, *pt.z_, *c.p_, b2)) {
     return false;
   }
 
-  // If P= Q, use doubling
+  // If pt= q_pt, use doubling
   if (big_compare(a1, b1) == 0) {
-    if (big_compare(a2, b2) == 0) return projective_double(c, P, R);
+    if (big_compare(a2, b2) == 0) return projective_double(c, pt, r_pt);
     if (!big_mod_add(a2, b2, *c.p_, t)) {
       return false;
     }
     if (t.is_zero()) {
-      R.make_zero();
+      r_pt.make_zero();
       return true;
     }
   }
 
   // u= y2z1-y1z2
-  if (!big_mod_mult(*Q.y_, *P.z_, *c.p_, t)) {
+  if (!big_mod_mult(*q_pt.y_, *pt.z_, *c.p_, t)) {
     return false;
   }
-  if (!big_mod_mult(*P.y_, *Q.z_, *c.p_, w)) {
+  if (!big_mod_mult(*pt.y_, *q_pt.z_, *c.p_, w)) {
     return false;
   }
   if (!big_mod_sub(t, w, *c.p_, u)) {
     return false;
   }
   // v=x2z1-x1z2
-  if (!big_mod_mult(*Q.x_, *P.z_, *c.p_, t)) {
+  if (!big_mod_mult(*q_pt.x_, *pt.z_, *c.p_, t)) {
     return false;
   }
-  if (!big_mod_mult(*P.x_, *Q.z_, *c.p_, w)) {
+  if (!big_mod_mult(*pt.x_, *q_pt.z_, *c.p_, w)) {
     return false;
   }
   if (!big_mod_sub(t, w, *c.p_, v)) {
@@ -516,19 +516,19 @@ bool projective_add(ecc_curve& c, curve_point& P, curve_point& Q, curve_point& R
   if (!big_mod_mult(v, v, *c.p_, v_squared)) {
     return false;
   }
-  if (!big_mod_mult(u_squared, *P.z_, *c.p_, t)) {
+  if (!big_mod_mult(u_squared, *pt.z_, *c.p_, t)) {
     return false;
   }
-  if (!big_mod_mult(t, *Q.z_, *c.p_, t1)) {
+  if (!big_mod_mult(t, *q_pt.z_, *c.p_, t1)) {
     return false;
   }
   if (!big_mod_mult(v_squared, v, *c.p_, t2)) {
     return false;
   }
-  if (!big_mod_mult(v_squared, *P.x_, *c.p_, t)) {
+  if (!big_mod_mult(v_squared, *pt.x_, *c.p_, t)) {
     return false;
   }
-  if (!big_mod_mult(t, *Q.z_, *c.p_, t4)) {
+  if (!big_mod_mult(t, *q_pt.z_, *c.p_, t4)) {
     return false;
   }
   if (!big_shift(t4, 1, t3)) {
@@ -543,14 +543,14 @@ bool projective_add(ecc_curve& c, curve_point& P, curve_point& Q, curve_point& R
     return false;
   }
   // x3= vA
-  if (!big_mod_mult(v, A, *c.p_, *R.x_)) {
+  if (!big_mod_mult(v, A, *c.p_, *r_pt.x_)) {
     return false;
   }
   // z3= v^3z1z2
-  if (!big_mod_mult(*P.z_, *Q.z_, *c.p_, t)) {
+  if (!big_mod_mult(*pt.z_, *q_pt.z_, *c.p_, t)) {
     return false;
   }
-  if (!big_mod_mult(t, t2, *c.p_, *R.z_)) {
+  if (!big_mod_mult(t, t2, *c.p_, *r_pt.z_)) {
     return false;
   }
   // y3= u(v^2x1z2-A)-v^3y1z2
@@ -561,19 +561,19 @@ bool projective_add(ecc_curve& c, curve_point& P, curve_point& Q, curve_point& R
   if (!big_mod_mult(t, u, *c.p_, w)) {
     return false;
   }
-  if (!big_mod_mult(t2, *P.y_, *c.p_, t)) {
+  if (!big_mod_mult(t2, *pt.y_, *c.p_, t)) {
     return false;
   }
-  if (!big_mod_mult(t, *Q.z_, *c.p_, t4)) {
+  if (!big_mod_mult(t, *q_pt.z_, *c.p_, t4)) {
     return false;
   }
-  if (!big_mod_sub(w, t4, *c.p_, *R.y_)) {
+  if (!big_mod_sub(w, t4, *c.p_, *r_pt.y_)) {
     return false;
   }
   return true;
 }
 
-bool projective_double(ecc_curve& c, curve_point& P, curve_point& R) {
+bool projective_double(ecc_curve& c, curve_point& pt, curve_point& r_pt) {
   big_num w(1 + 2 * c.p_->size_);
   big_num w_squared(1 + 2 * c.p_->size_);
   big_num s(1 + 2 * c.p_->size_);
@@ -588,10 +588,10 @@ bool projective_double(ecc_curve& c, curve_point& P, curve_point& R) {
   big_num y1_squared(1 + 2 * c.p_->size_);
 
   // w=az1^2+3x1^2
-  if (!big_mod_mult(*P.z_, *P.z_, *c.p_, z1_squared)) {
+  if (!big_mod_mult(*pt.z_, *pt.z_, *c.p_, z1_squared)) {
     return false;
   }
-  if (!big_mod_mult(*P.x_, *P.x_, *c.p_, x1_squared)) {
+  if (!big_mod_mult(*pt.x_, *pt.x_, *c.p_, x1_squared)) {
     return false;
   }
   if (!big_mod_mult(*c.a_, z1_squared, *c.p_, t1)) {
@@ -604,11 +604,11 @@ bool projective_double(ecc_curve& c, curve_point& P, curve_point& R) {
     return false;
   }
   // s=y1z1
-  if (!big_mod_mult(*P.y_, *P.z_, *c.p_, s)) {
+  if (!big_mod_mult(*pt.y_, *pt.z_, *c.p_, s)) {
     return false;
   }
   // B= x1y1s
-  if (!big_mod_mult(*P.x_, *P.y_, *c.p_, t1)) {
+  if (!big_mod_mult(*pt.x_, *pt.y_, *c.p_, t1)) {
     return false;
   }
   if (!big_mod_mult(s, t1, *c.p_, B)) {
@@ -637,7 +637,7 @@ bool projective_double(ecc_curve& c, curve_point& P, curve_point& R) {
     return false;
   }
   big_mod_normalize(t2, *c.p_);
-  R.x_->copy_from(t2);
+  r_pt.x_->copy_from(t2);
 
   // z3= 8s^3
   if (!big_mod_mult(s, s, *c.p_, s_squared)) {
@@ -651,10 +651,10 @@ bool projective_double(ecc_curve& c, curve_point& P, curve_point& R) {
     return false;
   }
   big_mod_normalize(t2, *c.p_);
-  R.z_->copy_from(t2);
+  r_pt.z_->copy_from(t2);
 
   // y3= w(4B-h) -8y1^2s^2
-  if (!big_mod_mult(*P.y_, *P.y_, *c.p_, y1_squared)) {
+  if (!big_mod_mult(*pt.y_, *pt.y_, *c.p_, y1_squared)) {
     return false;
   }
   t1.zero_num();
@@ -677,28 +677,28 @@ bool projective_double(ecc_curve& c, curve_point& P, curve_point& R) {
     return false;
   }
   big_mod_normalize(t3, *c.p_);
-  if (!big_mod_sub(t1, t3, *c.p_, *R.y_)) {
+  if (!big_mod_sub(t1, t3, *c.p_, *r_pt.y_)) {
     return false;
   }
   return true;
 }
 
-bool projective_point_mult(ecc_curve& c, big_num& x, curve_point& P, curve_point& R) {
+bool projective_point_mult(ecc_curve& c, big_num& x, curve_point& pt, curve_point& r_pt) {
   if (x.is_zero()) {
-    R.make_zero();
+    r_pt.make_zero();
     return true;
   }
   if (x.is_one()) {
-    return R.copy_from(P);
+    return r_pt.copy_from(pt);
   }
-  if (P.z_->is_zero()) {
-    R.make_zero();
+  if (pt.z_->is_zero()) {
+    r_pt.make_zero();
     return true;
   }
 
   int k = big_high_bit(x);
   int i;
-  curve_point double_point(P, 1 + 2 * c.p_->capacity_);
+  curve_point double_point(pt, 1 + 2 * c.p_->capacity_);
   curve_point accum_point(1 + 2 * c.p_->capacity_);
   curve_point t1(1 + 2 * c.p_->capacity_);
 
@@ -721,24 +721,24 @@ bool projective_point_mult(ecc_curve& c, big_num& x, curve_point& P, curve_point
     t1.make_zero();
   }
 
-  accum_point.copy_to(R);
+  accum_point.copy_to(r_pt);
   if (x.is_negative()) {
-    R.y_->toggle_sign();
+    r_pt.y_->toggle_sign();
   }
   return true;
 }
 
-bool ecc_mult(ecc_curve& c, curve_point& P, big_num& x, curve_point& R) {
+bool ecc_mult(ecc_curve& c, curve_point& pt, big_num& x, curve_point& r_pt) {
   if (x.is_zero()) {
-    R.make_zero();
+    r_pt.make_zero();
     return true;
   }
   if (x.is_one()) {
-    return R.copy_from(P);
+    return r_pt.copy_from(pt);
   }
   int k = big_high_bit(x);
   int i;
-  curve_point double_point(P, 1 + 2 * c.p_->capacity_);
+  curve_point double_point(pt, 1 + 2 * c.p_->capacity_);
   curve_point accum_point(1 + 2 * c.p_->capacity_);
   curve_point t1(1 + 2 * c.p_->capacity_);
 
@@ -760,29 +760,29 @@ bool ecc_mult(ecc_curve& c, curve_point& P, big_num& x, curve_point& R) {
     t1.copy_to(accum_point);
     t1.make_zero();
   }
-  accum_point.copy_to(R);
+  accum_point.copy_to(r_pt);
   if (x.is_negative()) {
-    R.y_->toggle_sign();
+    r_pt.y_->toggle_sign();
   }
   return true;
 }
 
-bool faster_ecc_mult(ecc_curve& c, curve_point& P, big_num& x, curve_point& R) {
+bool faster_ecc_mult(ecc_curve& c, curve_point& pt, big_num& x, curve_point& r_pt) {
   if (x.is_zero()) {
-    R.make_zero();
+    r_pt.make_zero();
     return true;
   }
   if (x.is_one()) {
-    return R.copy_from(P);
+    return r_pt.copy_from(pt);
   }
-  if (!projective_point_mult(c, x, P, R)) {
+  if (!projective_point_mult(c, x, pt, r_pt)) {
     return false;
   }
-  if (projective_to_affine(c, R)) {
+  if (projective_to_affine(c, r_pt)) {
     return false;
   }
   if (x.is_negative()) {
-    R.y_->toggle_sign();
+    r_pt.y_->toggle_sign();
   }
   return true;
 }
@@ -874,33 +874,33 @@ bool ecc::generate_ecc(string& curve_name, const char* name, const char* usage,
     return false;
   }
   secret.zero_num();
-  if (curve_name == "P-256") {
+  if (curve_name == "pt-256") {
     // Check
-    if (!GetCryptoRand(192, (byte*)secret.value_)) {
-      printf("Cant GetCryptoRand\n");
+    if (!GetCryptor_ptand(192, (byte*)secret.value_)) {
+      printf("Cant GetCryptor_ptand\n");
       return false;
     }
     secret.normalize();
-    return make_ecc_key(name, usage, owner, seconds_to_live, &P256_Key.c_,
-                    &P256_Key.g_, nullptr, P256_Key.order_of_g_, &secret);
-  } else if (curve_name == "P-384") {
+    return make_ecc_key(name, usage, owner, seconds_to_live, &pt256_Key.c_,
+                    &pt256_Key.g_, nullptr, pt256_Key.order_of_g_, &secret);
+  } else if (curve_name == "pt-384") {
     // Check
-    if (!GetCryptoRand(383, (byte*)secret.value_)) {
-      printf("Cant GetCryptoRand\n");
+    if (!GetCryptor_ptand(383, (byte*)secret.value_)) {
+      printf("Cant GetCryptor_ptand\n");
       return false;
     }
     secret.normalize();
-    return make_ecc_key(name, usage, owner, seconds_to_live, &P384_Key.c_,
-                    &P384_Key.g_, nullptr, P384_Key.order_of_g_, &secret);
-  } else if (curve_name == "P-521") {
+    return make_ecc_key(name, usage, owner, seconds_to_live, &pt384_Key.c_,
+                    &pt384_Key.g_, nullptr, pt384_Key.order_of_g_, &secret);
+  } else if (curve_name == "pt-521") {
     // Check
-    if (!GetCryptoRand(520, (byte*)secret.value_)) {
-      printf("Cant GetCryptoRand\n");
+    if (!GetCryptor_ptand(520, (byte*)secret.value_)) {
+      printf("Cant GetCryptor_ptand\n");
       return false;
     }
     secret.normalize();
-    return make_ecc_key(name, usage, owner, seconds_to_live, &P521_Key.c_,
-                    &P521_Key.g_, nullptr, P521_Key.order_of_g_, &secret);
+    return make_ecc_key(name, usage, owner, seconds_to_live, &pt521_Key.c_,
+                    &pt521_Key.g_, nullptr, pt521_Key.order_of_g_, &secret);
   } else {
     printf("Unknown curve name\n");
     return false;
@@ -913,7 +913,7 @@ void ecc::print() {
 
   if (a_ != nullptr) {
     printf("a: ");
-    PrintNumToConsole(*a_, 10ULL);
+    a_->print();
     printf("\n");
   }
   printf("g: ");
@@ -930,7 +930,7 @@ void ecc::print() {
 }
 
 /*
-  Curve P-256:
+  Curve pt-256:
     p = 1157920892103562487626974469494075735300861434152903141955
         33631308867097853951
     n = 115792089210356248762697446949407573529996955224135760342
@@ -963,7 +963,7 @@ void ecc::print() {
       (q__16 = ffffffff 00000000 ffffffff ffffffff bce6faad a7179e84
               f3b9cac2 fc632551
 
-  Curve P-384
+  Curve pt-384
     p = 2^384 – 2^128 – 2^96 + 2^32 – 1
     p = 3940200619639447921227904010014361380507973927046544666794
         8293404245721771496870329047266088258938001861606973112319
@@ -981,7 +981,7 @@ void ecc::print() {
     G y = 3617de4a 96262c6f 5d9e98bf 9292dc29 f8f41dbd 289a147c
           e9da3113 b5f0b8c0 0a60b1ce 1d7e819d 7a431d7c 90ea0e5f 
 
-  Curve P-521
+  Curve pt-521
     p = 2^521 – 1
     p = 686479766013060971498190079908139321726943530014330540939
         446345918554318339765605212255964066145455497729631139148
@@ -1009,11 +1009,11 @@ bool init_ecc_curves() {
   time_point* time_now = nullptr;
   time_point* time_later = nullptr;
 
-  // P-256
+  // pt-256
 
-  if (!P256_key_valid) {
+  if (!pt256_key_valid) {
 
-    P256_Key.bit_size_modulus_ = 256;
+    pt256_Key.bit_size_modulus_ = 256;
     time_now = new time_point();
     time_later = new time_point();
 
@@ -1021,71 +1021,71 @@ bool init_ecc_curves() {
       printf("time_pointNow failed\n");
       return false;
     }
-    time_later->time_pointLaterBySeconds(*time_now, 10.0 * COMMON_YEAR_SECONDS);
+    time_later->time_pointLaterBySeconds(*time_now, 10.0 * COMMON_YEAr_pt_SECONDS);
 
-    P256_Key.key_name_ = new string("P-256");
-    P256_Key.key_type_ = new string("ecc-256");
-    P256_Key.key_usage_ = new string("all");
-    P256_Key.key_owner_ = new string("NIST");
-    P256_Key.not_before_ = time_now;
-    P256_Key.not_after_ = time_later;
+    pt256_Key.key_name_ = new string("pt-256");
+    pt256_Key.key_type_ = new string("ecc-256");
+    pt256_Key.key_usage_ = new string("all");
+    pt256_Key.key_owner_ = new string("NIST");
+    pt256_Key.not_before_ = time_now;
+    pt256_Key.not_after_ = time_later;
   
-    P256_Key.c_.modulus_bit_size_ = 256;
-    P256_Key.c_.p_ = new big_num(4);
-    P256_Key.c_.p_->value_[3] = 0xffffffff00000001ULL;
-    P256_Key.c_.p_->value_[2] = 0ULL;
-    P256_Key.c_.p_->value_[1] = 0x00000000ffffffffULL;
-    P256_Key.c_.p_->value_[0] = 0xffffffffffffffffULL;
-    P256_Key.c_.p_->normalize();
+    pt256_Key.c_.modulus_bit_size_ = 256;
+    pt256_Key.c_.p_ = new big_num(4);
+    pt256_Key.c_.p_->value_[3] = 0xffffffff00000001ULL;
+    pt256_Key.c_.p_->value_[2] = 0ULL;
+    pt256_Key.c_.p_->value_[1] = 0x00000000ffffffffULL;
+    pt256_Key.c_.p_->value_[0] = 0xffffffffffffffffULL;
+    pt256_Key.c_.p_->normalize();
 
-    P256_Key.c_.a_ = new big_num(4);
-    P256_Key.c_.a_->value_[3] = 0xffffffff00000001ULL;
-    P256_Key.c_.a_->value_[2] = 0ULL;
-    P256_Key.c_.a_->value_[1] = 0x00000000ffffffffULL;
-    P256_Key.c_.a_->value_[0] = 0xfffffffffffffffcULL;
-    P256_Key.c_.a_->normalize();
+    pt256_Key.c_.a_ = new big_num(4);
+    pt256_Key.c_.a_->value_[3] = 0xffffffff00000001ULL;
+    pt256_Key.c_.a_->value_[2] = 0ULL;
+    pt256_Key.c_.a_->value_[1] = 0x00000000ffffffffULL;
+    pt256_Key.c_.a_->value_[0] = 0xfffffffffffffffcULL;
+    pt256_Key.c_.a_->normalize();
 
-    P256_Key.c_.b_ = new big_num(4);
-    P256_Key.c_.b_->value_[3] = 0x5ac635d8aa3a93e7ULL;
-    P256_Key.c_.b_->value_[2] = 0xb3ebbd55769886bcULL;
-    P256_Key.c_.b_->value_[1] = 0x651d06b0cc53b0f6ULL;
-    P256_Key.c_.b_->value_[0] = 0x3bce3c3e27d2604bULL;
-    P256_Key.c_.b_->normalize();
+    pt256_Key.c_.b_ = new big_num(4);
+    pt256_Key.c_.b_->value_[3] = 0x5ac635d8aa3a93e7ULL;
+    pt256_Key.c_.b_->value_[2] = 0xb3ebbd55769886bcULL;
+    pt256_Key.c_.b_->value_[1] = 0x651d06b0cc53b0f6ULL;
+    pt256_Key.c_.b_->value_[0] = 0x3bce3c3e27d2604bULL;
+    pt256_Key.c_.b_->normalize();
 
-    P256_Key.bit_size_modulus_ = 256;
-    P256_Key.order_of_g_ = new big_num(4);
-    P256_Key.order_of_g_->value_[3] = 0xffffffff00000000ULL;
-    P256_Key.order_of_g_->value_[2] = 0xffffffffffffffffULL;
-    P256_Key.order_of_g_->value_[1] = 0xbce6faada7179e84ULL;
-    P256_Key.order_of_g_->value_[0] = 0xf3b9cac2fc632551ULL;
-    P256_Key.order_of_g_->normalize();
+    pt256_Key.bit_size_modulus_ = 256;
+    pt256_Key.order_of_g_ = new big_num(4);
+    pt256_Key.order_of_g_->value_[3] = 0xffffffff00000000ULL;
+    pt256_Key.order_of_g_->value_[2] = 0xffffffffffffffffULL;
+    pt256_Key.order_of_g_->value_[1] = 0xbce6faada7179e84ULL;
+    pt256_Key.order_of_g_->value_[0] = 0xf3b9cac2fc632551ULL;
+    pt256_Key.order_of_g_->normalize();
 
-    P256_Key.g_.x_ = new big_num(4);
-    P256_Key.g_.x_->value_[3] = 0x6b17d1f2e12c4247ULL;
-    P256_Key.g_.x_->value_[2] = 0xf8bce6e563a440f2ULL;
-    P256_Key.g_.x_->value_[1] = 0x77037d812deb33a0ULL;
-    P256_Key.g_.x_->value_[0] = 0xf4a13945d898c296ULL;
-    P256_Key.g_.x_->normalize();
-    P256_Key.g_.y_ = new big_num(4);
-    P256_Key.g_.y_->value_[3] = 0x4fe342e2fe1a7f9bULL;
-    P256_Key.g_.y_->value_[2] = 0x8ee7eb4a7c0f9e16ULL;
-    P256_Key.g_.y_->value_[1] = 0x2bce33576b315eceULL;
-    P256_Key.g_.y_->value_[0] = 0xcbb6406837bf51f5ULL;
-    P256_Key.g_.y_->normalize();
-    P256_Key.g_.z_ = new big_num(1, 1ULL);
+    pt256_Key.g_.x_ = new big_num(4);
+    pt256_Key.g_.x_->value_[3] = 0x6b17d1f2e12c4247ULL;
+    pt256_Key.g_.x_->value_[2] = 0xf8bce6e563a440f2ULL;
+    pt256_Key.g_.x_->value_[1] = 0x77037d812deb33a0ULL;
+    pt256_Key.g_.x_->value_[0] = 0xf4a13945d898c296ULL;
+    pt256_Key.g_.x_->normalize();
+    pt256_Key.g_.y_ = new big_num(4);
+    pt256_Key.g_.y_->value_[3] = 0x4fe342e2fe1a7f9bULL;
+    pt256_Key.g_.y_->value_[2] = 0x8ee7eb4a7c0f9e16ULL;
+    pt256_Key.g_.y_->value_[1] = 0x2bce33576b315eceULL;
+    pt256_Key.g_.y_->value_[0] = 0xcbb6406837bf51f5ULL;
+    pt256_Key.g_.y_->normalize();
+    pt256_Key.g_.z_ = new big_num(1, 1ULL);
 
-    P256_Key.g_.z_->normalize();
-    P256_key_valid = true;
-    P256_Key.base_.x_ = nullptr;
-    P256_Key.base_.y_ = nullptr;
-    P256_Key.base_.z_ = nullptr;
-    P256_Key.key_valid_ = true;
+    pt256_Key.g_.z_->normalize();
+    pt256_key_valid = true;
+    pt256_Key.base_.x_ = nullptr;
+    pt256_Key.base_.y_ = nullptr;
+    pt256_Key.base_.z_ = nullptr;
+    pt256_Key.key_valid_ = true;
   }
 
-  // P-384
-  if (!P384_key_valid) {
+  // pt-384
+  if (!pt384_key_valid) {
 
-    P384_Key.c_.modulus_bit_size_ = 384;
+    pt384_Key.c_.modulus_bit_size_ = 384;
     time_now = new time_point();
     time_later = new time_point();
 
@@ -1093,83 +1093,83 @@ bool init_ecc_curves() {
       printf("time_pointNow failed\n");
       return false;
     }
-    time_later->time_pointLaterBySeconds(*time_now, 10.0 * COMMON_YEAR_SECONDS);
+    time_later->time_pointLaterBySeconds(*time_now, 10.0 * COMMON_YEAr_pt_SECONDS);
 
-    P384_Key.key_name_ = new string("P-384");
-    P384_Key.key_type_ = new string("ecc-384");
-    P384_Key.key_usage_ = new string("all");
-    P384_Key.key_owner_ = new string("NIST");
-    P384_Key.not_before_ = time_now;
-    P384_Key.not_after_ = time_later;
+    pt384_Key.key_name_ = new string("pt-384");
+    pt384_Key.key_type_ = new string("ecc-384");
+    pt384_Key.key_usage_ = new string("all");
+    pt384_Key.key_owner_ = new string("NIST");
+    pt384_Key.not_before_ = time_now;
+    pt384_Key.not_after_ = time_later;
 
     // p = 2^384 – 2^128 – 2^96 + 2^32 –1
-    P384_Key.c_.p_ = new big_num(6);
-    P384_Key.c_.p_->value_[5] = 0xffffffffffffffffULL;
-    P384_Key.c_.p_->value_[4] = 0xffffffffffffffffULL;
-    P384_Key.c_.p_->value_[3] = 0xffffffffffffffffULL;
-    P384_Key.c_.p_->value_[2] = 0xfffffffffffffffeULL;
-    P384_Key.c_.p_->value_[1] = 0xffffffff00000000ULL;
-    P384_Key.c_.p_->value_[0] = 0x00000000ffffffffULL;
-    P384_Key.c_.p_->normalize();
+    pt384_Key.c_.p_ = new big_num(6);
+    pt384_Key.c_.p_->value_[5] = 0xffffffffffffffffULL;
+    pt384_Key.c_.p_->value_[4] = 0xffffffffffffffffULL;
+    pt384_Key.c_.p_->value_[3] = 0xffffffffffffffffULL;
+    pt384_Key.c_.p_->value_[2] = 0xfffffffffffffffeULL;
+    pt384_Key.c_.p_->value_[1] = 0xffffffff00000000ULL;
+    pt384_Key.c_.p_->value_[0] = 0x00000000ffffffffULL;
+    pt384_Key.c_.p_->normalize();
 
-    P384_Key.c_.a_ = new big_num(6);
-    P384_Key.c_.a_->value_[5] = 0x79d1e655f868f02fULL;
-    P384_Key.c_.a_->value_[4] = 0xff48dcdee14151ddULL;
-    P384_Key.c_.a_->value_[3] = 0xb80643c1406d0ca1ULL;
-    P384_Key.c_.a_->value_[2] = 0x0dfe6fc52009540aULL;
-    P384_Key.c_.a_->value_[1] = 0x495e8042ea5f744fULL;
-    P384_Key.c_.a_->value_[0] = 0x6e184667cc722483ULL;
-    P384_Key.c_.a_->normalize();
+    pt384_Key.c_.a_ = new big_num(6);
+    pt384_Key.c_.a_->value_[5] = 0x79d1e655f868f02fULL;
+    pt384_Key.c_.a_->value_[4] = 0xff48dcdee14151ddULL;
+    pt384_Key.c_.a_->value_[3] = 0xb80643c1406d0ca1ULL;
+    pt384_Key.c_.a_->value_[2] = 0x0dfe6fc52009540aULL;
+    pt384_Key.c_.a_->value_[1] = 0x495e8042ea5f744fULL;
+    pt384_Key.c_.a_->value_[0] = 0x6e184667cc722483ULL;
+    pt384_Key.c_.a_->normalize();
 
-    P384_Key.c_.b_ = new big_num(6);
-    P384_Key.c_.b_->value_[5] = 0xb3312fa7e23ee7e4ULL;
-    P384_Key.c_.b_->value_[4] = 0x988e056be3f82d19ULL;
-    P384_Key.c_.b_->value_[3] = 0x181d9c6efe814112ULL;
-    P384_Key.c_.b_->value_[2] = 0x0314088f5013875aULL;
-    P384_Key.c_.b_->value_[1] = 0xc656398d8a2ed19dULL;
-    P384_Key.c_.b_->value_[0] = 0x2a85c8edd3ec2aefULL;
-    P384_Key.c_.b_->normalize();
+    pt384_Key.c_.b_ = new big_num(6);
+    pt384_Key.c_.b_->value_[5] = 0xb3312fa7e23ee7e4ULL;
+    pt384_Key.c_.b_->value_[4] = 0x988e056be3f82d19ULL;
+    pt384_Key.c_.b_->value_[3] = 0x181d9c6efe814112ULL;
+    pt384_Key.c_.b_->value_[2] = 0x0314088f5013875aULL;
+    pt384_Key.c_.b_->value_[1] = 0xc656398d8a2ed19dULL;
+    pt384_Key.c_.b_->value_[0] = 0x2a85c8edd3ec2aefULL;
+    pt384_Key.c_.b_->normalize();
 
-    P384_Key.bit_size_modulus_ = 384;
-    P384_Key.order_of_g_ = new big_num(6);
-    P384_Key.order_of_g_->value_[5] = 0xffffffffffffffffULL;
-    P384_Key.order_of_g_->value_[4] = 0xffffffffffffffffULL;
-    P384_Key.order_of_g_->value_[3] = 0xffffffffffffffffULL;
-    P384_Key.order_of_g_->value_[2] = 0xc7634d81f4372ddfULL;
-    P384_Key.order_of_g_->value_[1] = 0x581a0db248b0a77aULL;
-    P384_Key.order_of_g_->value_[0] = 0xecec196accc52973ULL;
-    P384_Key.order_of_g_->normalize();
+    pt384_Key.bit_size_modulus_ = 384;
+    pt384_Key.order_of_g_ = new big_num(6);
+    pt384_Key.order_of_g_->value_[5] = 0xffffffffffffffffULL;
+    pt384_Key.order_of_g_->value_[4] = 0xffffffffffffffffULL;
+    pt384_Key.order_of_g_->value_[3] = 0xffffffffffffffffULL;
+    pt384_Key.order_of_g_->value_[2] = 0xc7634d81f4372ddfULL;
+    pt384_Key.order_of_g_->value_[1] = 0x581a0db248b0a77aULL;
+    pt384_Key.order_of_g_->value_[0] = 0xecec196accc52973ULL;
+    pt384_Key.order_of_g_->normalize();
 
-    P384_Key.g_.x_ = new big_num(6);
-    P384_Key.g_.x_->value_[5] = 0xaa87ca22be8b0537ULL;
-    P384_Key.g_.x_->value_[4] = 0x8eb1c71ef320ad74ULL;
-    P384_Key.g_.x_->value_[3] = 0x6e1d3b628ba79b98ULL;
-    P384_Key.g_.x_->value_[2] = 0x59f741e082542a38ULL;
-    P384_Key.g_.x_->value_[1] = 0x5502f25dbf55296cULL;
-    P384_Key.g_.x_->value_[0] = 0x3a545e3872760ab7ULL;
-    P384_Key.g_.x_->normalize();
-    P384_Key.g_.y_ = new big_num(6);
-    P384_Key.g_.y_->value_[5] = 0x3617de4a96262c6fULL;
-    P384_Key.g_.y_->value_[4] = 0x5d9e98bf9292dc29ULL;
-    P384_Key.g_.y_->value_[3] = 0xf8f41dbd289a147cULL;
-    P384_Key.g_.y_->value_[2] = 0xe9da3113b5f0b8c0ULL;
-    P384_Key.g_.y_->value_[1] = 0x0a60b1ce1d7e819dULL;
-    P384_Key.g_.y_->value_[0] = 0x7a431d7c90ea0e5fULL;
-    P384_Key.g_.y_->normalize();
-    P384_Key.g_.z_ = new big_num(1, 1ULL);
+    pt384_Key.g_.x_ = new big_num(6);
+    pt384_Key.g_.x_->value_[5] = 0xaa87ca22be8b0537ULL;
+    pt384_Key.g_.x_->value_[4] = 0x8eb1c71ef320ad74ULL;
+    pt384_Key.g_.x_->value_[3] = 0x6e1d3b628ba79b98ULL;
+    pt384_Key.g_.x_->value_[2] = 0x59f741e082542a38ULL;
+    pt384_Key.g_.x_->value_[1] = 0x5502f25dbf55296cULL;
+    pt384_Key.g_.x_->value_[0] = 0x3a545e3872760ab7ULL;
+    pt384_Key.g_.x_->normalize();
+    pt384_Key.g_.y_ = new big_num(6);
+    pt384_Key.g_.y_->value_[5] = 0x3617de4a96262c6fULL;
+    pt384_Key.g_.y_->value_[4] = 0x5d9e98bf9292dc29ULL;
+    pt384_Key.g_.y_->value_[3] = 0xf8f41dbd289a147cULL;
+    pt384_Key.g_.y_->value_[2] = 0xe9da3113b5f0b8c0ULL;
+    pt384_Key.g_.y_->value_[1] = 0x0a60b1ce1d7e819dULL;
+    pt384_Key.g_.y_->value_[0] = 0x7a431d7c90ea0e5fULL;
+    pt384_Key.g_.y_->normalize();
+    pt384_Key.g_.z_ = new big_num(1, 1ULL);
 
-    P384_Key.g_.z_->normalize();
-    P384_Key.base_.x_ = nullptr;
-    P384_Key.base_.y_ = nullptr;
-    P384_Key.base_.z_ = nullptr;
-    P384_key_valid = true;
-    P384_Key.key_valid_ = true;
+    pt384_Key.g_.z_->normalize();
+    pt384_Key.base_.x_ = nullptr;
+    pt384_Key.base_.y_ = nullptr;
+    pt384_Key.base_.z_ = nullptr;
+    pt384_key_valid = true;
+    pt384_Key.key_valid_ = true;
   }
 
-  // P-521
-  if (!P521_key_valid) {
+  // pt-521
+  if (!pt521_key_valid) {
 
-    P521_Key.c_.modulus_bit_size_ = 521;
+    pt521_Key.c_.modulus_bit_size_ = 521;
     time_now = new time_point();
     time_later = new time_point();
 
@@ -1177,95 +1177,95 @@ bool init_ecc_curves() {
       printf("time_pointNow failed\n");
       return false;
     }
-    time_later->time_pointLaterBySeconds(*time_now, 10.0 * COMMON_YEAR_SECONDS);
+    time_later->time_pointLaterBySeconds(*time_now, 10.0 * COMMON_YEAr_pt_SECONDS);
 
-    P521_Key.key_name_ = new string("P-521");
-    P521_Key.key_type_ = new string("ecc-521");
-    P521_Key.key_usage_ = new string("all");
-    P521_Key.key_owner_ = new string("NIST");
-    P521_Key.not_before_ = time_now;
-    P521_Key.not_after_ = time_later;
+    pt521_Key.key_name_ = new string("pt-521");
+    pt521_Key.key_type_ = new string("ecc-521");
+    pt521_Key.key_usage_ = new string("all");
+    pt521_Key.key_owner_ = new string("NIST");
+    pt521_Key.not_before_ = time_now;
+    pt521_Key.not_after_ = time_later;
 
-    P521_Key.c_.p_ = new big_num(9);
-    P521_Key.c_.p_->value_[8] = 0x1ffULL;
-    P521_Key.c_.p_->value_[7] = 0xffffffffffffffffULL;
-    P521_Key.c_.p_->value_[6] = 0xffffffffffffffffULL;
-    P521_Key.c_.p_->value_[5] = 0xffffffffffffffffULL;
-    P521_Key.c_.p_->value_[4] = 0xffffffffffffffffULL;
-    P521_Key.c_.p_->value_[3] = 0xffffffffffffffffULL;
-    P521_Key.c_.p_->value_[2] = 0xffffffffffffffffULL;
-    P521_Key.c_.p_->value_[1] = 0xffffffffffffffffULL;
-    P521_Key.c_.p_->value_[0] = 0xffffffffffffffffULL;
-    P521_Key.c_.p_->normalize();
+    pt521_Key.c_.p_ = new big_num(9);
+    pt521_Key.c_.p_->value_[8] = 0x1ffULL;
+    pt521_Key.c_.p_->value_[7] = 0xffffffffffffffffULL;
+    pt521_Key.c_.p_->value_[6] = 0xffffffffffffffffULL;
+    pt521_Key.c_.p_->value_[5] = 0xffffffffffffffffULL;
+    pt521_Key.c_.p_->value_[4] = 0xffffffffffffffffULL;
+    pt521_Key.c_.p_->value_[3] = 0xffffffffffffffffULL;
+    pt521_Key.c_.p_->value_[2] = 0xffffffffffffffffULL;
+    pt521_Key.c_.p_->value_[1] = 0xffffffffffffffffULL;
+    pt521_Key.c_.p_->value_[0] = 0xffffffffffffffffULL;
+    pt521_Key.c_.p_->normalize();
 
-    P521_Key.c_.a_ = new big_num(9);
-    P521_Key.c_.a_->value_[8] = 0x0b4ULL;
-    P521_Key.c_.a_->value_[7] = 0x8bfa5f420a349495ULL;
-    P521_Key.c_.a_->value_[6] = 0x39d2bdfc264eeeebULL;
-    P521_Key.c_.a_->value_[5] = 0x077688e44fbf0ad8ULL;
-    P521_Key.c_.a_->value_[4] = 0xf6d0edb37bd6b533ULL;
-    P521_Key.c_.a_->value_[3] = 0x281000518e19f1b9ULL;
-    P521_Key.c_.a_->value_[2] = 0xffbe0fe9ed8a3c22ULL;
-    P521_Key.c_.a_->value_[1] = 0x00b8f875e523868cULL;
-    P521_Key.c_.a_->value_[0] = 0x70c1e5bf55bad637ULL;
-    P521_Key.c_.a_->normalize();
+    pt521_Key.c_.a_ = new big_num(9);
+    pt521_Key.c_.a_->value_[8] = 0x0b4ULL;
+    pt521_Key.c_.a_->value_[7] = 0x8bfa5f420a349495ULL;
+    pt521_Key.c_.a_->value_[6] = 0x39d2bdfc264eeeebULL;
+    pt521_Key.c_.a_->value_[5] = 0x077688e44fbf0ad8ULL;
+    pt521_Key.c_.a_->value_[4] = 0xf6d0edb37bd6b533ULL;
+    pt521_Key.c_.a_->value_[3] = 0x281000518e19f1b9ULL;
+    pt521_Key.c_.a_->value_[2] = 0xffbe0fe9ed8a3c22ULL;
+    pt521_Key.c_.a_->value_[1] = 0x00b8f875e523868cULL;
+    pt521_Key.c_.a_->value_[0] = 0x70c1e5bf55bad637ULL;
+    pt521_Key.c_.a_->normalize();
 
-    P521_Key.c_.b_ = new big_num(9);
-    P521_Key.c_.b_->value_[8] = 0x051ULL;
-    P521_Key.c_.b_->value_[7] = 0x953eb9618e1c9a1fULL;
-    P521_Key.c_.b_->value_[6] = 0x929a21a0b68540eeULL;
-    P521_Key.c_.b_->value_[5] = 0xa2da725b99b315f3ULL;
-    P521_Key.c_.b_->value_[4] = 0xb8b489918ef109e1ULL;
-    P521_Key.c_.b_->value_[3] = 0x56193951ec7e937bULL;
-    P521_Key.c_.b_->value_[2] = 0x1652c0bd3bb1bf07ULL;
-    P521_Key.c_.b_->value_[1] = 0x3573df883d2c34f1ULL;
-    P521_Key.c_.b_->value_[0] = 0xef451fd46b503f00ULL;
-    P521_Key.c_.b_->normalize();
+    pt521_Key.c_.b_ = new big_num(9);
+    pt521_Key.c_.b_->value_[8] = 0x051ULL;
+    pt521_Key.c_.b_->value_[7] = 0x953eb9618e1c9a1fULL;
+    pt521_Key.c_.b_->value_[6] = 0x929a21a0b68540eeULL;
+    pt521_Key.c_.b_->value_[5] = 0xa2da725b99b315f3ULL;
+    pt521_Key.c_.b_->value_[4] = 0xb8b489918ef109e1ULL;
+    pt521_Key.c_.b_->value_[3] = 0x56193951ec7e937bULL;
+    pt521_Key.c_.b_->value_[2] = 0x1652c0bd3bb1bf07ULL;
+    pt521_Key.c_.b_->value_[1] = 0x3573df883d2c34f1ULL;
+    pt521_Key.c_.b_->value_[0] = 0xef451fd46b503f00ULL;
+    pt521_Key.c_.b_->normalize();
 
-    P521_Key.bit_size_modulus_ = 521;
-    P521_Key.order_of_g_ = new big_num(9);
-    P521_Key.order_of_g_->value_[8] = 0x01ffULL;
-    P521_Key.order_of_g_->value_[7] = 0xffffffffffffffffULL;
-    P521_Key.order_of_g_->value_[6] = 0xffffffffffffffffULL;
-    P521_Key.order_of_g_->value_[5] = 0xffffffffffffffffULL;
-    P521_Key.order_of_g_->value_[4] = 0xfffffffffffffffaULL;
-    P521_Key.order_of_g_->value_[3] = 0x51868783bf2f966bULL;
-    P521_Key.order_of_g_->value_[2] = 0x7fcc0148f709a5d0ULL;
-    P521_Key.order_of_g_->value_[1] = 0x3bb5c9b8899c47aeULL;
-    P521_Key.order_of_g_->value_[0] = 0xbb6fb71e91386409ULL;
-    P521_Key.order_of_g_->normalize();
+    pt521_Key.bit_size_modulus_ = 521;
+    pt521_Key.order_of_g_ = new big_num(9);
+    pt521_Key.order_of_g_->value_[8] = 0x01ffULL;
+    pt521_Key.order_of_g_->value_[7] = 0xffffffffffffffffULL;
+    pt521_Key.order_of_g_->value_[6] = 0xffffffffffffffffULL;
+    pt521_Key.order_of_g_->value_[5] = 0xffffffffffffffffULL;
+    pt521_Key.order_of_g_->value_[4] = 0xfffffffffffffffaULL;
+    pt521_Key.order_of_g_->value_[3] = 0x51868783bf2f966bULL;
+    pt521_Key.order_of_g_->value_[2] = 0x7fcc0148f709a5d0ULL;
+    pt521_Key.order_of_g_->value_[1] = 0x3bb5c9b8899c47aeULL;
+    pt521_Key.order_of_g_->value_[0] = 0xbb6fb71e91386409ULL;
+    pt521_Key.order_of_g_->normalize();
 
-    P521_Key.g_.x_ = new big_num(9);
-    P521_Key.g_.x_->value_[8] = 0xc6ULL;
-    P521_Key.g_.x_->value_[7] = 0x858e06b70404e9cdULL;
-    P521_Key.g_.x_->value_[6] = 0x9e3ecb662395b442ULL;
-    P521_Key.g_.x_->value_[5] = 0x9c648139053fb521ULL;
-    P521_Key.g_.x_->value_[4] = 0xf828af606b4d3dbaULL;
-    P521_Key.g_.x_->value_[3] = 0xa14b5e77efe75928ULL;
-    P521_Key.g_.x_->value_[2] = 0xfe1dc127a2ffa8deULL;
-    P521_Key.g_.x_->value_[1] = 0x3348b3c1856a429bULL;
-    P521_Key.g_.x_->value_[0] = 0xf97e7e31c2e5bd66ULL;
-    P521_Key.g_.x_->normalize();
-    P521_Key.g_.y_ = new big_num(9);
+    pt521_Key.g_.x_ = new big_num(9);
+    pt521_Key.g_.x_->value_[8] = 0xc6ULL;
+    pt521_Key.g_.x_->value_[7] = 0x858e06b70404e9cdULL;
+    pt521_Key.g_.x_->value_[6] = 0x9e3ecb662395b442ULL;
+    pt521_Key.g_.x_->value_[5] = 0x9c648139053fb521ULL;
+    pt521_Key.g_.x_->value_[4] = 0xf828af606b4d3dbaULL;
+    pt521_Key.g_.x_->value_[3] = 0xa14b5e77efe75928ULL;
+    pt521_Key.g_.x_->value_[2] = 0xfe1dc127a2ffa8deULL;
+    pt521_Key.g_.x_->value_[1] = 0x3348b3c1856a429bULL;
+    pt521_Key.g_.x_->value_[0] = 0xf97e7e31c2e5bd66ULL;
+    pt521_Key.g_.x_->normalize();
+    pt521_Key.g_.y_ = new big_num(9);
  
-    P521_Key.g_.y_->value_[8] = 0x118ULL;
-    P521_Key.g_.y_->value_[7] = 0x39296a789a3bc004ULL;
-    P521_Key.g_.y_->value_[6] = 0x5c8a5fb42c7d1bd9ULL;
-    P521_Key.g_.y_->value_[5] = 0x98f54449579b4468ULL;
-    P521_Key.g_.y_->value_[4] = 0x17afbd17273e662cULL;
-    P521_Key.g_.y_->value_[3] = 0x97ee72995ef42640ULL;
-    P521_Key.g_.y_->value_[2] = 0xc550b9013fad0761ULL;
-    P521_Key.g_.y_->value_[1] = 0x353c7086a272c240ULL;
-    P521_Key.g_.y_->value_[0] = 0x88be94769fd16650ULL;
-    P521_Key.g_.y_->normalize();
-    P521_Key.g_.z_ = new big_num(1, 1ULL);
+    pt521_Key.g_.y_->value_[8] = 0x118ULL;
+    pt521_Key.g_.y_->value_[7] = 0x39296a789a3bc004ULL;
+    pt521_Key.g_.y_->value_[6] = 0x5c8a5fb42c7d1bd9ULL;
+    pt521_Key.g_.y_->value_[5] = 0x98f54449579b4468ULL;
+    pt521_Key.g_.y_->value_[4] = 0x17afbd17273e662cULL;
+    pt521_Key.g_.y_->value_[3] = 0x97ee72995ef42640ULL;
+    pt521_Key.g_.y_->value_[2] = 0xc550b9013fad0761ULL;
+    pt521_Key.g_.y_->value_[1] = 0x353c7086a272c240ULL;
+    pt521_Key.g_.y_->value_[0] = 0x88be94769fd16650ULL;
+    pt521_Key.g_.y_->normalize();
+    pt521_Key.g_.z_ = new big_num(1, 1ULL);
 
-    P521_Key.g_.z_->normalize();
-    P521_Key.base_.x_ = nullptr;
-    P521_Key.base_.y_ = nullptr;
-    P521_Key.base_.z_ = nullptr;
-    P521_key_valid = true;
-    P521_Key.key_valid_ = true;
+    pt521_Key.g_.z_->normalize();
+    pt521_Key.base_.x_ = nullptr;
+    pt521_Key.base_.y_ = nullptr;
+    pt521_Key.base_.z_ = nullptr;
+    pt521_key_valid = true;
+    pt521_Key.key_valid_ = true;
   }
 
   return true;
@@ -1277,30 +1277,30 @@ bool init_ecc_curves() {
 bool ecc::encrypt(int size, byte* plain, big_num& k, curve_point& pt1,
                      curve_point& pt2) {
   big_num m(c_.p_->capacity_);
-  curve_point P(c_.p_->capacity_);
-  curve_point R(c_.p_->capacity_);
+  curve_point pt(c_.p_->capacity_);
+  curve_point r_pt(c_.p_->capacity_);
 
   memcpy((byte*)m.value_, plain, size);
   m.normalize();
-  if (!ecc_embed(c_, m, P, 8, 20)) {
+  if (!ecc_embed(c_, m, pt, 8, 20)) {
     return false;
   }
 #ifdef FASTECCMULT
   if (!faster_ecc_mult(c_, g_, k, pt1)) {
     return false;
   }
-  if (!faster_ecc_mult(c_, base_, k, R)) {
+  if (!faster_ecc_mult(c_, base_, k, r_pt)) {
     return false;
   }
 #else
   if (!ecc_mult(c_, g_, k, pt1)) {
     return false;
   }
-  if (!ecc_mult(c_, base_, k, R)) {
+  if (!ecc_mult(c_, base_, k, r_pt)) {
     return false;
   }
 #endif
-  if (!ecc_add(c_, R, P, pt2)) {
+  if (!ecc_add(c_, r_pt, pt, pt2)) {
     return false;
   }
   return true;
@@ -1310,22 +1310,22 @@ bool ecc::encrypt(int size, byte* plain, big_num& k, curve_point& pt1,
 //  extract message from M
 bool ecc::decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain) {
   big_num m(c_.p_->capacity_);
-  curve_point P(c_.p_->capacity_);
-  curve_point R(c_.p_->capacity_);
+  curve_point pt(c_.p_->capacity_);
+  curve_point r_pt(c_.p_->capacity_);
 
 #ifdef FASTECCMULT
-  if (!faster_ecc_mult(c_, pt1, *a_, R)) {
+  if (!faster_ecc_mult(c_, pt1, *a_, r_pt)) {
     return false;
   }
 #else
-  if (!ecc_mult(c_, pt1, *a_, R)) {
+  if (!ecc_mult(c_, pt1, *a_, r_pt)) {
     return false;
   }
 #endif
-  if (!ecc_sub(c_, pt2, R, P)) {
+  if (!ecc_sub(c_, pt2, r_pt, pt)) {
     return false;
   }
-  if (!ecc_Extract(c_, P, m, 8)) {
+  if (!ecc_extract(c_, pt, m, 8)) {
     return false;
   }
   m.normalize();

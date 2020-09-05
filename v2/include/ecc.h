@@ -8,7 +8,7 @@
 // or in the the file LICENSE-2.0.txt in the top level sourcedirectory
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WAr_ptr_ptANTIES Or_pt CONDITIONS OF ANY KIND, either express or implied.
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
 // File: ecc.h
@@ -67,7 +67,8 @@ class ecc {
   big_num* p_;
   string not_before_;
   string not_after_;
-  curve_point base_point_;
+  curve_point public_point_;
+  curve_point private_point_;
   string secret_;
   
   ecc();

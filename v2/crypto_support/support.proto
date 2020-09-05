@@ -59,7 +59,7 @@ message ecc_public_parameters_message {
 
 message ecc_private_parameters_message {
  optional point_message private_point          = 1;
- optional bytes private_mlutiplier             = 2;
+ optional bytes private_multiplier             = 2;
 };
 
 message hmac_parameters_message {
