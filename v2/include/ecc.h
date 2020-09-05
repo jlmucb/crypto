@@ -1,5 +1,5 @@
 //
-// Copyright 2014 John Manferdelli, All r_ptights r_pteserved.
+// Copyright 2014 John Manferdelli, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ class curve_point {
 
 class ecc_curve {
  public:
-  int modulus_bit_size_;
+  int prime_bit_size_;
   big_num* a_;
   big_num* b_;
   big_num* p_;
@@ -64,10 +64,11 @@ class ecc {
   key_message *ecc_key_;
   int prime_bit_size_;
   big_num* p_;
+  ecc_curve* c_;
   string not_before_;
   string not_after_;
-  curve_point public_point_;
-  curve_point private_point_;
+  curve_point* public_point_;
+  curve_point* private_point_;
   string secret_;
   
   ecc();
@@ -91,15 +92,14 @@ class ecc {
 bool ecc_embed(ecc_curve& c, big_num& m, curve_point& pt, int shift, int trys);
 bool ecc_extract(ecc_curve& c, curve_point& pt, big_num& m, int shift);
 bool ecc_normalize(ecc_curve& c, curve_point& pt);
-bool ecc_add(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_point& r_pt);
-bool ecc_sub(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_point& r_pt);
-bool ecc_double(ecc_curve& c, curve_point& pt, curve_point& r_pt);
-bool ecc_mult(ecc_curve& c, curve_point& pt, big_num& x, curve_point& r_pt);
-bool faster_ecc_mult(ecc_curve& c, curve_point& pt, big_num& x, curve_point& r_pt);
+bool ecc_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt);
+bool ecc_sub(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt);
+bool ecc_double(ecc_curve& c, curve_point& p_pt, curve_point& r_pt);
+bool ecc_mult(ecc_curve& c, curve_point& p_pt, big_num& x, curve_point& r_pt);
+bool faster_ecc_mult(ecc_curve& c, curve_point& p_pt, big_num& x, curve_point& r_pt);
 bool projective_to_affine(ecc_curve& c, curve_point& pt);
-bool projective_add(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_point& r_pt);
-bool projective_double(ecc_curve& c, curve_point& pt, curve_point& r_pt);
-bool projective_point_multult(ecc_curve& c, big_num& x, curve_point& pt, curve_point& r_pt);
-ec/big_num/big_num/g
+bool projective_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt);
+bool projective_double(ecc_curve& c, curve_point& p_pt, curve_point& r_pt);
+bool projective_point_multult(ecc_curve& c, big_num& x, curve_point& p_pt, curve_point& r_pt);
 
 #endif

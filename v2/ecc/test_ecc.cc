@@ -30,7 +30,7 @@ bool test_ecc1() {
 }
 
 TEST (ecc, test_ecc1) {
-  EXPECT_TRUE(test_rsa1());
+  EXPECT_TRUE(test_ecc1());
 }
 
 int main(int an, char** av) {

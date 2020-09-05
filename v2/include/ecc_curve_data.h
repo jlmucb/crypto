@@ -21,6 +21,13 @@
 #ifndef _CRYPTO_ECC_CURVE_DATA_H__
 #define _CRYPTO_ECC_CURVE_DATA_H__
 
+extern ecc p256_key;
+extern bool p256_key_valid;
+extern ecc p384_key;
+extern bool p384_key_valid;
+extern ecc p521_key;
+extern bool p521_key_valid;
+
 bool init_ecc_curves();
 
 #endif

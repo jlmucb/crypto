@@ -46,7 +46,8 @@ AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=	$(O)/test_ecc.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o $(O)/ecc.o \
-	$(O)/globals.o $(O)/big_num.o $(O)/intel_digit_arith.o $(O)/basic_arith.o $(O)/number_theory.o
+	$(O)/globals.o $(O)/big_num.o $(O)/intel_digit_arith.o $(O)/basic_arith.o $(O)/number_theory.o \
+	$(O)/ecc_curve_data.o
 
 all:	test_ecc.exe
 clean:
@@ -81,6 +82,10 @@ $(O)/crypto_names.o: $(S_SUPPORT)/crypto_names.cc
 $(O)/ecc.o: $(S)/ecc.cc
 	@echo "compiling ecc.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/ecc.o $(S)/ecc.cc
+
+$(O)/ecc_curve_data.o: $(S)/ecc_curve_data.cc
+	@echo "compiling ecc_curve_data.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/ecc_curve_data.o $(S)/ecc_curve_data.cc
 
 $(O)/big_num.o: $(S_BIG_NUM)/big_num.cc
 	@echo "compiling big_num.cc"

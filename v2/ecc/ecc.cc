@@ -17,6 +17,7 @@
 #include "big_num.h"
 #include "big_num_functions.h"
 #include "ecc.h"
+#include "ecc_curve_data.h"
 
 #define FASTECCMULT
 
@@ -227,8 +228,8 @@ bool ecc_embed(ecc_curve& c, big_num& m, curve_point& pt, int shift, int trys) {
     if (!big_mod_add(t3, *c.b_, *c.p_, t1)) {
       return false;
     }
-    if (big_mod_IsSquare(t1, *c.p_)) {
-      if (!big_mod_Squarer_ptoot(t1, *c.p_, *pt.y_)) {
+    if (big_mod_is_square(t1, *c.p_)) {
+      if (!big_mod_square_root(t1, *c.p_, *pt.y_)) {
         return false;
       }
       pt.x_->copy_from(m_x);
@@ -236,7 +237,7 @@ bool ecc_embed(ecc_curve& c, big_num& m, curve_point& pt, int shift, int trys) {
       pt.z_->value_[0] = 1ULL;
       break;
     }
-    if (!BigUnsignedaddTo(m_x, big_one)) {
+    if (!big_unsigned_add_to(m_x, big_one)) {
       return false;
     }
   }
@@ -292,15 +293,15 @@ bool ecc_extract(ecc_curve& c, curve_point& pt, big_num& m, int shift) {
  *    m= (y2-y1)/(x2-x1)
  *    x3= m^2-x1-x2, y3= m(x1-x3)-y1
  */
-bool ecc_add(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_point& r_pt) {
-  pt.normalize(*c.p_);
+bool ecc_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt) {
+  p_pt.normalize(*c.p_);
   q_pt.normalize(*c.p_);
 
-  if (pt.is_zero()) {
+  if (p_pt.is_zero()) {
     return q_pt.copy_to(r_pt);
   }
   if (q_pt.is_zero()) {
-    return pt.copy_to(r_pt);
+    return p_pt.copy_to(r_pt);
   }
   big_num m(2 * c.p_->size_);
   big_num t1(2 * c.p_->size_);
@@ -308,25 +309,25 @@ bool ecc_add(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_point& r_pt
   big_num t3(2 * c.p_->size_);
 
   r_pt.z_->copy_from(big_one);
-  if (big_compare(*pt.x_, *q_pt.x_) != 0) {
-    if (!big_mod_sub(*q_pt.x_, *pt.x_, *c.p_, t1)) {
+  if (big_compare(*p_pt.x_, *q_pt.x_) != 0) {
+    if (!big_mod_sub(*q_pt.x_, *p_pt.x_, *c.p_, t1)) {
       return false;
     }
-    if (!big_mod_sub(*q_pt.y_, *pt.y_, *c.p_, t2)) {
+    if (!big_mod_sub(*q_pt.y_, *p_pt.y_, *c.p_, t2)) {
       return false;
     }
-    if (!big_mod_Div(t2, t1, *c.p_, m)) {
+    if (!big_mod_div(t2, t1, *c.p_, m)) {
       return false;
     }
   } else {
-    if (!big_mod_add(*pt.y_, *q_pt.y_, *c.p_, t1)) {
+    if (!big_mod_add(*p_pt.y_, *q_pt.y_, *c.p_, t1)) {
       return false;
     }
     if (t1.is_zero()) {
       r_pt.make_zero();
       return true;
     }
-    if (!big_mod_mult(*pt.x_, *pt.x_, *c.p_, t3)) {
+    if (!big_mod_mult(*p_pt.x_, *p_pt.x_, *c.p_, t3)) {
       return false;
     }
     if (!big_mod_mult(big_three, t3, *c.p_, t2)) {
@@ -336,7 +337,7 @@ bool ecc_add(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_point& r_pt
     if (!big_mod_add(t2, *c.a_, *c.p_, t3)) {
       return false;
     }
-    if (!big_mod_Div(t3, t1, *c.p_, m)) {
+    if (!big_mod_div(t3, t1, *c.p_, m)) {
       return false;
     }
   }
@@ -345,7 +346,7 @@ bool ecc_add(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_point& r_pt
   if (!big_mod_mult(m, m, *c.p_, t1)) {
     return false;
   }
-  if (!big_mod_sub(t1, *pt.x_, *c.p_, t2)) {
+  if (!big_mod_sub(t1, *p_pt.x_, *c.p_, t2)) {
     return false;
   }
   if (!big_mod_sub(t2, *q_pt.x_, *c.p_, *r_pt.x_)) {
@@ -354,21 +355,21 @@ bool ecc_add(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_point& r_pt
   t1.zero_num();
   t2.zero_num();
   t3.zero_num();
-  if (!big_mod_sub(*pt.x_, *r_pt.x_, *c.p_, t1)) {
+  if (!big_mod_sub(*p_pt.x_, *r_pt.x_, *c.p_, t1)) {
     return false;
   }
   if (!big_mod_mult(m, t1, *c.p_, t2)) {
     return false;
   }
-  if (!big_mod_sub(t2, *pt.y_, *c.p_, *r_pt.y_)) {
+  if (!big_mod_sub(t2, *p_pt.y_, *c.p_, *r_pt.y_)) {
     return false;
   }
   return true;
 }
 
-bool ecc_sub(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_point& r_pt) {
+bool ecc_sub(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt) {
   if (q_pt.is_zero()) {
-    r_pt.copy_from(pt);
+    r_pt.copy_from(p_pt);
     return true;
   }
 
@@ -381,11 +382,11 @@ bool ecc_sub(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_point& r_pt
     return false;
   }
   minus_q_pt.y_->copy_from(t);
-  return ecc_add(c, pt, minus_q_pt, r_pt);
+  return ecc_add(c, p_pt, minus_q_pt, r_pt);
 }
 
-bool ecc_double(ecc_curve& c, curve_point& pt, curve_point& r_pt) {
-  return ecc_add(c, pt, pt, r_pt);
+bool ecc_double(ecc_curve& c, curve_point& p_pt, curve_point& r_pt) {
+  return ecc_add(c, p_pt, p_pt, r_pt);
 }
 
 //  For Jacobian projective coordinates, see hyperellitptic.org
@@ -413,7 +414,7 @@ bool projective_to_affine(ecc_curve& c, curve_point& pt) {
     return true;
   }
   if (pt.z_->is_one()) return true;
-  if (!big_mod_Inv(*pt.z_, *c.p_, zinv)) {
+  if (!big_mod_inv(*pt.z_, *c.p_, zinv)) {
     return false;
   }
   if (!big_mod_mult(*pt.x_, zinv, *c.p_, x)) {
@@ -428,7 +429,7 @@ bool projective_to_affine(ecc_curve& c, curve_point& pt) {
   return true;
 }
 
-bool projective_add(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_point& r_pt) {
+bool projective_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt) {
   big_num u(1 + 2 * c.p_->size_);
   big_num v(1 + 2 * c.p_->size_);
   big_num A(1 + 2 * c.p_->size_);
@@ -445,32 +446,32 @@ bool projective_add(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_poin
   big_num b1(1 + 2 * c.p_->size_);
   big_num b2(1 + 2 * c.p_->size_);
 
-  // If pt=O, q_pt
-  if (pt.z_->is_zero()) {
+  // If p_pt=O, q_pt
+  if (p_pt.z_->is_zero()) {
     r_pt.copy_from(q_pt);
     return true;
   }
-  // If q_pt=O, pt
+  // If q_pt=O, p_pt
   if (q_pt.z_->is_zero()) {
-    r_pt.copy_from(pt);
+    r_pt.copy_from(p_pt);
     return true;
   }
-  if (!big_mod_mult(*pt.x_, *q_pt.z_, *c.p_, a1)) {
+  if (!big_mod_mult(*p_pt.x_, *q_pt.z_, *c.p_, a1)) {
     return false;
   }
-  if (!big_mod_mult(*pt.y_, *q_pt.z_, *c.p_, a2)) {
+  if (!big_mod_mult(*p_pt.y_, *q_pt.z_, *c.p_, a2)) {
     return false;
   }
-  if (!big_mod_mult(*q_pt.x_, *pt.z_, *c.p_, b1)) {
+  if (!big_mod_mult(*q_pt.x_, *p_pt.z_, *c.p_, b1)) {
     return false;
   }
-  if (!big_mod_mult(*q_pt.y_, *pt.z_, *c.p_, b2)) {
+  if (!big_mod_mult(*q_pt.y_, *p_pt.z_, *c.p_, b2)) {
     return false;
   }
 
-  // If pt= q_pt, use doubling
+  // If p_pt= q_pt, use doubling
   if (big_compare(a1, b1) == 0) {
-    if (big_compare(a2, b2) == 0) return projective_double(c, pt, r_pt);
+    if (big_compare(a2, b2) == 0) return projective_double(c, p_pt, r_pt);
     if (!big_mod_add(a2, b2, *c.p_, t)) {
       return false;
     }
@@ -481,20 +482,20 @@ bool projective_add(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_poin
   }
 
   // u= y2z1-y1z2
-  if (!big_mod_mult(*q_pt.y_, *pt.z_, *c.p_, t)) {
+  if (!big_mod_mult(*q_pt.y_, *p_pt.z_, *c.p_, t)) {
     return false;
   }
-  if (!big_mod_mult(*pt.y_, *q_pt.z_, *c.p_, w)) {
+  if (!big_mod_mult(*p_pt.y_, *q_pt.z_, *c.p_, w)) {
     return false;
   }
   if (!big_mod_sub(t, w, *c.p_, u)) {
     return false;
   }
   // v=x2z1-x1z2
-  if (!big_mod_mult(*q_pt.x_, *pt.z_, *c.p_, t)) {
+  if (!big_mod_mult(*q_pt.x_, *p_pt.z_, *c.p_, t)) {
     return false;
   }
-  if (!big_mod_mult(*pt.x_, *q_pt.z_, *c.p_, w)) {
+  if (!big_mod_mult(*p_pt.x_, *q_pt.z_, *c.p_, w)) {
     return false;
   }
   if (!big_mod_sub(t, w, *c.p_, v)) {
@@ -507,7 +508,7 @@ bool projective_add(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_poin
   if (!big_mod_mult(v, v, *c.p_, v_squared)) {
     return false;
   }
-  if (!big_mod_mult(u_squared, *pt.z_, *c.p_, t)) {
+  if (!big_mod_mult(u_squared, *p_pt.z_, *c.p_, t)) {
     return false;
   }
   if (!big_mod_mult(t, *q_pt.z_, *c.p_, t1)) {
@@ -516,7 +517,7 @@ bool projective_add(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_poin
   if (!big_mod_mult(v_squared, v, *c.p_, t2)) {
     return false;
   }
-  if (!big_mod_mult(v_squared, *pt.x_, *c.p_, t)) {
+  if (!big_mod_mult(v_squared, *p_pt.x_, *c.p_, t)) {
     return false;
   }
   if (!big_mod_mult(t, *q_pt.z_, *c.p_, t4)) {
@@ -538,7 +539,7 @@ bool projective_add(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_poin
     return false;
   }
   // z3= v^3z1z2
-  if (!big_mod_mult(*pt.z_, *q_pt.z_, *c.p_, t)) {
+  if (!big_mod_mult(*p_pt.z_, *q_pt.z_, *c.p_, t)) {
     return false;
   }
   if (!big_mod_mult(t, t2, *c.p_, *r_pt.z_)) {
@@ -552,7 +553,7 @@ bool projective_add(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_poin
   if (!big_mod_mult(t, u, *c.p_, w)) {
     return false;
   }
-  if (!big_mod_mult(t2, *pt.y_, *c.p_, t)) {
+  if (!big_mod_mult(t2, *p_pt.y_, *c.p_, t)) {
     return false;
   }
   if (!big_mod_mult(t, *q_pt.z_, *c.p_, t4)) {
@@ -564,7 +565,7 @@ bool projective_add(ecc_curve& c, curve_point& pt, curve_point& q_pt, curve_poin
   return true;
 }
 
-bool projective_double(ecc_curve& c, curve_point& pt, curve_point& r_pt) {
+bool projective_double(ecc_curve& c, curve_point& p_pt, curve_point& r_pt) {
   big_num w(1 + 2 * c.p_->size_);
   big_num w_squared(1 + 2 * c.p_->size_);
   big_num s(1 + 2 * c.p_->size_);
@@ -579,10 +580,10 @@ bool projective_double(ecc_curve& c, curve_point& pt, curve_point& r_pt) {
   big_num y1_squared(1 + 2 * c.p_->size_);
 
   // w=az1^2+3x1^2
-  if (!big_mod_mult(*pt.z_, *pt.z_, *c.p_, z1_squared)) {
+  if (!big_mod_mult(*p_pt.z_, *p_pt.z_, *c.p_, z1_squared)) {
     return false;
   }
-  if (!big_mod_mult(*pt.x_, *pt.x_, *c.p_, x1_squared)) {
+  if (!big_mod_mult(*p_pt.x_, *p_pt.x_, *c.p_, x1_squared)) {
     return false;
   }
   if (!big_mod_mult(*c.a_, z1_squared, *c.p_, t1)) {
@@ -595,11 +596,11 @@ bool projective_double(ecc_curve& c, curve_point& pt, curve_point& r_pt) {
     return false;
   }
   // s=y1z1
-  if (!big_mod_mult(*pt.y_, *pt.z_, *c.p_, s)) {
+  if (!big_mod_mult(*p_pt.y_, *p_pt.z_, *c.p_, s)) {
     return false;
   }
   // B= x1y1s
-  if (!big_mod_mult(*pt.x_, *pt.y_, *c.p_, t1)) {
+  if (!big_mod_mult(*p_pt.x_, *p_pt.y_, *c.p_, t1)) {
     return false;
   }
   if (!big_mod_mult(s, t1, *c.p_, B)) {
@@ -645,7 +646,7 @@ bool projective_double(ecc_curve& c, curve_point& pt, curve_point& r_pt) {
   r_pt.z_->copy_from(t2);
 
   // y3= w(4B-h) -8y1^2s^2
-  if (!big_mod_mult(*pt.y_, *pt.y_, *c.p_, y1_squared)) {
+  if (!big_mod_mult(*p_pt.y_, *p_pt.y_, *c.p_, y1_squared)) {
     return false;
   }
   t1.zero_num();
@@ -674,22 +675,22 @@ bool projective_double(ecc_curve& c, curve_point& pt, curve_point& r_pt) {
   return true;
 }
 
-bool projective_point_mult(ecc_curve& c, big_num& x, curve_point& pt, curve_point& r_pt) {
+bool projective_point_mult(ecc_curve& c, big_num& x, curve_point& p_pt, curve_point& r_pt) {
   if (x.is_zero()) {
     r_pt.make_zero();
     return true;
   }
   if (x.is_one()) {
-    return r_pt.copy_from(pt);
+    return r_pt.copy_from(p_pt);
   }
-  if (pt.z_->is_zero()) {
+  if (p_pt.z_->is_zero()) {
     r_pt.make_zero();
     return true;
   }
 
   int k = big_high_bit(x);
   int i;
-  curve_point double_point(pt, 1 + 2 * c.p_->capacity_);
+  curve_point double_point(p_pt, 1 + 2 * c.p_->capacity_);
   curve_point accum_point(1 + 2 * c.p_->capacity_);
   curve_point t1(1 + 2 * c.p_->capacity_);
 
@@ -719,17 +720,17 @@ bool projective_point_mult(ecc_curve& c, big_num& x, curve_point& pt, curve_poin
   return true;
 }
 
-bool ecc_mult(ecc_curve& c, curve_point& pt, big_num& x, curve_point& r_pt) {
+bool ecc_mult(ecc_curve& c, curve_point& p_pt, big_num& x, curve_point& r_pt) {
   if (x.is_zero()) {
     r_pt.make_zero();
     return true;
   }
   if (x.is_one()) {
-    return r_pt.copy_from(pt);
+    return r_pt.copy_from(p_pt);
   }
   int k = big_high_bit(x);
   int i;
-  curve_point double_point(pt, 1 + 2 * c.p_->capacity_);
+  curve_point double_point(p_pt, 1 + 2 * c.p_->capacity_);
   curve_point accum_point(1 + 2 * c.p_->capacity_);
   curve_point t1(1 + 2 * c.p_->capacity_);
 
@@ -758,15 +759,15 @@ bool ecc_mult(ecc_curve& c, curve_point& pt, big_num& x, curve_point& r_pt) {
   return true;
 }
 
-bool faster_ecc_mult(ecc_curve& c, curve_point& pt, big_num& x, curve_point& r_pt) {
+bool faster_ecc_mult(ecc_curve& c, curve_point& p_pt, big_num& x, curve_point& r_pt) {
   if (x.is_zero()) {
     r_pt.make_zero();
     return true;
   }
   if (x.is_one()) {
-    return r_pt.copy_from(pt);
+    return r_pt.copy_from(p_pt);
   }
-  if (!projective_point_mult(c, x, pt, r_pt)) {
+  if (!projective_point_mult(c, x, p_pt, r_pt)) {
     return false;
   }
   if (projective_to_affine(c, r_pt)) {
@@ -779,29 +780,25 @@ bool faster_ecc_mult(ecc_curve& c, curve_point& pt, big_num& x, curve_point& r_p
 }
 
 ecc::ecc() {
-  bit_size_modulus_ = 0;
-  a_ = nullptr;
-  order_of_g_ = nullptr;
+  initialized_ = false;
+  ecc_key_ = nullptr;
+  prime_bit_size_ = 0;
+  p_= nullptr;
+  c_ = nullptr;
+  public_point_ = nullptr;
+  private_point_ = nullptr;
 }
 
 ecc::~ecc() {
-  if (a_ != nullptr) {
-    a_->zero_num();
-    delete a_;
-  }
-  if (order_of_g_ != nullptr) {
-    order_of_g_->zero_num();
-    delete order_of_g_;
-  }
-  c_.clear();
-  g_.clear();
-  base_.clear();
+  // Fix: clean up
+  c_->clear();
 }
 
 bool ecc::make_ecc_key(const char* name, const char* usage, const char* owner,
                         double secondstolive) {
 
-  bit_size_modulus_ = c->modulus_bit_size_;
+  prime_bit_size_ = c_->prime_bit_size_;
+/*
   key_name_ = new string(name);
   key_usage_ = new string(usage);
   key_owner_ = new string(owner);
@@ -811,19 +808,19 @@ bool ecc::make_ecc_key(const char* name, const char* usage, const char* owner,
   not_after_->time_pointLaterBySeconds(*not_before_, secondstolive);
   key_valid_ = true;
 
-  if (c->modulus_bit_size_ == 256) {
+  if (c_->prime_bit_size_== 256) {
     key_type_ = new string("ecc-256");
-  } else if (c->modulus_bit_size_ == 384) {
+  } else if (c_->prime_bit_size_ == 384) {
     key_type_ = new string("ecc-384");
-  } else if (c->modulus_bit_size_ == 521) {
+  } else if (c_->prime_bit_size_ == 521) {
     key_type_ = new string("ecc-521");
   } else {
     return false;
   }
-  if (c != nullptr) {
-    c_.a_ = new big_num(*c->a_);
-    c_.b_ = new big_num(*c->b_);
-    c_.p_ = new big_num(*c->p_);
+  if (c_ != nullptr) {
+    c_->a_ = new big_num(*c_->a_);
+    c_->b_ = new big_num(*c_->b_);
+    c_->p_ = new big_num(*c_->p_);
   } else {
     return false;
   }
@@ -840,9 +837,9 @@ bool ecc::make_ecc_key(const char* name, const char* usage, const char* owner,
     base_.y_ = new big_num(*base->y_);
     base_.z_ = new big_num(*base->z_);
   } else {
-    base_.x_ = new big_num(2 * (c->modulus_bit_size_+ NBITSINUINT64 - 1) / NBITSINUINT64);
-    base_.y_ = new big_num(2 * (c->modulus_bit_size_+ NBITSINUINT64 - 1)/ NBITSINUINT64);
-    base_.z_ = new big_num(2 * (c->modulus_bit_size_ + NBITSINUINT64 - 1)/ NBITSINUINT64);
+    base_.x_ = new big_num(2 * (c_->prime_bit_size_+ NBITSINUINT64 - 1) / NBITSINUINT64);
+    base_.y_ = new big_num(2 * (c_->prime_bit_size_+ NBITSINUINT64 - 1)/ NBITSINUINT64);
+    base_.z_ = new big_num(2 * (c_->prime_bit_size_ + NBITSINUINT64 - 1)/ NBITSINUINT64);
   }
   if (order != nullptr) {
     order_of_g_ = new big_num(*order);
@@ -853,6 +850,7 @@ bool ecc::make_ecc_key(const char* name, const char* usage, const char* owner,
   if (base == nullptr && secret != nullptr) {
     ecc_mult(c_, g_, *secret, base_);
   }
+ */
   return true;
 }
 
@@ -865,43 +863,46 @@ bool ecc::generate_ecc(string& curve_name, const char* name, const char* usage,
     return false;
   }
   secret.zero_num();
+#if 0
   if (curve_name == "pt-256") {
     // Check
-    if (!GetCryptor_ptand(192, (byte*)secret.value_)) {
+    if (crypto_get_random_bytes(192 / NBITSINBYTE, (byte*)secret.value_) < 0) {
       printf("Cant GetCryptor_ptand\n");
       return false;
     }
     secret.normalize();
-    return make_ecc_key(name, usage, owner, seconds_to_live, &pt256_Key.c_,
-                    &pt256_Key.g_, nullptr, pt256_Key.order_of_g_, &secret);
+    return make_ecc_key(name, usage, owner, seconds_to_live, &p256_key.c_,
+                    &p256_key.g_, nullptr, p256_key.order_of_g_, &secret);
   } else if (curve_name == "pt-384") {
-    // Check
-    if (!GetCryptor_ptand(383, (byte*)secret.value_)) {
-      printf("Cant GetCryptor_ptand\n");
+    // Check.   Fix
+    if (crypto_get_random_bytes(383 / NBITSINBYTE, (byte*)secret.value_)) {
+      printf("Cant get random\n");
       return false;
     }
     secret.normalize();
-    return make_ecc_key(name, usage, owner, seconds_to_live, &pt384_Key.c_,
-                    &pt384_Key.g_, nullptr, pt384_Key.order_of_g_, &secret);
+    return make_ecc_key(name, usage, owner, seconds_to_live, &p384_key.c_,
+                    &p384_key.g_, nullptr, p384_key.order_of_g_, &secret);
   } else if (curve_name == "pt-521") {
     // Check
-    if (!GetCryptor_ptand(520, (byte*)secret.value_)) {
+    if (crypto_get_random_bytes(520, (byte*)secret.value_) < 0) {
       printf("Cant GetCryptor_ptand\n");
       return false;
     }
     secret.normalize();
-    return make_ecc_key(name, usage, owner, seconds_to_live, &pt521_Key.c_,
-                    &pt521_Key.g_, nullptr, pt521_Key.order_of_g_, &secret);
+    return make_ecc_key(name, usage, owner, seconds_to_live, &p521_key.c_,
+                    &p521_key.g_, nullptr, p521_key.order_of_g_, &secret);
   } else {
     printf("Unknown curve name\n");
     return false;
   }
+#endif
+  return true;
 }
 
 void ecc::print() {
-  printf("modulus size: %d bits\n", bit_size_modulus_);
-  c_.print_curve();
-
+  printf("modulus size: %d bits\n", prime_bit_size_);
+  c_->print_curve();
+#if 0
   if (a_ != nullptr) {
     printf("a: ");
     a_->print();
@@ -917,6 +918,7 @@ void ecc::print() {
   }
   printf("base: ");
   base_.print();
+#endif
   printf("\n");
 }
 
@@ -925,56 +927,60 @@ void ecc::print() {
 //  send (kG, kBase+M)
 bool ecc::encrypt(int size, byte* plain, big_num& k, curve_point& pt1,
                      curve_point& pt2) {
-  big_num m(c_.p_->capacity_);
-  curve_point pt(c_.p_->capacity_);
-  curve_point r_pt(c_.p_->capacity_);
+  big_num m(c_->p_->capacity_);
+  curve_point pt(c_->p_->capacity_);
+  curve_point r_pt(c_->p_->capacity_);
 
   memcpy((byte*)m.value_, plain, size);
   m.normalize();
-  if (!ecc_embed(c_, m, pt, 8, 20)) {
+  if (!ecc_embed(*c_, m, pt, 8, 20)) {
     return false;
   }
+#if 0
 #ifdef FASTECCMULT
-  if (!faster_ecc_mult(c_, g_, k, pt1)) {
+  if (!faster_ecc_mult(*c_, g_, k, pt1)) {
     return false;
   }
-  if (!faster_ecc_mult(c_, base_, k, r_pt)) {
+  if (!faster_ecc_mult(*c_, base_, k, r_pt)) {
     return false;
   }
 #else
-  if (!ecc_mult(c_, g_, k, pt1)) {
+  if (!ecc_mult(*c_, g_, k, pt1)) {
     return false;
   }
-  if (!ecc_mult(c_, base_, k, r_pt)) {
+  if (!ecc_mult(*c_, base_, k, r_pt)) {
     return false;
   }
 #endif
-  if (!ecc_add(c_, r_pt, pt, pt2)) {
+  if (!ecc_add(*c_, r_pt, pt, pt2)) {
     return false;
   }
+#endif
   return true;
 }
 
 //  M= kBase+M-(secret)kG
 //  extract message from M
 bool ecc::decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain) {
-  big_num m(c_.p_->capacity_);
-  curve_point pt(c_.p_->capacity_);
-  curve_point r_pt(c_.p_->capacity_);
+  big_num m(c_->p_->capacity_);
+  curve_point pt(c_->p_->capacity_);
+  curve_point r_pt(c_->p_->capacity_);
 
+#if 0
 #ifdef FASTECCMULT
-  if (!faster_ecc_mult(c_, pt1, *a_, r_pt)) {
+  if (!faster_ecc_mult(*c_, pt1, *a_, r_pt)) {
     return false;
   }
 #else
-  if (!ecc_mult(c_, pt1, *a_, r_pt)) {
+  if (!ecc_mult(*c_, pt1, *a_, r_pt)) {
     return false;
   }
 #endif
-  if (!ecc_sub(c_, pt2, r_pt, pt)) {
+#endif
+  if (!ecc_sub(*c_, pt2, r_pt, pt)) {
     return false;
   }
-  if (!ecc_extract(c_, pt, m, 8)) {
+  if (!ecc_extract(*c_, pt, m, 8)) {
     return false;
   }
   m.normalize();

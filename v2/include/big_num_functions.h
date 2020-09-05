@@ -48,7 +48,7 @@ bool big_extended_gcd(big_num& a, big_num& b, big_num& x, big_num& y, big_num& g
 bool big_crt(big_num& s1, big_num& s2, big_num& m1, big_num& m2, big_num& r);
 bool big_mod(big_num& a, big_num& m, big_num& r);
 bool big_mod_add(big_num& a, big_num& b, big_num& m, big_num& r);
-bool big_mod_neg(big_num& a, big_num& m, big_num& r);
+bool big_mod_sub(big_num& a, big_num& b, big_num& m, big_num& r);
 bool big_mod_neg(big_num& a, big_num& m, big_num& r);
 bool big_mod_mult(big_num& a, big_num& b, big_num& m, big_num& r);
 bool big_mod_square(big_num& a, big_num& m, big_num& r);

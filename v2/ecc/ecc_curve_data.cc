@@ -1,5 +1,5 @@
 //
-// Copyright 2014 John Manferdelli, All r_ptights r_pteserved.
+// Copyright 2014 John Manferdelli, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -110,9 +110,11 @@ bool init_ecc_curves() {
 
   // pt-256
 
-  if (!pt256_key_valid) {
+  if (!p256_key_valid) {
 
-    pt256_Key.bit_size_modulus_ = 256;
+    p256_key.prime_bit_size_ = 256;
+
+#if 0
     time_now = new time_point();
     time_later = new time_point();
 
@@ -120,71 +122,76 @@ bool init_ecc_curves() {
       printf("time_pointNow failed\n");
       return false;
     }
-    time_later->time_pointLaterBySeconds(*time_now, 10.0 * COMMON_YEAr_pt_SECONDS);
+    time_later->time_pointLaterBySeconds(*time_now, 10.0 * COMMON_YEAR_SECONDS);
 
-    pt256_Key.key_name_ = new string("pt-256");
-    pt256_Key.key_type_ = new string("ecc-256");
-    pt256_Key.key_usage_ = new string("all");
-    pt256_Key.key_owner_ = new string("NIST");
-    pt256_Key.not_before_ = time_now;
-    pt256_Key.not_after_ = time_later;
+    p256_key.key_name_ = new string("pt-256");
+    p256_key.key_type_ = new string("ecc-256");
+    p256_key.key_usage_ = new string("all");
+    p256_key.key_owner_ = new string("NIST");
+    p256_key.not_before_ = time_now;
+    p256_key.not_after_ = time_later;
+#endif
   
-    pt256_Key.c_.modulus_bit_size_ = 256;
-    pt256_Key.c_.p_ = new big_num(4);
-    pt256_Key.c_.p_->value_[3] = 0xffffffff00000001ULL;
-    pt256_Key.c_.p_->value_[2] = 0ULL;
-    pt256_Key.c_.p_->value_[1] = 0x00000000ffffffffULL;
-    pt256_Key.c_.p_->value_[0] = 0xffffffffffffffffULL;
-    pt256_Key.c_.p_->normalize();
+    p256_key.c_->prime_bit_size_ = 256;
+    p256_key.c_->p_ = new big_num(4);
+    p256_key.c_->p_->value_[3] = 0xffffffff00000001ULL;
+    p256_key.c_->p_->value_[2] = 0ULL;
+    p256_key.c_->p_->value_[1] = 0x00000000ffffffffULL;
+    p256_key.c_->p_->value_[0] = 0xffffffffffffffffULL;
+    p256_key.c_->p_->normalize();
 
-    pt256_Key.c_.a_ = new big_num(4);
-    pt256_Key.c_.a_->value_[3] = 0xffffffff00000001ULL;
-    pt256_Key.c_.a_->value_[2] = 0ULL;
-    pt256_Key.c_.a_->value_[1] = 0x00000000ffffffffULL;
-    pt256_Key.c_.a_->value_[0] = 0xfffffffffffffffcULL;
-    pt256_Key.c_.a_->normalize();
+    p256_key.c_->a_ = new big_num(4);
+    p256_key.c_->a_->value_[3] = 0xffffffff00000001ULL;
+    p256_key.c_->a_->value_[2] = 0ULL;
+    p256_key.c_->a_->value_[1] = 0x00000000ffffffffULL;
+    p256_key.c_->a_->value_[0] = 0xfffffffffffffffcULL;
+    p256_key.c_->a_->normalize();
 
-    pt256_Key.c_.b_ = new big_num(4);
-    pt256_Key.c_.b_->value_[3] = 0x5ac635d8aa3a93e7ULL;
-    pt256_Key.c_.b_->value_[2] = 0xb3ebbd55769886bcULL;
-    pt256_Key.c_.b_->value_[1] = 0x651d06b0cc53b0f6ULL;
-    pt256_Key.c_.b_->value_[0] = 0x3bce3c3e27d2604bULL;
-    pt256_Key.c_.b_->normalize();
+    p256_key.c_->b_ = new big_num(4);
+    p256_key.c_->b_->value_[3] = 0x5ac635d8aa3a93e7ULL;
+    p256_key.c_->b_->value_[2] = 0xb3ebbd55769886bcULL;
+    p256_key.c_->b_->value_[1] = 0x651d06b0cc53b0f6ULL;
+    p256_key.c_->b_->value_[0] = 0x3bce3c3e27d2604bULL;
+    p256_key.c_->b_->normalize();
 
-    pt256_Key.bit_size_modulus_ = 256;
-    pt256_Key.order_of_g_ = new big_num(4);
-    pt256_Key.order_of_g_->value_[3] = 0xffffffff00000000ULL;
-    pt256_Key.order_of_g_->value_[2] = 0xffffffffffffffffULL;
-    pt256_Key.order_of_g_->value_[1] = 0xbce6faada7179e84ULL;
-    pt256_Key.order_of_g_->value_[0] = 0xf3b9cac2fc632551ULL;
-    pt256_Key.order_of_g_->normalize();
+#if 0
+    p256_key.prime_bit_size_ = 256;
+    p256_key.order_of_g_ = new big_num(4);
+    p256_key.order_of_g_->value_[3] = 0xffffffff00000000ULL;
+    p256_key.order_of_g_->value_[2] = 0xffffffffffffffffULL;
+    p256_key.order_of_g_->value_[1] = 0xbce6faada7179e84ULL;
+    p256_key.order_of_g_->value_[0] = 0xf3b9cac2fc632551ULL;
+    p256_key.order_of_g_->normalize();
 
-    pt256_Key.g_.x_ = new big_num(4);
-    pt256_Key.g_.x_->value_[3] = 0x6b17d1f2e12c4247ULL;
-    pt256_Key.g_.x_->value_[2] = 0xf8bce6e563a440f2ULL;
-    pt256_Key.g_.x_->value_[1] = 0x77037d812deb33a0ULL;
-    pt256_Key.g_.x_->value_[0] = 0xf4a13945d898c296ULL;
-    pt256_Key.g_.x_->normalize();
-    pt256_Key.g_.y_ = new big_num(4);
-    pt256_Key.g_.y_->value_[3] = 0x4fe342e2fe1a7f9bULL;
-    pt256_Key.g_.y_->value_[2] = 0x8ee7eb4a7c0f9e16ULL;
-    pt256_Key.g_.y_->value_[1] = 0x2bce33576b315eceULL;
-    pt256_Key.g_.y_->value_[0] = 0xcbb6406837bf51f5ULL;
-    pt256_Key.g_.y_->normalize();
-    pt256_Key.g_.z_ = new big_num(1, 1ULL);
+    p256_key.g_.x_ = new big_num(4);
+    p256_key.g_.x_->value_[3] = 0x6b17d1f2e12c4247ULL;
+    p256_key.g_.x_->value_[2] = 0xf8bce6e563a440f2ULL;
+    p256_key.g_.x_->value_[1] = 0x77037d812deb33a0ULL;
+    p256_key.g_.x_->value_[0] = 0xf4a13945d898c296ULL;
+    p256_key.g_.x_->normalize();
+    p256_key.g_.y_ = new big_num(4);
+    p256_key.g_.y_->value_[3] = 0x4fe342e2fe1a7f9bULL;
+    p256_key.g_.y_->value_[2] = 0x8ee7eb4a7c0f9e16ULL;
+    p256_key.g_.y_->value_[1] = 0x2bce33576b315eceULL;
+    p256_key.g_.y_->value_[0] = 0xcbb6406837bf51f5ULL;
+    p256_key.g_.y_->normalize();
+    p256_key.g_.z_ = new big_num(1, 1ULL);
 
-    pt256_Key.g_.z_->normalize();
-    pt256_key_valid = true;
-    pt256_Key.base_.x_ = nullptr;
-    pt256_Key.base_.y_ = nullptr;
-    pt256_Key.base_.z_ = nullptr;
-    pt256_Key.key_valid_ = true;
+    p256_key.g_.z_->normalize();
+    p256_key_valid = true;
+    p256_key.base_.x_ = nullptr;
+    p256_key.base_.y_ = nullptr;
+    p256_key.base_.z_ = nullptr;
+    p256_key.key_valid_ = true;
+#endif
   }
 
   // pt-384
-  if (!pt384_key_valid) {
+  if (!p384_key_valid) {
 
-    pt384_Key.c_.modulus_bit_size_ = 384;
+    p384_key.c_->prime_bit_size_ = 384;
+
+#if 0
     time_now = new time_point();
     time_later = new time_point();
 
@@ -194,81 +201,85 @@ bool init_ecc_curves() {
     }
     time_later->time_pointLaterBySeconds(*time_now, 10.0 * COMMON_YEAr_pt_SECONDS);
 
-    pt384_Key.key_name_ = new string("pt-384");
-    pt384_Key.key_type_ = new string("ecc-384");
-    pt384_Key.key_usage_ = new string("all");
-    pt384_Key.key_owner_ = new string("NIST");
-    pt384_Key.not_before_ = time_now;
-    pt384_Key.not_after_ = time_later;
+    p384_key.key_name_ = new string("pt-384");
+    p384_key.key_type_ = new string("ecc-384");
+    p384_key.key_usage_ = new string("all");
+    p384_key.key_owner_ = new string("NIST");
+    p384_key.not_before_ = time_now;
+    p384_key.not_after_ = time_later;
+#endif
 
     // p = 2^384 – 2^128 – 2^96 + 2^32 –1
-    pt384_Key.c_.p_ = new big_num(6);
-    pt384_Key.c_.p_->value_[5] = 0xffffffffffffffffULL;
-    pt384_Key.c_.p_->value_[4] = 0xffffffffffffffffULL;
-    pt384_Key.c_.p_->value_[3] = 0xffffffffffffffffULL;
-    pt384_Key.c_.p_->value_[2] = 0xfffffffffffffffeULL;
-    pt384_Key.c_.p_->value_[1] = 0xffffffff00000000ULL;
-    pt384_Key.c_.p_->value_[0] = 0x00000000ffffffffULL;
-    pt384_Key.c_.p_->normalize();
+    p384_key.c_->p_ = new big_num(6);
+    p384_key.c_->p_->value_[5] = 0xffffffffffffffffULL;
+    p384_key.c_->p_->value_[4] = 0xffffffffffffffffULL;
+    p384_key.c_->p_->value_[3] = 0xffffffffffffffffULL;
+    p384_key.c_->p_->value_[2] = 0xfffffffffffffffeULL;
+    p384_key.c_->p_->value_[1] = 0xffffffff00000000ULL;
+    p384_key.c_->p_->value_[0] = 0x00000000ffffffffULL;
+    p384_key.c_->p_->normalize();
 
-    pt384_Key.c_.a_ = new big_num(6);
-    pt384_Key.c_.a_->value_[5] = 0x79d1e655f868f02fULL;
-    pt384_Key.c_.a_->value_[4] = 0xff48dcdee14151ddULL;
-    pt384_Key.c_.a_->value_[3] = 0xb80643c1406d0ca1ULL;
-    pt384_Key.c_.a_->value_[2] = 0x0dfe6fc52009540aULL;
-    pt384_Key.c_.a_->value_[1] = 0x495e8042ea5f744fULL;
-    pt384_Key.c_.a_->value_[0] = 0x6e184667cc722483ULL;
-    pt384_Key.c_.a_->normalize();
+    p384_key.c_->a_ = new big_num(6);
+    p384_key.c_->a_->value_[5] = 0x79d1e655f868f02fULL;
+    p384_key.c_->a_->value_[4] = 0xff48dcdee14151ddULL;
+    p384_key.c_->a_->value_[3] = 0xb80643c1406d0ca1ULL;
+    p384_key.c_->a_->value_[2] = 0x0dfe6fc52009540aULL;
+    p384_key.c_->a_->value_[1] = 0x495e8042ea5f744fULL;
+    p384_key.c_->a_->value_[0] = 0x6e184667cc722483ULL;
+    p384_key.c_->a_->normalize();
 
-    pt384_Key.c_.b_ = new big_num(6);
-    pt384_Key.c_.b_->value_[5] = 0xb3312fa7e23ee7e4ULL;
-    pt384_Key.c_.b_->value_[4] = 0x988e056be3f82d19ULL;
-    pt384_Key.c_.b_->value_[3] = 0x181d9c6efe814112ULL;
-    pt384_Key.c_.b_->value_[2] = 0x0314088f5013875aULL;
-    pt384_Key.c_.b_->value_[1] = 0xc656398d8a2ed19dULL;
-    pt384_Key.c_.b_->value_[0] = 0x2a85c8edd3ec2aefULL;
-    pt384_Key.c_.b_->normalize();
+    p384_key.c_->b_ = new big_num(6);
+    p384_key.c_->b_->value_[5] = 0xb3312fa7e23ee7e4ULL;
+    p384_key.c_->b_->value_[4] = 0x988e056be3f82d19ULL;
+    p384_key.c_->b_->value_[3] = 0x181d9c6efe814112ULL;
+    p384_key.c_->b_->value_[2] = 0x0314088f5013875aULL;
+    p384_key.c_->b_->value_[1] = 0xc656398d8a2ed19dULL;
+    p384_key.c_->b_->value_[0] = 0x2a85c8edd3ec2aefULL;
+    p384_key.c_->b_->normalize();
 
-    pt384_Key.bit_size_modulus_ = 384;
-    pt384_Key.order_of_g_ = new big_num(6);
-    pt384_Key.order_of_g_->value_[5] = 0xffffffffffffffffULL;
-    pt384_Key.order_of_g_->value_[4] = 0xffffffffffffffffULL;
-    pt384_Key.order_of_g_->value_[3] = 0xffffffffffffffffULL;
-    pt384_Key.order_of_g_->value_[2] = 0xc7634d81f4372ddfULL;
-    pt384_Key.order_of_g_->value_[1] = 0x581a0db248b0a77aULL;
-    pt384_Key.order_of_g_->value_[0] = 0xecec196accc52973ULL;
-    pt384_Key.order_of_g_->normalize();
+#if 0
+    p384_key.prime_bit_size_ = 384;
+    p384_key.order_of_g_ = new big_num(6);
+    p384_key.order_of_g_->value_[5] = 0xffffffffffffffffULL;
+    p384_key.order_of_g_->value_[4] = 0xffffffffffffffffULL;
+    p384_key.order_of_g_->value_[3] = 0xffffffffffffffffULL;
+    p384_key.order_of_g_->value_[2] = 0xc7634d81f4372ddfULL;
+    p384_key.order_of_g_->value_[1] = 0x581a0db248b0a77aULL;
+    p384_key.order_of_g_->value_[0] = 0xecec196accc52973ULL;
+    p384_key.order_of_g_->normalize();
 
-    pt384_Key.g_.x_ = new big_num(6);
-    pt384_Key.g_.x_->value_[5] = 0xaa87ca22be8b0537ULL;
-    pt384_Key.g_.x_->value_[4] = 0x8eb1c71ef320ad74ULL;
-    pt384_Key.g_.x_->value_[3] = 0x6e1d3b628ba79b98ULL;
-    pt384_Key.g_.x_->value_[2] = 0x59f741e082542a38ULL;
-    pt384_Key.g_.x_->value_[1] = 0x5502f25dbf55296cULL;
-    pt384_Key.g_.x_->value_[0] = 0x3a545e3872760ab7ULL;
-    pt384_Key.g_.x_->normalize();
-    pt384_Key.g_.y_ = new big_num(6);
-    pt384_Key.g_.y_->value_[5] = 0x3617de4a96262c6fULL;
-    pt384_Key.g_.y_->value_[4] = 0x5d9e98bf9292dc29ULL;
-    pt384_Key.g_.y_->value_[3] = 0xf8f41dbd289a147cULL;
-    pt384_Key.g_.y_->value_[2] = 0xe9da3113b5f0b8c0ULL;
-    pt384_Key.g_.y_->value_[1] = 0x0a60b1ce1d7e819dULL;
-    pt384_Key.g_.y_->value_[0] = 0x7a431d7c90ea0e5fULL;
-    pt384_Key.g_.y_->normalize();
-    pt384_Key.g_.z_ = new big_num(1, 1ULL);
+    p384_key.g_.x_ = new big_num(6);
+    p384_key.g_.x_->value_[5] = 0xaa87ca22be8b0537ULL;
+    p384_key.g_.x_->value_[4] = 0x8eb1c71ef320ad74ULL;
+    p384_key.g_.x_->value_[3] = 0x6e1d3b628ba79b98ULL;
+    p384_key.g_.x_->value_[2] = 0x59f741e082542a38ULL;
+    p384_key.g_.x_->value_[1] = 0x5502f25dbf55296cULL;
+    p384_key.g_.x_->value_[0] = 0x3a545e3872760ab7ULL;
+    p384_key.g_.x_->normalize();
+    p384_key.g_.y_ = new big_num(6);
+    p384_key.g_.y_->value_[5] = 0x3617de4a96262c6fULL;
+    p384_key.g_.y_->value_[4] = 0x5d9e98bf9292dc29ULL;
+    p384_key.g_.y_->value_[3] = 0xf8f41dbd289a147cULL;
+    p384_key.g_.y_->value_[2] = 0xe9da3113b5f0b8c0ULL;
+    p384_key.g_.y_->value_[1] = 0x0a60b1ce1d7e819dULL;
+    p384_key.g_.y_->value_[0] = 0x7a431d7c90ea0e5fULL;
+    p384_key.g_.y_->normalize();
+    p384_key.g_.z_ = new big_num(1, 1ULL);
 
-    pt384_Key.g_.z_->normalize();
-    pt384_Key.base_.x_ = nullptr;
-    pt384_Key.base_.y_ = nullptr;
-    pt384_Key.base_.z_ = nullptr;
-    pt384_key_valid = true;
-    pt384_Key.key_valid_ = true;
+    p384_key.g_.z_->normalize();
+    p384_key.base_.x_ = nullptr;
+    p384_key.base_.y_ = nullptr;
+    p384_key.base_.z_ = nullptr;
+    p384_key_valid = true;
+    p384_key.key_valid_ = true;
+#endif
   }
 
   // pt-521
-  if (!pt521_key_valid) {
+  if (!p521_key_valid) {
 
-    pt521_Key.c_.modulus_bit_size_ = 521;
+    p521_key.c_->prime_bit_size_ = 521;
+#if 0
     time_now = new time_point();
     time_later = new time_point();
 
@@ -277,94 +288,99 @@ bool init_ecc_curves() {
       return false;
     }
     time_later->time_pointLaterBySeconds(*time_now, 10.0 * COMMON_YEAr_pt_SECONDS);
+#endif
 
-    pt521_Key.key_name_ = new string("pt-521");
-    pt521_Key.key_type_ = new string("ecc-521");
-    pt521_Key.key_usage_ = new string("all");
-    pt521_Key.key_owner_ = new string("NIST");
-    pt521_Key.not_before_ = time_now;
-    pt521_Key.not_after_ = time_later;
+#if 0
+    p521_key.key_name_ = new string("pt-521");
+    p521_key.key_type_ = new string("ecc-521");
+    p521_key.key_usage_ = new string("all");
+    p521_key.key_owner_ = new string("NIST");
+    p521_key.not_before_ = time_now;
+    p521_key.not_after_ = time_later;
+#endif
 
-    pt521_Key.c_.p_ = new big_num(9);
-    pt521_Key.c_.p_->value_[8] = 0x1ffULL;
-    pt521_Key.c_.p_->value_[7] = 0xffffffffffffffffULL;
-    pt521_Key.c_.p_->value_[6] = 0xffffffffffffffffULL;
-    pt521_Key.c_.p_->value_[5] = 0xffffffffffffffffULL;
-    pt521_Key.c_.p_->value_[4] = 0xffffffffffffffffULL;
-    pt521_Key.c_.p_->value_[3] = 0xffffffffffffffffULL;
-    pt521_Key.c_.p_->value_[2] = 0xffffffffffffffffULL;
-    pt521_Key.c_.p_->value_[1] = 0xffffffffffffffffULL;
-    pt521_Key.c_.p_->value_[0] = 0xffffffffffffffffULL;
-    pt521_Key.c_.p_->normalize();
+    p521_key.c_->p_ = new big_num(9);
+    p521_key.c_->p_->value_[8] = 0x1ffULL;
+    p521_key.c_->p_->value_[7] = 0xffffffffffffffffULL;
+    p521_key.c_->p_->value_[6] = 0xffffffffffffffffULL;
+    p521_key.c_->p_->value_[5] = 0xffffffffffffffffULL;
+    p521_key.c_->p_->value_[4] = 0xffffffffffffffffULL;
+    p521_key.c_->p_->value_[3] = 0xffffffffffffffffULL;
+    p521_key.c_->p_->value_[2] = 0xffffffffffffffffULL;
+    p521_key.c_->p_->value_[1] = 0xffffffffffffffffULL;
+    p521_key.c_->p_->value_[0] = 0xffffffffffffffffULL;
+    p521_key.c_->p_->normalize();
 
-    pt521_Key.c_.a_ = new big_num(9);
-    pt521_Key.c_.a_->value_[8] = 0x0b4ULL;
-    pt521_Key.c_.a_->value_[7] = 0x8bfa5f420a349495ULL;
-    pt521_Key.c_.a_->value_[6] = 0x39d2bdfc264eeeebULL;
-    pt521_Key.c_.a_->value_[5] = 0x077688e44fbf0ad8ULL;
-    pt521_Key.c_.a_->value_[4] = 0xf6d0edb37bd6b533ULL;
-    pt521_Key.c_.a_->value_[3] = 0x281000518e19f1b9ULL;
-    pt521_Key.c_.a_->value_[2] = 0xffbe0fe9ed8a3c22ULL;
-    pt521_Key.c_.a_->value_[1] = 0x00b8f875e523868cULL;
-    pt521_Key.c_.a_->value_[0] = 0x70c1e5bf55bad637ULL;
-    pt521_Key.c_.a_->normalize();
+    p521_key.c_->a_ = new big_num(9);
+    p521_key.c_->a_->value_[8] = 0x0b4ULL;
+    p521_key.c_->a_->value_[7] = 0x8bfa5f420a349495ULL;
+    p521_key.c_->a_->value_[6] = 0x39d2bdfc264eeeebULL;
+    p521_key.c_->a_->value_[5] = 0x077688e44fbf0ad8ULL;
+    p521_key.c_->a_->value_[4] = 0xf6d0edb37bd6b533ULL;
+    p521_key.c_->a_->value_[3] = 0x281000518e19f1b9ULL;
+    p521_key.c_->a_->value_[2] = 0xffbe0fe9ed8a3c22ULL;
+    p521_key.c_->a_->value_[1] = 0x00b8f875e523868cULL;
+    p521_key.c_->a_->value_[0] = 0x70c1e5bf55bad637ULL;
+    p521_key.c_->a_->normalize();
 
-    pt521_Key.c_.b_ = new big_num(9);
-    pt521_Key.c_.b_->value_[8] = 0x051ULL;
-    pt521_Key.c_.b_->value_[7] = 0x953eb9618e1c9a1fULL;
-    pt521_Key.c_.b_->value_[6] = 0x929a21a0b68540eeULL;
-    pt521_Key.c_.b_->value_[5] = 0xa2da725b99b315f3ULL;
-    pt521_Key.c_.b_->value_[4] = 0xb8b489918ef109e1ULL;
-    pt521_Key.c_.b_->value_[3] = 0x56193951ec7e937bULL;
-    pt521_Key.c_.b_->value_[2] = 0x1652c0bd3bb1bf07ULL;
-    pt521_Key.c_.b_->value_[1] = 0x3573df883d2c34f1ULL;
-    pt521_Key.c_.b_->value_[0] = 0xef451fd46b503f00ULL;
-    pt521_Key.c_.b_->normalize();
+    p521_key.c_->b_ = new big_num(9);
+    p521_key.c_->b_->value_[8] = 0x051ULL;
+    p521_key.c_->b_->value_[7] = 0x953eb9618e1c9a1fULL;
+    p521_key.c_->b_->value_[6] = 0x929a21a0b68540eeULL;
+    p521_key.c_->b_->value_[5] = 0xa2da725b99b315f3ULL;
+    p521_key.c_->b_->value_[4] = 0xb8b489918ef109e1ULL;
+    p521_key.c_->b_->value_[3] = 0x56193951ec7e937bULL;
+    p521_key.c_->b_->value_[2] = 0x1652c0bd3bb1bf07ULL;
+    p521_key.c_->b_->value_[1] = 0x3573df883d2c34f1ULL;
+    p521_key.c_->b_->value_[0] = 0xef451fd46b503f00ULL;
+    p521_key.c_->b_->normalize();
 
-    pt521_Key.bit_size_modulus_ = 521;
-    pt521_Key.order_of_g_ = new big_num(9);
-    pt521_Key.order_of_g_->value_[8] = 0x01ffULL;
-    pt521_Key.order_of_g_->value_[7] = 0xffffffffffffffffULL;
-    pt521_Key.order_of_g_->value_[6] = 0xffffffffffffffffULL;
-    pt521_Key.order_of_g_->value_[5] = 0xffffffffffffffffULL;
-    pt521_Key.order_of_g_->value_[4] = 0xfffffffffffffffaULL;
-    pt521_Key.order_of_g_->value_[3] = 0x51868783bf2f966bULL;
-    pt521_Key.order_of_g_->value_[2] = 0x7fcc0148f709a5d0ULL;
-    pt521_Key.order_of_g_->value_[1] = 0x3bb5c9b8899c47aeULL;
-    pt521_Key.order_of_g_->value_[0] = 0xbb6fb71e91386409ULL;
-    pt521_Key.order_of_g_->normalize();
+#if 0
+    p521_key.prime_bit_size_ = 521;
+    p521_key.order_of_g_ = new big_num(9);
+    p521_key.order_of_g_->value_[8] = 0x01ffULL;
+    p521_key.order_of_g_->value_[7] = 0xffffffffffffffffULL;
+    p521_key.order_of_g_->value_[6] = 0xffffffffffffffffULL;
+    p521_key.order_of_g_->value_[5] = 0xffffffffffffffffULL;
+    p521_key.order_of_g_->value_[4] = 0xfffffffffffffffaULL;
+    p521_key.order_of_g_->value_[3] = 0x51868783bf2f966bULL;
+    p521_key.order_of_g_->value_[2] = 0x7fcc0148f709a5d0ULL;
+    p521_key.order_of_g_->value_[1] = 0x3bb5c9b8899c47aeULL;
+    p521_key.order_of_g_->value_[0] = 0xbb6fb71e91386409ULL;
+    p521_key.order_of_g_->normalize();
 
-    pt521_Key.g_.x_ = new big_num(9);
-    pt521_Key.g_.x_->value_[8] = 0xc6ULL;
-    pt521_Key.g_.x_->value_[7] = 0x858e06b70404e9cdULL;
-    pt521_Key.g_.x_->value_[6] = 0x9e3ecb662395b442ULL;
-    pt521_Key.g_.x_->value_[5] = 0x9c648139053fb521ULL;
-    pt521_Key.g_.x_->value_[4] = 0xf828af606b4d3dbaULL;
-    pt521_Key.g_.x_->value_[3] = 0xa14b5e77efe75928ULL;
-    pt521_Key.g_.x_->value_[2] = 0xfe1dc127a2ffa8deULL;
-    pt521_Key.g_.x_->value_[1] = 0x3348b3c1856a429bULL;
-    pt521_Key.g_.x_->value_[0] = 0xf97e7e31c2e5bd66ULL;
-    pt521_Key.g_.x_->normalize();
-    pt521_Key.g_.y_ = new big_num(9);
+    p521_key.g_.x_ = new big_num(9);
+    p521_key.g_.x_->value_[8] = 0xc6ULL;
+    p521_key.g_.x_->value_[7] = 0x858e06b70404e9cdULL;
+    p521_key.g_.x_->value_[6] = 0x9e3ecb662395b442ULL;
+    p521_key.g_.x_->value_[5] = 0x9c648139053fb521ULL;
+    p521_key.g_.x_->value_[4] = 0xf828af606b4d3dbaULL;
+    p521_key.g_.x_->value_[3] = 0xa14b5e77efe75928ULL;
+    p521_key.g_.x_->value_[2] = 0xfe1dc127a2ffa8deULL;
+    p521_key.g_.x_->value_[1] = 0x3348b3c1856a429bULL;
+    p521_key.g_.x_->value_[0] = 0xf97e7e31c2e5bd66ULL;
+    p521_key.g_.x_->normalize();
+    p521_key.g_.y_ = new big_num(9);
  
-    pt521_Key.g_.y_->value_[8] = 0x118ULL;
-    pt521_Key.g_.y_->value_[7] = 0x39296a789a3bc004ULL;
-    pt521_Key.g_.y_->value_[6] = 0x5c8a5fb42c7d1bd9ULL;
-    pt521_Key.g_.y_->value_[5] = 0x98f54449579b4468ULL;
-    pt521_Key.g_.y_->value_[4] = 0x17afbd17273e662cULL;
-    pt521_Key.g_.y_->value_[3] = 0x97ee72995ef42640ULL;
-    pt521_Key.g_.y_->value_[2] = 0xc550b9013fad0761ULL;
-    pt521_Key.g_.y_->value_[1] = 0x353c7086a272c240ULL;
-    pt521_Key.g_.y_->value_[0] = 0x88be94769fd16650ULL;
-    pt521_Key.g_.y_->normalize();
-    pt521_Key.g_.z_ = new big_num(1, 1ULL);
+    p521_key.g_.y_->value_[8] = 0x118ULL;
+    p521_key.g_.y_->value_[7] = 0x39296a789a3bc004ULL;
+    p521_key.g_.y_->value_[6] = 0x5c8a5fb42c7d1bd9ULL;
+    p521_key.g_.y_->value_[5] = 0x98f54449579b4468ULL;
+    p521_key.g_.y_->value_[4] = 0x17afbd17273e662cULL;
+    p521_key.g_.y_->value_[3] = 0x97ee72995ef42640ULL;
+    p521_key.g_.y_->value_[2] = 0xc550b9013fad0761ULL;
+    p521_key.g_.y_->value_[1] = 0x353c7086a272c240ULL;
+    p521_key.g_.y_->value_[0] = 0x88be94769fd16650ULL;
+    p521_key.g_.y_->normalize();
+    p521_key.g_.z_ = new big_num(1, 1ULL);
 
-    pt521_Key.g_.z_->normalize();
-    pt521_Key.base_.x_ = nullptr;
-    pt521_Key.base_.y_ = nullptr;
-    pt521_Key.base_.z_ = nullptr;
-    pt521_key_valid = true;
-    pt521_Key.key_valid_ = true;
+    p521_key.g_.z_->normalize();
+    p521_key.base_.x_ = nullptr;
+    p521_key.base_.y_ = nullptr;
+    p521_key.base_.z_ = nullptr;
+    p521_key_valid = true;
+    p521_key.key_valid_ = true;
+#endif
   }
 
   return true;
