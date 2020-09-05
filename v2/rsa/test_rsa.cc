@@ -42,6 +42,27 @@ bool test_rsa1() {
   if (km != nullptr)
     print_key_message(*km);
 
+  byte msg_in[128];
+  byte msg_out[128];
+  byte msg_recovered[128];
+  memset(msg_in, 0, 128);
+  memset(msg_out, 0, 128);
+  memset(msg_recovered, 0, 128);
+
+  memcpy(msg_in, (byte*)"hello", 6);
+
+  int size_out1 = 128;
+  int size_out2 = 128;
+  if(!r.encrypt(64, msg_in, &size_out1, msg_out, 0))
+    return false;
+  if (!r.decrypt(size_out1, msg_out, &size_out2, msg_recovered, 0))
+    return false;
+  printf("Message   :"); print_bytes(64, msg_in); printf("\n");
+  printf("Encrypted :"); print_bytes(size_out1, msg_out); printf("\n");
+  printf("Recovered :"); print_bytes(size_out2, msg_recovered); printf("\n");
+
+  if (memcmp(msg_in, msg_recovered, 64) != 0)
+    return false;
   return true;
 }
 
