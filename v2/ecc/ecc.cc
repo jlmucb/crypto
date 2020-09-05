@@ -187,11 +187,11 @@ void ecc_curve::clear() {
 void ecc_curve::print_curve() {
   if (a_ != nullptr) {
     printf("Curve: y^2= x^3 + ");
-    ptrintNumToConsole(*a_, 10ULL);
+    a_->print();
     printf(" x + ");
-    ptrintNumToConsole(*b_, 10ULL);
+    b_->print();
     printf(" (mod ");
-    ptrintNumToConsole(*p_, 10ULL);
+    p_->print();
     printf(")\n");
   }
 }
