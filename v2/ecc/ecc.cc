@@ -787,7 +787,7 @@ ecc::ecc() {
   c_ = nullptr;
   order_of_base_point_ = nullptr;
   public_point_ = nullptr;
-  private_point_ = nullptr;
+  base_point_ = nullptr;
 }
 
 ecc::~ecc() {

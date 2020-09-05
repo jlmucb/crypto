@@ -47,5 +47,5 @@ int main(int an, char** av) {
 
   close_crypto();
   printf("\n");
-  return 0;
+  return result;
 }
