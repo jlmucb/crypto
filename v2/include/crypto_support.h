@@ -175,19 +175,19 @@ class file_util {
 key_message* make_symmetrickey(const char* alg, const char* name, int bit_size,
                                const char* purpose, const char* not_before,
                                const char* not_after, string& secret);
+
 key_message* make_rsakey(const char* alg, const char* name, int bit_size,
     const char* purpose, const char* not_before, const char* not_after,
     string& mod, string& e, string& d, string& p, string& q, string& dp,
     string& dq, string& m_prime, string& p_prime, string& q_prime);
+
 key_message* make_ecckey(const char* name, int bit_size, const char* purpose,
                          const char* not_before, const char* not_after,
-                         const char * curve_name,
-                         string& p,
-                         string& secret_multiplier,
-                         string& private_base_point_x,
-                         string& private_base_point_y,
-                         string& public_base_point_x,
-                         string& public_base_point_y);
+                         string& curve_name, string& curve_p,
+                         string& curve_a, string& curve_b,
+                         string& curve_base_x, string& curve_base_y,
+                         string& order_base_point, string& secret,
+                         string& curve_public_point_x, string& curve_public_point_y);
 
 scheme_message* make_scheme(const char* name, const char* id,
   const char* encryption_alg, const char* encryption_key_name,
