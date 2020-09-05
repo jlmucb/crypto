@@ -131,59 +131,59 @@ void curve_point::print() {
 }
 
 ecc_curve::ecc_curve() {
-  a_ = nullptr;
-  b_ = nullptr;
-  p_ = nullptr;
+  curve_a_ = nullptr;
+  curve_b_ = nullptr;
+  curve_p_ = nullptr;
 }
 
 ecc_curve::ecc_curve(int size) {
-  a_ = new big_num(size);
-  b_ = new big_num(size);
-  p_ = new big_num(size);
+  curve_a_ = new big_num(size);
+  curve_b_ = new big_num(size);
+  curve_p_ = new big_num(size);
 }
 
 ecc_curve::ecc_curve(big_num& a, big_num& b, big_num& p) {
-  a_ = new big_num(a.capacity_);
-  a_->copy_from(a);
-  b_ = new big_num(b.capacity_);
-  b_->copy_from(b);
-  p_ = new big_num(p.capacity_);
-  p_->copy_from(p);
+  curve_a_ = new big_num(a.capacity_);
+  curve_a_->copy_from(a);
+  curve_b_ = new big_num(b.capacity_);
+  curve_b_->copy_from(b);
+  curve_p_ = new big_num(p.capacity_);
+  curve_p_->copy_from(p);
 }
 
 ecc_curve::~ecc_curve() {
   clear();
-  if (a_ != nullptr) {
-    a_->zero_num();
-    delete a_;
-    a_ = nullptr;
+  if (curve_a_ != nullptr) {
+    curve_a_->zero_num();
+    delete curve_a_;
+    curve_a_ = nullptr;
   }
-  if (b_ != nullptr) {
-    b_->zero_num();
-    delete b_;
-    b_ = nullptr;
+  if (curve_b_ != nullptr) {
+    curve_b_->zero_num();
+    delete curve_b_;
+    curve_b_ = nullptr;
   }
-  if (p_ != nullptr) {
-    p_->zero_num();
-    delete p_;
-    p_ = nullptr;
+  if (curve_p_ != nullptr) {
+    curve_p_->zero_num();
+    delete curve_p_;
+    curve_p_ = nullptr;
   }
 }
 
 void ecc_curve::clear() {
-  if (a_ != nullptr) a_->zero_num();
-  if (b_ != nullptr) b_->zero_num();
-  if (p_ != nullptr) p_->zero_num();
+  if (curve_a_ != nullptr) curve_a_->zero_num();
+  if (curve_b_ != nullptr) curve_b_->zero_num();
+  if (curve_p_ != nullptr) curve_p_->zero_num();
 }
 
 void ecc_curve::print_curve() {
-  if (a_ != nullptr) {
+  if (curve_a_ != nullptr) {
     printf("Curve: y^2= x^3 + ");
-    a_->print();
+    curve_a_->print();
     printf(" x + ");
-    b_->print();
+    curve_b_->print();
     printf(" (mod ");
-    p_->print();
+    curve_p_->print();
     printf(")\n");
   }
 }
@@ -197,39 +197,39 @@ void ecc_curve::print_curve() {
  *  point is (x,y)
  */
 bool ecc_embed(ecc_curve& c, big_num& m, curve_point& pt, int shift, int trys) {
-  big_num m_x(2 * c.p_->capacity_);
-  big_num t1(2 * c.p_->capacity_);
-  big_num t2(2 * c.p_->capacity_);
-  big_num t3(2 * c.p_->capacity_);
+  big_num m_x(2 * c.curve_p_->capacity_);
+  big_num t1(2 * c.curve_p_->capacity_);
+  big_num t2(2 * c.curve_p_->capacity_);
+  big_num t3(2 * c.curve_p_->capacity_);
   int i;
 
   if (!big_shift(m, shift, m_x)) {
     return false;
   }
-  if (big_compare(*c.p_, m_x) <= 0) {
+  if (big_compare(*c.curve_p_, m_x) <= 0) {
     return false;
   }
   for (i = 0; i < trys; i++) {
-    if (!big_mod_mult(m_x, m_x, *c.p_, t1)) {
+    if (!big_mod_mult(m_x, m_x, *c.curve_p_, t1)) {
       return false;
     }
-    if (!big_mod_mult(m_x, t1, *c.p_, t2)) {
+    if (!big_mod_mult(m_x, t1, *c.curve_p_, t2)) {
       return false;
     }
     t1.zero_num();
-    if (!big_mod_mult(m_x, *c.a_, *c.p_, t1)) {
+    if (!big_mod_mult(m_x, *c.curve_a_, *c.curve_p_, t1)) {
       return false;
     }
-    if (!big_mod_add(t1, t2, *c.p_, t3)) {
+    if (!big_mod_add(t1, t2, *c.curve_p_, t3)) {
       return false;
     }
     t1.zero_num();
     t2.zero_num();
-    if (!big_mod_add(t3, *c.b_, *c.p_, t1)) {
+    if (!big_mod_add(t3, *c.curve_b_, *c.curve_p_, t1)) {
       return false;
     }
-    if (big_mod_is_square(t1, *c.p_)) {
-      if (!big_mod_square_root(t1, *c.p_, *pt.y_)) {
+    if (big_mod_is_square(t1, *c.curve_p_)) {
+      if (!big_mod_square_root(t1, *c.curve_p_, *pt.y_)) {
         return false;
       }
       pt.x_->copy_from(m_x);
@@ -248,30 +248,30 @@ bool ecc_embed(ecc_curve& c, big_num& m, curve_point& pt, int shift, int trys) {
 }
 
 bool ecc_extract(ecc_curve& c, curve_point& pt, big_num& m, int shift) {
-  big_num t1(2 * c.p_->capacity_);
-  big_num t2(2 * c.p_->capacity_);
-  big_num t3(2 * c.p_->capacity_);
+  big_num t1(2 * c.curve_p_->capacity_);
+  big_num t2(2 * c.curve_p_->capacity_);
+  big_num t3(2 * c.curve_p_->capacity_);
 
   m.zero_num();
-  if (!big_mod_mult(*pt.x_, *pt.x_, *c.p_, t1)) {
+  if (!big_mod_mult(*pt.x_, *pt.x_, *c.curve_p_, t1)) {
     return false;
   }
-  if (!big_mod_mult(*pt.x_, t1, *c.p_, t2)) {
+  if (!big_mod_mult(*pt.x_, t1, *c.curve_p_, t2)) {
     return false;
   }
   t1.zero_num();
-  if (!big_mod_mult(*pt.x_, *c.a_, *c.p_, t1)) {
+  if (!big_mod_mult(*pt.x_, *c.curve_a_, *c.curve_p_, t1)) {
     return false;
   }
-  if (!big_mod_add(t1, t2, *c.p_, t3)) {
+  if (!big_mod_add(t1, t2, *c.curve_p_, t3)) {
     return false;
   }
   t2.zero_num();
-  if (!big_mod_add(t3, *c.b_, *c.p_, t2)) {
+  if (!big_mod_add(t3, *c.curve_b_, *c.curve_p_, t2)) {
     return false;
   }
   t1.zero_num();
-  if (!big_mod_mult(*pt.y_, *pt.y_, *c.p_, t1)) {
+  if (!big_mod_mult(*pt.y_, *pt.y_, *c.curve_p_, t1)) {
     return false;
   }
   if (big_compare(t1, t2) != 0) {
@@ -294,8 +294,8 @@ bool ecc_extract(ecc_curve& c, curve_point& pt, big_num& m, int shift) {
  *    x3= m^2-x1-x2, y3= m(x1-x3)-y1
  */
 bool ecc_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt) {
-  p_pt.normalize(*c.p_);
-  q_pt.normalize(*c.p_);
+  p_pt.normalize(*c.curve_p_);
+  q_pt.normalize(*c.curve_p_);
 
   if (p_pt.is_zero()) {
     return q_pt.copy_to(r_pt);
@@ -303,65 +303,65 @@ bool ecc_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_
   if (q_pt.is_zero()) {
     return p_pt.copy_to(r_pt);
   }
-  big_num m(2 * c.p_->size_);
-  big_num t1(2 * c.p_->size_);
-  big_num t2(2 * c.p_->size_);
-  big_num t3(2 * c.p_->size_);
+  big_num m(2 * c.curve_p_->size_);
+  big_num t1(2 * c.curve_p_->size_);
+  big_num t2(2 * c.curve_p_->size_);
+  big_num t3(2 * c.curve_p_->size_);
 
   r_pt.z_->copy_from(big_one);
   if (big_compare(*p_pt.x_, *q_pt.x_) != 0) {
-    if (!big_mod_sub(*q_pt.x_, *p_pt.x_, *c.p_, t1)) {
+    if (!big_mod_sub(*q_pt.x_, *p_pt.x_, *c.curve_p_, t1)) {
       return false;
     }
-    if (!big_mod_sub(*q_pt.y_, *p_pt.y_, *c.p_, t2)) {
+    if (!big_mod_sub(*q_pt.y_, *p_pt.y_, *c.curve_p_, t2)) {
       return false;
     }
-    if (!big_mod_div(t2, t1, *c.p_, m)) {
+    if (!big_mod_div(t2, t1, *c.curve_p_, m)) {
       return false;
     }
   } else {
-    if (!big_mod_add(*p_pt.y_, *q_pt.y_, *c.p_, t1)) {
+    if (!big_mod_add(*p_pt.y_, *q_pt.y_, *c.curve_p_, t1)) {
       return false;
     }
     if (t1.is_zero()) {
       r_pt.make_zero();
       return true;
     }
-    if (!big_mod_mult(*p_pt.x_, *p_pt.x_, *c.p_, t3)) {
+    if (!big_mod_mult(*p_pt.x_, *p_pt.x_, *c.curve_p_, t3)) {
       return false;
     }
-    if (!big_mod_mult(big_three, t3, *c.p_, t2)) {
+    if (!big_mod_mult(big_three, t3, *c.curve_p_, t2)) {
       return false;
     }
     t3.zero_num();
-    if (!big_mod_add(t2, *c.a_, *c.p_, t3)) {
+    if (!big_mod_add(t2, *c.curve_a_, *c.curve_p_, t3)) {
       return false;
     }
-    if (!big_mod_div(t3, t1, *c.p_, m)) {
+    if (!big_mod_div(t3, t1, *c.curve_p_, m)) {
       return false;
     }
   }
   t1.zero_num();
   t2.zero_num();
-  if (!big_mod_mult(m, m, *c.p_, t1)) {
+  if (!big_mod_mult(m, m, *c.curve_p_, t1)) {
     return false;
   }
-  if (!big_mod_sub(t1, *p_pt.x_, *c.p_, t2)) {
+  if (!big_mod_sub(t1, *p_pt.x_, *c.curve_p_, t2)) {
     return false;
   }
-  if (!big_mod_sub(t2, *q_pt.x_, *c.p_, *r_pt.x_)) {
+  if (!big_mod_sub(t2, *q_pt.x_, *c.curve_p_, *r_pt.x_)) {
     return false;
   }
   t1.zero_num();
   t2.zero_num();
   t3.zero_num();
-  if (!big_mod_sub(*p_pt.x_, *r_pt.x_, *c.p_, t1)) {
+  if (!big_mod_sub(*p_pt.x_, *r_pt.x_, *c.curve_p_, t1)) {
     return false;
   }
-  if (!big_mod_mult(m, t1, *c.p_, t2)) {
+  if (!big_mod_mult(m, t1, *c.curve_p_, t2)) {
     return false;
   }
-  if (!big_mod_sub(t2, *p_pt.y_, *c.p_, *r_pt.y_)) {
+  if (!big_mod_sub(t2, *p_pt.y_, *c.curve_p_, *r_pt.y_)) {
     return false;
   }
   return true;
@@ -374,11 +374,11 @@ bool ecc_sub(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_
   }
 
   curve_point minus_q_pt(q_pt);
-  big_num t(2 * c.p_->capacity_);
-  if (!big_sub(*c.p_, *q_pt.y_, t)) {
+  big_num t(2 * c.curve_p_->capacity_);
+  if (!big_sub(*c.curve_p_, *q_pt.y_, t)) {
     return false;
   }
-  if (!big_mod_normalize(t, *c.p_)) {
+  if (!big_mod_normalize(t, *c.curve_p_)) {
     return false;
   }
   minus_q_pt.y_->copy_from(t);
@@ -405,22 +405,22 @@ bool ecc_double(ecc_curve& c, curve_point& p_pt, curve_point& r_pt) {
 //
 
 bool projective_to_affine(ecc_curve& c, curve_point& pt) {
-  big_num x(1 + 2 * c.p_->size_);
-  big_num y(1 + 2 * c.p_->size_);
-  big_num zinv(1 + 2 * c.p_->size_);
+  big_num x(1 + 2 * c.curve_p_->size_);
+  big_num y(1 + 2 * c.curve_p_->size_);
+  big_num zinv(1 + 2 * c.curve_p_->size_);
 
   if (pt.z_->is_zero()) {
     pt.make_zero();
     return true;
   }
   if (pt.z_->is_one()) return true;
-  if (!big_mod_inv(*pt.z_, *c.p_, zinv)) {
+  if (!big_mod_inv(*pt.z_, *c.curve_p_, zinv)) {
     return false;
   }
-  if (!big_mod_mult(*pt.x_, zinv, *c.p_, x)) {
+  if (!big_mod_mult(*pt.x_, zinv, *c.curve_p_, x)) {
     return false;
   }
-  if (!big_mod_mult(*pt.y_, zinv, *c.p_, y)) {
+  if (!big_mod_mult(*pt.y_, zinv, *c.curve_p_, y)) {
     return false;
   }
   pt.x_->copy_from(x);
@@ -430,21 +430,21 @@ bool projective_to_affine(ecc_curve& c, curve_point& pt) {
 }
 
 bool projective_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt) {
-  big_num u(1 + 2 * c.p_->size_);
-  big_num v(1 + 2 * c.p_->size_);
-  big_num A(1 + 2 * c.p_->size_);
-  big_num u_squared(1 + 2 * c.p_->size_);
-  big_num v_squared(1 + 2 * c.p_->size_);
-  big_num w(1 + 2 * c.p_->size_);
-  big_num t(1 + 2 * c.p_->size_);
-  big_num t1(1 + 2 * c.p_->size_);
-  big_num t2(1 + 2 * c.p_->size_);
-  big_num t3(1 + 2 * c.p_->size_);
-  big_num t4(1 + 2 * c.p_->size_);
-  big_num a1(1 + 2 * c.p_->size_);
-  big_num a2(1 + 2 * c.p_->size_);
-  big_num b1(1 + 2 * c.p_->size_);
-  big_num b2(1 + 2 * c.p_->size_);
+  big_num u(1 + 2 * c.curve_p_->size_);
+  big_num v(1 + 2 * c.curve_p_->size_);
+  big_num A(1 + 2 * c.curve_p_->size_);
+  big_num u_squared(1 + 2 * c.curve_p_->size_);
+  big_num v_squared(1 + 2 * c.curve_p_->size_);
+  big_num w(1 + 2 * c.curve_p_->size_);
+  big_num t(1 + 2 * c.curve_p_->size_);
+  big_num t1(1 + 2 * c.curve_p_->size_);
+  big_num t2(1 + 2 * c.curve_p_->size_);
+  big_num t3(1 + 2 * c.curve_p_->size_);
+  big_num t4(1 + 2 * c.curve_p_->size_);
+  big_num a1(1 + 2 * c.curve_p_->size_);
+  big_num a2(1 + 2 * c.curve_p_->size_);
+  big_num b1(1 + 2 * c.curve_p_->size_);
+  big_num b2(1 + 2 * c.curve_p_->size_);
 
   // If p_pt=O, q_pt
   if (p_pt.z_->is_zero()) {
@@ -456,23 +456,23 @@ bool projective_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_po
     r_pt.copy_from(p_pt);
     return true;
   }
-  if (!big_mod_mult(*p_pt.x_, *q_pt.z_, *c.p_, a1)) {
+  if (!big_mod_mult(*p_pt.x_, *q_pt.z_, *c.curve_p_, a1)) {
     return false;
   }
-  if (!big_mod_mult(*p_pt.y_, *q_pt.z_, *c.p_, a2)) {
+  if (!big_mod_mult(*p_pt.y_, *q_pt.z_, *c.curve_p_, a2)) {
     return false;
   }
-  if (!big_mod_mult(*q_pt.x_, *p_pt.z_, *c.p_, b1)) {
+  if (!big_mod_mult(*q_pt.x_, *p_pt.z_, *c.curve_p_, b1)) {
     return false;
   }
-  if (!big_mod_mult(*q_pt.y_, *p_pt.z_, *c.p_, b2)) {
+  if (!big_mod_mult(*q_pt.y_, *p_pt.z_, *c.curve_p_, b2)) {
     return false;
   }
 
   // If p_pt= q_pt, use doubling
   if (big_compare(a1, b1) == 0) {
     if (big_compare(a2, b2) == 0) return projective_double(c, p_pt, r_pt);
-    if (!big_mod_add(a2, b2, *c.p_, t)) {
+    if (!big_mod_add(a2, b2, *c.curve_p_, t)) {
       return false;
     }
     if (t.is_zero()) {
@@ -482,171 +482,171 @@ bool projective_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_po
   }
 
   // u= y2z1-y1z2
-  if (!big_mod_mult(*q_pt.y_, *p_pt.z_, *c.p_, t)) {
+  if (!big_mod_mult(*q_pt.y_, *p_pt.z_, *c.curve_p_, t)) {
     return false;
   }
-  if (!big_mod_mult(*p_pt.y_, *q_pt.z_, *c.p_, w)) {
+  if (!big_mod_mult(*p_pt.y_, *q_pt.z_, *c.curve_p_, w)) {
     return false;
   }
-  if (!big_mod_sub(t, w, *c.p_, u)) {
+  if (!big_mod_sub(t, w, *c.curve_p_, u)) {
     return false;
   }
   // v=x2z1-x1z2
-  if (!big_mod_mult(*q_pt.x_, *p_pt.z_, *c.p_, t)) {
+  if (!big_mod_mult(*q_pt.x_, *p_pt.z_, *c.curve_p_, t)) {
     return false;
   }
-  if (!big_mod_mult(*p_pt.x_, *q_pt.z_, *c.p_, w)) {
+  if (!big_mod_mult(*p_pt.x_, *q_pt.z_, *c.curve_p_, w)) {
     return false;
   }
-  if (!big_mod_sub(t, w, *c.p_, v)) {
+  if (!big_mod_sub(t, w, *c.curve_p_, v)) {
     return false;
   }
   // A= u^2z1z2-v^3-2v^2x1z2
-  if (!big_mod_mult(u, u, *c.p_, u_squared)) {
+  if (!big_mod_mult(u, u, *c.curve_p_, u_squared)) {
     return false;
   }
-  if (!big_mod_mult(v, v, *c.p_, v_squared)) {
+  if (!big_mod_mult(v, v, *c.curve_p_, v_squared)) {
     return false;
   }
-  if (!big_mod_mult(u_squared, *p_pt.z_, *c.p_, t)) {
+  if (!big_mod_mult(u_squared, *p_pt.z_, *c.curve_p_, t)) {
     return false;
   }
-  if (!big_mod_mult(t, *q_pt.z_, *c.p_, t1)) {
+  if (!big_mod_mult(t, *q_pt.z_, *c.curve_p_, t1)) {
     return false;
   }
-  if (!big_mod_mult(v_squared, v, *c.p_, t2)) {
+  if (!big_mod_mult(v_squared, v, *c.curve_p_, t2)) {
     return false;
   }
-  if (!big_mod_mult(v_squared, *p_pt.x_, *c.p_, t)) {
+  if (!big_mod_mult(v_squared, *p_pt.x_, *c.curve_p_, t)) {
     return false;
   }
-  if (!big_mod_mult(t, *q_pt.z_, *c.p_, t4)) {
+  if (!big_mod_mult(t, *q_pt.z_, *c.curve_p_, t4)) {
     return false;
   }
   if (!big_shift(t4, 1, t3)) {
     return false;
   }
-  big_mod_normalize(t3, *c.p_);
+  big_mod_normalize(t3, *c.curve_p_);
   t.zero_num();
-  if (!big_mod_sub(t1, t2, *c.p_, t)) {
+  if (!big_mod_sub(t1, t2, *c.curve_p_, t)) {
     return false;
   }
-  if (!big_mod_sub(t, t3, *c.p_, A)) {
+  if (!big_mod_sub(t, t3, *c.curve_p_, A)) {
     return false;
   }
   // x3= vA
-  if (!big_mod_mult(v, A, *c.p_, *r_pt.x_)) {
+  if (!big_mod_mult(v, A, *c.curve_p_, *r_pt.x_)) {
     return false;
   }
   // z3= v^3z1z2
-  if (!big_mod_mult(*p_pt.z_, *q_pt.z_, *c.p_, t)) {
+  if (!big_mod_mult(*p_pt.z_, *q_pt.z_, *c.curve_p_, t)) {
     return false;
   }
-  if (!big_mod_mult(t, t2, *c.p_, *r_pt.z_)) {
+  if (!big_mod_mult(t, t2, *c.curve_p_, *r_pt.z_)) {
     return false;
   }
   // y3= u(v^2x1z2-A)-v^3y1z2
   t.zero_num();
-  if (!big_mod_sub(t4, A, *c.p_, t)) {
+  if (!big_mod_sub(t4, A, *c.curve_p_, t)) {
     return false;
   }
-  if (!big_mod_mult(t, u, *c.p_, w)) {
+  if (!big_mod_mult(t, u, *c.curve_p_, w)) {
     return false;
   }
-  if (!big_mod_mult(t2, *p_pt.y_, *c.p_, t)) {
+  if (!big_mod_mult(t2, *p_pt.y_, *c.curve_p_, t)) {
     return false;
   }
-  if (!big_mod_mult(t, *q_pt.z_, *c.p_, t4)) {
+  if (!big_mod_mult(t, *q_pt.z_, *c.curve_p_, t4)) {
     return false;
   }
-  if (!big_mod_sub(w, t4, *c.p_, *r_pt.y_)) {
+  if (!big_mod_sub(w, t4, *c.curve_p_, *r_pt.y_)) {
     return false;
   }
   return true;
 }
 
 bool projective_double(ecc_curve& c, curve_point& p_pt, curve_point& r_pt) {
-  big_num w(1 + 2 * c.p_->size_);
-  big_num w_squared(1 + 2 * c.p_->size_);
-  big_num s(1 + 2 * c.p_->size_);
-  big_num s_squared(1 + 2 * c.p_->size_);
-  big_num h(1 + 2 * c.p_->size_);
-  big_num B(1 + 2 * c.p_->size_);
-  big_num t1(1 + 2 * c.p_->size_);
-  big_num t2(1 + 2 * c.p_->size_);
-  big_num t3(1 + 2 * c.p_->size_);
-  big_num z1_squared(1 + 2 * c.p_->size_);
-  big_num x1_squared(1 + 2 * c.p_->size_);
-  big_num y1_squared(1 + 2 * c.p_->size_);
+  big_num w(1 + 2 * c.curve_p_->size_);
+  big_num w_squared(1 + 2 * c.curve_p_->size_);
+  big_num s(1 + 2 * c.curve_p_->size_);
+  big_num s_squared(1 + 2 * c.curve_p_->size_);
+  big_num h(1 + 2 * c.curve_p_->size_);
+  big_num B(1 + 2 * c.curve_p_->size_);
+  big_num t1(1 + 2 * c.curve_p_->size_);
+  big_num t2(1 + 2 * c.curve_p_->size_);
+  big_num t3(1 + 2 * c.curve_p_->size_);
+  big_num z1_squared(1 + 2 * c.curve_p_->size_);
+  big_num x1_squared(1 + 2 * c.curve_p_->size_);
+  big_num y1_squared(1 + 2 * c.curve_p_->size_);
 
   // w=az1^2+3x1^2
-  if (!big_mod_mult(*p_pt.z_, *p_pt.z_, *c.p_, z1_squared)) {
+  if (!big_mod_mult(*p_pt.z_, *p_pt.z_, *c.curve_p_, z1_squared)) {
     return false;
   }
-  if (!big_mod_mult(*p_pt.x_, *p_pt.x_, *c.p_, x1_squared)) {
+  if (!big_mod_mult(*p_pt.x_, *p_pt.x_, *c.curve_p_, x1_squared)) {
     return false;
   }
-  if (!big_mod_mult(*c.a_, z1_squared, *c.p_, t1)) {
+  if (!big_mod_mult(*c.curve_a_, z1_squared, *c.curve_p_, t1)) {
     return false;
   }
-  if (!big_mod_mult(big_three, x1_squared, *c.p_, t2)) {
+  if (!big_mod_mult(big_three, x1_squared, *c.curve_p_, t2)) {
     return false;
   }
-  if (!big_mod_add(t1, t2, *c.p_, w)) {
+  if (!big_mod_add(t1, t2, *c.curve_p_, w)) {
     return false;
   }
   // s=y1z1
-  if (!big_mod_mult(*p_pt.y_, *p_pt.z_, *c.p_, s)) {
+  if (!big_mod_mult(*p_pt.y_, *p_pt.z_, *c.curve_p_, s)) {
     return false;
   }
   // B= x1y1s
-  if (!big_mod_mult(*p_pt.x_, *p_pt.y_, *c.p_, t1)) {
+  if (!big_mod_mult(*p_pt.x_, *p_pt.y_, *c.curve_p_, t1)) {
     return false;
   }
-  if (!big_mod_mult(s, t1, *c.p_, B)) {
+  if (!big_mod_mult(s, t1, *c.curve_p_, B)) {
     return false;
   }
   // h= w^2-8B
-  if (!big_mod_mult(w, w, *c.p_, w_squared)) {
+  if (!big_mod_mult(w, w, *c.curve_p_, w_squared)) {
     return false;
   }
   t1.zero_num();
   if (!big_shift(B, 3, t1)) {
     return false;
   }
-  big_mod_normalize(t1, *c.p_);
-  if (!big_mod_sub(w_squared, t1, *c.p_, h)) {
+  big_mod_normalize(t1, *c.curve_p_);
+  if (!big_mod_sub(w_squared, t1, *c.curve_p_, h)) {
     return false;
   }
 
   // x3=2hs
   t1.zero_num();
-  if (!big_mod_mult(h, s, *c.p_, t1)) {
+  if (!big_mod_mult(h, s, *c.curve_p_, t1)) {
     return false;
   }
   t2.zero_num();
   if (!big_shift(t1, 1, t2)) {
     return false;
   }
-  big_mod_normalize(t2, *c.p_);
+  big_mod_normalize(t2, *c.curve_p_);
   r_pt.x_->copy_from(t2);
 
   // z3= 8s^3
-  if (!big_mod_mult(s, s, *c.p_, s_squared)) {
+  if (!big_mod_mult(s, s, *c.curve_p_, s_squared)) {
     return false;
   }
-  if (!big_mod_mult(s_squared, s, *c.p_, t1)) {
+  if (!big_mod_mult(s_squared, s, *c.curve_p_, t1)) {
     return false;
   }
   t2.zero_num();
   if (!big_shift(t1, 3, t2)) {
     return false;
   }
-  big_mod_normalize(t2, *c.p_);
+  big_mod_normalize(t2, *c.curve_p_);
   r_pt.z_->copy_from(t2);
 
   // y3= w(4B-h) -8y1^2s^2
-  if (!big_mod_mult(*p_pt.y_, *p_pt.y_, *c.p_, y1_squared)) {
+  if (!big_mod_mult(*p_pt.y_, *p_pt.y_, *c.curve_p_, y1_squared)) {
     return false;
   }
   t1.zero_num();
@@ -654,22 +654,22 @@ bool projective_double(ecc_curve& c, curve_point& p_pt, curve_point& r_pt) {
   if (!big_shift(B, 2, t1)) {
     return false;
   }
-  big_mod_normalize(t1, *c.p_);
-  if (!big_mod_sub(t1, h, *c.p_, t2)) {
+  big_mod_normalize(t1, *c.curve_p_);
+  if (!big_mod_sub(t1, h, *c.curve_p_, t2)) {
     return false;
   }
   t1.zero_num();
-  if (!big_mod_mult(w, t2, *c.p_, t1)) {
+  if (!big_mod_mult(w, t2, *c.curve_p_, t1)) {
     return false;
   }
-  if (!big_mod_mult(s_squared, y1_squared, *c.p_, t2)) {
+  if (!big_mod_mult(s_squared, y1_squared, *c.curve_p_, t2)) {
     return false;
   }
   if (!big_shift(t2, 3, t3)) {
     return false;
   }
-  big_mod_normalize(t3, *c.p_);
-  if (!big_mod_sub(t1, t3, *c.p_, *r_pt.y_)) {
+  big_mod_normalize(t3, *c.curve_p_);
+  if (!big_mod_sub(t1, t3, *c.curve_p_, *r_pt.y_)) {
     return false;
   }
   return true;
@@ -690,9 +690,9 @@ bool projective_point_mult(ecc_curve& c, big_num& x, curve_point& p_pt, curve_po
 
   int k = big_high_bit(x);
   int i;
-  curve_point double_point(p_pt, 1 + 2 * c.p_->capacity_);
-  curve_point accum_point(1 + 2 * c.p_->capacity_);
-  curve_point t1(1 + 2 * c.p_->capacity_);
+  curve_point double_point(p_pt, 1 + 2 * c.curve_p_->capacity_);
+  curve_point accum_point(1 + 2 * c.curve_p_->capacity_);
+  curve_point t1(1 + 2 * c.curve_p_->capacity_);
 
   accum_point.make_zero();
   for (i = 1; i < k; i++) {
@@ -730,9 +730,9 @@ bool ecc_mult(ecc_curve& c, curve_point& p_pt, big_num& x, curve_point& r_pt) {
   }
   int k = big_high_bit(x);
   int i;
-  curve_point double_point(p_pt, 1 + 2 * c.p_->capacity_);
-  curve_point accum_point(1 + 2 * c.p_->capacity_);
-  curve_point t1(1 + 2 * c.p_->capacity_);
+  curve_point double_point(p_pt, 1 + 2 * c.curve_p_->capacity_);
+  curve_point accum_point(1 + 2 * c.curve_p_->capacity_);
+  curve_point t1(1 + 2 * c.curve_p_->capacity_);
 
   accum_point.make_zero();
   for (i = 1; i < k; i++) {
@@ -783,7 +783,6 @@ ecc::ecc() {
   initialized_ = false;
   ecc_key_ = nullptr;
   prime_bit_size_ = 0;
-  p_= nullptr;
   c_ = nullptr;
   order_of_base_point_ = nullptr;
   public_point_ = nullptr;
@@ -928,9 +927,9 @@ void ecc::print() {
 //  send (kG, kBase+M)
 bool ecc::encrypt(int size, byte* plain, big_num& k, curve_point& pt1,
                      curve_point& pt2) {
-  big_num m(c_->p_->capacity_);
-  curve_point pt(c_->p_->capacity_);
-  curve_point r_pt(c_->p_->capacity_);
+  big_num m(c_->curve_p_->capacity_);
+  curve_point pt(c_->curve_p_->capacity_);
+  curve_point r_pt(c_->curve_p_->capacity_);
 
   memcpy((byte*)m.value_, plain, size);
   m.normalize();
@@ -963,17 +962,17 @@ bool ecc::encrypt(int size, byte* plain, big_num& k, curve_point& pt1,
 //  M= kBase+M-(secret)kG
 //  extract message from M
 bool ecc::decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain) {
-  big_num m(c_->p_->capacity_);
-  curve_point pt(c_->p_->capacity_);
-  curve_point r_pt(c_->p_->capacity_);
+  big_num m(c_->curve_p_->capacity_);
+  curve_point pt(c_->curve_p_->capacity_);
+  curve_point r_pt(c_->curve_p_->capacity_);
 
 #if 0
 #ifdef FASTECCMULT
-  if (!faster_ecc_mult(*c_, pt1, *a_, r_pt)) {
+  if (!faster_ecc_mult(*c_, pt1, *c->curve_a_, r_pt)) {
     return false;
   }
 #else
-  if (!ecc_mult(*c_, pt1, *a_, r_pt)) {
+  if (!ecc_mult(*c_, pt1, *c->curve_a_, r_pt)) {
     return false;
   }
 #endif

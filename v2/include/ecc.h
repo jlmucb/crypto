@@ -102,7 +102,6 @@ class ecc {
   bool initialized_;
   key_message *ecc_key_;
   int prime_bit_size_;
-  big_num* p_;
   ecc_curve* c_;
   string not_before_;
   string not_after_;

@@ -133,26 +133,26 @@ bool init_ecc_curves() {
 #endif
   
     p256_key.c_->prime_bit_size_ = 256;
-    p256_key.c_->p_ = new big_num(4);
-    p256_key.c_->p_->value_[3] = 0xffffffff00000001ULL;
-    p256_key.c_->p_->value_[2] = 0ULL;
-    p256_key.c_->p_->value_[1] = 0x00000000ffffffffULL;
-    p256_key.c_->p_->value_[0] = 0xffffffffffffffffULL;
-    p256_key.c_->p_->normalize();
+    p256_key.c_->curve_p_ = new big_num(4);
+    p256_key.c_->curve_p_->value_[3] = 0xffffffff00000001ULL;
+    p256_key.c_->curve_p_->value_[2] = 0ULL;
+    p256_key.c_->curve_p_->value_[1] = 0x00000000ffffffffULL;
+    p256_key.c_->curve_p_->value_[0] = 0xffffffffffffffffULL;
+    p256_key.c_->curve_p_->normalize();
 
-    p256_key.c_->a_ = new big_num(4);
-    p256_key.c_->a_->value_[3] = 0xffffffff00000001ULL;
-    p256_key.c_->a_->value_[2] = 0ULL;
-    p256_key.c_->a_->value_[1] = 0x00000000ffffffffULL;
-    p256_key.c_->a_->value_[0] = 0xfffffffffffffffcULL;
-    p256_key.c_->a_->normalize();
+    p256_key.c_->curve_a_ = new big_num(4);
+    p256_key.c_->curve_a_->value_[3] = 0xffffffff00000001ULL;
+    p256_key.c_->curve_a_->value_[2] = 0ULL;
+    p256_key.c_->curve_a_->value_[1] = 0x00000000ffffffffULL;
+    p256_key.c_->curve_a_->value_[0] = 0xfffffffffffffffcULL;
+    p256_key.c_->curve_a_->normalize();
 
-    p256_key.c_->b_ = new big_num(4);
-    p256_key.c_->b_->value_[3] = 0x5ac635d8aa3a93e7ULL;
-    p256_key.c_->b_->value_[2] = 0xb3ebbd55769886bcULL;
-    p256_key.c_->b_->value_[1] = 0x651d06b0cc53b0f6ULL;
-    p256_key.c_->b_->value_[0] = 0x3bce3c3e27d2604bULL;
-    p256_key.c_->b_->normalize();
+    p256_key.c_->curve_b_ = new big_num(4);
+    p256_key.c_->curve_b_->value_[3] = 0x5ac635d8aa3a93e7ULL;
+    p256_key.c_->curve_b_->value_[2] = 0xb3ebbd55769886bcULL;
+    p256_key.c_->curve_b_->value_[1] = 0x651d06b0cc53b0f6ULL;
+    p256_key.c_->curve_b_->value_[0] = 0x3bce3c3e27d2604bULL;
+    p256_key.c_->curve_b_->normalize();
 
 #if 0
     p256_key.prime_bit_size_ = 256;
@@ -210,32 +210,32 @@ bool init_ecc_curves() {
 #endif
 
     // p = 2^384 – 2^128 – 2^96 + 2^32 –1
-    p384_key.c_->p_ = new big_num(6);
-    p384_key.c_->p_->value_[5] = 0xffffffffffffffffULL;
-    p384_key.c_->p_->value_[4] = 0xffffffffffffffffULL;
-    p384_key.c_->p_->value_[3] = 0xffffffffffffffffULL;
-    p384_key.c_->p_->value_[2] = 0xfffffffffffffffeULL;
-    p384_key.c_->p_->value_[1] = 0xffffffff00000000ULL;
-    p384_key.c_->p_->value_[0] = 0x00000000ffffffffULL;
-    p384_key.c_->p_->normalize();
+    p384_key.c_->curve_p_ = new big_num(6);
+    p384_key.c_->curve_p_->value_[5] = 0xffffffffffffffffULL;
+    p384_key.c_->curve_p_->value_[4] = 0xffffffffffffffffULL;
+    p384_key.c_->curve_p_->value_[3] = 0xffffffffffffffffULL;
+    p384_key.c_->curve_p_->value_[2] = 0xfffffffffffffffeULL;
+    p384_key.c_->curve_p_->value_[1] = 0xffffffff00000000ULL;
+    p384_key.c_->curve_p_->value_[0] = 0x00000000ffffffffULL;
+    p384_key.c_->curve_p_->normalize();
 
-    p384_key.c_->a_ = new big_num(6);
-    p384_key.c_->a_->value_[5] = 0x79d1e655f868f02fULL;
-    p384_key.c_->a_->value_[4] = 0xff48dcdee14151ddULL;
-    p384_key.c_->a_->value_[3] = 0xb80643c1406d0ca1ULL;
-    p384_key.c_->a_->value_[2] = 0x0dfe6fc52009540aULL;
-    p384_key.c_->a_->value_[1] = 0x495e8042ea5f744fULL;
-    p384_key.c_->a_->value_[0] = 0x6e184667cc722483ULL;
-    p384_key.c_->a_->normalize();
+    p384_key.c_->curve_a_ = new big_num(6);
+    p384_key.c_->curve_a_->value_[5] = 0x79d1e655f868f02fULL;
+    p384_key.c_->curve_a_->value_[4] = 0xff48dcdee14151ddULL;
+    p384_key.c_->curve_a_->value_[3] = 0xb80643c1406d0ca1ULL;
+    p384_key.c_->curve_a_->value_[2] = 0x0dfe6fc52009540aULL;
+    p384_key.c_->curve_a_->value_[1] = 0x495e8042ea5f744fULL;
+    p384_key.c_->curve_a_->value_[0] = 0x6e184667cc722483ULL;
+    p384_key.c_->curve_a_->normalize();
 
-    p384_key.c_->b_ = new big_num(6);
-    p384_key.c_->b_->value_[5] = 0xb3312fa7e23ee7e4ULL;
-    p384_key.c_->b_->value_[4] = 0x988e056be3f82d19ULL;
-    p384_key.c_->b_->value_[3] = 0x181d9c6efe814112ULL;
-    p384_key.c_->b_->value_[2] = 0x0314088f5013875aULL;
-    p384_key.c_->b_->value_[1] = 0xc656398d8a2ed19dULL;
-    p384_key.c_->b_->value_[0] = 0x2a85c8edd3ec2aefULL;
-    p384_key.c_->b_->normalize();
+    p384_key.c_->curve_b_ = new big_num(6);
+    p384_key.c_->curve_b_->value_[5] = 0xb3312fa7e23ee7e4ULL;
+    p384_key.c_->curve_b_->value_[4] = 0x988e056be3f82d19ULL;
+    p384_key.c_->curve_b_->value_[3] = 0x181d9c6efe814112ULL;
+    p384_key.c_->curve_b_->value_[2] = 0x0314088f5013875aULL;
+    p384_key.c_->curve_b_->value_[1] = 0xc656398d8a2ed19dULL;
+    p384_key.c_->curve_b_->value_[0] = 0x2a85c8edd3ec2aefULL;
+    p384_key.c_->curve_b_->normalize();
 
 #if 0
     p384_key.prime_bit_size_ = 384;
@@ -299,41 +299,41 @@ bool init_ecc_curves() {
     p521_key.not_after_ = time_later;
 #endif
 
-    p521_key.c_->p_ = new big_num(9);
-    p521_key.c_->p_->value_[8] = 0x1ffULL;
-    p521_key.c_->p_->value_[7] = 0xffffffffffffffffULL;
-    p521_key.c_->p_->value_[6] = 0xffffffffffffffffULL;
-    p521_key.c_->p_->value_[5] = 0xffffffffffffffffULL;
-    p521_key.c_->p_->value_[4] = 0xffffffffffffffffULL;
-    p521_key.c_->p_->value_[3] = 0xffffffffffffffffULL;
-    p521_key.c_->p_->value_[2] = 0xffffffffffffffffULL;
-    p521_key.c_->p_->value_[1] = 0xffffffffffffffffULL;
-    p521_key.c_->p_->value_[0] = 0xffffffffffffffffULL;
-    p521_key.c_->p_->normalize();
+    p521_key.c_->curve_p_ = new big_num(9);
+    p521_key.c_->curve_p_->value_[8] = 0x1ffULL;
+    p521_key.c_->curve_p_->value_[7] = 0xffffffffffffffffULL;
+    p521_key.c_->curve_p_->value_[6] = 0xffffffffffffffffULL;
+    p521_key.c_->curve_p_->value_[5] = 0xffffffffffffffffULL;
+    p521_key.c_->curve_p_->value_[4] = 0xffffffffffffffffULL;
+    p521_key.c_->curve_p_->value_[3] = 0xffffffffffffffffULL;
+    p521_key.c_->curve_p_->value_[2] = 0xffffffffffffffffULL;
+    p521_key.c_->curve_p_->value_[1] = 0xffffffffffffffffULL;
+    p521_key.c_->curve_p_->value_[0] = 0xffffffffffffffffULL;
+    p521_key.c_->curve_p_->normalize();
 
-    p521_key.c_->a_ = new big_num(9);
-    p521_key.c_->a_->value_[8] = 0x0b4ULL;
-    p521_key.c_->a_->value_[7] = 0x8bfa5f420a349495ULL;
-    p521_key.c_->a_->value_[6] = 0x39d2bdfc264eeeebULL;
-    p521_key.c_->a_->value_[5] = 0x077688e44fbf0ad8ULL;
-    p521_key.c_->a_->value_[4] = 0xf6d0edb37bd6b533ULL;
-    p521_key.c_->a_->value_[3] = 0x281000518e19f1b9ULL;
-    p521_key.c_->a_->value_[2] = 0xffbe0fe9ed8a3c22ULL;
-    p521_key.c_->a_->value_[1] = 0x00b8f875e523868cULL;
-    p521_key.c_->a_->value_[0] = 0x70c1e5bf55bad637ULL;
-    p521_key.c_->a_->normalize();
+    p521_key.c_->curve_a_ = new big_num(9);
+    p521_key.c_->curve_a_->value_[8] = 0x0b4ULL;
+    p521_key.c_->curve_a_->value_[7] = 0x8bfa5f420a349495ULL;
+    p521_key.c_->curve_a_->value_[6] = 0x39d2bdfc264eeeebULL;
+    p521_key.c_->curve_a_->value_[5] = 0x077688e44fbf0ad8ULL;
+    p521_key.c_->curve_a_->value_[4] = 0xf6d0edb37bd6b533ULL;
+    p521_key.c_->curve_a_->value_[3] = 0x281000518e19f1b9ULL;
+    p521_key.c_->curve_a_->value_[2] = 0xffbe0fe9ed8a3c22ULL;
+    p521_key.c_->curve_a_->value_[1] = 0x00b8f875e523868cULL;
+    p521_key.c_->curve_a_->value_[0] = 0x70c1e5bf55bad637ULL;
+    p521_key.c_->curve_a_->normalize();
 
-    p521_key.c_->b_ = new big_num(9);
-    p521_key.c_->b_->value_[8] = 0x051ULL;
-    p521_key.c_->b_->value_[7] = 0x953eb9618e1c9a1fULL;
-    p521_key.c_->b_->value_[6] = 0x929a21a0b68540eeULL;
-    p521_key.c_->b_->value_[5] = 0xa2da725b99b315f3ULL;
-    p521_key.c_->b_->value_[4] = 0xb8b489918ef109e1ULL;
-    p521_key.c_->b_->value_[3] = 0x56193951ec7e937bULL;
-    p521_key.c_->b_->value_[2] = 0x1652c0bd3bb1bf07ULL;
-    p521_key.c_->b_->value_[1] = 0x3573df883d2c34f1ULL;
-    p521_key.c_->b_->value_[0] = 0xef451fd46b503f00ULL;
-    p521_key.c_->b_->normalize();
+    p521_key.c_->curve_b_ = new big_num(9);
+    p521_key.c_->curve_b_->value_[8] = 0x051ULL;
+    p521_key.c_->curve_b_->value_[7] = 0x953eb9618e1c9a1fULL;
+    p521_key.c_->curve_b_->value_[6] = 0x929a21a0b68540eeULL;
+    p521_key.c_->curve_b_->value_[5] = 0xa2da725b99b315f3ULL;
+    p521_key.c_->curve_b_->value_[4] = 0xb8b489918ef109e1ULL;
+    p521_key.c_->curve_b_->value_[3] = 0x56193951ec7e937bULL;
+    p521_key.c_->curve_b_->value_[2] = 0x1652c0bd3bb1bf07ULL;
+    p521_key.c_->curve_b_->value_[1] = 0x3573df883d2c34f1ULL;
+    p521_key.c_->curve_b_->value_[0] = 0xef451fd46b503f00ULL;
+    p521_key.c_->curve_b_->normalize();
 
 #if 0
     p521_key.prime_bit_size_ = 521;
