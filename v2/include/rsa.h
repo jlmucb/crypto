@@ -20,7 +20,7 @@
 #ifndef _CRYPTO_RSA_H__
 #define _CRYPTO_RSA_H__
 class rsa {
- private:
+ public:
   bool initialized_;
   key_message *rsa_key_;
   int bit_size_modulus_;
@@ -37,7 +37,6 @@ class rsa {
   string not_before_;
   string not_after_;
 
- public:
   rsa();
   ~rsa();
 

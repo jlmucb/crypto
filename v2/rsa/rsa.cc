@@ -170,11 +170,198 @@ bool rsa::compute_fast_decrypt_parameters() {
 }
 
 bool rsa::retrieve_parameters_from_key_message() {
-  // int bytes_to_u64_array(string& b, int size_n, uint64_t* n);
+
+  if (!initialized_ || rsa_key_ == nullptr)
+    return false;
+
+  if (rsa_key_->has_key_size())
+    bit_size_modulus_ = rsa_key_->key_size();
+  else
+    return false;
+  if (rsa_key_->has_notbefore())
+    not_before_.assign(rsa_key_->notbefore().c_str());
+  if (rsa_key_->has_notafter())
+    not_after_.assign(rsa_key_->notafter().c_str());
+   
+
+  int u64_len = 1 + bit_size_modulus_ / (sizeof(uint64_t) * NBITSINBYTE);
+  int k = 0;
+
+  if (rsa_key_->has_rsa_pub() && rsa_key_->rsa_pub().has_modulus()) {
+    if (m_ != nullptr) {
+      delete m_;
+      m_ = nullptr;
+    }
+    m_ = new big_num(u64_len);
+    if (bytes_to_u64_array((string&)(rsa_key_->rsa_pub().modulus()), u64_len, m_->value_ptr()) < 0) {
+      return false;
+    }
+  }
+  if (rsa_key_->has_rsa_pub() && rsa_key_->rsa_pub().has_e()) {
+    if (e_ != nullptr) {
+      delete e_;
+      e_ = nullptr;
+    }
+    int e_len = 1 + (rsa_key_->rsa_pub().e().size() / sizeof(uint64_t));
+    e_ = new big_num(e_len);
+    if (bytes_to_u64_array((string&)(rsa_key_->rsa_pub().e()), e_len, e_->value_ptr()) < 0) {
+      return false;
+    }
+  }
+  if (rsa_key_->has_rsa_priv() && rsa_key_->rsa_priv().has_d()) {
+    if (d_ != nullptr) {
+      delete d_;
+      d_ = nullptr;
+    }
+    d_ = new big_num(u64_len);
+    if (bytes_to_u64_array((string&)(rsa_key_->rsa_priv().d()), u64_len, d_->value_ptr()) < 0) {
+      return false;
+    }
+  }
+  if (rsa_key_->has_rsa_priv() && rsa_key_->rsa_priv().has_p()) {
+    if (p_ != nullptr) {
+      delete p_;
+      p_ = nullptr;
+    }
+    p_ = new big_num(u64_len);
+    if (bytes_to_u64_array((string&)(rsa_key_->rsa_priv().p()), u64_len, p_->value_ptr()) < 0) {
+      return false;
+    }
+  }
+  if (rsa_key_->has_rsa_priv() && rsa_key_->rsa_priv().has_q()) {
+    if (q_ != nullptr) {
+      delete q_;
+      q_ = nullptr;
+    }
+    q_ = new big_num(u64_len);
+    if (bytes_to_u64_array((string&)(rsa_key_->rsa_priv().q()), u64_len, q_->value_ptr()) < 0) {
+      return false;
+    }
+  }
+  if (rsa_key_->has_rsa_priv() && rsa_key_->rsa_priv().has_dp()) {
+    if (dp_ != nullptr) {
+      delete dp_;
+      dp_ = nullptr;
+    }
+    dp_ = new big_num(u64_len);
+    if (bytes_to_u64_array((string&)(rsa_key_->rsa_priv().dp()), u64_len, dp_->value_ptr()) < 0) {
+      return false;
+    }
+  }
+  if (rsa_key_->has_rsa_priv() && rsa_key_->rsa_priv().has_dq()) {
+    if (dq_ != nullptr) {
+      delete dq_;
+      dq_ = nullptr;
+    }
+    dq_ = new big_num(u64_len);
+    if (bytes_to_u64_array((string&)(rsa_key_->rsa_priv().dq()), u64_len, dq_->value_ptr()) < 0) {
+      return false;
+    }
+  }
+  if (rsa_key_->has_rsa_priv() && rsa_key_->rsa_priv().has_m_prime()) {
+    if (m_prime_ != nullptr) {
+      delete m_prime_;
+      m_prime_ = nullptr;
+    }
+    m_prime_ = new big_num(u64_len);
+    if (bytes_to_u64_array((string&)(rsa_key_->rsa_priv().m_prime()), u64_len, m_prime_->value_ptr()) < 0) {
+      return false;
+    }
+  }
+  if (rsa_key_->has_rsa_priv() && rsa_key_->rsa_priv().has_p_prime()) {
+    if (p_prime_ != nullptr) {
+      delete p_prime_;
+      p_prime_ = nullptr;
+    }
+    p_prime_ = new big_num(u64_len);
+    if (bytes_to_u64_array((string&)(rsa_key_->rsa_priv().p_prime()), u64_len, p_prime_->value_ptr()) < 0) {
+      return false;
+    }
+  }
+  if (rsa_key_->has_rsa_priv() && rsa_key_->rsa_priv().has_q_prime()) {
+    if (q_prime_ != nullptr) {
+      delete q_prime_;
+      q_prime_ = nullptr;
+    }
+    q_prime_ = new big_num(u64_len);
+    if (bytes_to_u64_array((string&)(rsa_key_->rsa_priv().q_prime()), u64_len, q_prime_->value_ptr()) < 0) {
+      return false;
+    }
+  }
+  
   return true;
 }
 
 bool rsa::set_parameters_in_key_message() {
+
+  if (!initialized_ || rsa_key_ == nullptr)
+    return false;
+
+  string t;
+  t.empty();
+  rsa_key_->set_key_size(bit_size_modulus_);
+  rsa_key_->set_notbefore(not_before_);
+  rsa_key_->set_notafter(not_after_);
+  if (m_!=nullptr) {
+    if (!u64_array_to_bytes(m_->size(), m_->value_ptr(), &t))
+      return false;
+    rsa_key_->mutable_rsa_pub()->set_modulus((const void*)t.data(), t.size());
+  }
+  t.empty();
+  if (e_!=nullptr) {
+    if (!u64_array_to_bytes(e_->size(), e_->value_ptr(), &t))
+      return false;
+    rsa_key_->mutable_rsa_pub()->set_e((const void*)t.data(), t.size());
+  }
+  t.empty();
+  if (d_!=nullptr) {
+    if (!u64_array_to_bytes(d_->size(), d_->value_ptr(), &t))
+      return false;
+    rsa_key_->mutable_rsa_priv()->set_d((const void*)t.data(), t.size());
+  }
+  t.empty();
+  if (p_!=nullptr) {
+    if (!u64_array_to_bytes(p_->size(), p_->value_ptr(), &t))
+      return false;
+    rsa_key_->mutable_rsa_priv()->set_p((const void*)t.data(), t.size());
+  }
+  t.empty();
+  if (q_!=nullptr) {
+    if (!u64_array_to_bytes(q_->size(), q_->value_ptr(), &t))
+      return false;
+    rsa_key_->mutable_rsa_priv()->set_q((const void*)t.data(), t.size());
+  }
+  t.empty();
+  if (dp_!=nullptr) {
+    if (!u64_array_to_bytes(dp_->size(), dp_->value_ptr(), &t))
+      return false;
+    rsa_key_->mutable_rsa_priv()->set_dp((const void*)t.data(), t.size());
+  }
+  t.empty();
+  if (dq_!=nullptr) {
+    if (!u64_array_to_bytes(dq_->size(), dq_->value_ptr(), &t))
+      return false;
+    rsa_key_->mutable_rsa_priv()->set_dq((const void*)t.data(), t.size());
+  }
+  t.empty();
+  if (m_prime_!=nullptr) {
+    if (!u64_array_to_bytes(m_prime_->size(), m_prime_->value_ptr(), &t))
+      return false;
+    rsa_key_->mutable_rsa_priv()->set_m_prime((const void*)t.data(), t.size());
+  }
+  t.empty();
+  if (p_prime_!=nullptr) {
+    if (!u64_array_to_bytes(p_prime_->size(), p_prime_->value_ptr(), &t))
+      return false;
+    rsa_key_->mutable_rsa_priv()->set_p_prime((const void*)t.data(), t.size());
+  }
+  t.empty();
+  if (q_prime_!=nullptr) {
+    if (!u64_array_to_bytes(q_prime_->size(), q_prime_->value_ptr(), &t))
+      return false;
+    rsa_key_->mutable_rsa_priv()->set_q_prime((const void*)t.data(), t.size());
+  }
+
   return true;
 }
 
