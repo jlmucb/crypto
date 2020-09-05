@@ -791,7 +791,7 @@ ecc::ecc() {
 
 ecc::~ecc() {
   // Fix: clean up
-  c_->clear();
+  // c_->clear();
 }
 
 bool ecc::make_ecc_key(const char* name, const char* usage, const char* owner,
