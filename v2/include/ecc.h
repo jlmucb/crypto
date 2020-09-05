@@ -16,7 +16,6 @@
 #include "crypto_support.h"
 #include "big_num.h"
 #include "big_num_functions.h"
-#include "ecc.h"
 
 #ifndef _CRYPTO_ECC_H__
 #define _CRYPTO_ECC_H__
@@ -89,7 +88,6 @@ class ecc {
   void print();
 };
 
-bool init_ecc_curves();
 bool ecc_embed(ecc_curve& c, big_num& m, curve_point& pt, int shift, int trys);
 bool ecc_extract(ecc_curve& c, curve_point& pt, big_num& m, int shift);
 bool ecc_normalize(ecc_curve& c, curve_point& pt);
