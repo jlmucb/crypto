@@ -51,21 +51,28 @@ message point_message {
  optional bytes y                              = 2;
 };
 
+message curve_message {
+  optional string curve_name                    = 1;
+  optional bytes p                              = 2;
+  optional bytes a                              = 3;
+  optional bytes b                              = 4;
+};
+
 message ecc_public_parameters_message {
- optional string curve_name                    = 1;
- optional bytes p                              = 2;
- optional point_message public_point           = 3;
+  optional curve_message cm                     = 1;
+  optional point_message base_point             = 2;
+  optional point_message public_point           = 3;
+  optional bytes order_of_base_point            = 4;
 };
 
 message ecc_private_parameters_message {
- optional point_message private_point          = 1;
- optional bytes private_multiplier             = 2;
+  optional bytes private_multiplier             = 1;
 };
 
 message hmac_parameters_message {
- optional string algorithm                     = 1;
- optional int32 size                           = 2;
- optional bytes secret                         = 3;
+  optional string algorithm                     = 1;
+  optional int32 size                           = 2;
+  optional bytes secret                         = 3;
 };
 
 // family: symmetric, public, hmac
