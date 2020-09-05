@@ -53,9 +53,9 @@ message point_message {
 
 message curve_message {
   optional string curve_name                    = 1;
-  optional bytes p                              = 2;
-  optional bytes a                              = 3;
-  optional bytes b                              = 4;
+  optional bytes curve_p                        = 2;
+  optional bytes curve_a                        = 3;
+  optional bytes curve_b                        = 4;
 };
 
 message ecc_public_parameters_message {

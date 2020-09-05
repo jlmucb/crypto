@@ -390,6 +390,67 @@ bool rsa_key_test() {
   return true;
 }
 
+bool ecc_key_test() {
+  string curve_name("p-256");
+  string curve_p;
+  string curve_a;
+  string curve_b;
+  string curve_base_x;
+  string curve_base_y;
+  string order_base_point;
+  string secret;
+  string curve_public_x;
+  string curve_public_y;
+  string empty;
+
+  curve_p.empty();
+  curve_a.empty();
+  curve_b.empty();
+  curve_base_x.empty();
+  curve_base_y.empty();
+  order_base_point.empty();
+  secret.empty();
+  curve_public_x.empty();
+  curve_public_y.empty();
+  empty.empty();
+
+  byte p_set[5] = { 0x01, 0x02, 0x03, 0x04, 0x05};
+  curve_p.assign((char*)p_set, 5);
+  byte a_set[5] = { 0x11, 0x12, 0x13, 0x14, 0x15};
+  curve_a.assign((char*)a_set, 5);
+  byte b_set[5] = { 0x21, 0x22, 0x23, 0x24, 0x25};
+  curve_b.assign((char*)b_set, 5);
+
+  byte base_x_set[5] = { 0x31, 0x32, 0x33, 0x34, 0x35};
+  curve_base_x.assign((char*)base_x_set, 5);
+  byte base_y_set[5] = { 0x41, 0x42, 0x43, 0x44, 0x45};
+  curve_base_y.assign((char*)base_y_set, 5);
+  byte set_order_base_point_set[5] = { 0x51, 0x52, 0x53, 0x54, 0x55};
+
+  order_base_point.assign((char*)set_order_base_point_set, 5);
+
+  byte public_x_set[5] = { 0x61, 0x62, 0x63, 0x64, 0x65};
+  curve_public_x.assign((char*)public_x_set, 5);
+  byte public_y_set[5] = { 0x71, 0x72, 0x73, 0x74, 0x75};
+  curve_public_y.assign((char*)public_y_set, 5);
+
+  byte secret_set[5] = { 0x81, 0x82, 0x83, 0x84, 0x85};
+  secret.assign((char*)secret_set, 5);
+
+  key_message* km = make_ecckey("test_key_2", 256, nullptr,
+                         "30 August 2020, 20:52:28.000000Z", "30 August 2025, 20:52:28.000000Z",
+                         curve_name, curve_p, curve_a, curve_b,
+                         curve_base_x, curve_base_y, order_base_point, secret,
+                         curve_public_x, curve_public_y);
+
+  if (km == nullptr)
+    return false;
+  if (FLAGS_print_all)
+    print_key_message(*km);
+
+  return true;
+}
+
 bool u64_array_bytes_test() {
   uint64_t n_in[4] = {
     0x01020104, 0xffeeddccbbaa9988, 0x7766554433221100, 0x4455
@@ -466,11 +527,11 @@ TEST (fileutilities, file_test) {
 TEST (keyutilities, key_tests) {
   EXPECT_TRUE(symmetric_key_test());
   EXPECT_TRUE(rsa_key_test());
+  EXPECT_TRUE(ecc_key_test());
 }
 TEST (u64stuff, u64_array_bytes_test) {
   EXPECT_TRUE(u64_array_bytes_test());
 }
-
 
 int main(int an, char** av) {
   gflags::ParseCommandLineFlags(&an, &av, true);

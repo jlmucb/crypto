@@ -825,17 +825,45 @@ key_message* make_symmetrickey(const char* alg, const char* name, int bit_size,
   return m;
 }
 
-key_message* make_ecckey(const char* name, int bit_size, const char* purpose,
+key_message* make_ecckey(const char* name, int prime_bit_size, const char* purpose,
                          const char* not_before, const char* not_after,
                          string& curve_name, string& curve_p,
-			 string& curve_a, string& curve_b,
-			 string& curve_base_x, string& curve_base_y,
-			 string& order_base_point, string& secret,
-			 string& curve_public_point_x, string& curve_public_point_y) {
-  key_message* m = new(key_message);
-  m->set_family_type("public");
-  m->set_algorithm_type("ecc");
-  return m;
+                         string& curve_a, string& curve_b,
+                         string& curve_base_x, string& curve_base_y,
+                         string& order_base_point, string& secret,
+                         string& curve_public_point_x, string& curve_public_point_y) {
+  key_message* km = new(key_message);
+  if (km == nullptr)
+    return nullptr;
+  km->set_family_type("public");
+  km->set_algorithm_type("ecc");
+  if (name != nullptr)
+    km->set_key_name(name);
+  if (purpose != nullptr)
+    km->set_purpose(purpose);
+  if (not_before != nullptr)
+    km->set_notbefore(not_before);
+  if (not_after != nullptr)
+    km->set_notafter(not_after);
+
+  ecc_public_parameters_message* pub = km->mutable_ecc_pub();
+  curve_message* cmsg = pub->mutable_cm();
+  cmsg->set_curve_name(curve_name);
+  cmsg->set_curve_p((void*)curve_p.data(), (int)curve_p.size());
+  cmsg->set_curve_a((void*)curve_a.data(), (int)curve_a.size());
+  cmsg->set_curve_b((void*)curve_b.data(), (int)curve_b.size());
+  pub->set_order_of_base_point((void*)order_base_point.data(), (int)order_base_point.size());
+  point_message* bpm = pub->mutable_base_point();
+  bpm->set_x((void*)curve_base_x.data(), (int)curve_base_x.size());
+  bpm->set_y((void*)curve_base_y.data(), (int)curve_base_y.size());
+  point_message* ppm = pub->mutable_public_point();
+  ppm->set_x((void*)curve_public_point_x.data(), (int)curve_public_point_x.size());
+  ppm->set_y((void*)curve_public_point_y.data(), (int)curve_public_point_y.size());
+
+  ecc_private_parameters_message* priv = km->mutable_ecc_priv();
+  priv->set_private_multiplier((void*)secret.data(), (int)secret.size());
+
+  return km;
 }
 
 key_message* make_rsakey(const char* alg, const char* name, int bit_size,
@@ -963,6 +991,57 @@ void print_key_message(key_message& m) {
       printf("q_prime: ");
       print_bytes((int)m.rsa_priv().q_prime().size(), (byte*)m.rsa_priv().q_prime().data());
     }
+  }
+  if (m.has_ecc_pub()) {
+    ecc_public_parameters_message* pub = m.mutable_ecc_pub();
+    if (pub->has_cm()) {
+      curve_message* cmsg= pub->mutable_cm();
+      if (cmsg->has_curve_name())  
+        printf("curve name       : %s\n", cmsg->curve_name().c_str());
+      if (cmsg->has_curve_p())   {
+        printf("curve p          : ");
+        print_bytes((int)cmsg->curve_p().size(), (byte*)cmsg->curve_p().data());
+      }
+      if (cmsg->has_curve_a())   {
+        printf("curve a          : ");
+        print_bytes((int)cmsg->curve_a().size(), (byte*)cmsg->curve_a().data());
+      }
+      if (cmsg->has_curve_b())   {
+        printf("curve b          : ");
+        print_bytes((int)cmsg->curve_b().size(), (byte*)cmsg->curve_b().data());
+      }
+    }
+    if (pub->has_base_point()) {
+        point_message* pt= pub->mutable_base_point();
+        if (pt->has_x()) {
+          printf("curve base x     : ");
+          print_bytes((int)pt->x().size(), (byte*)pt->x().data());
+        }
+        if (pt->has_y()) {
+          printf("curve base y     : ");
+          print_bytes((int)pt->y().size(), (byte*)pt->y().data());
+        }
+    }
+    if (pub->has_public_point()) {
+        point_message* pt= pub->mutable_public_point();
+        if (pt->has_x()) {
+          printf("curve public x   : ");
+          print_bytes((int)pt->x().size(), (byte*)pt->x().data());
+        }
+        if (pt->has_y()) {
+          printf("curve public y   : ");
+          print_bytes((int)pt->y().size(), (byte*)pt->y().data());
+        }
+    }
+    if (pub->has_order_of_base_point()) {
+        printf("order of base    : ");
+        print_bytes((int)pub->order_of_base_point().size(), (byte*)pub->order_of_base_point().data());
+    }
+
+  }
+  if (m.has_ecc_priv() && (int)m.ecc_priv().private_multiplier().size() > 0) {
+      printf("private multiplier: ");
+      print_bytes((int)m.ecc_priv().private_multiplier().size(), (byte*)m.ecc_priv().private_multiplier().data());
   }
 }
 

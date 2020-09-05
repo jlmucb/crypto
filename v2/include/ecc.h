@@ -84,9 +84,9 @@ class curve_point {
 class ecc_curve {
  public:
   int prime_bit_size_;
-  big_num* a_;
-  big_num* b_;
-  big_num* p_;
+  big_num* curve_p_;
+  big_num* curve_a_;
+  big_num* curve_b_;
 
   ecc_curve();
   ecc_curve(int size);
