@@ -792,8 +792,8 @@ ecc::ecc() {
   prime_bit_size_ = 0;
   c_ = nullptr;
   order_of_base_point_ = nullptr;
-  public_point_ = nullptr;
   base_point_ = nullptr;
+  public_point_ = nullptr;
 }
 
 ecc::~ecc() {
@@ -833,8 +833,8 @@ bool ecc::copy_key_parameters_from(ecc& copy_key) {
   base_point_->copy_from(*copy_key.base_point_); // curve_point
   if (order_of_base_point_ != nullptr)
     order_of_base_point_->copy_from(*copy_key.order_of_base_point_);
-  if (public_point_ != nullptr)
-    public_point_->copy_from(*copy_key.public_point_);  // public_point = base_point * secret
+  if (base_point_ != nullptr)
+    base_point_->copy_from(*copy_key.base_point_);  // base_point = base_point * secret
   if (secret_ != nullptr)
     secret_->copy_from(*copy_key.secret_);
   initialized_ = copy_key.initialized_;
@@ -860,7 +860,7 @@ bool ecc::generate_ecc_from_parameters(const char* key_name, const char* usage,
   base_point_->copy_from(base_pt);
   order_of_base_point_= new big_num(nw);
   order_of_base_point_->copy_from(order_base_point);
-  public_point_ = new curve_point(nw);  // public_point = base_point * secret
+  public_point_ = new curve_point(nw);  // public_point = public_point * secret
   secret_ = new big_num(nw);
   secret.copy_to(*secret_);
   initialized_ = true;
@@ -957,61 +957,154 @@ bool ecc::set_parameters_in_key_message() {
   return true;
 }
 
-/*
-  bool initialized_;
-  int prime_bit_size_;
-  ecc_curve* c_;
-  string not_before_;
-  string not_after_;
-  curve_point* base_point_;
-  big_num* order_of_base_point_;
-  curve_point* public_point_;  // public_point = base_point * secret
-  big_num* secret_;
-
-  message point_message {
-     optional bytes x                              = 1;
-    optional bytes y                              = 2;
-  };
-
-  message curve_message {
-    optional string curve_name                    = 1;
-    optional bytes curve_p                        = 2;
-    optional bytes curve_a                        = 3;
-    optional bytes curve_b                        = 4;
-  };
-
-  message ecc_public_parameters_message {
-    optional curve_message cm                     = 1;
-    optional point_message base_point             = 2;
-    optional point_message public_point           = 3;
-    optional bytes order_of_base_point            = 4;
-  };
-  
-  message ecc_private_parameters_message {
-    optional bytes private_multiplier             = 1;
-  };
-
-  message key_message {
-    optional string family_type                         = 1;
-    optional string algorithm_type                      = 2;
-    optional string key_name                            = 3;
-    optional int32 key_size                             = 4;
-    optional string purpose                             = 5;
-    optional string notBefore                           = 6;
-    optional string notAfter                            = 7;
-    optional bytes secret                               = 8;
-    optional rsa_public_parameters_message rsa_pub      = 9;
-    optional rsa_private_parameters_message rsa_priv    =10;
-    optional ecc_public_parameters_message ecc_pub      =11;
-    optional ecc_private_parameters_message ecc_priv    =12;
-  };
- */
+bool string_msg_to_bignum(const string& s, big_num& n) {
+  if (bytes_to_u64_array((string&)s, n.capacity(), n.value_ptr()) < 0 )
+    return false;
+  n.normalize();
+  return true;
+}
 
 bool ecc::retrieve_parameters_from_key_message() {
   if (ecc_key_ == nullptr)
     return false;
-  // Todo
-  //int bytes_to_u64_array(string& b, int size_n, uint64_t* n);
+
+  if (!ecc_key_->has_key_size()) {
+    return false;
+  }
+  prime_bit_size_ = ecc_key_->has_key_size();
+  if(ecc_key_->has_notafter()) {
+    not_after_.assign(ecc_key_->notafter());
+  }
+  if(ecc_key_->has_notbefore()) {
+    not_before_.assign(ecc_key_->notbefore());
+  }
+  int u64_size = 1 + (prime_bit_size_ / (NBITSINBYTE * sizeof(uint64_t)));
+
+  if (ecc_key_->has_ecc_pub()) {
+    ecc_public_parameters_message* pub = ecc_key_->mutable_ecc_pub();
+    if(pub->has_cm()) {
+      curve_message* cmsg = pub->mutable_cm();
+      if (c_ != nullptr && c_->prime_bit_size_ < prime_bit_size_)  {
+        delete c_;
+        c_ = nullptr;
+      }
+      if (c_ == nullptr) {
+        c_ = new ecc_curve(u64_size);
+        if (c_ == nullptr)
+          return false;
+      }
+      if (!cmsg->has_curve_name()) {
+        c_->c_name_.assign(cmsg->curve_name());
+      }
+      if (!cmsg->has_curve_p()) {
+        if (c_->curve_p_ == nullptr) {
+          c_->curve_p_ = new big_num(u64_size);
+          if (c_->curve_p_ == nullptr)
+            return false;
+        }
+        big_num* p = c_->curve_p_;
+        if(!string_msg_to_bignum(cmsg->curve_p(), *p))
+          return false;
+      }
+      if (!cmsg->has_curve_a()) {
+        if (c_->curve_a_ == nullptr) {
+          c_->curve_a_ = new big_num(u64_size);
+          if (c_->curve_a_ == nullptr)
+            return false;
+        }
+        big_num* a = c_->curve_a_;
+        if(!string_msg_to_bignum(cmsg->curve_a(), *a))
+          return false;
+      }
+      if (!cmsg->has_curve_b()) {
+        if (c_->curve_b_ == nullptr) {
+          c_->curve_b_ = new big_num(u64_size);
+          if (c_->curve_b_ == nullptr)
+            return false;
+        }
+        big_num* b = c_->curve_b_;
+        if(!string_msg_to_bignum(cmsg->curve_b(), *b))
+          return false;
+      }
+    }
+    if (pub->has_order_of_base_point()) {
+      if (order_of_base_point_ == nullptr) {
+        order_of_base_point_ = new big_num(u64_size);
+        if (order_of_base_point_ == nullptr)
+          return false;
+      }
+      if(!string_msg_to_bignum(pub->order_of_base_point(), *order_of_base_point_))
+          return false;
+    }
+    if (pub->has_base_point()) {
+      point_message* pm = pub->mutable_base_point();
+      if (base_point_ == nullptr) {
+        base_point_= new curve_point(u64_size);
+        if (base_point_ == nullptr)
+          return false;
+      }
+      if (pm->has_x()) {
+        if (base_point_->x_ == nullptr) {
+          base_point_->x_ = new big_num(u64_size);
+          if (base_point_->x_ == nullptr)
+            return false;
+        }
+        if(!string_msg_to_bignum(pm->x(), *base_point_->x_))
+            return false;
+      }
+      if (pm->has_y()) {
+        if (base_point_->y_ == nullptr) {
+          base_point_->y_ = new big_num(u64_size);
+          if (base_point_->y_ == nullptr)
+            return false;
+        }
+        if(!string_msg_to_bignum(pm->y(), *base_point_->y_))
+            return false;
+      }
+    }
+    if (pub->has_public_point()) {
+      point_message* pm = pub->mutable_public_point();
+
+      if (public_point_ == nullptr) {
+        public_point_= new curve_point(u64_size);
+        if (public_point_ == nullptr)
+          return false;
+      }
+      if (pm->has_x()) {
+        if (public_point_->x_ == nullptr) {
+          public_point_->x_ = new big_num(u64_size);
+          if (public_point_->x_ == nullptr)
+            return false;
+        }
+        if(!string_msg_to_bignum(pm->x(), *public_point_->x_))
+            return false;
+      }
+      if (pm->has_y()) {
+        if (public_point_->y_ == nullptr) {
+          public_point_->y_ = new big_num(u64_size);
+          if (public_point_->y_ == nullptr)
+            return false;
+        }
+        if(!string_msg_to_bignum(pm->y(), *public_point_->y_))
+            return false;
+      }
+    }
+  }
+
+  if (ecc_key_->has_ecc_priv()) {
+    ecc_private_parameters_message* priv = ecc_key_->mutable_ecc_priv();
+
+    if (priv->has_private_multiplier()) {
+      if (secret_ == nullptr) {
+          secret_ = new big_num(u64_size);
+          if (secret_ == nullptr)
+            return false;
+        }
+        if(!string_msg_to_bignum(priv->private_multiplier(), *secret_))
+            return false;
+    }
+  }
+
   return true;
 }
 
