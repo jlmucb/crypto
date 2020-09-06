@@ -921,13 +921,15 @@ bool ecc::get_serialized_key_message(string* s) {
 }
 
 bool ecc::set_parameters_in_key_message() {
+  if (ecc_key_ == nullptr)
+    return false;
   // Todo
+  //int u64_array_to_bytes(int size_n, uint64_t* n, string* b);
   return true;
 }
 
 /*
   bool initialized_;
-  key_message *ecc_key_;
   int prime_bit_size_;
   ecc_curve* c_;
   string not_before_;
@@ -977,7 +979,10 @@ bool ecc::set_parameters_in_key_message() {
  */
 
 bool ecc::retrieve_parameters_from_key_message() {
+  if (ecc_key_ == nullptr)
+    return false;
   // Todo
+  //int bytes_to_u64_array(string& b, int size_n, uint64_t* n);
   return true;
 }
 

@@ -91,7 +91,7 @@ message key_message {
   optional rsa_private_parameters_message rsa_priv    =10;
   optional ecc_public_parameters_message ecc_pub      =11;
   optional ecc_private_parameters_message ecc_priv    =12;
-}
+};
 
 message scheme_message {
   optional string scheme_type                   = 1;
