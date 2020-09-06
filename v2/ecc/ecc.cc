@@ -921,14 +921,22 @@ bool ecc::get_serialized_key_message(string* s) {
 }
 
 bool ecc::set_parameters_in_key_message() {
+  // Todo
   return true;
 }
 
 bool ecc::retrieve_parameters_from_key_message() {
+  // Todo
   return true;
 }
 
 bool ecc::extract_key_message_from_serialized(string& s) {
+  if (ecc_key_== nullptr) {
+    ecc_key_= new key_message;
+    if (ecc_key_== nullptr)
+      return false;
+  }
+  ecc_key_->ParseFromString(s);
   return true;
 }
 
@@ -957,6 +965,8 @@ void ecc::print() {
 //  send (kG, kBase+M)
 bool ecc::encrypt(int size, byte* plain, big_num& k, curve_point& pt1,
                      curve_point& pt2) {
+  if (c_ == nullptr)
+    return false;
   big_num m(c_->curve_p_->capacity_);
   curve_point pt(c_->curve_p_->capacity_);
   curve_point r_pt(c_->curve_p_->capacity_);
@@ -988,6 +998,9 @@ bool ecc::encrypt(int size, byte* plain, big_num& k, curve_point& pt1,
 }
 
 bool ecc::decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain) {
+  if (c_ == nullptr)
+    return false;
+
   big_num m(c_->curve_p_->capacity_);
   curve_point pt(c_->curve_p_->capacity_);
   curve_point r_pt(c_->curve_p_->capacity_);
