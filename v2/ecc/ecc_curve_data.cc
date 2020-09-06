@@ -21,11 +21,8 @@
 
 //  ECC Curve Data
 ecc p256_key;
-bool p256_key_valid = false;
 ecc p384_key;
-bool p384_key_valid = false;
 ecc p521_key;
-bool p521_key_valid = false;
 
 
 /*
@@ -105,34 +102,28 @@ bool p521_key_valid = false;
 
 bool init_ecc_curves() {
 
-  time_point* time_now = nullptr;
-  time_point* time_later = nullptr;
+  time_point time_present;
+  time_point time_later;
+  if (!time_present.time_now())
+    return false;
+  time_later.add_interval_to_time(time_present, seconds_in_common_year);
+  string str_now;
+  string str_later;
+  if (!time_present.encode_time(&str_now))
+    return false;
+  if (!time_later.encode_time(&str_later))
+    return false;
 
-  // pt-256
-
-  if (!p256_key_valid) {
+  // P256
+  if (!p256_key.initialized_) {
 
     p256_key.prime_bit_size_ = 256;
-
-#if 0
-    time_now = new time_point();
-    time_later = new time_point();
-
-    if (!time_now->time_pointNow()) {
-      printf("time_pointNow failed\n");
-      return false;
-    }
-    time_later->time_pointLaterBySeconds(*time_now, 10.0 * COMMON_YEAR_SECONDS);
-
-    p256_key.key_name_ = new string("pt-256");
-    p256_key.key_type_ = new string("ecc-256");
-    p256_key.key_usage_ = new string("all");
-    p256_key.key_owner_ = new string("NIST");
-    p256_key.not_before_ = time_now;
-    p256_key.not_after_ = time_later;
-#endif
-  
+    p256_key.not_before_.assign(str_now);
+    p256_key.not_after_.assign(str_later);
+    p256_key.c_ = new ecc_curve;
     p256_key.c_->prime_bit_size_ = 256;
+    p256_key.c_->c_name_.assign("P256");
+
     p256_key.c_->curve_p_ = new big_num(4);
     p256_key.c_->curve_p_->value_[3] = 0xffffffff00000001ULL;
     p256_key.c_->curve_p_->value_[2] = 0ULL;
@@ -154,60 +145,43 @@ bool init_ecc_curves() {
     p256_key.c_->curve_b_->value_[0] = 0x3bce3c3e27d2604bULL;
     p256_key.c_->curve_b_->normalize();
 
-#if 0
-    p256_key.prime_bit_size_ = 256;
-    p256_key.order_of_g_ = new big_num(4);
-    p256_key.order_of_g_->value_[3] = 0xffffffff00000000ULL;
-    p256_key.order_of_g_->value_[2] = 0xffffffffffffffffULL;
-    p256_key.order_of_g_->value_[1] = 0xbce6faada7179e84ULL;
-    p256_key.order_of_g_->value_[0] = 0xf3b9cac2fc632551ULL;
-    p256_key.order_of_g_->normalize();
+    p256_key.order_of_base_point_ = new big_num(4);
+    p256_key.order_of_base_point_->value_[3] = 0xffffffff00000000ULL;
+    p256_key.order_of_base_point_->value_[2] = 0xffffffffffffffffULL;
+    p256_key.order_of_base_point_->value_[1] = 0xbce6faada7179e84ULL;
+    p256_key.order_of_base_point_->value_[0] = 0xf3b9cac2fc632551ULL;
+    p256_key.order_of_base_point_->normalize();
 
-    p256_key.g_.x_ = new big_num(4);
-    p256_key.g_.x_->value_[3] = 0x6b17d1f2e12c4247ULL;
-    p256_key.g_.x_->value_[2] = 0xf8bce6e563a440f2ULL;
-    p256_key.g_.x_->value_[1] = 0x77037d812deb33a0ULL;
-    p256_key.g_.x_->value_[0] = 0xf4a13945d898c296ULL;
-    p256_key.g_.x_->normalize();
-    p256_key.g_.y_ = new big_num(4);
-    p256_key.g_.y_->value_[3] = 0x4fe342e2fe1a7f9bULL;
-    p256_key.g_.y_->value_[2] = 0x8ee7eb4a7c0f9e16ULL;
-    p256_key.g_.y_->value_[1] = 0x2bce33576b315eceULL;
-    p256_key.g_.y_->value_[0] = 0xcbb6406837bf51f5ULL;
-    p256_key.g_.y_->normalize();
-    p256_key.g_.z_ = new big_num(1, 1ULL);
+    p256_key.base_point_->x_ = new big_num(4);
+    p256_key.base_point_->x_->value_[3] = 0x6b17d1f2e12c4247ULL;
+    p256_key.base_point_->x_->value_[2] = 0xf8bce6e563a440f2ULL;
+    p256_key.base_point_->x_->value_[1] = 0x77037d812deb33a0ULL;
+    p256_key.base_point_->x_->value_[0] = 0xf4a13945d898c296ULL;
+    p256_key.base_point_->x_->normalize();
+    p256_key.base_point_->y_ = new big_num(4);
+    p256_key.base_point_->y_->value_[3] = 0x4fe342e2fe1a7f9bULL;
+    p256_key.base_point_->y_->value_[2] = 0x8ee7eb4a7c0f9e16ULL;
+    p256_key.base_point_->y_->value_[1] = 0x2bce33576b315eceULL;
+    p256_key.base_point_->y_->value_[0] = 0xcbb6406837bf51f5ULL;
+    p256_key.base_point_->y_->normalize();
+    p256_key.base_point_->z_ = new big_num (1, 1ULL);
+    p256_key.base_point_->z_->normalize();
 
-    p256_key.g_.z_->normalize();
-    p256_key_valid = true;
-    p256_key.base_.x_ = nullptr;
-    p256_key.base_.y_ = nullptr;
-    p256_key.base_.z_ = nullptr;
-    p256_key.key_valid_ = true;
-#endif
+    p256_key.public_point_->x_ = nullptr;
+    p256_key.public_point_->y_ = nullptr;
+    p256_key.public_point_->z_ = nullptr;
+    p256_key.initialized_ = true;
   }
 
-  // pt-384
-  if (!p384_key_valid) {
+  // P384
+  if (!p384_key.initialized_) {
 
     p384_key.c_->prime_bit_size_ = 384;
-
-#if 0
-    time_now = new time_point();
-    time_later = new time_point();
-
-    if (!time_now->time_pointNow()) {
-      printf("time_pointNow failed\n");
-      return false;
-    }
-    time_later->time_pointLaterBySeconds(*time_now, 10.0 * COMMON_YEAr_pt_SECONDS);
-
-    p384_key.key_name_ = new string("pt-384");
-    p384_key.key_type_ = new string("ecc-384");
-    p384_key.key_usage_ = new string("all");
-    p384_key.key_owner_ = new string("NIST");
-    p384_key.not_before_ = time_now;
-    p384_key.not_after_ = time_later;
-#endif
+    p384_key.not_before_.assign(str_now);
+    p384_key.not_after_.assign(str_later);
+    p384_key.c_ = new ecc_curve;
+    p384_key.c_->prime_bit_size_ = 384;
+    p384_key.c_->c_name_.assign("P384");
 
     // p = 2^384 – 2^128 – 2^96 + 2^32 –1
     p384_key.c_->curve_p_ = new big_num(6);
@@ -237,68 +211,51 @@ bool init_ecc_curves() {
     p384_key.c_->curve_b_->value_[0] = 0x2a85c8edd3ec2aefULL;
     p384_key.c_->curve_b_->normalize();
 
-#if 0
-    p384_key.prime_bit_size_ = 384;
-    p384_key.order_of_g_ = new big_num(6);
-    p384_key.order_of_g_->value_[5] = 0xffffffffffffffffULL;
-    p384_key.order_of_g_->value_[4] = 0xffffffffffffffffULL;
-    p384_key.order_of_g_->value_[3] = 0xffffffffffffffffULL;
-    p384_key.order_of_g_->value_[2] = 0xc7634d81f4372ddfULL;
-    p384_key.order_of_g_->value_[1] = 0x581a0db248b0a77aULL;
-    p384_key.order_of_g_->value_[0] = 0xecec196accc52973ULL;
-    p384_key.order_of_g_->normalize();
+    p384_key.order_of_base_point_ = new big_num(6);
+    p384_key.order_of_base_point_->value_[5] = 0xffffffffffffffffULL;
+    p384_key.order_of_base_point_->value_[4] = 0xffffffffffffffffULL;
+    p384_key.order_of_base_point_->value_[3] = 0xffffffffffffffffULL;
+    p384_key.order_of_base_point_->value_[2] = 0xc7634d81f4372ddfULL;
+    p384_key.order_of_base_point_->value_[1] = 0x581a0db248b0a77aULL;
+    p384_key.order_of_base_point_->value_[0] = 0xecec196accc52973ULL;
+    p384_key.order_of_base_point_->normalize();
 
-    p384_key.g_.x_ = new big_num(6);
-    p384_key.g_.x_->value_[5] = 0xaa87ca22be8b0537ULL;
-    p384_key.g_.x_->value_[4] = 0x8eb1c71ef320ad74ULL;
-    p384_key.g_.x_->value_[3] = 0x6e1d3b628ba79b98ULL;
-    p384_key.g_.x_->value_[2] = 0x59f741e082542a38ULL;
-    p384_key.g_.x_->value_[1] = 0x5502f25dbf55296cULL;
-    p384_key.g_.x_->value_[0] = 0x3a545e3872760ab7ULL;
-    p384_key.g_.x_->normalize();
-    p384_key.g_.y_ = new big_num(6);
-    p384_key.g_.y_->value_[5] = 0x3617de4a96262c6fULL;
-    p384_key.g_.y_->value_[4] = 0x5d9e98bf9292dc29ULL;
-    p384_key.g_.y_->value_[3] = 0xf8f41dbd289a147cULL;
-    p384_key.g_.y_->value_[2] = 0xe9da3113b5f0b8c0ULL;
-    p384_key.g_.y_->value_[1] = 0x0a60b1ce1d7e819dULL;
-    p384_key.g_.y_->value_[0] = 0x7a431d7c90ea0e5fULL;
-    p384_key.g_.y_->normalize();
-    p384_key.g_.z_ = new big_num(1, 1ULL);
+    p384_key.base_point_->x_ = new big_num(6);
+    p384_key.base_point_->x_->value_[5] = 0xaa87ca22be8b0537ULL;
+    p384_key.base_point_->x_->value_[4] = 0x8eb1c71ef320ad74ULL;
+    p384_key.base_point_->x_->value_[3] = 0x6e1d3b628ba79b98ULL;
+    p384_key.base_point_->x_->value_[2] = 0x59f741e082542a38ULL;
+    p384_key.base_point_->x_->value_[1] = 0x5502f25dbf55296cULL;
+    p384_key.base_point_->x_->value_[0] = 0x3a545e3872760ab7ULL;
+    p384_key.base_point_->x_->normalize();
+    p384_key.base_point_->y_ = new big_num(6);
+    p384_key.base_point_->y_->value_[5] = 0x3617de4a96262c6fULL;
+    p384_key.base_point_->y_->value_[4] = 0x5d9e98bf9292dc29ULL;
+    p384_key.base_point_->y_->value_[3] = 0xf8f41dbd289a147cULL;
+    p384_key.base_point_->y_->value_[2] = 0xe9da3113b5f0b8c0ULL;
+    p384_key.base_point_->y_->value_[1] = 0x0a60b1ce1d7e819dULL;
+    p384_key.base_point_->y_->value_[0] = 0x7a431d7c90ea0e5fULL;
+    p384_key.base_point_->y_->normalize();
+    p384_key.base_point_->z_ = new big_num(1, 1ULL);
+    p384_key.base_point_->z_->normalize();
 
-    p384_key.g_.z_->normalize();
-    p384_key.base_.x_ = nullptr;
-    p384_key.base_.y_ = nullptr;
-    p384_key.base_.z_ = nullptr;
-    p384_key_valid = true;
-    p384_key.key_valid_ = true;
-#endif
+    p384_key.public_point_->x_ = nullptr;
+    p384_key.public_point_->y_ = nullptr;
+    p384_key.public_point_->z_ = nullptr;
+    p384_key.initialized_ = true;
   }
 
-  // pt-521
-  if (!p521_key_valid) {
+  // P521
+  if (!p521_key.initialized_) {
 
     p521_key.c_->prime_bit_size_ = 521;
-#if 0
-    time_now = new time_point();
-    time_later = new time_point();
+    p521_key.not_before_.assign(str_now);
+    p521_key.not_after_.assign(str_later);
+    p521_key.c_ = new ecc_curve;
+    p521_key.c_->prime_bit_size_ = 521;
+    p521_key.c_->c_name_.assign("P521");
 
-    if (!time_now->time_pointNow()) {
-      printf("time_pointNow failed\n");
-      return false;
-    }
-    time_later->time_pointLaterBySeconds(*time_now, 10.0 * COMMON_YEAr_pt_SECONDS);
-#endif
-
-#if 0
-    p521_key.key_name_ = new string("pt-521");
-    p521_key.key_type_ = new string("ecc-521");
-    p521_key.key_usage_ = new string("all");
-    p521_key.key_owner_ = new string("NIST");
-    p521_key.not_before_ = time_now;
-    p521_key.not_after_ = time_later;
-#endif
-
+    p521_key.c_->prime_bit_size_ = 521;
     p521_key.c_->curve_p_ = new big_num(9);
     p521_key.c_->curve_p_->value_[8] = 0x1ffULL;
     p521_key.c_->curve_p_->value_[7] = 0xffffffffffffffffULL;
@@ -335,52 +292,49 @@ bool init_ecc_curves() {
     p521_key.c_->curve_b_->value_[0] = 0xef451fd46b503f00ULL;
     p521_key.c_->curve_b_->normalize();
 
-#if 0
-    p521_key.prime_bit_size_ = 521;
-    p521_key.order_of_g_ = new big_num(9);
-    p521_key.order_of_g_->value_[8] = 0x01ffULL;
-    p521_key.order_of_g_->value_[7] = 0xffffffffffffffffULL;
-    p521_key.order_of_g_->value_[6] = 0xffffffffffffffffULL;
-    p521_key.order_of_g_->value_[5] = 0xffffffffffffffffULL;
-    p521_key.order_of_g_->value_[4] = 0xfffffffffffffffaULL;
-    p521_key.order_of_g_->value_[3] = 0x51868783bf2f966bULL;
-    p521_key.order_of_g_->value_[2] = 0x7fcc0148f709a5d0ULL;
-    p521_key.order_of_g_->value_[1] = 0x3bb5c9b8899c47aeULL;
-    p521_key.order_of_g_->value_[0] = 0xbb6fb71e91386409ULL;
-    p521_key.order_of_g_->normalize();
+    p521_key.order_of_base_point_ = new big_num(9);
+    p521_key.order_of_base_point_->value_[8] = 0x01ffULL;
+    p521_key.order_of_base_point_->value_[7] = 0xffffffffffffffffULL;
+    p521_key.order_of_base_point_->value_[6] = 0xffffffffffffffffULL;
+    p521_key.order_of_base_point_->value_[5] = 0xffffffffffffffffULL;
+    p521_key.order_of_base_point_->value_[4] = 0xfffffffffffffffaULL;
+    p521_key.order_of_base_point_->value_[3] = 0x51868783bf2f966bULL;
+    p521_key.order_of_base_point_->value_[2] = 0x7fcc0148f709a5d0ULL;
+    p521_key.order_of_base_point_->value_[1] = 0x3bb5c9b8899c47aeULL;
+    p521_key.order_of_base_point_->value_[0] = 0xbb6fb71e91386409ULL;
+    p521_key.order_of_base_point_->normalize();
 
-    p521_key.g_.x_ = new big_num(9);
-    p521_key.g_.x_->value_[8] = 0xc6ULL;
-    p521_key.g_.x_->value_[7] = 0x858e06b70404e9cdULL;
-    p521_key.g_.x_->value_[6] = 0x9e3ecb662395b442ULL;
-    p521_key.g_.x_->value_[5] = 0x9c648139053fb521ULL;
-    p521_key.g_.x_->value_[4] = 0xf828af606b4d3dbaULL;
-    p521_key.g_.x_->value_[3] = 0xa14b5e77efe75928ULL;
-    p521_key.g_.x_->value_[2] = 0xfe1dc127a2ffa8deULL;
-    p521_key.g_.x_->value_[1] = 0x3348b3c1856a429bULL;
-    p521_key.g_.x_->value_[0] = 0xf97e7e31c2e5bd66ULL;
-    p521_key.g_.x_->normalize();
-    p521_key.g_.y_ = new big_num(9);
+    p521_key.base_point_->x_ = new big_num(9);
+    p521_key.base_point_->x_->value_[8] = 0xc6ULL;
+    p521_key.base_point_->x_->value_[7] = 0x858e06b70404e9cdULL;
+    p521_key.base_point_->x_->value_[6] = 0x9e3ecb662395b442ULL;
+    p521_key.base_point_->x_->value_[5] = 0x9c648139053fb521ULL;
+    p521_key.base_point_->x_->value_[4] = 0xf828af606b4d3dbaULL;
+    p521_key.base_point_->x_->value_[3] = 0xa14b5e77efe75928ULL;
+    p521_key.base_point_->x_->value_[2] = 0xfe1dc127a2ffa8deULL;
+    p521_key.base_point_->x_->value_[1] = 0x3348b3c1856a429bULL;
+    p521_key.base_point_->x_->value_[0] = 0xf97e7e31c2e5bd66ULL;
+    p521_key.base_point_->x_->normalize();
+    p521_key.base_point_->y_ = new big_num(9);
  
-    p521_key.g_.y_->value_[8] = 0x118ULL;
-    p521_key.g_.y_->value_[7] = 0x39296a789a3bc004ULL;
-    p521_key.g_.y_->value_[6] = 0x5c8a5fb42c7d1bd9ULL;
-    p521_key.g_.y_->value_[5] = 0x98f54449579b4468ULL;
-    p521_key.g_.y_->value_[4] = 0x17afbd17273e662cULL;
-    p521_key.g_.y_->value_[3] = 0x97ee72995ef42640ULL;
-    p521_key.g_.y_->value_[2] = 0xc550b9013fad0761ULL;
-    p521_key.g_.y_->value_[1] = 0x353c7086a272c240ULL;
-    p521_key.g_.y_->value_[0] = 0x88be94769fd16650ULL;
-    p521_key.g_.y_->normalize();
-    p521_key.g_.z_ = new big_num(1, 1ULL);
+    p521_key.base_point_->y_->value_[8] = 0x118ULL;
+    p521_key.base_point_->y_->value_[7] = 0x39296a789a3bc004ULL;
+    p521_key.base_point_->y_->value_[6] = 0x5c8a5fb42c7d1bd9ULL;
+    p521_key.base_point_->y_->value_[5] = 0x98f54449579b4468ULL;
+    p521_key.base_point_->y_->value_[4] = 0x17afbd17273e662cULL;
+    p521_key.base_point_->y_->value_[3] = 0x97ee72995ef42640ULL;
+    p521_key.base_point_->y_->value_[2] = 0xc550b9013fad0761ULL;
+    p521_key.base_point_->y_->value_[1] = 0x353c7086a272c240ULL;
+    p521_key.base_point_->y_->value_[0] = 0x88be94769fd16650ULL;
+    p521_key.base_point_->y_->normalize();
+    p521_key.base_point_->z_ = new big_num(1, 1ULL);
+    p521_key.base_point_->z_->normalize();
 
-    p521_key.g_.z_->normalize();
-    p521_key.base_.x_ = nullptr;
-    p521_key.base_.y_ = nullptr;
-    p521_key.base_.z_ = nullptr;
-    p521_key_valid = true;
-    p521_key.key_valid_ = true;
-#endif
+    p521_key.public_point_->x_ = nullptr;
+    p521_key.public_point_->y_ = nullptr;
+    p521_key.public_point_->z_ = nullptr;
+
+    p521_key.initialized_= true;
   }
 
   return true;
