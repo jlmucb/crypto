@@ -124,7 +124,7 @@ class ecc {
         curve_point& base, curve_point& public_point,
         big_num& order_base_point, big_num& secret);
   bool generate_ecc_from_standard_template(const char* template_name, const char* key_name,
-          const char* usage, const char* owner, double seconds_to_live);
+          const char* usage, double seconds_to_live);
   bool encrypt(int size, byte* plain, big_num& k, curve_point& pt1, curve_point& pt2);
   void print();
 };

@@ -817,7 +817,7 @@ bool ecc::generate_ecc_from_parameters(const char* key_name, const char* usage,
 }
 
 bool ecc::generate_ecc_from_standard_template(const char* template_name, const char* key_name,
-          const char* usage, const char* owner, double seconds_to_live) {
+          const char* usage, double seconds_to_live) {
   if (template_name == nullptr)
     return true;
 
@@ -844,6 +844,19 @@ bool ecc::generate_ecc_from_standard_template(const char* template_name, const c
 
   string notbefore;
   string notafter;
+
+  time_point t1;
+  time_point t2;
+
+  if (!t1.time_now())
+    return false;
+  if (!t2.add_interval_to_time(t1, seconds_to_live))
+    return false;
+  if (!t1.encodeTime(&notbefore))
+    return false;
+  if (!t2.encodeTime(&notafter))
+    return false;
+
   byte* byte_secret= new byte[nb];
   if (byte_secret == nullptr)
     return true;
