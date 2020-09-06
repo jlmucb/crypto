@@ -795,9 +795,25 @@ ecc::~ecc() {
 }
 
 bool ecc::generate_ecc_from_parameters(const char* key_name, const char* usage,
-        double seconds_to_live, ecc_curve& c, curve_point& base_pt,
-	curve_point& public_pt, big_num& order_base_point, big_num& secret) {
-  return true;
+        char* notbefore, char* notafter, double seconds_to_live, ecc_curve& c,
+        curve_point& base_pt, curve_point& public_pt,
+        big_num& order_base_point, big_num& secret) {
+  initialized_ = false;
+  key_message *ecc_key_ = new key_message;;
+  if (ecc_key_ == nullptr)
+    return false;
+  prime_bit_size_ = c.prime_bit_size_;
+  not_before_.assign(notbefore);
+  not_after_.assign(notafter);
+  int nw = prime_bit_size_ / (NBITSINBYTE * sizeof(uint64_t));
+  c_ = new ecc_curve(nw);
+  base_point_ = new curve_point(nw);;
+  order_of_base_point_= new big_num(nw);
+  public_point_ = new curve_point(nw);  // public_point = base_point * secret
+  secret_ = new big_num(nw);
+  secret.copy_to(*secret_);
+  initialized_ = true;
+  return initialized_;
 }
 
 bool ecc::generate_ecc_from_standard_template(const char* template_name, const char* key_name,
@@ -826,6 +842,8 @@ bool ecc::generate_ecc_from_standard_template(const char* template_name, const c
     return false;
   }
 
+  string notbefore;
+  string notafter;
   byte* byte_secret= new byte[nb];
   if (byte_secret == nullptr)
     return true;
@@ -845,8 +863,9 @@ bool ecc::generate_ecc_from_standard_template(const char* template_name, const c
   byte_secret = nullptr;
   big_num_secret.normalize();
   
-  return generate_ecc_from_parameters(key_name, usage, seconds_to_live, c,
-        base_pt, public_pt, order_base_point, big_num_secret);
+  return generate_ecc_from_parameters(key_name, usage, (char*)notbefore.c_str(),
+           (char*)notafter.c_str(), seconds_to_live, c, base_pt, public_pt,
+           order_base_point, big_num_secret);
 }
 
 void ecc::print() {
