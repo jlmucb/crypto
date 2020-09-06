@@ -119,12 +119,13 @@ class ecc {
   bool extract_key_message_from_serialized(string& s);
   bool generate_ecc(int num_bits);
   bool decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain);
-  bool make_ecc_key(const char* name, const char* usage, const char* owner,
-         double secondstolive);
-  bool generate_ecc(string& curve_name, const char* name, const char* usage,
-                    const char* owner, double seconds_to_live);
-  bool encrypt(int size, byte* plain, big_num& k, curve_point& pt1,
-                     curve_point& pt2);
+  bool generate_ecc_from_parameters(const char* key_name, const char* usage,
+	double seconds_to_live, ecc_curve& c,
+	curve_point& base, curve_point& public_point,
+        big_num& order_base_point, big_num& secret);
+  bool generate_ecc_from_standard_template(const char* template_name, const char* key_name,
+	  const char* usage, const char* owner, double seconds_to_live);
+  bool encrypt(int size, byte* plain, big_num& k, curve_point& pt1, curve_point& pt2);
   void print();
 };
 

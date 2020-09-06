@@ -794,109 +794,59 @@ ecc::~ecc() {
   // c_->clear();
 }
 
-bool ecc::make_ecc_key(const char* name, const char* usage, const char* owner,
-                        double secondstolive) {
-
-  prime_bit_size_ = c_->prime_bit_size_;
-/*
-  key_name_ = new string(name);
-  key_usage_ = new string(usage);
-  key_owner_ = new string(owner);
-  not_before_ = new time_point();
-  not_after_ = new time_point();
-  not_before_->time_pointNow();
-  not_after_->time_pointLaterBySeconds(*not_before_, secondstolive);
-  key_valid_ = true;
-
-  if (c_->prime_bit_size_== 256) {
-    key_type_ = new string("ecc-256");
-  } else if (c_->prime_bit_size_ == 384) {
-    key_type_ = new string("ecc-384");
-  } else if (c_->prime_bit_size_ == 521) {
-    key_type_ = new string("ecc-521");
-  } else {
-    return false;
-  }
-  if (c_ != nullptr) {
-    c_->a_ = new big_num(*c_->a_);
-    c_->b_ = new big_num(*c_->b_);
-    c_->p_ = new big_num(*c_->p_);
-  } else {
-    return false;
-  }
-  if (g != nullptr) {
-    g_.x_ = new big_num(*g->x_);
-    g_.y_ = new big_num(*g->y_);
-    g_.z_ = new big_num(*g->z_);
-  } else {
-    return false;
-  }
-
-  if (base != nullptr) {
-    base_.x_ = new big_num(*base->x_);
-    base_.y_ = new big_num(*base->y_);
-    base_.z_ = new big_num(*base->z_);
-  } else {
-    base_.x_ = new big_num(2 * (c_->prime_bit_size_+ NBITSINUINT64 - 1) / NBITSINUINT64);
-    base_.y_ = new big_num(2 * (c_->prime_bit_size_+ NBITSINUINT64 - 1)/ NBITSINUINT64);
-    base_.z_ = new big_num(2 * (c_->prime_bit_size_ + NBITSINUINT64 - 1)/ NBITSINUINT64);
-  }
-  if (order != nullptr) {
-    order_of_g_ = new big_num(*order);
-  }
-  if (secret != nullptr) {
-    a_ = new big_num(*secret);
-  }
-  if (base == nullptr && secret != nullptr) {
-    ecc_mult(c_, g_, *secret, base_);
-  }
- */
+bool ecc::generate_ecc_from_parameters(const char* key_name, const char* usage,
+        double seconds_to_live, ecc_curve& c, curve_point& base_pt,
+	curve_point& public_pt, big_num& order_base_point, big_num& secret) {
   return true;
 }
 
-bool ecc::generate_ecc(string& curve_name, const char* name, const char* usage,
-                    const char* owner, double seconds_to_live) {
-  big_num secret(10);
+bool ecc::generate_ecc_from_standard_template(const char* template_name, const char* key_name,
+          const char* usage, const char* owner, double seconds_to_live) {
+  if (template_name == nullptr)
+    return true;
 
   if (!init_ecc_curves()) {
     printf("init_ecc_curves failed\n");
     return false;
   }
-  secret.zero_num();
-#if 0
-  if (curve_name == "pt-256") {
-    // Check
-    if (crypto_get_random_bytes(192 / NBITSINBYTE, (byte*)secret.value_) < 0) {
-      printf("Cant GetCryptor_ptand\n");
-      return false;
-    }
-    secret.normalize();
-    return make_ecc_key(name, usage, owner, seconds_to_live, &p256_key.c_,
-                    &p256_key.g_, nullptr, p256_key.order_of_g_, &secret);
-  } else if (curve_name == "pt-384") {
-    // Check.   Fix
-    if (crypto_get_random_bytes(383 / NBITSINBYTE, (byte*)secret.value_)) {
-      printf("Cant get random\n");
-      return false;
-    }
-    secret.normalize();
-    return make_ecc_key(name, usage, owner, seconds_to_live, &p384_key.c_,
-                    &p384_key.g_, nullptr, p384_key.order_of_g_, &secret);
-  } else if (curve_name == "pt-521") {
-    // Check
-    if (crypto_get_random_bytes(520, (byte*)secret.value_) < 0) {
-      printf("Cant GetCryptor_ptand\n");
-      return false;
-    }
-    secret.normalize();
-    return make_ecc_key(name, usage, owner, seconds_to_live, &p521_key.c_,
-                    &p521_key.g_, nullptr, p521_key.order_of_g_, &secret);
+
+  // find template
+  int nb;
+  if (strlen(template_name) > 5)
+    return false;
+  if (strcmp(template_name, "P-256") == 0) {
+    // use p256_key
+    nb = 32;
+  } else if (strcmp(template_name, "P-384") == 0) {
+    // use p384_key
+    nb = 48;
+  } else if (strcmp(template_name, "P-521") == 0) {
+    nb = 64;
   } else {
-    printf("Unknown curve name\n");
     return false;
   }
-#endif
-  return true;
+
+  byte* byte_secret= new byte[nb];
+  if (byte_secret == nullptr)
+    return true;
+  if (crypto_get_random_bytes(nb, byte_secret) < 0) {
+    printf("Cant generate random bits for ecc key\n");
+    return false;
+  }
+
+  int n_u64 = 1 + (nb / sizeof(uint64_t));
+  ecc_curve c(n_u64);
+  curve_point base_pt(n_u64);
+  curve_point public_pt(n_u64);
+  big_num order_base_point(n_u64);
+  big_num big_num_secret(n_u64);
+  memcpy((byte*)big_num_secret.value_ptr(), byte_secret, nb);
+  delete []byte_secret;
+  byte_secret = nullptr;
+  big_num_secret.normalize();
+  
+  return generate_ecc_from_parameters(key_name, usage, seconds_to_live, c,
+        base_pt, public_pt, order_base_point, big_num_secret);
 }
 
 void ecc::print() {
