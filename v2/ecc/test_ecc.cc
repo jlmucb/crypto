@@ -25,7 +25,7 @@
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
-bool test_ecc1() {
+bool test_ecc_affine_1() {
   // bool ecc_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt);
   // bool ecc_sub(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt);
   // bool ecc_double(ecc_curve& c, curve_point& p_pt, curve_point& r_pt);
@@ -34,10 +34,18 @@ bool test_ecc1() {
   return true;
 }
 
-bool test_ecc2() {
+bool test_ecc_affine_2() {
   // bool ecc_embed(ecc_curve& c, big_num& m, curve_point& pt, int shift, int trys);
   // bool ecc_extract(ecc_curve& c, curve_point& pt, big_num& m, int shift);
   // bool ecc_normalize(ecc_curve& c, curve_point& pt);
+  return true;
+}
+
+bool test_ecc_projective() {
+  // bool projective_to_affine(ecc_curve& c, curve_point& pt);
+  // bool projective_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt);
+  // bool projective_double(ecc_curve& c, curve_point& p_pt, curve_point& r_pt);
+  // bool projective_point_multult(ecc_curve& c, big_num& x, curve_point& p_pt, curve_point& r_pt);
   return true;
 }
 
@@ -85,9 +93,12 @@ bool test_ecc_encrypt_decrypt() {
   return true;
 }
 
-TEST (ecc, test_ecc_basic) {
-  EXPECT_TRUE(test_ecc1());
-  EXPECT_TRUE(test_ecc2());
+TEST (ecc, test_affine) {
+  EXPECT_TRUE(test_ecc_affine_1());
+  EXPECT_TRUE(test_ecc_affine_2());
+}
+TEST (ecc, test_projective) {
+  EXPECT_TRUE(test_ecc_projective());
 }
 TEST (ecc_curve_point, ecc_curve_point) {
   EXPECT_TRUE(test_ecc_curve_point());
