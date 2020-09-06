@@ -925,6 +925,57 @@ bool ecc::set_parameters_in_key_message() {
   return true;
 }
 
+/*
+  bool initialized_;
+  key_message *ecc_key_;
+  int prime_bit_size_;
+  ecc_curve* c_;
+  string not_before_;
+  string not_after_;
+  curve_point* base_point_;
+  big_num* order_of_base_point_;
+  curve_point* public_point_;  // public_point = base_point * secret
+  big_num* secret_;
+
+  message point_message {
+     optional bytes x                              = 1;
+    optional bytes y                              = 2;
+  };
+
+  message curve_message {
+    optional string curve_name                    = 1;
+    optional bytes curve_p                        = 2;
+    optional bytes curve_a                        = 3;
+    optional bytes curve_b                        = 4;
+  };
+
+  message ecc_public_parameters_message {
+    optional curve_message cm                     = 1;
+    optional point_message base_point             = 2;
+    optional point_message public_point           = 3;
+    optional bytes order_of_base_point            = 4;
+  };
+  
+  message ecc_private_parameters_message {
+    optional bytes private_multiplier             = 1;
+  };
+
+  message key_message {
+    optional string family_type                         = 1;
+    optional string algorithm_type                      = 2;
+    optional string key_name                            = 3;
+    optional int32 key_size                             = 4;
+    optional string purpose                             = 5;
+    optional string notBefore                           = 6;
+    optional string notAfter                            = 7;
+    optional bytes secret                               = 8;
+    optional rsa_public_parameters_message rsa_pub      = 9;
+    optional rsa_private_parameters_message rsa_priv    =10;
+    optional ecc_public_parameters_message ecc_pub      =11;
+    optional ecc_private_parameters_message ecc_priv    =12;
+  };
+ */
+
 bool ecc::retrieve_parameters_from_key_message() {
   // Todo
   return true;
