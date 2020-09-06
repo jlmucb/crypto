@@ -114,6 +114,7 @@ class ecc {
   ecc();
   ~ecc(); 
 
+  bool copy_key_parameters_from(ecc& copy_key);
   bool get_serialized_key_message(string* s);
   bool set_parameters_in_key_message();
   bool retrieve_parameters_from_key_message();

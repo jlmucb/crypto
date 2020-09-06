@@ -823,6 +823,25 @@ ecc::~ecc() {
   }
 }
 
+bool ecc::copy_key_parameters_from(ecc& copy_key) {
+  if (copy_key.c_ == nullptr || base_point_ == nullptr)
+    return false;
+  prime_bit_size_ = copy_key.prime_bit_size_;
+  c_->copy_from(*copy_key.c_);
+  not_before_.assign(copy_key.not_before_);
+  not_after_.assign(copy_key.not_after_);
+  base_point_->copy_from(*copy_key.base_point_); // curve_point
+  if (order_of_base_point_ != nullptr)
+    order_of_base_point_->copy_from(*copy_key.order_of_base_point_);
+  if (public_point_ != nullptr)
+    public_point_->copy_from(*copy_key.public_point_);  // public_point = base_point * secret
+  if (secret_ != nullptr)
+    secret_->copy_from(*copy_key.secret_);
+  initialized_ = copy_key.initialized_;
+
+  return true;
+}
+
 bool ecc::generate_ecc_from_parameters(const char* key_name, const char* usage,
         char* notbefore, char* notafter, double seconds_to_live, ecc_curve& c,
         curve_point& base_pt, curve_point& public_pt,
@@ -859,16 +878,26 @@ bool ecc::generate_ecc_from_standard_template(const char* template_name, const c
   }
 
   // find template
-  int nb;
+  int nb = 0;
+  ecc* key_to_copy = nullptr;
   if (strlen(template_name) > 5)
     return false;
   if (strcmp(template_name, "P-256") == 0) {
     // use p256_key
     nb = 32;
+    if (!copy_key_parameters_from(p256_key))
+      return false;
+    key_to_copy = &p256_key;
   } else if (strcmp(template_name, "P-384") == 0) {
     // use p384_key
     nb = 48;
+    if (!copy_key_parameters_from(p384_key))
+      return false;
+    key_to_copy = &p384_key;
   } else if (strcmp(template_name, "P-521") == 0) {
+    key_to_copy = &p521_key;
+    if (!copy_key_parameters_from(p521_key))
+      return false;
     nb = 64;
   } else {
     return false;
