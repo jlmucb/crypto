@@ -97,7 +97,7 @@ void time_point::print_time() {
       hour_, minutes_, seconds_);
 }
 
-bool time_point::encodeTime(string* the_time) {
+bool time_point::encode_time(string* the_time) {
   int m = month_ - 1;
   if (m < 0 || m > 11)
     return false;
@@ -121,7 +121,7 @@ int month_from_name(char* mn) {
   }
   return -1;
 }
-bool time_point::decodeTime(string& encoded_time) {
+bool time_point::decode_time(string& encoded_time) {
   int dm, yr, hr, min;
   double sec;
   char s[20];
@@ -576,7 +576,7 @@ bool init_log(const char* log_file) {
   time_point tp;
   tp.time_now();
   string the_time;
-  if (!tp.encodeTime(&the_time))
+  if (!tp.encode_time(&the_time))
     return false;
   logging_descriptor.open(log_file);
   LOG(INFO) << "Log file " << log_file << " opened " << the_time << ".\n";
@@ -587,7 +587,7 @@ void close_log() {
   time_point tp;
   tp.time_now();
   string the_time;
-  tp.encodeTime(&the_time);
+  tp.encode_time(&the_time);
   LOG(INFO) << "Log file closed " << the_time << ".\n";
   logging_descriptor.close();
 }

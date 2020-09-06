@@ -1021,12 +1021,13 @@ bool basic_number_theory_test1() {
     random_a[j]->normalize();
   }
   if (big_miller_rabin(n, random_a, 20)) {
-    printf("miller rabin returns true\n");
+    if (FLAGS_print_all)
+      printf("miller rabin returns true\n");
   } else {
-    printf("miller rabin returns false\n");
+    if (FLAGS_print_all)
+      printf("miller rabin returns false\n");
   }
 
-  printf("gen prime\n");
   p.zero_num();
   if (!big_gen_prime(p, num_bits, 250))
     return false;

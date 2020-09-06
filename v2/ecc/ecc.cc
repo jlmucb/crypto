@@ -113,7 +113,6 @@ void curve_point::clear() {
 }
 
 bool curve_point::normalize(big_num& p) {
-  // TODO
   if (z_->is_zero() || z_->is_one()) return true;
   return false;
 }
@@ -186,6 +185,14 @@ void ecc_curve::print_curve() {
     curve_p_->print();
     printf(")\n");
   }
+}
+
+bool ecc_curve::copy_from(ecc_curve& c) {
+  prime_bit_size_ = c.prime_bit_size_;
+  curve_p_->copy_from(*c.curve_p_);
+  curve_a_->copy_from(*c.curve_a_);
+  curve_b_->copy_from(*c.curve_b_);
+  return true;
 }
 
 // Disc= -(4a^3+27b^2) (mod p)
@@ -790,8 +797,30 @@ ecc::ecc() {
 }
 
 ecc::~ecc() {
-  // Fix: clean up
-  // c_->clear();
+  if (ecc_key_ != nullptr) {
+    delete ecc_key_;
+    ecc_key_ = nullptr;
+  }
+  if (c_ != nullptr) {
+    delete c_;
+    c_ = nullptr;
+  }
+  if (base_point_ != nullptr) {
+    delete base_point_;
+    base_point_ = nullptr;
+  }
+  if (order_of_base_point_ != nullptr) {
+    delete order_of_base_point_;
+    order_of_base_point_ = nullptr;
+  }
+  if (public_point_ != nullptr) {
+    delete public_point_;
+    public_point_ = nullptr;
+  }
+  if (secret_ != nullptr) {
+    delete secret_;
+    secret_ = nullptr;
+  }
 }
 
 bool ecc::generate_ecc_from_parameters(const char* key_name, const char* usage,
@@ -807,8 +836,11 @@ bool ecc::generate_ecc_from_parameters(const char* key_name, const char* usage,
   not_after_.assign(notafter);
   int nw = prime_bit_size_ / (NBITSINBYTE * sizeof(uint64_t));
   c_ = new ecc_curve(nw);
-  base_point_ = new curve_point(nw);;
+  c_->copy_from(c);
+  base_point_ = new curve_point(nw);
+  base_point_->copy_from(base_pt);
   order_of_base_point_= new big_num(nw);
+  order_of_base_point_->copy_from(order_base_point);
   public_point_ = new curve_point(nw);  // public_point = base_point * secret
   secret_ = new big_num(nw);
   secret.copy_to(*secret_);
@@ -852,9 +884,9 @@ bool ecc::generate_ecc_from_standard_template(const char* template_name, const c
     return false;
   if (!t2.add_interval_to_time(t1, seconds_to_live))
     return false;
-  if (!t1.encodeTime(&notbefore))
+  if (!t1.encode_time(&notbefore))
     return false;
-  if (!t2.encodeTime(&notafter))
+  if (!t2.encode_time(&notafter))
     return false;
 
   byte* byte_secret= new byte[nb];
@@ -881,26 +913,42 @@ bool ecc::generate_ecc_from_standard_template(const char* template_name, const c
            order_base_point, big_num_secret);
 }
 
+bool ecc::get_serialized_key_message(string* s) {
+  if (ecc_key_ == nullptr)
+    return false;
+  ecc_key_->SerializeToString(s);
+  return true;
+}
+
+bool ecc::set_parameters_in_key_message() {
+  return true;
+}
+
+bool ecc::retrieve_parameters_from_key_message() {
+  return true;
+}
+
+bool ecc::extract_key_message_from_serialized(string& s) {
+  return true;
+}
+
 void ecc::print() {
   printf("modulus size: %d bits\n", prime_bit_size_);
   c_->print_curve();
-#if 0
-  if (a_ != nullptr) {
-    printf("a: ");
-    a_->print();
-    printf("\n");
+  printf("Not before: %s\n", not_before_.c_str());
+  printf("Not after: %s\n", not_after_.c_str());
+  if (base_point_ != nullptr) {
+    printf("base: "); base_point_->print();
   }
-  printf("g: ");
-  g_.print();
-  printf("\n");
-  if (order_of_g_ != nullptr) {
-    printf("order: ");
-    order_of_g_->print();
-    printf("\n");
+  if (public_point_ != nullptr) {
+    printf("public: "); public_point_->print();
   }
-  printf("base: ");
-  base_.print();
-#endif
+  if (secret_ != nullptr) {
+    printf("secret: "); secret_->print();
+  }
+  if (order_of_base_point_ != nullptr) {
+    printf("order base point: "); order_of_base_point_->print();
+  }
   printf("\n");
 }
 
@@ -918,46 +966,40 @@ bool ecc::encrypt(int size, byte* plain, big_num& k, curve_point& pt1,
   if (!ecc_embed(*c_, m, pt, 8, 20)) {
     return false;
   }
-#if 0
 #ifdef FASTECCMULT
-  if (!faster_ecc_mult(*c_, g_, k, pt1)) {
+  if (!faster_ecc_mult(*c_, *public_point_, k, pt1)) {
     return false;
   }
-  if (!faster_ecc_mult(*c_, base_, k, r_pt)) {
+  if (!faster_ecc_mult(*c_, *base_point_, k, r_pt)) {
     return false;
   }
 #else
-  if (!ecc_mult(*c_, g_, k, pt1)) {
+  if (!ecc_mult(*c_, *public_point_, k, pt1)) {
     return false;
   }
-  if (!ecc_mult(*c_, base_, k, r_pt)) {
+  if (!ecc_mult(*c_, *base_point_, k, r_pt)) {
     return false;
   }
 #endif
   if (!ecc_add(*c_, r_pt, pt, pt2)) {
     return false;
   }
-#endif
   return true;
 }
 
-//  M= kBase+M-(secret)kG
-//  extract message from M
 bool ecc::decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain) {
   big_num m(c_->curve_p_->capacity_);
   curve_point pt(c_->curve_p_->capacity_);
   curve_point r_pt(c_->curve_p_->capacity_);
 
-#if 0
 #ifdef FASTECCMULT
-  if (!faster_ecc_mult(*c_, pt1, *c->curve_a_, r_pt)) {
+  if (!faster_ecc_mult(*c_, pt1, *(c_->curve_a_), r_pt)) {
     return false;
   }
 #else
-  if (!ecc_mult(*c_, pt1, *c->curve_a_, r_pt)) {
+  if (!ecc_mult(*c_, pt1, *(c_->curve_a_), r_pt)) {
     return false;
   }
-#endif
 #endif
   if (!ecc_sub(*c_, pt2, r_pt, pt)) {
     return false;

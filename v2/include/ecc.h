@@ -95,6 +95,7 @@ class ecc_curve {
 
   void clear();
   void print_curve();
+  bool copy_from(ecc_curve& c);
 };
 
 class ecc {

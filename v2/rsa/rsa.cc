@@ -410,10 +410,10 @@ bool rsa::make_rsa_key(const char* name, const char* purpose, double secondstoli
   time_point t_expire;
   t_expire.add_interval_to_time(t_now, secondstolive);
 
-  if (!t_now.encodeTime(&not_before))
+  if (!t_now.encode_time(&not_before))
     return false;
 
-  if (!t_expire.encodeTime(&not_after))
+  if (!t_expire.encode_time(&not_after))
     return false;
   not_before_.assign(not_before);
   not_after_.assign(not_after);

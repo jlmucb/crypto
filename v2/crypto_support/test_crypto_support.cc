@@ -46,14 +46,14 @@ bool time_convert_test() {
   }
 
   string s1;
-  if (!t.encodeTime(&s1))
+  if (!t.encode_time(&s1))
     return false;
   time_point t1;
   if (FLAGS_print_all)
     printf("Encoded string: %s\n", s1.c_str());
-  t1.decodeTime(s1);
+  t1.decode_time(s1);
   string s2;
-  if (!t1.encodeTime(&s2))
+  if (!t1.encode_time(&s2))
     return false;
   if (FLAGS_print_all) {
     printf("Re-encoded string: %s\n", s2.c_str());
