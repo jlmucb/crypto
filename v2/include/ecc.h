@@ -121,15 +121,16 @@ class ecc {
   bool retrieve_parameters_from_key_message();
   bool extract_key_message_from_serialized(string& s);
   bool generate_ecc(int num_bits);
-  bool decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain);
   bool generate_ecc_from_parameters(const char* key_name, const char* usage,
         char* notbefore, char* notafter, double seconds_to_live, ecc_curve& c,
         curve_point& base, curve_point& public_point,
         big_num& order_base_point, big_num& secret);
   bool generate_ecc_from_standard_template(const char* template_name, const char* key_name,
           const char* usage, double seconds_to_live);
-  bool encrypt(int size, byte* plain, big_num& k, curve_point& pt1, curve_point& pt2);
   void print();
+
+  bool encrypt(int size, byte* plain, big_num& k, curve_point& pt1, curve_point& pt2);
+  bool decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain);
 };
 
 bool ecc_embed(ecc_curve& c, big_num& m, curve_point& pt, int shift, int trys);
