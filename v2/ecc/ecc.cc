@@ -895,6 +895,11 @@ bool ecc::generate_ecc_from_parameters(const char* key_name, const char* usage,
   public_point_ = new curve_point(nw);  // public_point = public_point * secret
   secret_ = new big_num(nw);
   secret.copy_to(*secret_);
+  if (base_point_ == nullptr) {
+    base_point_ = new curve_point(nw);
+  }
+  if (!ecc_mult(*c_, *base_point_, *secret_, *public_point_))
+    return false;
   initialized_ = true;
   return initialized_;
 }
@@ -1151,21 +1156,23 @@ bool ecc::extract_key_message_from_serialized(string& s) {
 }
 
 void ecc::print() {
+  printf("\necc key:\n");
   printf("modulus size: %d bits\n", prime_bit_size_);
-  c_->print_curve();
+  if (c_ != nullptr)
+    c_->print_curve();
   printf("Not before: %s\n", not_before_.c_str());
   printf("Not after: %s\n", not_after_.c_str());
   if (base_point_ != nullptr) {
-    printf("base: "); base_point_->print();
-  }
-  if (public_point_ != nullptr) {
-    printf("public: "); public_point_->print();
-  }
-  if (secret_ != nullptr) {
-    printf("secret: "); secret_->print();
+    printf("base: "); base_point_->print(); printf("\n");
   }
   if (order_of_base_point_ != nullptr) {
-    printf("order base point: "); order_of_base_point_->print();
+    printf("order base point: "); order_of_base_point_->print(); printf("\n");
+  }
+  if (secret_ != nullptr) {
+    printf("secret: "); secret_->print(); printf("\n");
+  }
+  if (public_point_ != nullptr) {
+    printf("public: "); public_point_->print(); printf("\n");
   }
   printf("\n");
 }

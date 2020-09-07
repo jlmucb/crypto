@@ -120,25 +120,26 @@ bool init_ecc_curves() {
     p256_key.prime_bit_size_ = 256;
     p256_key.not_before_.assign(str_now);
     p256_key.not_after_.assign(str_later);
-    p256_key.c_ = new ecc_curve;
+
+    p256_key.c_ = new ecc_curve(4);
+    if (p256_key.c_ == nullptr)
+      return false;
+
     p256_key.c_->prime_bit_size_ = 256;
     p256_key.c_->c_name_.assign("P256");
 
-    p256_key.c_->curve_p_ = new big_num(4);
     p256_key.c_->curve_p_->value_[3] = 0xffffffff00000001ULL;
     p256_key.c_->curve_p_->value_[2] = 0ULL;
     p256_key.c_->curve_p_->value_[1] = 0x00000000ffffffffULL;
     p256_key.c_->curve_p_->value_[0] = 0xffffffffffffffffULL;
     p256_key.c_->curve_p_->normalize();
 
-    p256_key.c_->curve_a_ = new big_num(4);
     p256_key.c_->curve_a_->value_[3] = 0xffffffff00000001ULL;
     p256_key.c_->curve_a_->value_[2] = 0ULL;
     p256_key.c_->curve_a_->value_[1] = 0x00000000ffffffffULL;
     p256_key.c_->curve_a_->value_[0] = 0xfffffffffffffffcULL;
     p256_key.c_->curve_a_->normalize();
 
-    p256_key.c_->curve_b_ = new big_num(4);
     p256_key.c_->curve_b_->value_[3] = 0x5ac635d8aa3a93e7ULL;
     p256_key.c_->curve_b_->value_[2] = 0xb3ebbd55769886bcULL;
     p256_key.c_->curve_b_->value_[1] = 0x651d06b0cc53b0f6ULL;
@@ -146,45 +147,48 @@ bool init_ecc_curves() {
     p256_key.c_->curve_b_->normalize();
 
     p256_key.order_of_base_point_ = new big_num(4);
+    if (p256_key.order_of_base_point_ == nullptr)
+      return false;
     p256_key.order_of_base_point_->value_[3] = 0xffffffff00000000ULL;
     p256_key.order_of_base_point_->value_[2] = 0xffffffffffffffffULL;
     p256_key.order_of_base_point_->value_[1] = 0xbce6faada7179e84ULL;
     p256_key.order_of_base_point_->value_[0] = 0xf3b9cac2fc632551ULL;
     p256_key.order_of_base_point_->normalize();
 
-    p256_key.base_point_->x_ = new big_num(4);
+    p256_key.base_point_ = new curve_point(4);
+    if (p256_key.base_point_ == nullptr)
+      return false;
     p256_key.base_point_->x_->value_[3] = 0x6b17d1f2e12c4247ULL;
     p256_key.base_point_->x_->value_[2] = 0xf8bce6e563a440f2ULL;
     p256_key.base_point_->x_->value_[1] = 0x77037d812deb33a0ULL;
     p256_key.base_point_->x_->value_[0] = 0xf4a13945d898c296ULL;
     p256_key.base_point_->x_->normalize();
-    p256_key.base_point_->y_ = new big_num(4);
     p256_key.base_point_->y_->value_[3] = 0x4fe342e2fe1a7f9bULL;
     p256_key.base_point_->y_->value_[2] = 0x8ee7eb4a7c0f9e16ULL;
     p256_key.base_point_->y_->value_[1] = 0x2bce33576b315eceULL;
     p256_key.base_point_->y_->value_[0] = 0xcbb6406837bf51f5ULL;
     p256_key.base_point_->y_->normalize();
-    p256_key.base_point_->z_ = new big_num (1, 1ULL);
+    p256_key.base_point_->z_->value_[0] = 1;
     p256_key.base_point_->z_->normalize();
 
-    p256_key.public_point_->x_ = nullptr;
-    p256_key.public_point_->y_ = nullptr;
-    p256_key.public_point_->z_ = nullptr;
+    p256_key.public_point_ = nullptr;
     p256_key.initialized_ = true;
   }
 
   // P384
   if (!p384_key.initialized_) {
 
-    p384_key.c_->prime_bit_size_ = 384;
     p384_key.not_before_.assign(str_now);
     p384_key.not_after_.assign(str_later);
-    p384_key.c_ = new ecc_curve;
+
+    p384_key.c_ = new ecc_curve(6);
+    if (p384_key.c_ == nullptr)
+      return false;
+
     p384_key.c_->prime_bit_size_ = 384;
     p384_key.c_->c_name_.assign("P384");
 
     // p = 2^384 – 2^128 – 2^96 + 2^32 –1
-    p384_key.c_->curve_p_ = new big_num(6);
     p384_key.c_->curve_p_->value_[5] = 0xffffffffffffffffULL;
     p384_key.c_->curve_p_->value_[4] = 0xffffffffffffffffULL;
     p384_key.c_->curve_p_->value_[3] = 0xffffffffffffffffULL;
@@ -193,7 +197,6 @@ bool init_ecc_curves() {
     p384_key.c_->curve_p_->value_[0] = 0x00000000ffffffffULL;
     p384_key.c_->curve_p_->normalize();
 
-    p384_key.c_->curve_a_ = new big_num(6);
     p384_key.c_->curve_a_->value_[5] = 0x79d1e655f868f02fULL;
     p384_key.c_->curve_a_->value_[4] = 0xff48dcdee14151ddULL;
     p384_key.c_->curve_a_->value_[3] = 0xb80643c1406d0ca1ULL;
@@ -202,7 +205,6 @@ bool init_ecc_curves() {
     p384_key.c_->curve_a_->value_[0] = 0x6e184667cc722483ULL;
     p384_key.c_->curve_a_->normalize();
 
-    p384_key.c_->curve_b_ = new big_num(6);
     p384_key.c_->curve_b_->value_[5] = 0xb3312fa7e23ee7e4ULL;
     p384_key.c_->curve_b_->value_[4] = 0x988e056be3f82d19ULL;
     p384_key.c_->curve_b_->value_[3] = 0x181d9c6efe814112ULL;
@@ -212,6 +214,8 @@ bool init_ecc_curves() {
     p384_key.c_->curve_b_->normalize();
 
     p384_key.order_of_base_point_ = new big_num(6);
+    if (p384_key.order_of_base_point_ == nullptr)
+      return false;
     p384_key.order_of_base_point_->value_[5] = 0xffffffffffffffffULL;
     p384_key.order_of_base_point_->value_[4] = 0xffffffffffffffffULL;
     p384_key.order_of_base_point_->value_[3] = 0xffffffffffffffffULL;
@@ -220,7 +224,9 @@ bool init_ecc_curves() {
     p384_key.order_of_base_point_->value_[0] = 0xecec196accc52973ULL;
     p384_key.order_of_base_point_->normalize();
 
-    p384_key.base_point_->x_ = new big_num(6);
+    p384_key.base_point_ = new curve_point(6);
+    if (p384_key.base_point_ == nullptr)
+      return false;
     p384_key.base_point_->x_->value_[5] = 0xaa87ca22be8b0537ULL;
     p384_key.base_point_->x_->value_[4] = 0x8eb1c71ef320ad74ULL;
     p384_key.base_point_->x_->value_[3] = 0x6e1d3b628ba79b98ULL;
@@ -228,7 +234,6 @@ bool init_ecc_curves() {
     p384_key.base_point_->x_->value_[1] = 0x5502f25dbf55296cULL;
     p384_key.base_point_->x_->value_[0] = 0x3a545e3872760ab7ULL;
     p384_key.base_point_->x_->normalize();
-    p384_key.base_point_->y_ = new big_num(6);
     p384_key.base_point_->y_->value_[5] = 0x3617de4a96262c6fULL;
     p384_key.base_point_->y_->value_[4] = 0x5d9e98bf9292dc29ULL;
     p384_key.base_point_->y_->value_[3] = 0xf8f41dbd289a147cULL;
@@ -236,27 +241,25 @@ bool init_ecc_curves() {
     p384_key.base_point_->y_->value_[1] = 0x0a60b1ce1d7e819dULL;
     p384_key.base_point_->y_->value_[0] = 0x7a431d7c90ea0e5fULL;
     p384_key.base_point_->y_->normalize();
-    p384_key.base_point_->z_ = new big_num(1, 1ULL);
     p384_key.base_point_->z_->normalize();
 
-    p384_key.public_point_->x_ = nullptr;
-    p384_key.public_point_->y_ = nullptr;
-    p384_key.public_point_->z_ = nullptr;
+    p384_key.public_point_ = nullptr;
     p384_key.initialized_ = true;
   }
 
   // P521
   if (!p521_key.initialized_) {
 
-    p521_key.c_->prime_bit_size_ = 521;
     p521_key.not_before_.assign(str_now);
     p521_key.not_after_.assign(str_later);
-    p521_key.c_ = new ecc_curve;
+
+    p521_key.c_ = new ecc_curve(9);
+    if (p521_key.c_ == nullptr)
+      return false;
     p521_key.c_->prime_bit_size_ = 521;
     p521_key.c_->c_name_.assign("P521");
 
     p521_key.c_->prime_bit_size_ = 521;
-    p521_key.c_->curve_p_ = new big_num(9);
     p521_key.c_->curve_p_->value_[8] = 0x1ffULL;
     p521_key.c_->curve_p_->value_[7] = 0xffffffffffffffffULL;
     p521_key.c_->curve_p_->value_[6] = 0xffffffffffffffffULL;
@@ -268,7 +271,6 @@ bool init_ecc_curves() {
     p521_key.c_->curve_p_->value_[0] = 0xffffffffffffffffULL;
     p521_key.c_->curve_p_->normalize();
 
-    p521_key.c_->curve_a_ = new big_num(9);
     p521_key.c_->curve_a_->value_[8] = 0x0b4ULL;
     p521_key.c_->curve_a_->value_[7] = 0x8bfa5f420a349495ULL;
     p521_key.c_->curve_a_->value_[6] = 0x39d2bdfc264eeeebULL;
@@ -280,7 +282,6 @@ bool init_ecc_curves() {
     p521_key.c_->curve_a_->value_[0] = 0x70c1e5bf55bad637ULL;
     p521_key.c_->curve_a_->normalize();
 
-    p521_key.c_->curve_b_ = new big_num(9);
     p521_key.c_->curve_b_->value_[8] = 0x051ULL;
     p521_key.c_->curve_b_->value_[7] = 0x953eb9618e1c9a1fULL;
     p521_key.c_->curve_b_->value_[6] = 0x929a21a0b68540eeULL;
@@ -293,6 +294,8 @@ bool init_ecc_curves() {
     p521_key.c_->curve_b_->normalize();
 
     p521_key.order_of_base_point_ = new big_num(9);
+    if (p521_key.order_of_base_point_ == nullptr)
+      return false;
     p521_key.order_of_base_point_->value_[8] = 0x01ffULL;
     p521_key.order_of_base_point_->value_[7] = 0xffffffffffffffffULL;
     p521_key.order_of_base_point_->value_[6] = 0xffffffffffffffffULL;
@@ -304,7 +307,9 @@ bool init_ecc_curves() {
     p521_key.order_of_base_point_->value_[0] = 0xbb6fb71e91386409ULL;
     p521_key.order_of_base_point_->normalize();
 
-    p521_key.base_point_->x_ = new big_num(9);
+    p521_key.base_point_ = new curve_point(6);
+    if (p521_key.base_point_ == nullptr)
+      return false;
     p521_key.base_point_->x_->value_[8] = 0xc6ULL;
     p521_key.base_point_->x_->value_[7] = 0x858e06b70404e9cdULL;
     p521_key.base_point_->x_->value_[6] = 0x9e3ecb662395b442ULL;
@@ -330,9 +335,7 @@ bool init_ecc_curves() {
     p521_key.base_point_->z_ = new big_num(1, 1ULL);
     p521_key.base_point_->z_->normalize();
 
-    p521_key.public_point_->x_ = nullptr;
-    p521_key.public_point_->y_ = nullptr;
-    p521_key.public_point_->z_ = nullptr;
+    p521_key.public_point_ = nullptr;
 
     p521_key.initialized_= true;
   }

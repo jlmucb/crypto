@@ -21,6 +21,7 @@
 #include "big_num.h"
 #include "big_num_functions.h"
 #include "ecc.h"
+#include "ecc_curve_data.h"
 
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
@@ -186,19 +187,27 @@ bool test_ecc_curve() {
 }
 
 bool test_ecc_class() {
-  // bool copy_key_parameters_from(ecc& copy_key);
+
+printf("ecc class\n");
+  if (!init_ecc_curves())
+    return false;
+  p256_key.print();
+
+return true;
+  ecc key0;
+  key0.copy_key_parameters_from(p256_key);
+  key0.print();
+
+  ecc key;
+  if (!key.generate_ecc_from_standard_template("P256", "test_key-20",
+              "anything", seconds_in_common_year))
+    return false;
+  key.print();
+
   // bool get_serialized_key_message(string* s);
   // bool set_parameters_in_key_message();
   // bool retrieve_parameters_from_key_message();
   // bool extract_key_message_from_serialized(string& s);
-  // bool generate_ecc(int num_bits);
-  // bool generate_ecc_from_parameters(const char* key_name, const char* usage,
-  //     char* notbefore, char* notafter, double seconds_to_live, ecc_curve& c,
-  //     curve_point& base, curve_point& public_point,
-  //     big_num& order_base_point, big_num& secret);
-  // bool generate_ecc_from_standard_template(const char* template_name, const char* key_name,
-  //      const char* usage, double seconds_to_live);
-  // void print();
 
   return true;
 }
