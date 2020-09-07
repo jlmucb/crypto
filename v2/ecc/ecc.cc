@@ -826,6 +826,7 @@ ecc::ecc() {
   order_of_base_point_ = nullptr;
   base_point_ = nullptr;
   public_point_ = nullptr;
+  secret_ = nullptr;
 }
 
 ecc::~ecc() {
@@ -856,19 +857,46 @@ ecc::~ecc() {
 }
 
 bool ecc::copy_key_parameters_from(ecc& copy_key) {
-  if (copy_key.c_ == nullptr || base_point_ == nullptr)
+  if (copy_key.c_ == nullptr || copy_key.base_point_ == nullptr)
     return false;
   prime_bit_size_ = copy_key.prime_bit_size_;
-  c_->copy_from(*copy_key.c_);
+  int nw = 1 + prime_bit_size_ / (NBITSINBYTE * sizeof(uint64_t));
+
+  if (copy_key.c_ != nullptr) {
+    if (c_ == nullptr) {
+      c_= new ecc_curve(nw);
+      if (c_ == nullptr)
+        return false;
+    }
+    c_->copy_from(*copy_key.c_);
+  }
   not_before_.assign(copy_key.not_before_);
   not_after_.assign(copy_key.not_after_);
-  base_point_->copy_from(*copy_key.base_point_); // curve_point
-  if (order_of_base_point_ != nullptr)
-    order_of_base_point_->copy_from(*copy_key.order_of_base_point_);
-  if (base_point_ != nullptr)
-    base_point_->copy_from(*copy_key.base_point_);  // base_point = base_point * secret
-  if (secret_ != nullptr)
+
+  if (copy_key.base_point_ != nullptr) {
+    if (base_point_ == nullptr) {
+      base_point_ = new curve_point(nw);
+      if (base_point_ == nullptr)
+        return false;
+    }
+    base_point_->copy_from(*copy_key.base_point_); // curve_point
+  }
+
+  if (copy_key.order_of_base_point_ != nullptr) {
+    if (order_of_base_point_ != nullptr)
+      order_of_base_point_->copy_from(*copy_key.order_of_base_point_);
+    if (base_point_ != nullptr)
+      base_point_->copy_from(*copy_key.base_point_);  // base_point = base_point * secret
+  }
+
+  if (copy_key.secret_ != nullptr) {
+    if (secret_ == nullptr) {
+      secret_ = new big_num(nw);
+      if (secret_ == nullptr)
+        return false;
+    }
     secret_->copy_from(*copy_key.secret_);
+  }
   initialized_ = copy_key.initialized_;
 
   return true;
@@ -1158,8 +1186,9 @@ bool ecc::extract_key_message_from_serialized(string& s) {
 void ecc::print() {
   printf("\necc key:\n");
   printf("modulus size: %d bits\n", prime_bit_size_);
-  if (c_ != nullptr)
-    c_->print_curve();
+  if (c_ == nullptr)
+    return;
+  c_->print_curve();
   printf("Not before: %s\n", not_before_.c_str());
   printf("Not after: %s\n", not_after_.c_str());
   if (base_point_ != nullptr) {
