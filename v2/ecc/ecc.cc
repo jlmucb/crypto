@@ -206,6 +206,35 @@ bool ecc_curve::copy_from(ecc_curve& c) {
 }
 
 // Disc= -(4a^3+27b^2) (mod p)
+bool discriminant(ecc_curve& c, big_num& r) {
+  big_num t1(2 * c.curve_p_->capacity_);
+  big_num t2(2 * c.curve_p_->capacity_);
+  big_num t3(2 * c.curve_p_->capacity_);
+  big_num t4(2 * c.curve_p_->capacity_);
+
+  t1.value_[0] = 27;
+  t1.normalize();
+  if (!big_mod_mult(t1, *c.curve_b_, *c.curve_p_, t2))
+    return false;
+  if (!big_mod_mult(t2, *c.curve_b_, *c.curve_p_, t4))
+    return false;
+  t1.zero_num();
+  t2.zero_num();
+  t3.zero_num();
+  if (!big_mod_mult(big_four, *c.curve_a_, *c.curve_p_, t1))
+    return false;
+  if (!big_mod_mult(t1, *c.curve_a_, *c.curve_p_, t2))
+    return false;
+  if (!big_mod_mult(t2, *c.curve_a_, *c.curve_p_, t3))
+    return false;
+  t1.zero_num();
+  t2.zero_num();
+  if (!big_mod_add(t3, t4, *c.curve_p_, t2))
+    return false;
+  if (!big_mod_sub(*c.curve_p_, t4, *c.curve_p_, r))
+    return false;
+  return true;
+}
 
 /*
  *  pick parameter k.
@@ -300,16 +329,7 @@ bool ecc_extract(ecc_curve& c, curve_point& pt, big_num& m, int shift) {
   return true;
 }
 
-/*
- *  y^2= x^3+ax+b (mod p)
- *  pt=(x1, y1) and q_pt=(x2, y2).  Want pt+q_pt=r_pt=(x3,y3).
- *  if pt= O, r_pt=q_pt.
- *  if q_pt= O, r_pt=pt.
- *  if x1=x2 and y1=-y2, r_pt= O
- *  if x1=x2 and y1+y2!=0, m= (3a1^2+a)/(y1+y2) otherwise
- *    m= (y2-y1)/(x2-x1)
- *    x3= m^2-x1-x2, y3= m(x1-x3)-y1
- */
+// see ecc.h for description
 bool ecc_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt) {
   p_pt.normalize(*c.curve_p_);
   q_pt.normalize(*c.curve_p_);

@@ -108,6 +108,8 @@ class ecc {
   ecc_curve* c_;
   string not_before_;
   string not_after_;
+  // common nomenclature calls the base below "G"
+  // for generator and calls the public point B.
   curve_point* base_point_;
   big_num* order_of_base_point_;
   curve_point* public_point_;  // public_point = base_point * secret
@@ -145,6 +147,6 @@ bool faster_ecc_mult(ecc_curve& c, curve_point& p_pt, big_num& x, curve_point& r
 bool projective_to_affine(ecc_curve& c, curve_point& pt);
 bool projective_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt);
 bool projective_double(ecc_curve& c, curve_point& p_pt, curve_point& r_pt);
-bool projective_point_multult(ecc_curve& c, big_num& x, curve_point& p_pt, curve_point& r_pt);
+bool projective_point_mult(ecc_curve& c, big_num& x, curve_point& p_pt, curve_point& r_pt);
 
 #endif

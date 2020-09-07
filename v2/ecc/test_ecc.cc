@@ -109,8 +109,12 @@ bool test_ecc_affine_1() {
   if (!p4.is_zero())
     return false;
 
-  // bool ecc_double(ecc_curve& c, curve_point& p_pt, curve_point& r_pt);
-  // bool faster_ecc_mult(ecc_curve& c, curve_point& p_pt, big_num& x, curve_point& r_pt);
+  p5.clear();
+  if (!ecc_double(c1, p1, p5))
+    return false;
+  if (p5.x_->value_[0] != 1771 || p5.y_->value_[0] != 705)
+    return false;
+
   return true;
 }
 
@@ -125,7 +129,14 @@ bool test_ecc_projective() {
   // bool projective_to_affine(ecc_curve& c, curve_point& pt);
   // bool projective_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt);
   // bool projective_double(ecc_curve& c, curve_point& p_pt, curve_point& r_pt);
-  // bool projective_point_multult(ecc_curve& c, big_num& x, curve_point& p_pt, curve_point& r_pt);
+  // bool projective_point_mult(ecc_curve& c, big_num& x, curve_point& p_pt, curve_point& r_pt);
+/*
+  p5.clear();
+  if (!faster_ecc_mult(c1, p1, big_two, p5))
+    return false;
+  if (p5.x_->value_[0] != 1771 || p5.y_->value_[0] != 705)
+    return false;
+*/
   return true;
 }
 
