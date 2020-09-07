@@ -75,6 +75,7 @@ class curve_point {
   bool is_zero();
   void clear();
   void make_zero();
+  bool is_equal(curve_point& p2);
   bool copy_from(curve_point& pt);
   bool copy_to(curve_point& pt);
   bool normalize(big_num& p);

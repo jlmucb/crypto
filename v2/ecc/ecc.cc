@@ -74,6 +74,16 @@ void curve_point::make_zero() {
   z_->zero_num();
 }
 
+bool curve_point::is_equal(curve_point& p1) {
+  if (big_compare(*p1.x_, *x_) != 0)
+    return false;
+  if (big_compare(*p1.y_, *y_) != 0)
+    return false;
+  if (big_compare(*p1.z_, *z_) != 0)
+    return false;
+  return true;
+}
+
 bool curve_point::copy_from(curve_point& pt) {
   x_->copy_from(*pt.x_);
   y_->copy_from(*pt.y_);
@@ -316,6 +326,7 @@ bool ecc_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_
   big_num t3(2 * c.curve_p_->size_);
 
   r_pt.z_->copy_from(big_one);
+
   if (big_compare(*p_pt.x_, *q_pt.x_) != 0) {
     if (!big_mod_sub(*q_pt.x_, *p_pt.x_, *c.curve_p_, t1)) {
       return false;
@@ -348,6 +359,7 @@ bool ecc_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_
       return false;
     }
   }
+
   t1.zero_num();
   t2.zero_num();
   if (!big_mod_mult(m, m, *c.curve_p_, t1)) {

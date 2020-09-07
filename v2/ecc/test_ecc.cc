@@ -25,11 +25,91 @@
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
+// E: y^2 = y^3 +4x+4 (mod 2773)
+//  2(1,3) = (1771,705)
+//  (7,23) + (2,145) = (2472, 837)
 bool test_ecc_affine_1() {
-  // bool ecc_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt);
-  // bool ecc_sub(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt);
+  ecc_curve c1(1);
+  c1.curve_p_->value_[0] = 2773;
+  c1.curve_a_->value_[0] = 4;
+  c1.curve_b_->value_[0] = 4;
+  curve_point p1(1);
+  curve_point p2(1);
+  curve_point p3(2);
+  curve_point p4(2);
+  curve_point p5(2);
+
+  printf("curve:\n");
+  c1.print_curve();
+
+  p1.x_->zero_num();
+  p1.y_->zero_num();
+  p2.x_->zero_num();
+  p2.y_->zero_num();
+  p3.x_->zero_num();
+  p3.y_->zero_num();
+  p4.x_->zero_num();
+  p4.y_->zero_num();
+  p5.x_->zero_num();
+  p5.y_->zero_num();
+
+  p1.x_->value_[0] = 1;
+  p1.y_->value_[0] = 3;
+  p2.x_->value_[0] = 2;
+  p2.y_->value_[0] = 23;
+  p3.x_->value_[0] = 7;
+  p3.y_->value_[0] = 145;
+
+  p1.x_->normalize();
+  p1.y_->normalize();
+  p2.x_->normalize();
+  p2.y_->normalize();
+  p3.x_->normalize();
+  p3.y_->normalize();
+  if (!ecc_add(c1, p2, p3, p4))
+    return false;
+  // (2472, 715)
+  if (FLAGS_print_all) {
+    printf("  (%lld, %lld)", p2.x_->value_[0], p2.y_->value_[0]);
+    printf(" + ");
+    printf("(%lld, %lld)", p3.x_->value_[0], p3.y_->value_[0]);
+    printf("= (%lld, %lld)\n", p4.x_->value_[0], p4.y_->value_[0]);
+  }
+  if (p4.x_->value_[0] != 2472 || p4.y_->value_[0] !=715)
+    return false;
+
+  // (1771, 705)
+  if (!ecc_mult(c1, p1, big_two, p5))
+    return false;
+  if (FLAGS_print_all) {
+    printf("  2 * (%lld, %lld) = (%lld, %lld)\n", p1.x_->value_[0], p1.y_->value_[0],
+        p5.x_->value_[0], p5.y_->value_[0]);
+  }
+  if (p5.x_->value_[0] != 1771 || p5.y_->value_[0] != 705)
+    return false;
+  p5.clear();
+
+  if (!ecc_sub(c1, p4, p2, p5))
+    return false;
+  if (!p5.is_equal(p3))
+    return false;
+
+  p4.clear();
+  p5.clear();
+  if (!ecc_sub(c1, p1, p1, p4))
+    return false;
+  if (!p4.is_zero())
+  if (FLAGS_print_all) {
+    printf("  (%lld, %lld)", p1.x_->value_[0], p1.y_->value_[0]);
+    printf(" - ");
+    printf("(%lld, %lld)", p1.x_->value_[0], p1.y_->value_[0]);
+    printf("= (%lld, %lld, %lld)\n", p4.x_->value_[0], p4.y_->value_[0],
+          p4.z_->value_[0]);
+  }
+  if (!p4.is_zero())
+    return false;
+
   // bool ecc_double(ecc_curve& c, curve_point& p_pt, curve_point& r_pt);
-  // bool ecc_mult(ecc_curve& c, curve_point& p_pt, big_num& x, curve_point& r_pt);
   // bool faster_ecc_mult(ecc_curve& c, curve_point& p_pt, big_num& x, curve_point& r_pt);
   return true;
 }
