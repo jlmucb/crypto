@@ -906,10 +906,7 @@ bool ecc::generate_ecc_from_parameters(const char* key_name, const char* usage,
         char* notbefore, char* notafter, double seconds_to_live, ecc_curve& c,
         curve_point& base_pt, big_num& order_base_point, big_num& secret) {
   initialized_ = false;
-  key_message *ecc_key_ = new key_message;;
-  if (ecc_key_ == nullptr)
-    return false;
-c.print_curve();
+
   prime_bit_size_ = c.prime_bit_size_;
   not_before_.assign(notbefore);
   not_after_.assign(notafter);
@@ -928,6 +925,45 @@ c.print_curve();
   }
   if (!ecc_mult(*c_, *base_point_, *secret_, *public_point_))
     return false;
+
+  string s_curve_p;
+  string s_curve_a;
+  string s_curve_b;
+  string s_base_order;
+  string s_secret;
+  string s_curve_base_x;
+  string s_curve_base_y;
+  string s_curve_public_x;
+  string s_curve_public_y;
+
+  if (!bignum_to_string_msg(*secret_, &s_secret))
+    return false;
+  if (!bignum_to_string_msg(*c.curve_p_, &s_curve_p))
+    return false;
+  if (!bignum_to_string_msg(*c.curve_a_, &s_curve_a))
+    return false;
+  if (!bignum_to_string_msg(*c.curve_b_, &s_curve_b))
+    return false;
+  if (!bignum_to_string_msg(order_base_point, &s_base_order))
+    return false;
+  if (!bignum_to_string_msg(*base_pt.x_, &s_curve_base_x))
+    return false;
+  if (!bignum_to_string_msg(*base_pt.y_, &s_curve_base_y))
+    return false;
+  if (!bignum_to_string_msg(*public_point_->x_, &s_curve_public_x))
+    return false;
+  if (!bignum_to_string_msg(*public_point_->y_, &s_curve_public_y))
+    return false;
+  
+  key_message* new_key_message =  make_ecckey(key_name, prime_bit_size_, usage,
+         notbefore, notafter, c.c_name_, s_curve_p, s_curve_a, s_curve_b,
+         s_curve_base_x, s_curve_base_y, s_base_order, s_secret,
+         s_curve_public_x, s_curve_public_y);
+  if (new_key_message == nullptr)
+    return false;
+  if (ecc_key_ != nullptr)
+    delete ecc_key_;
+  ecc_key_ = new_key_message;
   initialized_ = true;
   return initialized_;
 }
@@ -1019,13 +1055,6 @@ bool ecc::set_parameters_in_key_message() {
     return false;
   // Todo
   //int u64_array_to_bytes(int size_n, uint64_t* n, string* b);
-  return true;
-}
-
-bool string_msg_to_bignum(const string& s, big_num& n) {
-  if (bytes_to_u64_array((string&)s, n.capacity(), n.value_ptr()) < 0 )
-    return false;
-  n.normalize();
   return true;
 }
 

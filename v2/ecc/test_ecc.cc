@@ -203,10 +203,25 @@ printf("ecc class\n");
     return false;
   key.print();
 
-  // bool get_serialized_key_message(string* s);
-  // bool set_parameters_in_key_message();
-  // bool retrieve_parameters_from_key_message();
-  // bool extract_key_message_from_serialized(string& s);
+  string serialized_str;
+  if (!key.get_serialized_key_message(&serialized_str))
+    return false;
+
+  ecc key1;
+  if (!key1.extract_key_message_from_serialized(serialized_str))
+    return false;
+  printf("\n");
+  key1.print();
+  printf("\nPrinting key_message\n");
+  print_key_message(*key1.ecc_key_);
+
+return true;
+
+  if (!key1.retrieve_parameters_from_key_message())
+    return false;
+
+  return true;
+  // if (!set_parameters_in_key_message()) return false;
 
   return true;
 }

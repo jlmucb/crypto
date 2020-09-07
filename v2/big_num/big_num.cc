@@ -133,3 +133,16 @@ void big_num::print() {
   digit_array_print(size_, value_);
 }
 
+bool string_msg_to_bignum(const string& s, big_num& n) {
+  if (bytes_to_u64_array((string&)s, n.capacity(), n.value_ptr()) < 0 )
+    return false;
+  n.normalize();
+  return true;
+}
+
+bool bignum_to_string_msg(big_num& n, string* s) {
+  if (u64_array_to_bytes((int) n.size(), n.value_ptr(), s) < 0)
+    return false;
+  return true;
+}
+
