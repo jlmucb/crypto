@@ -126,8 +126,7 @@ class ecc {
   bool generate_ecc(int num_bits);
   bool generate_ecc_from_parameters(const char* key_name, const char* usage,
         char* notbefore, char* notafter, double seconds_to_live, ecc_curve& c,
-        curve_point& base, curve_point& public_point,
-        big_num& order_base_point, big_num& secret);
+        curve_point& base, big_num& order_base_point, big_num& secret);
   bool generate_ecc_from_standard_template(const char* template_name, const char* key_name,
           const char* usage, double seconds_to_live);
   void print();

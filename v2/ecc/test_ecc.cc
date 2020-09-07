@@ -196,10 +196,9 @@ printf("ecc class\n");
   ecc key0;
   key0.copy_key_parameters_from(p256_key);
   key0.print();
-return true;
 
   ecc key;
-  if (!key.generate_ecc_from_standard_template("P256", "test_key-20",
+  if (!key.generate_ecc_from_standard_template("P-256", "test_key-20",
               "anything", seconds_in_common_year))
     return false;
   key.print();

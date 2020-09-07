@@ -904,16 +904,16 @@ bool ecc::copy_key_parameters_from(ecc& copy_key) {
 
 bool ecc::generate_ecc_from_parameters(const char* key_name, const char* usage,
         char* notbefore, char* notafter, double seconds_to_live, ecc_curve& c,
-        curve_point& base_pt, curve_point& public_pt,
-        big_num& order_base_point, big_num& secret) {
+        curve_point& base_pt, big_num& order_base_point, big_num& secret) {
   initialized_ = false;
   key_message *ecc_key_ = new key_message;;
   if (ecc_key_ == nullptr)
     return false;
+c.print_curve();
   prime_bit_size_ = c.prime_bit_size_;
   not_before_.assign(notbefore);
   not_after_.assign(notafter);
-  int nw = prime_bit_size_ / (NBITSINBYTE * sizeof(uint64_t));
+  int nw = 1 + prime_bit_size_ / (NBITSINBYTE * sizeof(uint64_t));
   c_ = new ecc_curve(nw);
   c_->copy_from(c);
   base_point_ = new curve_point(nw);
@@ -945,7 +945,7 @@ bool ecc::generate_ecc_from_standard_template(const char* template_name, const c
   // find template
   int nb = 0;
   ecc* key_to_copy = nullptr;
-  if (strlen(template_name) > 5)
+  if (template_name == nullptr || strlen(template_name) < 1)
     return false;
   if (strcmp(template_name, "P-256") == 0) {
     // use p256_key
@@ -967,6 +967,10 @@ bool ecc::generate_ecc_from_standard_template(const char* template_name, const c
   } else {
     return false;
   }
+
+  if (key_to_copy->c_ == nullptr || key_to_copy->order_of_base_point_ == nullptr ||
+        key_to_copy->base_point_ == nullptr)
+    return false;
 
   string notbefore;
   string notafter;
@@ -991,11 +995,7 @@ bool ecc::generate_ecc_from_standard_template(const char* template_name, const c
     return false;
   }
 
-  int n_u64 = 1 + (nb / sizeof(uint64_t));
-  ecc_curve c(n_u64);
-  curve_point base_pt(n_u64);
-  curve_point public_pt(n_u64);
-  big_num order_base_point(n_u64);
+  int n_u64 = (nb / sizeof(uint64_t));
   big_num big_num_secret(n_u64);
   memcpy((byte*)big_num_secret.value_ptr(), byte_secret, nb);
   delete []byte_secret;
@@ -1003,8 +1003,8 @@ bool ecc::generate_ecc_from_standard_template(const char* template_name, const c
   big_num_secret.normalize();
   
   return generate_ecc_from_parameters(key_name, usage, (char*)notbefore.c_str(),
-           (char*)notafter.c_str(), seconds_to_live, c, base_pt, public_pt,
-           order_base_point, big_num_secret);
+           (char*)notafter.c_str(), seconds_to_live, *key_to_copy->c_, *key_to_copy->base_point_,
+           *key_to_copy->order_of_base_point_, big_num_secret);
 }
 
 bool ecc::get_serialized_key_message(string* s) {
