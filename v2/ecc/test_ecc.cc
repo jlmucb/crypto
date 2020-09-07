@@ -141,20 +141,46 @@ bool test_ecc_projective() {
 }
 
 bool test_ecc_curve_point() {
-  // bool is_zero();
-  // void clear();
-  // void make_zero();
-  // bool copy_from(curve_point& pt);
-  // bool copy_to(curve_point& pt);
-  // bool normalize(big_num& p);
-  // void print();
+  curve_point p1(2);
+  curve_point p2(2);
+  curve_point p3(2);
+  curve_point p4(2);
+
+  p1.make_zero();
+  if (!p1.is_zero())
+    return false;
+
+  p1.x_->value_[0] = 2;
+  p1.y_->value_[0] = 3;
+  p1.z_->value_[0] = 6;
+  p1.x_->normalize();
+  p1.y_->normalize();
+  p1.z_->normalize();
+
+  if (!p2.copy_from(p1))
+    return false;
+  if (!p1.is_equal(p2))
+    return false;
+  if (!p2.copy_to(p3))
+    return false;
+  if (!p1.is_equal(p3))
+    return false;
+  p3.print();
   return true;
 }
 
 bool test_ecc_curve() {
-  // void clear();
-  // void print_curve();
-  // bool copy_from(ecc_curve& c);
+  ecc_curve c1(1);
+  ecc_curve c2(2);
+  c1.curve_p_->value_[0] = 2773;
+  c1.curve_a_->value_[0] = 4;
+  c1.curve_b_->value_[0] = 4;
+  if (!c2.copy_from(c1))
+    return false;
+  c2.print_curve();
+  c2.clear();
+  if (!c2.curve_p_->is_zero() || !c2.curve_a_->is_zero() || !c2.curve_b_->is_zero())
+    return false;
 
   return true;
 }
