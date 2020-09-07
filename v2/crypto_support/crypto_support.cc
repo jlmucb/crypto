@@ -845,6 +845,7 @@ key_message* make_ecckey(const char* name, int prime_bit_size, const char* purpo
     km->set_notbefore(not_before);
   if (not_after != nullptr)
     km->set_notafter(not_after);
+  km->set_key_size(prime_bit_size);
 
   ecc_public_parameters_message* pub = km->mutable_ecc_pub();
   curve_message* cmsg = pub->mutable_cm();

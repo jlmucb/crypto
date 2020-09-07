@@ -58,7 +58,6 @@ extern big_num big_three;
 extern big_num big_four;
 extern big_num big_five;
 
-
 extern bool string_msg_to_bignum(const string& s, big_num& n);
 extern bool bignum_to_string_msg(big_num& n, string* s);
 

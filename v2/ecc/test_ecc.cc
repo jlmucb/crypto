@@ -215,12 +215,10 @@ printf("ecc class\n");
   printf("\nPrinting key_message\n");
   print_key_message(*key1.ecc_key_);
 
-return true;
-
   if (!key1.retrieve_parameters_from_key_message())
     return false;
+  key1.print();
 
-  return true;
   // if (!set_parameters_in_key_message()) return false;
 
   return true;

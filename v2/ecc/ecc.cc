@@ -1053,8 +1053,7 @@ bool ecc::get_serialized_key_message(string* s) {
 bool ecc::set_parameters_in_key_message() {
   if (ecc_key_ == nullptr)
     return false;
-  // Todo
-  //int u64_array_to_bytes(int size_n, uint64_t* n, string* b);
+  // bool bignum_to_string_msg(big_num& n, string* s);
   return true;
 }
 
@@ -1065,13 +1064,14 @@ bool ecc::retrieve_parameters_from_key_message() {
   if (!ecc_key_->has_key_size()) {
     return false;
   }
-  prime_bit_size_ = ecc_key_->has_key_size();
+  prime_bit_size_ = ecc_key_->key_size();
   if(ecc_key_->has_notafter()) {
     not_after_.assign(ecc_key_->notafter());
   }
   if(ecc_key_->has_notbefore()) {
     not_before_.assign(ecc_key_->notbefore());
   }
+
   int u64_size = 1 + (prime_bit_size_ / (NBITSINBYTE * sizeof(uint64_t)));
 
   if (ecc_key_->has_ecc_pub()) {
@@ -1087,10 +1087,10 @@ bool ecc::retrieve_parameters_from_key_message() {
         if (c_ == nullptr)
           return false;
       }
-      if (!cmsg->has_curve_name()) {
+      if (cmsg->has_curve_name()) {
         c_->c_name_.assign(cmsg->curve_name());
       }
-      if (!cmsg->has_curve_p()) {
+      if (cmsg->has_curve_p()) {
         if (c_->curve_p_ == nullptr) {
           c_->curve_p_ = new big_num(u64_size);
           if (c_->curve_p_ == nullptr)
@@ -1100,7 +1100,7 @@ bool ecc::retrieve_parameters_from_key_message() {
         if(!string_msg_to_bignum(cmsg->curve_p(), *p))
           return false;
       }
-      if (!cmsg->has_curve_a()) {
+      if (cmsg->has_curve_a()) {
         if (c_->curve_a_ == nullptr) {
           c_->curve_a_ = new big_num(u64_size);
           if (c_->curve_a_ == nullptr)
@@ -1110,7 +1110,7 @@ bool ecc::retrieve_parameters_from_key_message() {
         if(!string_msg_to_bignum(cmsg->curve_a(), *a))
           return false;
       }
-      if (!cmsg->has_curve_b()) {
+      if (cmsg->has_curve_b()) {
         if (c_->curve_b_ == nullptr) {
           c_->curve_b_ = new big_num(u64_size);
           if (c_->curve_b_ == nullptr)
