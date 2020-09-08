@@ -226,8 +226,40 @@ printf("ecc class\n");
 
 bool test_ecc_encrypt_decrypt() {
 
-  //  bool encrypt(int size, byte* plain, big_num& k, curve_point& pt1, curve_point& pt2);
-  // bool decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain);
+  byte plain_in[64];
+  byte cipher_out[64];
+  byte recovered[64];
+
+  memset(plain_in, 0, 64);
+  memset(cipher_out, 0, 64);
+  memset(recovered, 0, 64);
+
+  if (!init_ecc_curves())
+    return false;
+
+  ecc key;
+  if (!key.generate_ecc_from_standard_template("P-256", "test_key-20",
+              "anything", seconds_in_common_year))
+    return false;
+  key.print();
+  printf("\n");
+
+  big_num nonce(10, 0x48283746882294);
+
+  int size_in = 6;
+  int size_out = 64;
+  curve_point pt1(10);
+  curve_point pt2(10);
+
+  memcpy(plain_in, (byte*)"hello", size_in);
+  if (!key.encrypt(size_in, plain_in, nonce, pt1, pt2))
+    return false;
+  if (!key.decrypt(pt1, pt2, &size_out, recovered))
+    return false;
+  printf("plain     : "); print_bytes(size_in, plain_in); printf("\n");
+  printf("cipher    : ["); pt1.print(); printf(" , "); pt2.print(); printf("]\n");
+  printf("recovered : "); print_bytes(size_out, recovered); printf("\n");
+
   return true;
 }
 

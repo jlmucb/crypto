@@ -1243,12 +1243,12 @@ bool ecc::encrypt(int size, byte* plain, big_num& k, curve_point& pt1,
   if (c_ == nullptr)
     return false;
   big_num m(c_->curve_p_->capacity_);
-  curve_point pt(c_->curve_p_->capacity_);
+  curve_point p_pt(c_->curve_p_->capacity_);
   curve_point r_pt(c_->curve_p_->capacity_);
 
   memcpy((byte*)m.value_, plain, size);
   m.normalize();
-  if (!ecc_embed(*c_, m, pt, 8, 20)) {
+  if (!ecc_embed(*c_, m, p_pt, 8, 20)) {
     return false;
   }
 #ifdef FASTECCMULT
@@ -1266,7 +1266,7 @@ bool ecc::encrypt(int size, byte* plain, big_num& k, curve_point& pt1,
     return false;
   }
 #endif
-  if (!ecc_add(*c_, r_pt, pt, pt2)) {
+  if (!ecc_add(*c_, r_pt, p_pt, pt2)) {
     return false;
   }
   return true;
