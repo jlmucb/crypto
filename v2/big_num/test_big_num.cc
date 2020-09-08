@@ -1051,6 +1051,25 @@ bool basic_number_theory_test1() {
   return true;
 }
 
+bool big_mont_test1() {
+#if 0
+  int r;
+  uint64_t r1;
+
+  if (!big_make_mont(a, r, m, mont_a))
+    return false;
+  if (!big_mont_params(m, r, m_prime))
+    return false;
+  if (!big_mont_reduce(a, r, m, m_prime, mont_a))
+    return false;
+  if (!big_mont_mult(aR, bR, m, r1, m_prime, abR))
+    return false;
+  if (!big_mont_exp(b, e, r, m, m_prime, out))
+    return false;
+#endif
+  return true;
+}
+
 TEST(digit_tests, set1) {
   EXPECT_TRUE(basic_digit_test1());
 }
@@ -1071,6 +1090,9 @@ TEST(big_num, basic_arith_test) {
 }
 TEST(big_num, basic_number_theory_test) {
   EXPECT_TRUE(basic_number_theory_test1());
+}
+TEST(big_num, montgomery) {
+  EXPECT_TRUE(big_mont_test1());
 }
 
 int main(int an, char** av) {

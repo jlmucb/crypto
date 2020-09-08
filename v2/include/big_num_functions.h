@@ -44,6 +44,7 @@ big_num* big_convert_from_decimal(string& s);
 bool big_convert_to_hex(big_num& a, string* hex);
 big_num* big_convert_from_hex(const char* in);
 
+bool big_mod_normalize(big_num& a, big_num& m);
 bool big_extended_gcd(big_num& a, big_num& b, big_num& x, big_num& y, big_num& g);
 bool big_crt(big_num& s1, big_num& s2, big_num& m1, big_num& m2, big_num& r);
 bool big_mod(big_num& a, big_num& m, big_num& r);
@@ -68,6 +69,5 @@ bool big_mont_reduce(big_num& a, int r, big_num& m, big_num& m_prime, big_num& m
 bool big_mont_mult(big_num& aR, big_num& bR, big_num& m, uint64_t r, big_num& m_prime,
                  big_num& abR);
 bool big_mont_exp(big_num& b, big_num& e, int r, big_num& m, big_num& m_prime, big_num& out);
-bool big_mod_normalize(big_num& a, big_num& m);
 
 #endif
