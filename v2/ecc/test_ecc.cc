@@ -147,11 +147,9 @@ bool test_ecc_projective() {
   // bool projective_double(ecc_curve& c, curve_point& p_pt, curve_point& r_pt);
   // bool projective_point_mult(ecc_curve& c, big_num& x, curve_point& p_pt, curve_point& r_pt);
 
-return true;
   p5.clear();
   if (!faster_ecc_mult(c1, p1, big_two, p5))
     return false;
-return true;
   if (p5.x_->value_[0] != 1771 || p5.y_->value_[0] != 705)
     return false;
   return true;

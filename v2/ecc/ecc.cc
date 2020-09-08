@@ -19,7 +19,7 @@
 #include "ecc.h"
 #include "ecc_curve_data.h"
 
-//#define FASTECCMULT
+#define FASTECCMULT
 
 curve_point::curve_point() {
   x_ = nullptr;
@@ -455,7 +455,9 @@ bool projective_to_affine(ecc_curve& c, curve_point& pt) {
     pt.make_zero();
     return true;
   }
-  if (pt.z_->is_one()) return true;
+
+  if (pt.z_->is_one())
+    return true;
   if (!big_mod_inv(*pt.z_, *c.curve_p_, zinv)) {
     return false;
   }
@@ -465,9 +467,16 @@ bool projective_to_affine(ecc_curve& c, curve_point& pt) {
   if (!big_mod_mult(*pt.y_, zinv, *c.curve_p_, y)) {
     return false;
   }
-  pt.x_->copy_from(x);
-  pt.y_->copy_from(y);
-  pt.z_->copy_from(big_one);
+  if (!big_mod_normalize(x, *c.curve_p_))
+    return false;
+  if (!big_mod_normalize(y, *c.curve_p_))
+    return false;
+  if (!pt.x_->copy_from(x))
+    return false;
+  if (!pt.y_->copy_from(y))
+    return false;
+  if (!pt.z_->copy_from(big_one))
+    return false;
   return true;
 }
 
@@ -812,7 +821,7 @@ bool faster_ecc_mult(ecc_curve& c, curve_point& p_pt, big_num& x, curve_point& r
   if (!projective_point_mult(c, x, p_pt, r_pt)) {
     return false;
   }
-  if (projective_to_affine(c, r_pt)) {
+  if (!projective_to_affine(c, r_pt)) {
     return false;
   }
   if (x.is_negative()) {
