@@ -234,6 +234,8 @@ bool test_ecc_encrypt_decrypt() {
   memset(cipher_out, 0, 64);
   memset(recovered, 0, 64);
 
+  printf("encrypt/decrypt test\n");
+
   if (!init_ecc_curves())
     return false;
 
@@ -244,20 +246,23 @@ bool test_ecc_encrypt_decrypt() {
   key.print();
   printf("\n");
 
-  big_num nonce(10, 0x48283746882294);
-
   int size_in = 6;
   int size_out = 64;
+  memcpy(plain_in, (byte*)"hello", size_in);
+
+  big_num nonce(10, 0x48283746882294);
+  nonce.normalize();
+  printf("plain     : "); print_bytes(size_in, plain_in);
+  printf("nonce     : "); nonce.print(); printf("\n");
+
   curve_point pt1(10);
   curve_point pt2(10);
 
-  memcpy(plain_in, (byte*)"hello", size_in);
   if (!key.encrypt(size_in, plain_in, nonce, pt1, pt2))
     return false;
   if (!key.decrypt(pt1, pt2, &size_out, recovered))
     return false;
-  printf("plain     : "); print_bytes(size_in, plain_in); printf("\n");
-  printf("cipher    : ["); pt1.print(); printf(" , "); pt2.print(); printf("]\n");
+  printf("cipher    : ("); pt1.print(); printf(" , "); pt2.print(); printf(")\n");
   printf("recovered : "); print_bytes(size_out, recovered); printf("\n");
 
   return true;

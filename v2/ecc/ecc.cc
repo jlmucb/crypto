@@ -19,7 +19,7 @@
 #include "ecc.h"
 #include "ecc_curve_data.h"
 
-#define FASTECCMULT
+// #define FASTECCMULT
 
 curve_point::curve_point() {
   x_ = nullptr;
