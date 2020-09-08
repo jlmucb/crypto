@@ -135,23 +135,78 @@ bool test_ecc_projective() {
   c1.curve_a_->normalize();
   c1.curve_b_->normalize();
   curve_point p1(1);
+  curve_point p2(1);
+  curve_point p3(1);
+  curve_point p4(1);
   curve_point p5(2);
 
   p1.x_->value_[0] = 1;
-  p1.y_->value_[0] = 3;
   p1.x_->normalize();
+  p1.y_->value_[0] = 3;
   p1.y_->normalize();
-
-  // bool projective_to_affine(ecc_curve& c, curve_point& pt);
-  // bool projective_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt);
-  // bool projective_double(ecc_curve& c, curve_point& p_pt, curve_point& r_pt);
-  // bool projective_point_mult(ecc_curve& c, big_num& x, curve_point& p_pt, curve_point& r_pt);
+  p1.z_->value_[0] = 1;
+  p1.x_->normalize();
 
   p5.clear();
   if (!faster_ecc_mult(c1, p1, big_two, p5))
     return false;
   if (p5.x_->value_[0] != 1771 || p5.y_->value_[0] != 705)
     return false;
+
+  p2.x_->value_[0] = 2;
+  p2.x_->normalize();
+  p2.y_->value_[0] = 6;
+  p2.y_->normalize();
+  p2.z_->value_[0] = 2;
+  p2.x_->normalize();
+  p5.clear();
+  p5.copy_from(p2);
+
+  if (!projective_to_affine(c1, p5))
+    return false;
+  if (FLAGS_print_all) {
+    printf("  (%lld, %lld, %lld) = ", p2.x_->value_[0], p2.y_->value_[0], p2.z_->value_[0]);
+    printf("  (%lld, %lld, %lld)\n", p5.x_->value_[0], p5.y_->value_[0], p5.z_->value_[0]);
+  }
+
+  if (!p1.is_equal(p5))
+    return false;
+
+  p4.clear();
+  p2.x_->value_[0] = 2;
+  p2.y_->value_[0] = 23;
+  p2.z_->value_[0] = 1;
+  p3.x_->value_[0] = 7;
+  p3.y_->value_[0] = 145;
+  p3.z_->value_[0] = 1;
+  if (!projective_add(c1, p2, p3, p4))
+    return false;
+  // (2472, 715)
+  if (FLAGS_print_all) {
+    printf("  (%lld, %lld, %lld)", p2.x_->value_[0], p2.y_->value_[0], p2.z_->value_[0]);
+    printf(" + ");
+    printf("(%lld, %lld, %lld)", p3.x_->value_[0], p3.y_->value_[0], p3.z_->value_[0]);
+    printf("= (%lld, %lld, %lld)\n", p4.x_->value_[0], p4.y_->value_[0], p4.z_->value_[0]);
+  }
+  if (!projective_to_affine(c1, p4))
+    return false;
+  if (p4.x_->value_[0] != 2472 || p4.y_->value_[0] != 715 || p4.z_->value_[0] != 1)
+    return false;
+  p5.clear();
+  if (!projective_double(c1, p1, p5))
+    return false;
+  if (!projective_to_affine(c1, p5))
+    return false;
+  if (p5.x_->value_[0] != 1771 || p5.y_->value_[0] != 705 || p5.z_->value_[0] != 1)
+    return false;
+  p5.clear();
+  if (!projective_point_mult(c1, big_two, p1, p5))
+    return false;
+  if (!projective_to_affine(c1, p5))
+    return false;
+  if (p5.x_->value_[0] != 1771 || p5.y_->value_[0] != 705 || p5.z_->value_[0] != 1)
+    return false;
+
   return true;
 }
 
