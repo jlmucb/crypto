@@ -264,6 +264,8 @@ bool test_ecc_encrypt_decrypt() {
     return false;
   printf("cipher    : ("); pt1.print(); printf(" , "); pt2.print(); printf(")\n");
   printf("recovered : "); print_bytes(size_out, recovered); printf("\n");
+  if (memcmp(plain_in, recovered, size_in) != 0)
+      return false;
 
   return true;
 }

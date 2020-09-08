@@ -19,7 +19,7 @@
 #include "ecc.h"
 #include "ecc_curve_data.h"
 
-// #define FASTECCMULT
+//#define FASTECCMULT
 
 curve_point::curve_point() {
   x_ = nullptr;
@@ -1252,17 +1252,17 @@ bool ecc::encrypt(int size, byte* plain, big_num& k, curve_point& pt1,
     return false;
   }
 #ifdef FASTECCMULT
-  if (!faster_ecc_mult(*c_, *public_point_, k, pt1)) {
+  if (!faster_ecc_mult(*c_, *base_point_, k, pt1)) {
     return false;
   }
-  if (!faster_ecc_mult(*c_, *base_point_, k, r_pt)) {
+  if (!faster_ecc_mult(*c_, *public_point_, k, r_pt)) {
     return false;
   }
 #else
-  if (!ecc_mult(*c_, *public_point_, k, pt1)) {
+  if (!ecc_mult(*c_, *base_point_, k, pt1)) {
     return false;
   }
-  if (!ecc_mult(*c_, *base_point_, k, r_pt)) {
+  if (!ecc_mult(*c_, *public_point_, k, r_pt)) {
     return false;
   }
 #endif
@@ -1277,28 +1277,26 @@ bool ecc::decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain) {
     return false;
 
   big_num m(c_->curve_p_->capacity_);
-  curve_point pt(c_->curve_p_->capacity_);
+  curve_point p_pt(c_->curve_p_->capacity_);
   curve_point r_pt(c_->curve_p_->capacity_);
 
 #ifdef FASTECCMULT
-  if (!faster_ecc_mult(*c_, pt1, *(c_->curve_a_), r_pt)) {
+  if (!faster_ecc_mult(*c_, pt1, *(secret_), r_pt)) {
     return false;
   }
 #else
-  if (!ecc_mult(*c_, pt1, *(c_->curve_a_), r_pt)) {
+  if (!ecc_mult(*c_, pt1, *(secret_), r_pt)) {
     return false;
   }
 #endif
-  if (!ecc_sub(*c_, pt2, r_pt, pt)) {
+  if (!ecc_sub(*c_, pt2, r_pt, p_pt)) {
     return false;
   }
-  if (!ecc_extract(*c_, pt, m, 8)) {
+  if (!ecc_extract(*c_, p_pt, m, 8)) {
     return false;
   }
   m.normalize();
-  int n = (big_high_bit(m) + NBITSINBYTE - 1) / NBITSINBYTE;
-  if (*size < n) return false;
-  *size = n;
+  *size = m.size() * sizeof(uint64_t);
   memcpy(plain, (byte*)m.value_, *size);
   return true;
 }
