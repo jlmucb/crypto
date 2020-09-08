@@ -127,17 +127,33 @@ bool test_ecc_affine_2() {
 }
 
 bool test_ecc_projective() {
+  ecc_curve c1(1);
+  c1.curve_p_->value_[0] = 2773;
+  c1.curve_a_->value_[0] = 4;
+  c1.curve_b_->value_[0] = 4;
+  c1.curve_p_->normalize();
+  c1.curve_a_->normalize();
+  c1.curve_b_->normalize();
+  curve_point p1(1);
+  curve_point p5(2);
+
+  p1.x_->value_[0] = 1;
+  p1.y_->value_[0] = 3;
+  p1.x_->normalize();
+  p1.y_->normalize();
+
   // bool projective_to_affine(ecc_curve& c, curve_point& pt);
   // bool projective_add(ecc_curve& c, curve_point& p_pt, curve_point& q_pt, curve_point& r_pt);
   // bool projective_double(ecc_curve& c, curve_point& p_pt, curve_point& r_pt);
   // bool projective_point_mult(ecc_curve& c, big_num& x, curve_point& p_pt, curve_point& r_pt);
-/*
+
+return true;
   p5.clear();
   if (!faster_ecc_mult(c1, p1, big_two, p5))
     return false;
+return true;
   if (p5.x_->value_[0] != 1771 || p5.y_->value_[0] != 705)
     return false;
-*/
   return true;
 }
 
@@ -188,7 +204,7 @@ bool test_ecc_curve() {
 
 bool test_ecc_class() {
 
-printf("ecc class\n");
+printf("ecc class :\n");
   if (!init_ecc_curves())
     return false;
   p256_key.print();
@@ -270,12 +286,12 @@ bool test_ecc_encrypt_decrypt() {
   return true;
 }
 
+TEST (ecc, test_projective) {
+  EXPECT_TRUE(test_ecc_projective());
+}
 TEST (ecc, test_affine) {
   EXPECT_TRUE(test_ecc_affine_1());
   EXPECT_TRUE(test_ecc_affine_2());
-}
-TEST (ecc, test_projective) {
-  EXPECT_TRUE(test_ecc_projective());
 }
 TEST (ecc_curve_point, ecc_curve_point) {
   EXPECT_TRUE(test_ecc_curve_point());

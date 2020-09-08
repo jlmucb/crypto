@@ -307,7 +307,7 @@ bool init_ecc_curves() {
     p521_key.order_of_base_point_->value_[0] = 0xbb6fb71e91386409ULL;
     p521_key.order_of_base_point_->normalize();
 
-    p521_key.base_point_ = new curve_point(6);
+    p521_key.base_point_ = new curve_point(9);
     if (p521_key.base_point_ == nullptr)
       return false;
     p521_key.base_point_->x_->value_[8] = 0xc6ULL;

@@ -30,23 +30,11 @@ curve_point::curve_point() {
 curve_point::curve_point(int size) {
   x_ = new big_num(size);
   y_ = new big_num(size);
-  z_ = new big_num(size);
-  z_->value_[0] = 1ULL;
-  z_->normalize();
-}
-
-curve_point::curve_point(big_num& x, big_num& y) {
-  x_ = new big_num(x.capacity_);
-  x_->copy_from(x);
-  y_ = new big_num(y.capacity_);
-  y_->copy_from(y);
-  z_ = new big_num(x.capacity_);
-  z_->value_[0] = 1ULL;
+  z_ = new big_num(size, 1ULL);
   z_->normalize();
 }
 
 curve_point::~curve_point() {
-  clear();
   if (x_ != nullptr) {
     x_->zero_num();
     delete x_;
@@ -85,6 +73,10 @@ bool curve_point::is_equal(curve_point& p1) {
 }
 
 bool curve_point::copy_from(curve_point& pt) {
+  if (pt.x_ == nullptr || pt.y_ == nullptr || pt.z_ == nullptr)
+    return false;
+  if (x_ == nullptr || y_ == nullptr || z_ == nullptr)
+    return false;
   x_->copy_from(*pt.x_);
   y_->copy_from(*pt.y_);
   z_->copy_from(*pt.z_);
@@ -92,6 +84,10 @@ bool curve_point::copy_from(curve_point& pt) {
 }
 
 bool curve_point::copy_to(curve_point& pt) {
+  if (pt.x_ == nullptr || pt.y_ == nullptr || pt.z_ == nullptr)
+    return false;
+  if (x_ == nullptr || y_ == nullptr || z_ == nullptr)
+    return false;
   x_->copy_to(*pt.x_);
   y_->copy_to(*pt.y_);
   z_->copy_to(*pt.z_);
@@ -99,15 +95,30 @@ bool curve_point::copy_to(curve_point& pt) {
 }
 
 curve_point::curve_point(curve_point& pt) {
-  x_ = new big_num(pt.x_->capacity_);
+  if (pt.x_ == nullptr || pt.y_ == nullptr || pt.z_ == nullptr)
+    return;
+  int n = pt.x_->capacity_;
+  if (pt.y_->capacity_ > n)
+    n = pt.y_->capacity_;
+  if (pt.z_->capacity_ > n)
+    n = pt.z_->capacity_;
+  x_ = new big_num(n);
   x_->copy_from(*pt.x_);
-  y_ = new big_num(pt.y_->capacity_);
+  y_ = new big_num(n);
   y_->copy_from(*pt.y_);
-  z_ = new big_num(pt.z_->capacity_);
+  z_ = new big_num(n);
   z_->copy_from(*pt.z_);
 }
 
 curve_point::curve_point(curve_point& pt, int capacity) {
+  if (pt.x_ == nullptr || pt.y_ == nullptr || pt.z_ == nullptr)
+    return;
+  if (pt.x_->size() > capacity)
+    capacity = pt.x_->size();
+  if (pt.y_->size() > capacity)
+    capacity = pt.y_->size();
+  if (pt.z_->size() > capacity)
+    capacity = pt.z_->size();
   x_ = new big_num(capacity);
   x_->copy_from(*pt.x_);
   y_ = new big_num(capacity);
@@ -119,11 +130,12 @@ curve_point::curve_point(curve_point& pt, int capacity) {
 void curve_point::clear() {
   if (x_ != nullptr) x_->zero_num();
   if (y_ != nullptr) y_->zero_num();
-  if (x_ != nullptr) z_->zero_num();
+  if (z_ != nullptr) z_->zero_num();
 }
 
 bool curve_point::normalize(big_num& p) {
-  if (z_->is_zero() || z_->is_one()) return true;
+  if (z_->is_zero() || z_->is_one())
+    return true;
   return false;
 }
 
@@ -149,15 +161,6 @@ ecc_curve::ecc_curve(int size) {
   curve_a_ = new big_num(size);
   curve_b_ = new big_num(size);
   curve_p_ = new big_num(size);
-}
-
-ecc_curve::ecc_curve(big_num& a, big_num& b, big_num& p) {
-  curve_a_ = new big_num(a.capacity_);
-  curve_a_->copy_from(a);
-  curve_b_ = new big_num(b.capacity_);
-  curve_b_->copy_from(b);
-  curve_p_ = new big_num(p.capacity_);
-  curve_p_->copy_from(p);
 }
 
 ecc_curve::~ecc_curve() {

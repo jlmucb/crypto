@@ -67,7 +67,6 @@ class curve_point {
 
   curve_point();
   curve_point(int size);
-  curve_point(big_num& x, big_num& y);
   curve_point(curve_point& pt);
   curve_point(curve_point& pt, int capacity);
   ~curve_point();
@@ -92,7 +91,6 @@ class ecc_curve {
 
   ecc_curve();
   ecc_curve(int size);
-  ecc_curve(big_num& a, big_num& b, big_num& p);
   ~ecc_curve();
 
   void clear();
