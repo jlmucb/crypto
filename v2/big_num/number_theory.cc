@@ -461,22 +461,23 @@ bool big_mod_is_square(big_num& n, big_num& p) {
   return true;
 }
 
-/*
- *  a>0, p!=2
- *  Find x: x^2=a (mod p).  Caller should have checked that a is a QR
- *    Reference: Cohen, A Course of computational number theory, p32.
- *  p-1= 2^e q
- *  Pick a quadratic non-residue n
- *  z= n^q  (z is a generator)
- *  y= z; r= e; x= a^((q-1)/2) (mod p), b= ax^2
- *  x= ax  (RHS is a^2x^2= ab (mod p))
- *  while(b!=1) {
- *    -- at this point ab= x^2, y^(2^(r-1))= -1 (mod p), b^(2^(r-1)) =1
- *    find smallest m: b^(2^m)= 1 (mod p) --- note m<r
- *    t=y^(2^(r-m-1)) (mod p)
- *    y= t^2
- *    r= m; x=xt; b=by;
- */
+
+//   a>0, p!=2
+//   Find x: x^2=a (mod p).  Caller should have checked that a is a QR
+//     Reference: Cohen, A Course of computational number theory, p32.
+//   p-1= 2^e q
+//   Pick a quadratic non-residue n
+//   z= n^q  (z is a generator)
+//   y= z; r= e; x= a^((q-1)/2) (mod p), b= ax^2
+//   x= ax  (RHS is a^2x^2= ab (mod p))
+//   while(b!=1) {
+//     -- at this point ab= x^2, y^(2^(r-1))= -1 (mod p), b^(2^(r-1)) =1
+//     find smallest m: b^(2^m)= 1 (mod p) --- note m<r
+//     t=y^(2^(r-m-1)) (mod p)
+//     y= t^2
+//     r= m; x=xt; b=by;
+
+
 // find smallest m: b^(2^m)= 1 (mod p) --- note m<r
 int smallest_unitary_exponent(big_num& b, big_num& p, int maxm) {
   big_num e(2 * p.capacity_ + 1);
@@ -683,34 +684,29 @@ bool big_mod_square_root(big_num& n, big_num& p, big_num& r) {
   return true;
 }
 
-/*
- *  R>p, (p,R)=1.  Usually, R=2^r
- *  0<= T < pR, p'= -p^(-1) (mod R)
- *
- *  Reduction: (p, R)= 1.  U= Tp' (mod R)
- *    (T+Um)/R = TR^(-1) (mod p)
- *  Theorem: (T+Um)/R = TR^(-1) or TR^(-1) + p
- *
- *  Reduce
- *    A= T
- *    for(i=0;i<n; i++) {
- *      u[i]= a[i]p' mod b  (b is base, R=b^n)
- *      A= A+u[i]m b^i
- *    }
- *    A= A/b^i
- *    if(A>=p) A=- p;
- *    return A
- *
- *  multiply.  0<= x, y <p.  R=b^n.  output: xyR^(-1) (mod p)
- *    A= 0
- *    for(i=0;i<n; i++) {
- *      u[i]= (a[0]+x[i]y[0]) p' mod b  (b is base, R=b^n)
- *      A= A+u[i]y[0] (mod b)
- *      A= (A+x[i]y+u[i]m)/b
- *    }
- *    if(A>=p)  A-= p
- *    return A
- */
+// Montgomery multiplication
+//   R = b^r, p < R, (p, R) = 1 and 0<=t<pR
+// 
+//   Reduction: Given t, p, R, b as above.  Compute tR^(-1) (mod p) without division
+//     Precompute: p' = -1/p (mod R)
+//     Put t' = t (mod R), so t = t' + kR, k < p
+//     Calculate u = t'p' and y = t + up.
+//     Theorem: R | y.  Put x = y/R.  x = t/R (mod p). t/R (mod p) is either x or x - p.
+//       Proof: y = t + up = t' + kR + t'(pp').  pp' = -1 + jR, j <= R.
+//       y = t'(1+pp') + kR = (jt'+k)R. So R | y.  y = t (mod p) so y/R = t/R (mod p) but
+//       x = y/R = t/R (mod p). Finally, note  y < pR + pR so x = y/R < 2p.
+//       x = t/R (mod p) so p | (x - t/R)  and (x - t/R) < 2p, so (x - t/R) = 0 or p.
+// 
+//   Montgomery multiplication
+//     In base b, p = (p[m-1]...p[0]), x = [x[k-1]...x[0]), y = [y[n-1]...y[0]).  R=b^r.
+//     Given x = x'R (mod p), y = y'R (mod p), compute xy/R (mod p) = x'y'R (mod p)
+//       1. Set a = (a[n-1] ... a[0]) (base b)
+//       2. for (i = 0; i < n; i++)
+//       3.1   u[i] = (a[0] + x[i]y[0])p' (mod b)
+//       3.2   u[i] = (acc + x[i]y + u[i]p) / b
+//       4. if (a >= p)
+//       4.1   a -= p;
+//       5. return a
 
 // big_make_mont(a,m,r)= a R (mod m)
 bool big_make_mont(big_num& a, int r, big_num& m, big_num& mont_a) {
