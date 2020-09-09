@@ -1040,13 +1040,6 @@ bool basic_number_theory_test1() {
     return false;
   if (!big_is_prime(p))
     return false;
-  return true;
-
-  // if (!big_make_mont(a, int r, m, mont_a))
-  // if (!big_mont_params(m, int r, m_prime))
-  // if (!big_mont_reduce(big_num& a, int r, big_num& m, big_num& m_prime, big_num& mont_a))
-  // if (!big_mont_mult(big_num& aR, big_num& bR, big_num& m, uint64_t r, big_num& m_prime, big_num& abR))
-  // if (!bool big_mont_exp(big_num& b, big_num& e, int r, big_num& m, big_num& m_prime, big_num& out))
 
   return true;
 }
@@ -1074,12 +1067,16 @@ bool big_mont_test1() {
     printf("r: %d, %lld %lld = %lld\n", r, a.value_[0], 
         (1ULL<<13), mont_a.value_[0]);
   }
+  if (mont_a.value_[0] != 233)
+    return false;
   if (!big_make_mont(b, r, m, mont_b))
     return false;
   if (FLAGS_print_all) {
     printf("r: %d, %lld %lld = %lld\n", r, b.value_[0], 
         (1ULL<<13), mont_b.value_[0]);
   }
+  if (mont_b.value_[0] != 1736)
+    return false;
   
   // m_prime = -1/m (mod R)
   if (!big_mont_params(m, r, m_prime))
@@ -1087,6 +1084,8 @@ bool big_mont_test1() {
   if (FLAGS_print_all) {
     printf("r: %d, m: %lld, m_prime: %lld\n", r, m.value_[0], m_prime.value_[0]);
   }
+  if (m_prime.value_[0] != 387)
+    return false;
 
   if (!big_mont_reduce(mont_a, r, m, m_prime, c))
     return false;
@@ -1094,6 +1093,8 @@ bool big_mont_test1() {
     printf("r: %d, m: %lld, a: %lld, reduced: %lld\n", r, m.value_[0],
       mont_a.value_[0], c.value_[0]);
   }
+  if (c.value_[0] != a.value_[0])
+    return false;
 
   c.zero_num();
   // Compute mont_a = mont_a mont_b R^(-1) (mod p)
@@ -1103,14 +1104,13 @@ bool big_mont_test1() {
     printf("a: %lld, b: %lld, abR^(-1): %lld\n", mont_a.value_[0],
         mont_b.value_[0], c.value_[0]);
   }
-return true;
+  if (c.value_[0] != 1444)
+    return false;
 
 #if 0
   if (!big_mont_exp(b, e, r, m, m_prime, out))
     return false;
-  // Ditto for exponentiation
 #endif
-
   return true;
 }
 
