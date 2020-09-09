@@ -1052,21 +1052,65 @@ bool basic_number_theory_test1() {
 }
 
 bool big_mont_test1() {
-#if 0
-  int r;
-  uint64_t r1;
 
+  int r = 13;
+  big_num m(10, 2773ULL);
+  big_num a(10, 20ULL);
+  big_num b(10, 30ULL);
+  big_num m_prime(10);
+  big_num mont_a(10);
+  big_num mont_b(10);
+  big_num mont_c(10);
+  big_num c(10);
+
+  a.normalize();
+  b.normalize();
+  m.normalize();
+
+  // for R = 2^r
   if (!big_make_mont(a, r, m, mont_a))
     return false;
+  if (FLAGS_print_all) {
+    printf("r: %d, %lld %lld = %lld\n", r, a.value_[0], 
+        (1ULL<<13), mont_a.value_[0]);
+  }
+  if (!big_make_mont(b, r, m, mont_b))
+    return false;
+  if (FLAGS_print_all) {
+    printf("r: %d, %lld %lld = %lld\n", r, b.value_[0], 
+        (1ULL<<13), mont_b.value_[0]);
+  }
+  
+  // m_prime = -1/m (mod R)
   if (!big_mont_params(m, r, m_prime))
     return false;
-  if (!big_mont_reduce(a, r, m, m_prime, mont_a))
+  if (FLAGS_print_all) {
+    printf("r: %d, m: %lld, m_prime: %lld\n", r, m.value_[0], m_prime.value_[0]);
+  }
+
+  if (!big_mont_reduce(mont_a, r, m, m_prime, c))
     return false;
-  if (!big_mont_mult(aR, bR, m, r1, m_prime, abR))
+  if (FLAGS_print_all) {
+    printf("r: %d, m: %lld, a: %lld, reduced: %lld\n", r, m.value_[0],
+      mont_a.value_[0], c.value_[0]);
+  }
+
+  c.zero_num();
+  // Compute mont_a = mont_a mont_b R^(-1) (mod p)
+  if (!big_mont_mult(mont_a, mont_b, m, r, m_prime, c))
     return false;
+  if (FLAGS_print_all) {
+    printf("a: %lld, b: %lld, abR^(-1): %lld\n", mont_a.value_[0],
+        mont_b.value_[0], c.value_[0]);
+  }
+return true;
+
+#if 0
   if (!big_mont_exp(b, e, r, m, m_prime, out))
     return false;
+  // Ditto for exponentiation
 #endif
+
   return true;
 }
 
