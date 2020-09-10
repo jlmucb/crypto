@@ -28,3 +28,69 @@ symmetric_cipher::~symmetric_cipher() {
   secret_.clear();
   key_ = nullptr;
 }
+
+/*
+   encryption_scheme
+    enum { NONE = 0, AES= 0x0001, SHA2 = 0x0001, SYMMETRIC_PAD = 0x0001 };
+    bool initialized_;
+    scheme_message scheme_msg_;
+    string iv_;
+    int   mode_;
+    int   pad_;
+    bool  nonce_data_valid_;
+    byte* running_nonce_;
+    int block_size_;
+    int encrypted_bytes_output_;
+    int total_bytes_output_;
+    symmetric_cipher* enc_obj_;
+    void* hmac_obj_;
+    void* pad_obj_;
+    bool message_valid_;
+*/
+  
+int encryption_scheme::get_block_size() {
+  return 0;
+}
+
+int encryption_scheme::get_bytes_encrypted() {
+  return 0;
+}
+
+int encryption_scheme::get_total_bytes_output() {
+  return 0;
+}
+
+bool encryption_scheme::get_message_valid() {
+  return true;
+}
+
+encryption_scheme::encryption_scheme() {
+}
+
+encryption_scheme::~encryption_scheme() {
+}
+
+bool encryption_scheme::init(const char* mode, const char* pad,
+      const char* enc_alg, int size_enc_key, byte* enc_key,
+      const char* hmac_alg, int size_hmac_key, byte* hmac_key,
+      int size_nonce, byte* nonce) {
+  return true;
+}
+
+bool encryption_scheme::get_nonce_data(int size_in, byte* in) {
+  return true;
+}
+
+bool encryption_scheme::encrypt_block(int size_in, byte* in, byte* out) {
+  return true;
+}
+
+bool encryption_scheme::decrypt_block(int size_in, byte* in, byte* out) {
+  return true;
+}
+
+bool encryption_scheme::finalize(int size_final, byte* final_in, int* size_out, byte* out) {
+  return true;
+}
+
+

@@ -37,4 +37,48 @@ class symmetric_cipher {
   virtual void decrypt(int byte_size, byte* in, byte* out) = 0;
 };
 
+class encryption_scheme {
+public:
+  enum { NONE = 0, AES= 0x0001, SHA2 = 0x0001, SYMMETRIC_PAD = 0x0001 };
+  bool initialized_;
+
+  scheme_message scheme_msg_;
+  string iv_;
+  int   mode_;
+  int   pad_;
+
+  bool  nonce_data_valid_;
+  byte* running_nonce_;
+  int block_size_;
+  int encrypted_bytes_output_;
+  int total_bytes_output_;
+
+  symmetric_cipher* enc_obj_;
+  // should really do inheritance for alg.
+  void* hmac_obj_;
+  void* pad_obj_;
+
+  int get_block_size();
+  int get_bytes_encrypted();
+  int get_total_bytes_output();
+  bool get_message_valid();
+
+  encryption_scheme();
+  ~encryption_scheme();
+
+  bool init(const char* mode, const char* pad,
+            const char* enc_alg, int size_enc_key, byte* enc_key,
+            const char* hmac_alg, int size_hmac_key, byte* hmac_key,
+            int size_nonce, byte* nonce);
+
+  bool get_nonce_data(int size_in, byte* in);
+
+  bool encrypt_block(int size_in, byte* in, byte* out);
+  bool decrypt_block(int size_in, byte* in, byte* out);
+
+  bool finalize(int size_final, byte* final_in, int* size_out, byte* out);
+
+  bool message_valid_;
+};
+
 #endif
