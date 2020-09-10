@@ -96,9 +96,11 @@ message key_message {
 message scheme_message {
   optional string scheme_type                   = 1;
   optional string scheme_instance_identifier    = 2;
-  optional key_message encryption_key           = 3;
-  optional hmac_parameters_message parameters   = 4;
-  optional bytes public_nonce                   = 5;
+  optional string mode                          = 3;
+  optional string pad                           = 4;
+  optional key_message encryption_key           = 5;
+  optional hmac_parameters_message parameters   = 6;
+  optional bytes public_nonce                   = 7;
 };
 
 message crypto_signature_message {
