@@ -501,6 +501,36 @@ bool u64_array_bytes_test() {
   return true;
 }
 
+bool scheme_message_test() {
+
+return true;
+
+  string enc_key;
+  string hmac_key;
+  string nonce;
+  string not_before;
+  string not_after;
+
+  time_point t1, t2;
+
+  t1.time_now();
+  string s1, s2;
+  if (!t1.encode_time(&s1))
+    return false;
+  t2.add_interval_to_time(t1, 5 * 365 * 86400.0);
+  if (!t2.encode_time(&s2))
+    return false;
+
+  scheme_message* m = make_scheme("aes128-hmacsha256", "scheme-id",
+      "ctr", "sym-pad", "testing", not_before.c_str(), not_after.c_str(),
+      "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
+      hmac_key.size(),  hmac_key, 256, nonce);
+  if (m == nullptr)
+    return false;
+  print_scheme_message(*m);
+  return true;
+}
+
 TEST (algs, test_alg_names) {
   EXPECT_TRUE(test_alg_names());
 }
