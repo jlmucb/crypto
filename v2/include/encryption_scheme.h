@@ -45,6 +45,8 @@ public:
   int hmac_digest_size_;
   int hmac_block_size_;
 
+  bool message_valid_;
+
   aes enc_obj_;
   hmac_sha256 int_obj_;
 
@@ -71,19 +73,19 @@ public:
       const char* enc_key_name, const char* hmac_alg,
       int size_hmac_key,  string& hmac_key, int size_nonce,
       string& nonce);
-  void update_nonce();
+
+  void update_nonce(int size, byte* buf);
   bool get_nonce_data(int size_in, byte* in);
 
   bool encrypt_block(int size_in, byte* in, byte* out);
   bool decrypt_block(int size_in, byte* in, byte* out);
 
   bool finalize_encrypt(int size_final, byte* final_in, int* size_out, byte* out);
-  bool finalize_decrypt(int size_final, byte* final_in, int* size_out, byte* out);
+  bool finalize_decrypt(int size_final, byte* final_in,
+        int* size_out, byte* out, byte* computed_mac);
 
   bool encrypt_message(int size_in, byte* in, int size_out, byte* out);
   bool decrypt_message(int size_in, byte* in, int size_out, byte* out);
-
-  bool message_valid_;
 };
 
 #endif
