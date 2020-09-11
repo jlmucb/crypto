@@ -49,6 +49,10 @@ int encryption_scheme::get_block_size() {
   return block_size_;
 }
 
+int encryption_scheme::get_mac_size() {
+  return hmac_digest_size_;
+}
+
 int encryption_scheme::get_bytes_encrypted() {
   return encrypted_bytes_output_;
 }
@@ -209,3 +213,22 @@ bool encryption_scheme::finalize_decrypt(int size_final, byte* final_in,
   return true;
 }
 
+bool encryption_scheme::encrypt_message(int size_in, byte* in, int size_out, byte* out) {
+  if (!message_info(size_in, encryption_scheme::ENCRYPT))
+    return false;
+
+/*
+  bool encrypt_block(int size_in, byte* in, byte* out);
+  bool decrypt_block(int size_in, byte* in, byte* out);
+  bool finalize_encrypt(int size_final, byte* final_in, int* size_out, byte* out);
+  bool finalize_decrypt(int size_final, byte* final_in, int* size_out, byte* out);
+ */
+
+  return true;
+}
+
+bool encryption_scheme::decrypt_message(int size_in, byte* in, int size_out, byte* out) {
+  if (!message_info(size_in, encryption_scheme::DECRYPT))
+    return false;
+  return true;
+}

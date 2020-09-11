@@ -71,6 +71,7 @@ bool test_padding() {
 
 bool test_aes_sha256_ctr_test1() {
   encryption_scheme enc_scheme;
+  bool ret_value = true;
 
   string enc_key;
   string hmac_key;
@@ -102,36 +103,100 @@ bool test_aes_sha256_ctr_test1() {
         hmac_key.size(),  hmac_key, 256, nonce))
     return false;
 
-  int msg_size = 64;
-  if (!enc_scheme.message_info(msg_size, encryption_scheme::ENCRYPT))
-    return false;
+  const char* message = "Four score and severn years ago, out forefathers brought forth stuff";
+  int msg_encrypt_size = strlen(message) + 1;
+  int allocated = msg_encrypt_size + 2 * enc_scheme.get_block_size() + enc_scheme.get_mac_size();
+  int msg_decrypt_size;
+  int decrypted_size;
+  byte* plain = nullptr;
+  byte* cipher = nullptr;
+  byte* recovered = nullptr;
 
-/*
-  bool encrypt_block(int size_in, byte* in, byte* out);
-  bool decrypt_block(int size_in, byte* in, byte* out);
-  bool finalize_encrypt(int size_final, byte* final_in, int* size_out, byte* out);
-  bool finalize_decrypt(int size_final, byte* final_in, int* size_out, byte* out);
- */
+  plain = new byte[allocated];
+  if (plain == nullptr) {
+    ret_value = false;
+    goto done;
+  }
+  cipher = new byte[allocated];
+  if (cipher == nullptr) {
+    ret_value = false;
+    goto done;
+  }
+  recovered = new byte[allocated];
+  if (recovered == nullptr) {
+    ret_value = false;
+    goto done;
+  }
+  memcpy(plain, (byte*)message, msg_encrypt_size);
+  memset(cipher, 0, allocated);
+  memset(recovered, 0, allocated);
 
-  if (FLAGS_print_all) {
-    printf("encryption alg: ");
-    printf("encryption key: ");
-    printf("hmac alg      : ");
-    printf("hmac key      : ");
-    printf("nonce         : ");
-    printf("%d bytes encrypted\n", enc_scheme.get_bytes_encrypted());
-    printf("%d bytes output\n", enc_scheme.get_total_bytes_output());
-    printf("message       : ");
-    printf("encrypted     : ");
-    printf("decrypted     : ");
+  // encrypt
+  if (!enc_scheme.init("aes128-hmacsha256-ctr", "scheme-test",
+        "ctr", "sym-pad", "testing", s1.c_str(), s2.c_str(),
+        "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
+        hmac_key.size(),  hmac_key, 256, nonce)) {
+    ret_value = false;
+    goto done;
+  }
+  if (!enc_scheme.encrypt_message(msg_encrypt_size, plain, allocated, cipher)) {
+    ret_value = false;
+    goto done;
   }
 
-#if 0
-  if(!schema_enc.get_message_valid())
-    return false;
-#endif
+  msg_decrypt_size = enc_scheme.get_total_bytes_output();
+  if (FLAGS_print_all) {
+    printf("encryption alg: %s\n", "aes");
+    printf("encryption key: "); print_bytes((int)enc_key.size(), (byte*)enc_key.data());
+    printf("hmac alg      : %s\n", "hmac-sha256");
+    printf("hmac key      : "); print_bytes((int)hmac_key.size(), (byte*)hmac_key.data());
+    printf("nonce         : "); print_bytes((int)nonce.size(), (byte*)nonce.data());
+    printf("%d bytes encrypted\n", enc_scheme.get_bytes_encrypted());
+    printf("%d bytes output\n", enc_scheme.get_total_bytes_output());
+    printf("plain         : "); print_bytes(msg_encrypt_size, plain);
+    printf("cipher        : ");print_bytes(msg_decrypt_size, cipher);
+  }
+  if(!enc_scheme.get_message_valid()) {
+    ret_value = false;
+    goto done;
+  }
+  enc_scheme.clear();
 
-  return true;
+  // decrypt
+  if (!enc_scheme.init("aes128-hmacsha256-ctr", "scheme-test",
+        "ctr", "sym-pad", "testing", s1.c_str(), s2.c_str(),
+        "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
+        hmac_key.size(),  hmac_key, 256, nonce)) {
+    ret_value = false;
+    goto done;
+  }
+  if (!enc_scheme.decrypt_message(msg_decrypt_size, cipher, allocated, recovered)) {
+    ret_value = false;
+    goto done;
+  }
+  if(!enc_scheme.get_message_valid()) {
+    ret_value = false;
+    goto done;
+  }
+  decrypted_size = enc_scheme.get_total_bytes_output();
+  if (FLAGS_print_all) {
+    printf("%d bytes decrypted\n", enc_scheme.get_bytes_encrypted());
+    printf("%d bytes output\n", enc_scheme.get_total_bytes_output());
+    printf("decrypted     : ");
+  }
+  if (memcmp(plain, cipher, decrypted_size) != 0) {
+    ret_value = false;
+    goto done;
+  }
+
+done:
+  if (plain != nullptr)
+    delete []plain;
+  if (cipher != nullptr)
+    delete []cipher;
+  if (recovered != nullptr)
+    delete []recovered;
+  return ret_value;
 }
 
 bool test_aes_sha256_cbc_test1() {

@@ -51,6 +51,7 @@ public:
   bool get_message_valid();
   bool message_info(int msg_size, int operation);
   int get_block_size();
+  int get_mac_size();
   int get_bytes_encrypted();
   int get_total_bytes_output();
   int get_message_size();
@@ -78,6 +79,9 @@ public:
 
   bool finalize_encrypt(int size_final, byte* final_in, int* size_out, byte* out);
   bool finalize_decrypt(int size_final, byte* final_in, int* size_out, byte* out);
+
+  bool encrypt_message(int size_in, byte* in, int size_out, byte* out);
+  bool decrypt_message(int size_in, byte* in, int size_out, byte* out);
 
   bool message_valid_;
 };
