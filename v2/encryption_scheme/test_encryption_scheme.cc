@@ -70,6 +70,67 @@ bool test_padding() {
 }
 
 bool test_aes_sha256_ctr_test1() {
+  encryption_scheme enc_scheme;
+
+  string enc_key;
+  string hmac_key;
+  string nonce;
+  byte x[32];
+
+  for (int i = 0; i < 32; i++)
+    x[i] = i;
+  enc_key.assign((char*)x, 32);
+  for (int i = 0; i < 32; i++)
+    x[i] = i+32;
+  hmac_key.assign((char*)x, 32);
+  for (int i = 0; i < 32; i++)
+    x[i] = i+64;
+  nonce.assign((char*)x, 32);
+
+  time_point t1, t2;
+  t1.time_now();
+  string s1, s2;
+  if (!t1.encode_time(&s1))
+    return false;
+  t2.add_interval_to_time(t1, 5 * 365 * 86400.0);
+  if (!t2.encode_time(&s2))
+    return false;
+
+  if (!enc_scheme.init("aes128-hmacsha256-ctr", "scheme-test",
+        "ctr", "sym-pad", "testing", s1.c_str(), s2.c_str(),
+        "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
+        hmac_key.size(),  hmac_key, 256, nonce))
+    return false;
+
+  int msg_size = 64;
+  if (!enc_scheme.message_info(msg_size, encryption_scheme::ENCRYPT))
+    return false;
+
+/*
+  bool encrypt_block(int size_in, byte* in, byte* out);
+  bool decrypt_block(int size_in, byte* in, byte* out);
+  bool finalize_encrypt(int size_final, byte* final_in, int* size_out, byte* out);
+  bool finalize_decrypt(int size_final, byte* final_in, int* size_out, byte* out);
+ */
+
+  if (FLAGS_print_all) {
+    printf("encryption alg: ");
+    printf("encryption key: ");
+    printf("hmac alg      : ");
+    printf("hmac key      : ");
+    printf("nonce         : ");
+    printf("%d bytes encrypted\n", enc_scheme.get_bytes_encrypted());
+    printf("%d bytes output\n", enc_scheme.get_total_bytes_output());
+    printf("message       : ");
+    printf("encrypted     : ");
+    printf("decrypted     : ");
+  }
+
+#if 0
+  if(!schema_enc.get_message_valid())
+    return false;
+#endif
+
   return true;
 }
 
@@ -93,7 +154,10 @@ int main(int an, char** av) {
   an = 1;
   ::testing::InitGoogleTest(&an, av);
 
+  if (!init_crypto())
+    return 1;
   int result = RUN_ALL_TESTS();
+  close_crypto();
 
   printf("\n");
   return result;

@@ -23,6 +23,7 @@
 #include "big_num.h"
 #include "big_num_functions.h"
 
+
 void encryption_scheme::update_nonce() {
   if (mode_ == CTR) {
     big_unsigned_add_to(*counter_nonce_, big_one);
@@ -32,6 +33,16 @@ void encryption_scheme::update_nonce() {
   if (mode_ == CBC) {
     return;
   }
+}
+
+bool encryption_scheme::message_info(int msg_size, int operation) {
+  operation_ = operation;
+  total_message_size_ = msg_size;
+  return true;
+}
+
+int encryption_scheme::get_message_size() {
+  return total_message_size_;
 }
 
 int encryption_scheme::get_block_size() {
@@ -50,7 +61,7 @@ bool encryption_scheme::get_message_valid() {
   return message_valid_;
 }
 
-encryption_scheme::encryption_scheme() {
+void encryption_scheme::clear() {
   initialized_ = false;
   scheme_msg_ = nullptr;
   initial_nonce_.clear();
@@ -58,13 +69,21 @@ encryption_scheme::encryption_scheme() {
   pad_= encryption_scheme::NONE;
   nonce_data_valid_ = false;
   running_nonce_.clear();
-  counter_nonce_ = new big_num(10);
   counter_nonce_->zero_num();
   encrypted_bytes_output_ = 0;
+  total_message_size_ = 0;
+  operation_ = 0;
   total_bytes_output_ = 0;
   block_size_ = 0;
   hmac_block_size_ = 0;
   hmac_digest_size_ = 0;
+  operation_ = 0;
+  counter_nonce_->zero_num();
+}
+
+encryption_scheme::encryption_scheme() {
+  counter_nonce_ = new big_num(10);
+  clear();
 }
 
 encryption_scheme::~encryption_scheme() {
@@ -143,7 +162,7 @@ bool encryption_scheme::encryption_scheme::init(const char* alg, const char* id_
 bool encryption_scheme::get_nonce_data(int size, byte* out) {
   if (size < initial_nonce_.size())
     return false;
-  memcpy((out, byte*)initial_nonce_.data(), size);
+  memcpy(out, (byte*)initial_nonce_.data(), size);
   return true;
 }
 
