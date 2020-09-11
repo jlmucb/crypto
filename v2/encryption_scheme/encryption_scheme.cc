@@ -35,19 +35,19 @@ void encryption_scheme::update_nonce() {
 }
 
 int encryption_scheme::get_block_size() {
-  return 0;
+  return block_size_;
 }
 
 int encryption_scheme::get_bytes_encrypted() {
-  return 0;
+  return encrypted_bytes_output_;
 }
 
 int encryption_scheme::get_total_bytes_output() {
-  return 0;
+  return total_bytes_output_;
 }
 
 bool encryption_scheme::get_message_valid() {
-  return true;
+  return message_valid_;
 }
 
 encryption_scheme::encryption_scheme() {
@@ -140,7 +140,10 @@ bool encryption_scheme::encryption_scheme::init(const char* alg, const char* id_
   return true;
 }
 
-bool encryption_scheme::get_nonce_data(int size_in, byte* in) {
+bool encryption_scheme::get_nonce_data(int size, byte* out) {
+  if (size < initial_nonce_.size())
+    return false;
+  memcpy((out, byte*)initial_nonce_.data(), size);
   return true;
 }
 
