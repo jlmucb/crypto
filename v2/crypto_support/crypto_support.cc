@@ -910,6 +910,7 @@ scheme_message* make_scheme(const char* alg, const char* id_name,
 
   scheme_message* m= new(scheme_message);
   m->set_scheme_type(alg);
+  m->set_scheme_instance_identifier(id_name);
   m->set_mode(mode);
   m->set_pad(pad);
   m->set_notbefore(not_before);
@@ -951,13 +952,12 @@ void print_ecc_private_parameters_message(ecc_private_parameters_message& m) {
 
 void print_hmac_parameters_message(hmac_parameters_message& m) {
   if (m.has_algorithm())
-    printf("hmac algorithm: %s\n", m.algorithm());
+    printf("hmac algorithm: %s\n", m.algorithm().c_str());
   if (m.has_size())
     printf("hmac key size: %d\n", m.size());
   if (m.has_secret()) {
     printf("hmac secret: ");
     print_bytes((int)m.secret().size(), (byte*)m.secret().data());
-    printf("\n");
   }
 }
 
@@ -967,12 +967,10 @@ void print_key_message(key_message& m) {
   printf("%s key\n", m.family_type().c_str());
   if (m.has_algorithm_type())
     printf("  Algorithm: %s\n", m.algorithm_type().c_str());
-  if (m.has_algorithm_type())
-    printf("  Key name : %s\n", m.algorithm_type().c_str());
-  if (m.has_key_size())
-    printf("  Key size : %d bits\n", m.key_size());
   if (m.has_key_name())
     printf("  Key name : %s\n", m.key_name().c_str());
+  if (m.has_key_size())
+    printf("  Key size : %d bits\n", m.key_size());
   if (m.has_algorithm_type())
     printf("  Purpose  : %s\n", m.purpose().c_str());
   if (m.has_notbefore())

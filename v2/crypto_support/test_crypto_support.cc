@@ -502,10 +502,20 @@ bool u64_array_bytes_test() {
 }
 
 bool scheme_message_test() {
-
   string enc_key;
   string hmac_key;
   string nonce;
+  byte x[32];
+
+  for (int i = 0; i < 32; i++)
+    x[i] = i;
+  enc_key.assign((char*)x, 32);
+  for (int i = 0; i < 32; i++)
+    x[i] = i+32;
+  hmac_key.assign((char*)x, 32);
+  for (int i = 0; i < 32; i++)
+    x[i] = i+64;
+  nonce.assign((char*)x, 32);
 
   time_point t1, t2;
 
@@ -517,7 +527,7 @@ bool scheme_message_test() {
   if (!t2.encode_time(&s2))
     return false;
 
-  scheme_message* m = make_scheme("aes128-hmacsha256", "scheme-id",
+  scheme_message* m = make_scheme("aes128-hmacsha256-ctr", "scheme-id",
       "ctr", "sym-pad", "testing", s1.c_str(), s2.c_str(),
       "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
       hmac_key.size(),  hmac_key, 256, nonce);
