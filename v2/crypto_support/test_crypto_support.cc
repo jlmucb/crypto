@@ -503,13 +503,9 @@ bool u64_array_bytes_test() {
 
 bool scheme_message_test() {
 
-return true;
-
   string enc_key;
   string hmac_key;
   string nonce;
-  string not_before;
-  string not_after;
 
   time_point t1, t2;
 
@@ -522,7 +518,7 @@ return true;
     return false;
 
   scheme_message* m = make_scheme("aes128-hmacsha256", "scheme-id",
-      "ctr", "sym-pad", "testing", not_before.c_str(), not_after.c_str(),
+      "ctr", "sym-pad", "testing", s1.c_str(), s2.c_str(),
       "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
       hmac_key.size(),  hmac_key, 256, nonce);
   if (m == nullptr)
@@ -558,6 +554,7 @@ TEST (keyutilities, key_tests) {
   EXPECT_TRUE(symmetric_key_test());
   EXPECT_TRUE(rsa_key_test());
   EXPECT_TRUE(ecc_key_test());
+  EXPECT_TRUE(scheme_message_test());
 }
 TEST (u64stuff, u64_array_bytes_test) {
   EXPECT_TRUE(u64_array_bytes_test());

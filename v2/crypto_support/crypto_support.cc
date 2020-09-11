@@ -908,8 +908,24 @@ scheme_message* make_scheme(const char* alg, const char* id_name,
       int size_hmac_key,  string& hmac_key, int size_nonce,
       string& nonce) {
 
-  scheme_message* s= new(scheme_message);
-  return s;
+  scheme_message* m= new(scheme_message);
+  m->set_scheme_type(alg);
+  m->set_mode(mode);
+  m->set_pad(pad);
+  m->set_notbefore(not_before);
+  m->set_notafter(not_after);
+  m->set_scheme_instance_identifier(id_name);
+  key_message* km = make_symmetrickey(enc_alg, enc_key_name, size_enc_key,
+                               purpose, not_before, not_after, enc_key);
+  m->set_allocated_encryption_key(km);
+  hmac_parameters_message* hp =  new hmac_parameters_message;
+  hp->set_algorithm(hmac_alg);
+  hp->set_size(size_hmac_key);
+  hp->set_secret(hmac_key);
+  m->set_allocated_parameters(hp);
+  m->set_public_nonce(nonce.data(), nonce.size());
+
+  return m;
 }
 
 void print_binary_blob(binary_blob_message& m) {
@@ -934,6 +950,15 @@ void print_ecc_private_parameters_message(ecc_private_parameters_message& m) {
 }
 
 void print_hmac_parameters_message(hmac_parameters_message& m) {
+  if (m.has_algorithm())
+    printf("hmac algorithm: %s\n", m.algorithm());
+  if (m.has_size())
+    printf("hmac key size: %d\n", m.size());
+  if (m.has_secret()) {
+    printf("hmac secret: ");
+    print_bytes((int)m.secret().size(), (byte*)m.secret().data());
+    printf("\n");
+  }
 }
 
 void print_key_message(key_message& m) {
@@ -1048,6 +1073,36 @@ void print_key_message(key_message& m) {
 }
 
 void print_scheme_message(scheme_message& m) {
+  printf("Scheme: ");
+  if (m.has_scheme_type()) {
+    printf("scheme: %s\n", m.scheme_type().c_str());
+  }
+  if (m.has_scheme_instance_identifier()) {
+    printf("scheme identifier: %s\n", m.scheme_instance_identifier().c_str());
+  }
+  if (m.has_mode()) {
+    printf("mode: %s\n", m.mode().c_str());
+  }
+  if (m.has_pad()) {
+    printf("pad: %s\n", m.pad().c_str());
+  }
+  if (m.has_notbefore()) {
+    printf("not before: %s\n", m.notbefore().c_str());
+  }
+  if (m.has_notafter()) {
+    printf("not after: %s\n", m.notafter().c_str());
+  }
+  if (m.has_encryption_key()) {
+    key_message* km = m.mutable_encryption_key();
+    print_key_message(*km);
+  }
+  if (m.has_parameters()) {
+    hmac_parameters_message* hp = m.mutable_parameters();
+    print_hmac_parameters_message(*hp);
+  }
+  if (m.has_public_nonce()) {
+    printf("nonce: "); print_bytes((int)m.public_nonce().size(), (byte*)m.public_nonce().data());
+  }
 }
 
 void print_crypto_signature_message(crypto_signature_message& m) {
