@@ -244,6 +244,7 @@ bool encryption_scheme::finalize_encrypt(int size_final, byte* final_in,
     memset(final_block, 0, block_size_);
     n = 0;
   }
+
   final_block[n++] = 0x80;
   memset(&final_block[n], 0, block_size_ - n);
   if (mode_ == CTR) {
@@ -302,6 +303,7 @@ bool encryption_scheme::finalize_decrypt(int size_final, byte* final_in,
     memset(final_block, 0, block_size_);
     n = 0;
   }
+
   final_block[n++] = 0x80;
   memset(&final_block[n], 0, block_size_ - n);
   if (mode_ == CTR) {
@@ -388,6 +390,7 @@ bool encryption_scheme::decrypt_message(int size_in, byte* in, int size_out, byt
   memset(nonce, 0, 128);
   memcpy(nonce, cur_in, block_size_);
   cur_in += block_size;
+  bytes_left -= block_size;
   initial_nonce_.assign((char*)nonce, block_size_);
   running_nonce_.assign((char*)nonce, block_size_);
   if (mode_ == CTR) {
@@ -443,5 +446,6 @@ bool encryption_scheme::decrypt_message(int size_in, byte* in, int size_out, byt
   }
   if (i >= block_size_)
     message_valid_= false;
+
   return message_valid_;
 }
