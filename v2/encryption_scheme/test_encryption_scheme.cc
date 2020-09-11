@@ -24,6 +24,7 @@
 #include "hash.h"
 #include "sha256.h"
 #include "hmac_sha256.h"
+#include "encryption_scheme.h"
 
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");

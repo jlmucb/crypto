@@ -13,12 +13,11 @@
 // limitations under the License
 // File: aes.h
 
+#ifndef _CRYPTO_AES_H__
+#define _CRYPTO_AES_H__
 
 #include "crypto_support.h"
 #include "symmetric_cipher.h"
-
-#ifndef _CRYPTO_AES_H__
-#define _CRYPTO_AES_H__
 
 class aes : public symmetric_cipher {
  public:

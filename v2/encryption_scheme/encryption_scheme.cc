@@ -19,25 +19,16 @@
 #include "hash.h"
 #include "sha256.h"
 #include "hmac_sha256.h"
+#include "encryption_scheme.h"
 
-/*
-   encryption_scheme
-    enum { NONE = 0, AES= 0x0001, SHA2 = 0x0001, SYMMETRIC_PAD = 0x0001 };
-    bool initialized_;
-    scheme_message scheme_msg_;
-    string iv_;
-    int   mode_;
-    int   pad_;
-    bool  nonce_data_valid_;
-    byte* running_nonce_;
-    int block_size_;
-    int encrypted_bytes_output_;
-    int total_bytes_output_;
-    symmetric_cipher* enc_obj_;
-    void* hmac_obj_;
-    void* pad_obj_;
-    bool message_valid_;
-*/
+void encryption_scheme::update_nonce() {
+  if (mode_ == CTR) {
+    return;
+  }
+  if (mode_ == CBC) {
+    return;
+  }
+}
 
 int encryption_scheme::get_block_size() {
   return 0;
@@ -56,6 +47,20 @@ bool encryption_scheme::get_message_valid() {
 }
 
 encryption_scheme::encryption_scheme() {
+  initialized_ = false;
+  scheme_msg_ = nullptr;
+  initial_nonce_.clear();
+  mode_ = encryption_scheme::NONE;
+  pad_= encryption_scheme::NONE;
+  nonce_data_valid_ = false;
+  running_nonce_.clear();
+  counter_nonce_ = new big_num(10);
+  counter_nonce_->zero_num();
+  encrypted_bytes_output_ = 0;
+  total_bytes_output_ = 0;
+  block_size_ = 0;
+  hmac_block_size_ = 0;
+  hmac_digest_size_ = 0;
 }
 
 encryption_scheme::~encryption_scheme() {
@@ -70,12 +75,64 @@ bool encryption_scheme::get_encryption_scheme_message(string* s) {
 }
 
 bool encryption_scheme::encryption_scheme::init(const char* alg, const char* id_name,
-      const char* mode, const char* pad, const char* purpose,
-      const char* not_before, const char* not_after,
-      const char* enc_alg, int size_enc_key, string& enc_key,
-      const char* enc_key_name, const char* hmac_alg,
-      int size_hmac_key,  string& hmac_key,
-      int size_nonce, string& nonce) {
+        const char* mode, const char* pad, const char* purpose,
+        const char* not_before, const char* not_after, const char* enc_alg,
+        int size_enc_key, string& enc_key, const char* enc_key_name,
+        const char* hmac_alg, int size_hmac_key,  string& hmac_key,
+        int size_nonce, string& nonce) {
+
+  if (alg == nullptr)
+    return false;
+
+   // NONE = 0, AES= 0x01, SHA2 = 0x01, SYMMETRIC_PAD = 0x01, MODE = 0x01
+  if (pad == nullptr)
+    return false;
+  if (strcmp(pad, "sym-pad") == 0)
+    pad_ = SYMMETRIC_PAD;
+  else
+    return false;
+
+  if (mode == nullptr)
+    return false;
+  if (strcmp(mode, "sym-pad") == 0)
+    mode_ = SYMMETRIC_PAD;
+  else
+    return false;
+
+  if (strcmp(enc_alg, "aes") == 0) {
+    if (!enc_obj_.init(size_enc_key, (byte*)enc_key.data(), aes::BOTH))
+      return false;
+    block_size_ = aes::BLOCKBYTESIZE;
+  } else {
+    return false;
+  }
+
+  if (strcmp(hmac_alg, "hmac-sha256") == 0) {
+    if (!int_obj_.init(size_hmac_key, (byte*)hmac_key.data()))
+      return false;
+    hmac_digest_size_ = sha256::DIGESTBYTESIZE;
+    hmac_block_size_ = sha256::BLOCKBYTESIZE;
+  } else {
+    return false;
+  }
+
+  initial_nonce_.clear();
+  initial_nonce_.assign(nonce.data(), size_nonce);
+  running_nonce_.clear();
+  running_nonce_.assign(nonce.data(), size_nonce);
+  counter_nonce_->zero_num();
+  memcpy(counter_nonce_->value_ptr(), (byte*)nonce.data(), size_nonce);
+  counter_nonce_->normalize();
+  nonce_data_valid_ = true;
+
+  encrypted_bytes_output_ = 0;
+  total_bytes_output_ = 0;
+
+  scheme_msg_ = make_scheme(alg, id_name, mode, pad, purpose,
+      not_before, not_after, enc_alg, size_enc_key, enc_key,
+      enc_key_name, hmac_alg, size_hmac_key,  hmac_key, size_nonce, nonce);
+  if (scheme_msg_ == nullptr)
+    return false;
   return true;
 }
 
@@ -111,10 +168,10 @@ bool encryption_scheme::finalize_encrypt(int size_final, byte* final_in,
 
   // finalize and append hmac
   // void finalize();
-  if (*size_out < hmac_size_)
+  if (*size_out < hmac_digest_size_)
     return false;
-  // bool get_hmac(hmac_size_, out);
-  total_bytes_output_ += hmac_size_;
+  // bool get_hmac(hmac_digest_size_, out);
+  total_bytes_output_ += hmac_digest_size_;
 
   return true;
 }
