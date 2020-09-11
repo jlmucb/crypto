@@ -97,15 +97,17 @@ bool test_aes_sha256_ctr_test1() {
   if (!t2.encode_time(&s2))
     return false;
 
+  // encrypt init
   if (!enc_scheme.init("aes128-hmacsha256-ctr", "scheme-test",
         "ctr", "sym-pad", "testing", s1.c_str(), s2.c_str(),
         "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
-        hmac_key.size(),  hmac_key, 256, nonce))
+        hmac_key.size(),  hmac_key, 256, nonce)) {
     return false;
+  }
 
   const char* message = "Four score and severn years ago, out forefathers brought forth stuff";
   int msg_encrypt_size = strlen(message) + 1;
-  int allocated = msg_encrypt_size + 2 * enc_scheme.get_block_size() + enc_scheme.get_mac_size();
+  int allocated = msg_encrypt_size + 3 * enc_scheme.get_block_size() + enc_scheme.get_mac_size();
   int msg_decrypt_size;
   int decrypted_size;
   byte* plain = nullptr;
@@ -132,13 +134,6 @@ bool test_aes_sha256_ctr_test1() {
   memset(recovered, 0, allocated);
 
   // encrypt
-  if (!enc_scheme.init("aes128-hmacsha256-ctr", "scheme-test",
-        "ctr", "sym-pad", "testing", s1.c_str(), s2.c_str(),
-        "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
-        hmac_key.size(),  hmac_key, 256, nonce)) {
-    ret_value = false;
-    goto done;
-  }
   if (!enc_scheme.encrypt_message(msg_encrypt_size, plain, allocated, cipher)) {
     ret_value = false;
     goto done;
@@ -163,6 +158,7 @@ bool test_aes_sha256_ctr_test1() {
   enc_scheme.clear();
 
   // decrypt
+printf("about to init for decrypt\n");
   if (!enc_scheme.init("aes128-hmacsha256-ctr", "scheme-test",
         "ctr", "sym-pad", "testing", s1.c_str(), s2.c_str(),
         "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
@@ -170,6 +166,7 @@ bool test_aes_sha256_ctr_test1() {
     ret_value = false;
     goto done;
   }
+printf("about to decrypt_message\n");
   if (!enc_scheme.decrypt_message(msg_decrypt_size, cipher, allocated, recovered)) {
     ret_value = false;
     goto done;

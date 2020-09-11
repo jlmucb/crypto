@@ -104,7 +104,6 @@ void encryption_scheme::clear() {
   hmac_block_size_ = 0;
   hmac_digest_size_ = 0;
   operation_ = 0;
-  counter_nonce_->zero_num();
 }
 
 encryption_scheme::encryption_scheme() {
@@ -171,9 +170,13 @@ bool encryption_scheme::encryption_scheme::init(const char* alg, const char* id_
   initial_nonce_.clear();
   running_nonce_.clear();
 
+  int size_nonce_bytes = size_nonce / NBITSINBYTE;
+  if (size_nonce_bytes > block_size_)
+      size_nonce_bytes = block_size_;
+
   if (mode_ == CTR) {
     counter_nonce_->zero_num();
-    memcpy(counter_nonce_->value_ptr(), (byte*)nonce.data(), size_nonce);
+    memcpy(counter_nonce_->value_ptr(), (byte*)nonce.data(), size_nonce_bytes);
     counter_nonce_->normalize();
     fill_big_num_to_block(block_size_, *counter_nonce_, &initial_nonce_);
   } else {
@@ -219,6 +222,7 @@ bool encryption_scheme::finalize_encrypt(int size_final, byte* final_in,
       int* size_out, byte* out) {
   int bytes_written = 0;
 
+printf("finalze encrypt size_out: %d\n", *size_out);
   // pad final block
   byte final_block[128];
   int n = size_final;
@@ -234,6 +238,7 @@ bool encryption_scheme::finalize_encrypt(int size_final, byte* final_in,
       xor_into(final_block, (byte*)running_nonce_.data(), block_size_);
       enc_obj_.encrypt_block(final_block, out);
     } else {
+printf("fail 1\n");
       return false;
     }
     update_nonce(block_size_, out);
@@ -254,6 +259,7 @@ bool encryption_scheme::finalize_encrypt(int size_final, byte* final_in,
     xor_into(final_block, (byte*)running_nonce_.data(), block_size_);
     enc_obj_.encrypt_block(final_block, out);
   } else {
+printf("fail 2\n");
     return false;
   }
   update_nonce(block_size_, out);
@@ -265,27 +271,31 @@ bool encryption_scheme::finalize_encrypt(int size_final, byte* final_in,
 
   // finalize and append hmac
   int_obj_.finalize();
-  if (*size_out < hmac_digest_size_)
+  if (*size_out < hmac_digest_size_) {
+printf("fail 3\n");
     return false;
-  if (!int_obj_.get_hmac(hmac_digest_size_, out))
+  }
+  if (!int_obj_.get_hmac(hmac_digest_size_, out)) {
+printf("fail 4\n");
     return false;
+  }
 
   bytes_written += hmac_digest_size_;
+  *size_out = bytes_written;
+printf("bytes written %d\n", bytes_written);
   return true;
 }
 
 bool encryption_scheme::finalize_decrypt(int size_final, byte* final_in,
       int* size_out, byte* out, byte* computed_mac) {
   int bytes_written = 0;
+  size_final -= get_mac_size();
 
-  // pad final block
+printf("adjusted final in: %d\n", size_final);
+
   byte final_block[128];
-  int n = size_final;
-  if (size_final > 0) {
-    memcpy(final_block, final_in, n);
-  }
-
-  if (n >= block_size_) {
+  memset(final_block, 0 ,128);
+  if (size_final >= block_size_) {
     if (mode_ == CTR) {
       enc_obj_.encrypt_block((byte*)running_nonce_.data(), out);
       xor_into(out, final_block, block_size_);
@@ -293,6 +303,7 @@ bool encryption_scheme::finalize_decrypt(int size_final, byte* final_in,
       enc_obj_.decrypt_block(final_block, out);
       xor_into(out, (byte*)running_nonce_.data(), block_size_);
     } else {
+printf("fail 8\n");
       return false;
     }
     update_nonce(block_size_, out);
@@ -301,33 +312,16 @@ bool encryption_scheme::finalize_decrypt(int size_final, byte* final_in,
     *size_out -= block_size_;
     bytes_written += block_size_;
     memset(final_block, 0, block_size_);
-    n = 0;
   }
 
-  final_block[n++] = 0x80;
-  memset(&final_block[n], 0, block_size_ - n);
-  if (mode_ == CTR) {
-    enc_obj_.encrypt_block((byte*)running_nonce_.data(), out);
-    xor_into(out, final_block, block_size_);
-  } else if(mode_ == CBC) {
-    xor_into(final_block, (byte*)running_nonce_.data(), block_size_);
-    enc_obj_.encrypt_block(final_block, out);
-  } else {
-    return false;
-  }
-  update_nonce(block_size_, out);
-  int_obj_.add_to_inner_hash(block_size_, out);
-  out += block_size_;
-  *size_out -= block_size_;
-  bytes_written += block_size_;
-  memset(final_block, 0, block_size_);
-
-  // finalize and append hmac
+  // finalize and get hmac
   int_obj_.finalize();
-  if (*size_out < hmac_digest_size_)
+  if (!int_obj_.get_hmac(hmac_digest_size_, computed_mac)) {
+printf("fail 10\n");
     return false;
-  if (!int_obj_.get_hmac(hmac_digest_size_, computed_mac))
-    return false;
+  }
+printf("bytes written: %d\n", bytes_written);
+  *size_out = bytes_written;
   return true;
 }
 
@@ -335,6 +329,7 @@ bool encryption_scheme::encrypt_message(int size_in, byte* in, int size_out, byt
   if (!message_info(size_in, encryption_scheme::ENCRYPT))
     return false;
 
+printf("encrypt_message, size_in: %d, size_out: %d\n", size_in, size_out);
   byte* cur_in = in;
   byte* cur_out = out;
   int block_size = get_block_size();
@@ -365,12 +360,16 @@ bool encryption_scheme::encrypt_message(int size_in, byte* in, int size_out, byt
     cur_out += block_size;
     bytes_left -= block_size;
   }
+printf("encrypt loop ends\n");
 
   int additional_bytes = size_out - total_bytes_output_;
-  if (!finalize_encrypt(bytes_left, cur_in, &additional_bytes, cur_out))
+  if (!finalize_encrypt(bytes_left, cur_in, &additional_bytes, cur_out)) {
+printf("finalize encrypt fails\n");
     return false;
+  }
+printf("bytes so far: %d, additional: %d\n", total_bytes_output_, additional_bytes);
   total_bytes_output_ += additional_bytes;
-  encrypted_bytes_output_ = additional_bytes - get_mac_size();
+  encrypted_bytes_output_ += additional_bytes - get_mac_size();
 
   message_valid_ = true;
   return true;
@@ -383,6 +382,7 @@ bool encryption_scheme::decrypt_message(int size_in, byte* in, int size_out, byt
   byte* cur_in = in;
   byte* cur_out = out;
   int block_size = get_block_size();
+  int mac_size = get_mac_size();
   int bytes_left = size_in;
 
   // first, get nonce and transform it
@@ -399,7 +399,7 @@ bool encryption_scheme::decrypt_message(int size_in, byte* in, int size_out, byt
     counter_nonce_->normalize();
   }
 
-  while (bytes_left >= block_size) {
+  while (bytes_left > (block_size + mac_size)) {
     if (mode_ == CTR) {
         if (!encrypt_block(block_size, (byte*)running_nonce_.data(), cur_out))
           return false;
@@ -420,16 +420,24 @@ bool encryption_scheme::decrypt_message(int size_in, byte* in, int size_out, byt
     bytes_left -= block_size;
   }
 
+  if (bytes_left != (block_size + mac_size)) {
+printf("Wrong number of bytes left (%d)\n", bytes_left);
+    return false;
+}
+
   int additional_bytes = size_out - total_bytes_output_;
   byte computed_mac[128];
   memset(computed_mac, 0, 128);
-  if (!finalize_decrypt(bytes_left, cur_in, &additional_bytes, cur_out, computed_mac))
+  if (!finalize_decrypt(bytes_left, cur_in, &additional_bytes, cur_out, computed_mac)) {
     return false;
+  }
+printf("final out block: "); print_bytes(additional_bytes, cur_out);
   total_bytes_output_ += additional_bytes;
-  encrypted_bytes_output_ = additional_bytes;
+  encrypted_bytes_output_ += additional_bytes;
   cur_out += additional_bytes;
-
-  message_valid_ = (memcmp(cur_out, computed_mac, hmac_digest_size_) == 0);
+  bytes_left -= additional_bytes;
+printf("additional bytes: %d, left: %d\n", additional_bytes, bytes_left);
+printf("about to adjust message\n");
 
   // now fix message size
   byte* pb = cur_out - 1;
@@ -438,6 +446,8 @@ bool encryption_scheme::decrypt_message(int size_in, byte* in, int size_out, byt
     if (*pb != 0) {
       if (*pb != 0x80) {
         message_valid_= false;
+printf("padding error\n");
+        return false;
       }
       encrypted_bytes_output_ -= (i + 1);
       break;
@@ -447,5 +457,6 @@ bool encryption_scheme::decrypt_message(int size_in, byte* in, int size_out, byt
   if (i >= block_size_)
     message_valid_= false;
 
+  // message_valid_ = (memcmp(cur_out, computed_mac, hmac_digest_size_) == 0);
   return message_valid_;
 }
