@@ -24,6 +24,7 @@
 class encryption_scheme {
 public:
   enum { NONE = 0, AES= 0x01, SHA2 = 0x01, SYMMETRIC_PAD = 0x01, MODE = 0x01, CTR = 1, CBC = 2 };
+  enum { ENCRYPT=1, DECRYPT=2};
   bool initialized_;
 
   scheme_message* scheme_msg_;
@@ -35,6 +36,8 @@ public:
   string running_nonce_;
   big_num* counter_nonce_;
 
+  int operation_;
+  int total_message_size_;
   int encrypted_bytes_output_;
   int total_bytes_output_;
 
@@ -45,16 +48,20 @@ public:
   aes enc_obj_;
   hmac_sha256 int_obj_;
 
+  bool get_message_valid();
+  bool message_info(int msg_size, int operation);
   int get_block_size();
   int get_bytes_encrypted();
   int get_total_bytes_output();
-  bool get_message_valid();
+  int get_message_size();
 
+  void clear();
   encryption_scheme();
   ~encryption_scheme();
 
   bool recover_encryption_scheme_from_message(string& s);
   bool get_encryption_scheme_message(string* s);
+
 
   bool init(const char* alg, const char* id_name,
       const char* mode, const char* pad, const char* purpose,
