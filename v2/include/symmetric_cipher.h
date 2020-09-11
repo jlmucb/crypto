@@ -50,6 +50,7 @@ public:
   bool  nonce_data_valid_;
   byte* running_nonce_;
   int block_size_;
+  int hmac_size_;
   int encrypted_bytes_output_;
   int total_bytes_output_;
 
@@ -66,17 +67,24 @@ public:
   encryption_scheme();
   ~encryption_scheme();
 
-  bool init(const char* mode, const char* pad,
-            const char* enc_alg, int size_enc_key, byte* enc_key,
-            const char* hmac_alg, int size_hmac_key, byte* hmac_key,
-            int size_nonce, byte* nonce);
+  bool recover_encryption_scheme_from_message(string& s);
+  bool get_encryption_scheme_message(string* s);
+
+  bool init(const char* alg, const char* id_name,
+      const char* mode, const char* pad, const char* purpose,
+      const char* not_before, const char* not_after,
+      const char* enc_alg, int size_enc_key, string& enc_key,
+      const char* enc_key_name, const char* hmac_alg,
+      int size_hmac_key,  string& hmac_key, int size_nonce,
+      string& nonce);
 
   bool get_nonce_data(int size_in, byte* in);
 
   bool encrypt_block(int size_in, byte* in, byte* out);
   bool decrypt_block(int size_in, byte* in, byte* out);
 
-  bool finalize(int size_final, byte* final_in, int* size_out, byte* out);
+  bool finalize_encrypt(int size_final, byte* final_in, int* size_out, byte* out);
+  bool finalize_decrypt(int size_final, byte* final_in, int* size_out, byte* out);
 
   bool message_valid_;
 };

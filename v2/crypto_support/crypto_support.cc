@@ -900,12 +900,13 @@ key_message* make_rsakey(const char* alg, const char* name, int bit_size,
   return km;
 }
 
-scheme_message* make_scheme(const char* name, const char* id,
-  const char* encryption_alg, const char* encryption_key_name,
-  int encryption_key_bit_size, const char* encryption_key_purpose,
-  const char* encryption_key_not_before, const char* encryption_key_not_after,
-  string& encryption_key_secret, const char* hmac_alg, int hmac_key_size,
-  string& hmac_secret, string& nonce) {
+scheme_message* make_scheme(const char* alg, const char* id_name,
+      const char* mode, const char* pad, const char* purpose,
+      const char* not_before, const char* not_after,
+      const char* enc_alg, int size_enc_key, string& enc_key,
+      const char* enc_key_name, const char* hmac_alg,
+      int size_hmac_key,  string& hmac_key, int size_nonce,
+      string& nonce) {
 
   scheme_message* s= new(scheme_message);
   return s;
