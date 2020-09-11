@@ -20,9 +20,13 @@
 #include "sha256.h"
 #include "hmac_sha256.h"
 #include "encryption_scheme.h"
+#include "big_num.h"
+#include "big_num_functions.h"
 
 void encryption_scheme::update_nonce() {
   if (mode_ == CTR) {
+    big_unsigned_add_to(*counter_nonce_, big_one);
+    running_nonce_.assign((char*)counter_nonce_->value_ptr(), block_size_);
     return;
   }
   if (mode_ == CBC) {
@@ -141,10 +145,12 @@ bool encryption_scheme::get_nonce_data(int size_in, byte* in) {
 }
 
 bool encryption_scheme::encrypt_block(int size_in, byte* in, byte* out) {
+  update_nonce();
   return true;
 }
 
 bool encryption_scheme::decrypt_block(int size_in, byte* in, byte* out) {
+  update_nonce();
   return true;
 }
 
