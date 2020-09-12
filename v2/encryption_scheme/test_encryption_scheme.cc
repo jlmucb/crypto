@@ -72,7 +72,6 @@ bool test_padding() {
 }
 
 bool test_aes_sha256_ctr_test1() {
-  printf("\nctr test\n");
   encryption_scheme enc_scheme;
   bool ret_value = true;
 
@@ -105,6 +104,7 @@ bool test_aes_sha256_ctr_test1() {
         "ctr", "sym-pad", "testing", s1.c_str(), s2.c_str(),
         "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
         hmac_key.size(),  hmac_key, 256, nonce)) {
+printf("ctr init failed\n");  // REMOVE
     return false;
   }
 
@@ -138,6 +138,7 @@ bool test_aes_sha256_ctr_test1() {
 
   // encrypt
   if (!enc_scheme.encrypt_message(msg_encrypt_size, plain, allocated, cipher)) {
+printf("ctr encrypt_message failed\n");  // REMOVE
     ret_value = false;
     goto done;
   }
@@ -155,6 +156,7 @@ bool test_aes_sha256_ctr_test1() {
     printf("cipher        : ");print_bytes(msg_decrypt_size, cipher);
   }
   if(!enc_scheme.get_message_valid()) {
+printf("ctr ms valid failed\n");  // REMOVE
     ret_value = false;
     goto done;
   }
@@ -165,14 +167,17 @@ bool test_aes_sha256_ctr_test1() {
         "ctr", "sym-pad", "testing", s1.c_str(), s2.c_str(),
         "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
         hmac_key.size(),  hmac_key, 256, nonce)) {
+printf("ctr decrypt init failed\n");  // REMOVE
     ret_value = false;
     goto done;
   }
   if (!enc_scheme.decrypt_message(msg_decrypt_size, cipher, allocated, recovered)) {
+printf("ctr decrypt_message failed\n");  // REMOVE
     ret_value = false;
     goto done;
   }
   if(!enc_scheme.get_message_valid()) {
+printf("ctr decrypt msg valid failed\n");  // REMOVE
     ret_value = false;
     goto done;
   }
@@ -198,7 +203,6 @@ done:
 }
 
 bool test_aes_sha256_cbc_test1() {
-  printf("\ncbc test\n");
   encryption_scheme enc_scheme;
   bool ret_value = true;
 
@@ -324,11 +328,11 @@ done:
 }
 
 // CTR
-byte aes128ctr_test1_key[16] = {
+byte aes128ctr_test2_key[16] = {
   0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
   0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
 };
-byte test1_hmac_key[] = {
+byte test2_hmac_key[] = {
   0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
   0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
   0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -339,19 +343,19 @@ byte test1_hmac_key[] = {
   0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
 };
 
-byte aes128ctr_test1_counter[32] = {
+byte aes128ctr_test2_counter[32] = {
   0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7,
   0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff,
   0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7,
   0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xff, 0x00
 };
-byte aes128ctr_test1_plain[32] = {
+byte aes128ctr_test2_plain[32] = {
   0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
   0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a,
   0xae, 0x2d, 0x8a, 0x57, 0x1e, 0x03, 0xac, 0x9c,
   0x9e, 0xb7, 0x6f, 0xac, 0x45, 0xaf, 0x8e, 0x51
 };
-byte aes128ctr_test1_cipher[32] = {
+byte aes128ctr_test2_cipher[32] = {
   0x87, 0x4d, 0x61, 0x91, 0xb6, 0x20, 0xe3, 0x26,
   0x1b, 0xef, 0x68, 0x64, 0x99, 0x0d, 0xb6, 0xce,
   0x98, 0x06, 0xf6, 0x6b, 0x79, 0x70, 0xfd, 0xff,
@@ -359,19 +363,19 @@ byte aes128ctr_test1_cipher[32] = {
 };
 
 // CBC
-byte aes128cbc_test1_key[16] = {
+byte aes128cbc_test2_key[16] = {
   0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
   0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
 };
-byte aes128cbc_test1_iv[16] = {
+byte aes128cbc_test2_iv[16] = {
   0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
   0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
 };
-byte aes128cbc_test1_plain[16] = {
+byte aes128cbc_test2_plain[16] = {
   0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
   0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a
 };
-byte aes128cbc_test1_cipher[16] = {
+byte aes128cbc_test2_cipher[16] = {
   0x76, 0x49, 0xab, 0xac, 0x81, 0x19, 0xb2, 0x46,
   0xce, 0xe9, 0x8e, 0x9b, 0x12, 0xe9, 0x19, 0x7d
 };
@@ -387,7 +391,6 @@ bool test_aes_sha256_ctr_test2() {
 }
 
 bool test_aes_sha256_cbc_test2() {
-  printf("\ncbc test 3\n");
   encryption_scheme enc_scheme;
   bool ret_value = true;
 
