@@ -106,7 +106,7 @@ bool test_aes_sha256_ctr_test1() {
     return false;
   }
 
-  const char* message = "Four score and severn years ago, out forefathers brought forth stuff";
+  const char* message = "Four score and seven years ago, out forefathers brought forth stuff";
   int msg_encrypt_size = strlen(message) + 1;
   int allocated = msg_encrypt_size + 3 * enc_scheme.get_block_size() + enc_scheme.get_mac_size();
   int msg_decrypt_size;
@@ -232,7 +232,7 @@ bool test_aes_sha256_cbc_test1() {
     return false;
   }
 
-  const char* message = "Four score and severn years ago, out forefathers brought forth stuff";
+  const char* message = "Four score and seven years ago, out forefathers brought forth stuff";
   int msg_encrypt_size = strlen(message) + 1;
   int allocated = msg_encrypt_size + 3 * enc_scheme.get_block_size() + enc_scheme.get_mac_size();
   int msg_decrypt_size;
