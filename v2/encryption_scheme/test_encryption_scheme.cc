@@ -376,22 +376,35 @@ byte aes128cbc_test1_cipher[16] = {
   0xce, 0xe9, 0x8e, 0x9b, 0x12, 0xe9, 0x19, 0x7d
 };
 
+const char* aes_cbc_test4_key = "06a9214036b8a15b512e03d534120006";
+const char* aes_cbc_test4_iv =  "3dafba429d9eb430b422da802c9fac41";
+const char* aes_cbc_test4_plain = "Single block msg";
+const char* aes_cbc_test4_cipher = "e353779c1079aeb82708942dbe77181a";
+const char* aes_cbc_test4_hmac_key = "0102030405060708090a0b0c0d0e0f00";
+
 bool test_aes_sha256_ctr_test2() {
   return true;
 }
 
 bool test_aes_sha256_cbc_test2() {
-  printf("\ncbc test\n");
+  printf("\ncbc test 3\n");
   encryption_scheme enc_scheme;
   bool ret_value = true;
+
+  string enc_key_hex(aes_cbc_test4_key);
+  string hmac_key_hex(aes_cbc_test4_hmac_key);
+  string nonce_hex(aes_cbc_test4_iv);
 
   string enc_key;
   string hmac_key;
   string nonce;
 
-  enc_key.assign((char*)aes128cbc_test1_key, 16);
-  hmac_key.assign((char*)test1_hmac_key, 64);
-  nonce.assign((char*)aes128cbc_test1_iv, 16);
+  if (!hex_to_bytes(enc_key_hex, &enc_key))
+    return false;
+  if (!hex_to_bytes(hmac_key_hex, &hmac_key))
+    return false;
+  if (!hex_to_bytes(nonce_hex, &nonce))
+    return false;
 
   time_point t1, t2;
   t1.time_now();
@@ -410,7 +423,7 @@ bool test_aes_sha256_cbc_test2() {
     return false;
   }
 
-  int msg_encrypt_size = sizeof(aes128cbc_test1_plain);
+  int msg_encrypt_size = strlen(aes_cbc_test4_plain);
   int allocated = msg_encrypt_size + 3 * enc_scheme.get_block_size() + enc_scheme.get_mac_size();
   int msg_decrypt_size;
   int decrypted_size;
@@ -433,7 +446,7 @@ bool test_aes_sha256_cbc_test2() {
     ret_value = false;
     goto done;
   }
-  memcpy(plain, aes128cbc_test1_plain, msg_encrypt_size);
+  memcpy(plain, (byte*)aes_cbc_test4_plain, msg_encrypt_size);
   memset(cipher, 0, allocated);
   memset(recovered, 0, allocated);
 

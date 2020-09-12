@@ -227,6 +227,7 @@ bool encryption_scheme::finalize_encrypt(int size_final, byte* final_in,
   if (size_final > 0) {
     memcpy(final_block, final_in, n);
   }
+  byte tmp[64];
 
   if (n >= block_size_) {
     if (mode_ == CTR) {
@@ -234,7 +235,7 @@ bool encryption_scheme::finalize_encrypt(int size_final, byte* final_in,
       xor_into(out, final_block, block_size_);
     } else if(mode_ == CBC) {
       xor_into(final_block, (byte*)running_nonce_.data(), block_size_);
-      enc_obj_.encrypt_block(final_block, out);
+      enc_obj_.encrypt_block(tmp, out);
     } else {
       return false;
     }
@@ -291,7 +292,7 @@ bool encryption_scheme::finalize_decrypt(int size_final, byte* final_in,
       enc_obj_.encrypt_block((byte*)running_nonce_.data(), out);
       xor_into(out, final_in, block_size_);
     } else if(mode_ == CBC) {
-      enc_obj_.decrypt_block(final_block, out);
+      enc_obj_.decrypt_block(final_in, out);
       xor_into(out, (byte*)running_nonce_.data(), block_size_);
     } else {
       return false;
@@ -327,6 +328,7 @@ bool encryption_scheme::encrypt_message(int size_in, byte* in, int size_out, byt
   memcpy(cur_out, (byte*)initial_nonce_.data(), block_size);
   cur_out += block_size;
   total_bytes_output_ += block_size;
+  byte tmp[64];
 
   while (bytes_left >= block_size) {
     if (mode_ == CTR) {
@@ -335,9 +337,9 @@ bool encryption_scheme::encrypt_message(int size_in, byte* in, int size_out, byt
         xor_into(cur_out, cur_in, block_size);
         update_nonce(block_size, cur_out);
       } else if (mode_ == CBC) {
-        if (!encrypt_block(block_size, cur_in, cur_out))
+        xor_to_dst(cur_in, (byte*)running_nonce_.data(), tmp, block_size_);
+        if (!encrypt_block(block_size, tmp, cur_out))
           return false;
-        xor_into(cur_out, (byte*)running_nonce_.data(), block_size);
         update_nonce(block_size, cur_out);
       } else {
         return false;
