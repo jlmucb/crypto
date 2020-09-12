@@ -187,7 +187,6 @@ bool rsa::retrieve_parameters_from_key_message() {
     not_before_.assign(rsa_key_->notbefore().c_str());
   if (rsa_key_->has_notafter())
     not_after_.assign(rsa_key_->notafter().c_str());
-   
 
   int u64_len = 1 + bit_size_modulus_ / (sizeof(uint64_t) * NBITSINBYTE);
   int k = 0;
