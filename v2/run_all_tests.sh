@@ -5,4 +5,5 @@
 ~/cryptobin/test_big_num.exe
 ~/cryptobin/test_rsa.exe
 ~/cryptobin/test_ecc.exe
+~/cryptobin/test_encryption_scheme.exe
 

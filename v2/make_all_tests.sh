@@ -17,5 +17,8 @@ make -f test_rsa.mak
 cd ../ecc
 make clean -f test_ecc.mak
 make -f test_ecc.mak
+cd ../encryption_scheme
+make clean -f test_encryption_scheme.mak
+make -f test_encryption_scheme.mak
 cd ..
 
