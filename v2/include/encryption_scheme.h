@@ -25,6 +25,7 @@ class encryption_scheme {
 public:
   enum { NONE = 0, AES= 0x01, SHA2 = 0x01, SYMMETRIC_PAD = 0x01, MODE = 0x01, CTR = 1, CBC = 2 };
   enum { ENCRYPT=1, DECRYPT=2};
+  enum { MAXBLOCKSIZE=64};
   bool initialized_;
 
   scheme_message* scheme_msg_;
@@ -74,6 +75,10 @@ public:
       int size_hmac_key,  string& hmac_key, int size_nonce,
       string& nonce);
 
+  void ctr_encrypt_step(byte* in, byte* out);
+  void ctr_decrypt_step(byte* in, byte* out);
+  void cbc_encrypt_step(byte* in, byte* out);
+  void cbc_decrypt_step(byte* in, byte* out);
   void update_nonce(int size, byte* buf);
   bool get_nonce_data(int size_in, byte* in);
 

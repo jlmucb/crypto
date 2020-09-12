@@ -56,6 +56,38 @@ void encryption_scheme::update_nonce(int size, byte* buf) {
   }
 }
 
+void encryption_scheme::ctr_encrypt_step(byte* in, byte* out) {
+  enc_obj_.encrypt_block((byte*)running_nonce_.data(), out);
+  xor_into(out, in, block_size_);
+  int_obj_.add_to_inner_hash(block_size_, out);
+  update_nonce(block_size_, out);
+}
+
+void encryption_scheme::ctr_decrypt_step(byte* in, byte* out) {
+  int_obj_.add_to_inner_hash(block_size_, in);
+  enc_obj_.encrypt_block((byte*)running_nonce_.data(), out);
+  xor_into(out, in, block_size_);
+  update_nonce(block_size_, in);
+}
+
+void encryption_scheme::cbc_encrypt_step(byte* in, byte* out) {
+  byte tmp[MAXBLOCKSIZE];
+
+  xor_to_dst(in, (byte*)running_nonce_.data(), tmp, block_size_);
+  enc_obj_.encrypt_block(tmp, out);
+  int_obj_.add_to_inner_hash(block_size_, out);
+  update_nonce(block_size_, out);
+}
+
+void encryption_scheme::cbc_decrypt_step(byte* in, byte* out) {
+  byte tmp[MAXBLOCKSIZE];
+
+  int_obj_.add_to_inner_hash(block_size_, in);
+  xor_to_dst(in, (byte*)running_nonce_.data(), tmp, block_size_);
+  enc_obj_.decrypt_block(tmp, out);
+  update_nonce(block_size_, in);
+}
+
 bool encryption_scheme::message_info(int msg_size, int operation) {
   operation_ = operation;
   total_message_size_ = msg_size;
