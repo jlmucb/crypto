@@ -394,16 +394,20 @@ bool test_aes_sha256_cbc_test2() {
   string enc_key_hex(aes_cbc_test4_key);
   string hmac_key_hex(aes_cbc_test4_hmac_key);
   string nonce_hex(aes_cbc_test4_iv);
+  string cipher_hex(aes_cbc_test4_cipher);
 
   string enc_key;
   string hmac_key;
   string nonce;
+  string known_cipher_text;
 
   if (!hex_to_bytes(enc_key_hex, &enc_key))
     return false;
   if (!hex_to_bytes(hmac_key_hex, &hmac_key))
     return false;
   if (!hex_to_bytes(nonce_hex, &nonce))
+    return false;
+  if (!hex_to_bytes(cipher_hex, &known_cipher_text))
     return false;
 
   time_point t1, t2;
@@ -497,6 +501,11 @@ bool test_aes_sha256_cbc_test2() {
     printf("decrypted     : "); print_bytes(decrypted_size, recovered);
   }
   if (memcmp(plain, recovered, decrypted_size) != 0) {
+    ret_value = false;
+    goto done;
+  }
+  if (memcmp(&cipher[aes::BLOCKBYTESIZE], (byte*)known_cipher_text.data(),
+         aes::BLOCKBYTESIZE) != 0) {
     ret_value = false;
     goto done;
   }
