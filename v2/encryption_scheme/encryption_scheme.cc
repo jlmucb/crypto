@@ -253,8 +253,12 @@ printf("fail 1\n");
   final_block[n++] = 0x80;
   memset(&final_block[n], 0, block_size_ - n);
   if (mode_ == CTR) {
+printf("final pt  at encrypt: "); print_bytes(block_size_, final_block);
+printf("counter at encrypt  : "); print_bytes(block_size_, (byte*)running_nonce_.data());
     enc_obj_.encrypt_block((byte*)running_nonce_.data(), out);
+printf("encrypted counter : "); print_bytes(block_size_, out);
     xor_into(out, final_block, block_size_);
+printf("plain  text       : "); print_bytes(block_size_, out);
   } else if(mode_ == CBC) {
     xor_into(final_block, (byte*)running_nonce_.data(), block_size_);
     enc_obj_.encrypt_block(final_block, out);
@@ -296,9 +300,14 @@ printf("adjusted final in: %d\n", size_final);
   byte final_block[128];
   memset(final_block, 0 ,128);
   if (size_final >= block_size_) {
+    int_obj_.add_to_inner_hash(block_size_, final_in);
     if (mode_ == CTR) {
+printf("cipher at final       "); print_bytes(block_size_, final_in);
+printf("counter at final    : "); print_bytes(block_size_, (byte*)running_nonce_.data());
       enc_obj_.encrypt_block((byte*)running_nonce_.data(), out);
-      xor_into(out, final_block, block_size_);
+printf("encrypted counter : "); print_bytes(block_size_, out);
+      xor_into(out, final_in, block_size_);
+printf("plain  text       : "); print_bytes(block_size_, out);
     } else if(mode_ == CBC) {
       enc_obj_.decrypt_block(final_block, out);
       xor_into(out, (byte*)running_nonce_.data(), block_size_);
@@ -309,7 +318,7 @@ printf("fail 8\n");
     update_nonce(block_size_, out);
     int_obj_.add_to_inner_hash(block_size_, out);
     out += block_size_;
-    *size_out -= block_size_;
+    *size_out = block_size_;
     bytes_written += block_size_;
     memset(final_block, 0, block_size_);
   }
@@ -339,12 +348,18 @@ printf("encrypt_message, size_in: %d, size_out: %d\n", size_in, size_out);
   memcpy(cur_out, (byte*)initial_nonce_.data(), block_size);
   cur_out += block_size;
   total_bytes_output_ += block_size;
+printf("counter at encrypt: "); counter_nonce_->print(); printf("\n");
+printf("nonce at encrypt: "); print_bytes((int)running_nonce_.size(), (byte*)running_nonce_.data());
 
   while (bytes_left >= block_size) {
     if (mode_ == CTR) {
+printf("plaintext at encrypt: "); print_bytes(block_size, cur_in);
+printf("counter at encrypt  : "); print_bytes(block_size, (byte*)running_nonce_.data());
         if (!encrypt_block(block_size, (byte*)running_nonce_.data(), cur_out))
           return false;
+printf("encrypted counter : "); print_bytes(block_size, cur_out);
         xor_into(cur_out, cur_in, block_size);
+printf("cipher text       : "); print_bytes(block_size, cur_out);
         update_nonce(block_size, cur_out);
       } else if (mode_ == CBC) {
         if (!encrypt_block(block_size, cur_in, cur_out))
@@ -398,12 +413,18 @@ bool encryption_scheme::decrypt_message(int size_in, byte* in, int size_out, byt
     memcpy(counter_nonce_->value_ptr(), nonce, block_size_);
     counter_nonce_->normalize();
   }
+printf("counter at decrypt: "); counter_nonce_->print(); printf("\n");
+printf("nonce at decrypt: "); print_bytes((int)running_nonce_.size(), (byte*)running_nonce_.data());
 
   while (bytes_left > (block_size + mac_size)) {
     if (mode_ == CTR) {
+printf("ciphertext at decrypt: "); print_bytes(block_size, cur_in);
+printf("counter at decrypt   : "); print_bytes(block_size, (byte*)running_nonce_.data());
         if (!encrypt_block(block_size, (byte*)running_nonce_.data(), cur_out))
           return false;
+printf("encrypted counter : "); print_bytes(block_size, cur_out);
         xor_into(cur_out, cur_in, block_size);
+printf("plain  text       : "); print_bytes(block_size, cur_out);
         update_nonce(block_size, cur_out);
       } else if (mode_ == CBC) {
         if (!decrypt_block(block_size, cur_in, cur_out))
@@ -431,10 +452,12 @@ printf("Wrong number of bytes left (%d)\n", bytes_left);
   if (!finalize_decrypt(bytes_left, cur_in, &additional_bytes, cur_out, computed_mac)) {
     return false;
   }
+printf("final_in: ");print_bytes(bytes_left, cur_in);
 printf("final out block: "); print_bytes(additional_bytes, cur_out);
   total_bytes_output_ += additional_bytes;
   encrypted_bytes_output_ += additional_bytes;
   cur_out += additional_bytes;
+  cur_in += additional_bytes;
   bytes_left -= additional_bytes;
 printf("additional bytes: %d, left: %d\n", additional_bytes, bytes_left);
 printf("about to adjust message\n");
@@ -456,7 +479,12 @@ printf("padding error\n");
   }
   if (i >= block_size_)
     message_valid_= false;
+printf("encrypted_bytes_output_: %d\n", encrypted_bytes_output_);
+printf("computed mac   : "); print_bytes(hmac_digest_size_, computed_mac);
+printf("actual   mac   : "); print_bytes(hmac_digest_size_, cur_in);
+  message_valid_ = (memcmp(cur_in, computed_mac, hmac_digest_size_) == 0);
+if (message_valid_) printf("macs match\n");
+else printf("macs dont match\n");
 
-  // message_valid_ = (memcmp(cur_out, computed_mac, hmac_digest_size_) == 0);
   return message_valid_;
 }
