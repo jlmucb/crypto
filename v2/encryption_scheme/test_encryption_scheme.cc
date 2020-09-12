@@ -158,7 +158,6 @@ bool test_aes_sha256_ctr_test1() {
   enc_scheme.clear();
 
   // decrypt
-printf("about to init for decrypt\n");
   if (!enc_scheme.init("aes128-hmacsha256-ctr", "scheme-test",
         "ctr", "sym-pad", "testing", s1.c_str(), s2.c_str(),
         "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
@@ -166,24 +165,18 @@ printf("about to init for decrypt\n");
     ret_value = false;
     goto done;
   }
-printf("about to decrypt_message\n");
   if (!enc_scheme.decrypt_message(msg_decrypt_size, cipher, allocated, recovered)) {
-#if 0
     ret_value = false;
     goto done;
-#endif
   }
-#if 0
   if(!enc_scheme.get_message_valid()) {
     ret_value = false;
     goto done;
   }
-#endif
   decrypted_size = enc_scheme.get_bytes_encrypted();
-  printf("decrypted_size : %d\n", decrypted_size);
   if (FLAGS_print_all) {
-    //printf("%d bytes decrypted\n", decrypted_size);
-    //printf("%d bytes output\n", enc_scheme.get_total_bytes_output());
+    printf("%d bytes decrypted\n", decrypted_size);
+    printf("%d bytes output\n", enc_scheme.get_total_bytes_output());
     printf("decrypted     : "); print_bytes(decrypted_size, recovered);
   }
   if (memcmp(plain, recovered, decrypted_size) != 0) {
