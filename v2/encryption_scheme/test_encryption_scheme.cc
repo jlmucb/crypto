@@ -70,6 +70,7 @@ bool test_padding() {
 }
 
 bool test_aes_sha256_ctr_test1() {
+  printf("\nctr test\n");
   encryption_scheme enc_scheme;
   bool ret_value = true;
 
@@ -195,12 +196,131 @@ done:
 }
 
 bool test_aes_sha256_cbc_test1() {
+  printf("\ncbc test\n");
+  encryption_scheme enc_scheme;
+  bool ret_value = true;
+
+  string enc_key;
+  string hmac_key;
+  string nonce;
+  byte x[32];
+
+  for (int i = 0; i < 32; i++)
+    x[i] = i;
+  enc_key.assign((char*)x, 32);
+  for (int i = 0; i < 32; i++)
+    x[i] = i+32;
+  hmac_key.assign((char*)x, 32);
+  for (int i = 0; i < 32; i++)
+    x[i] = i+64;
+  nonce.assign((char*)x, 32);
+
+  time_point t1, t2;
+  t1.time_now();
+  string s1, s2;
+  if (!t1.encode_time(&s1))
+    return false;
+  t2.add_interval_to_time(t1, 5 * 365 * 86400.0);
+  if (!t2.encode_time(&s2))
+    return false;
+
+  // encrypt init
+  if (!enc_scheme.init("aes128-hmacsha256-cbc", "scheme-test",
+        "cbc", "sym-pad", "testing", s1.c_str(), s2.c_str(),
+        "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
+        hmac_key.size(),  hmac_key, 256, nonce)) {
+    return false;
+  }
+
+  const char* message = "Four score and severn years ago, out forefathers brought forth stuff";
+  int msg_encrypt_size = strlen(message) + 1;
+  int allocated = msg_encrypt_size + 3 * enc_scheme.get_block_size() + enc_scheme.get_mac_size();
+  int msg_decrypt_size;
+  int decrypted_size;
+  byte* plain = nullptr;
+  byte* cipher = nullptr;
+  byte* recovered = nullptr;
+
+  plain = new byte[allocated];
+  if (plain == nullptr) {
+    ret_value = false;
+    goto done;
+  }
+  cipher = new byte[allocated];
+  if (cipher == nullptr) {
+    ret_value = false;
+    goto done;
+  }
+  recovered = new byte[allocated];
+  if (recovered == nullptr) {
+    ret_value = false;
+    goto done;
+  }
+  memcpy(plain, (byte*)message, msg_encrypt_size);
+  memset(cipher, 0, allocated);
+  memset(recovered, 0, allocated);
+
+  // encrypt
+  if (!enc_scheme.encrypt_message(msg_encrypt_size, plain, allocated, cipher)) {
+    ret_value = false;
+    goto done;
+  }
+
+  msg_decrypt_size = enc_scheme.get_total_bytes_output();
+  if (FLAGS_print_all) {
+    printf("encryption alg: %s\n", "aes");
+    printf("encryption key: "); print_bytes((int)enc_key.size(), (byte*)enc_key.data());
+    printf("hmac alg      : %s\n", "hmac-sha256");
+    printf("hmac key      : "); print_bytes((int)hmac_key.size(), (byte*)hmac_key.data());
+    printf("nonce         : "); print_bytes((int)nonce.size(), (byte*)nonce.data());
+    printf("%d bytes encrypted\n", enc_scheme.get_bytes_encrypted());
+    printf("%d bytes output\n", enc_scheme.get_total_bytes_output());
+    printf("plain         : "); print_bytes(msg_encrypt_size, plain);
+    printf("cipher        : ");print_bytes(msg_decrypt_size, cipher);
+  }
+  if(!enc_scheme.get_message_valid()) {
+    ret_value = false;
+    goto done;
+  }
+  enc_scheme.clear();
+
+  // decrypt
+  if (!enc_scheme.init("aes128-hmacsha256-cbc", "scheme-test",
+        "cbc", "sym-pad", "testing", s1.c_str(), s2.c_str(),
+        "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
+        hmac_key.size(),  hmac_key, 256, nonce)) {
+    ret_value = false;
+    goto done;
+  }
+  if (!enc_scheme.decrypt_message(msg_decrypt_size, cipher, allocated, recovered)) {
+    ret_value = false;
+    goto done;
+  }
+  if(!enc_scheme.get_message_valid()) {
+    ret_value = false;
+    goto done;
+  }
+  decrypted_size = enc_scheme.get_bytes_encrypted();
+  if (FLAGS_print_all) {
+    printf("%d bytes decrypted\n", decrypted_size);
+    printf("%d bytes output\n", enc_scheme.get_total_bytes_output());
+    printf("decrypted     : "); print_bytes(decrypted_size, recovered);
+  }
+  if (memcmp(plain, recovered, decrypted_size) != 0) {
+    ret_value = false;
+    goto done;
+  }
+
+done:
+  if (plain != nullptr)
+    delete []plain;
+  if (cipher != nullptr)
+    delete []cipher;
+  if (recovered != nullptr)
+    delete []recovered;
   return true;
 }
 
-TEST (padding, simple) {
-  EXPECT_TRUE(test_aes_sha256_ctr_test1());
-}
 TEST (aes_sha256_ctr, test_aes_sha256_ctr) {
   EXPECT_TRUE(test_aes_sha256_ctr_test1());
 }

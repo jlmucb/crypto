@@ -143,7 +143,7 @@ bool encryption_scheme::encryption_scheme::init(const char* alg, const char* id_
     return false;
   if (strcmp(mode, "ctr") == 0) {
     mode_ = CTR;
-  } else if (strcmp(mode, "ctr") == 0) {
+  } else if (strcmp(mode, "cbc") == 0) {
     mode_ = CBC;
   } else {
     return false;
