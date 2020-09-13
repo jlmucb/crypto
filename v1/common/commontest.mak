@@ -10,16 +10,15 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License
-#    Project: New Cloudproxy Crypto
 #    File: common.mak
 
 
-SRC_DIR=$(HOME)/src/github.com/jlmucb/crypto
+SRC_DIR=$(HOME)/src/github.com/jlmucb/crypto/v1
 ifndef SRC_DIR
-SRC_DIR=$(HOME)/crypto
+SRC_DIR=$(HOME)/crypto/v1
 endif
 ifndef OBJ_DIR
-OBJ_DIR=$(HOME)/cryptoobj
+OBJ_DIR=$(HOME)/cryptoobj/v1
 endif
 ifndef EXE_DIR
 EXE_DIR=$(HOME)/cryptobin
@@ -40,19 +39,10 @@ INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE)
 
 CFLAGS=$(INCLUDE) -std=c++11 -O3 -g -Wall
 
-include ../OSName
-ifdef YOSEMITE
-	CC=clang++
-	LINK=clang++
-	AR=ar
-	LDFLAGS= -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
-else
-	CC=g++
-	LINK=g++
-	AR=ar
-	export LD_LIBRARY_PATH=/usr/local/lib
-	LDFLAGS= -L$(LD_LIBRARY_PATH) -lprotobuf -lgtest -lgflags -lpthread
-endif
+CC=clang++
+LINK=clang++
+AR=ar
+LDFLAGS= -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
 
 dobj=	$(O)/commontest.o $(O)/conversions.o $(O)/util.o
 
