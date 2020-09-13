@@ -39,8 +39,8 @@ INCLUDE= -I$(SRC_DIR)/include -I/usr/local/include -I$(SRC_DIR)/keys -I$(GOOGLE_
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
 CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
 
-CC=clang++
-LINK=clang++
+CC=g++
+LINK=g++
 LDFLAGS=  #$(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
 
 dobj=	$(O)/bignum.o $(O)/basic_arith.o $(O)/number_theory.o $(O)/arith64.o \

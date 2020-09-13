@@ -39,8 +39,8 @@ INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE)
 
 CFLAGS=$(INCLUDE) -std=c++11 -O3 -g -Wall
 
-CC=clang++
-LINK=clang++
+CC=g++
+LINK=g++
 AR=ar
 LDFLAGS= -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
 

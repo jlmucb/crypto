@@ -10,15 +10,14 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License
-#    Project: New Cloudproxy Crypto
 #    File: schooftest.mak
 
-SRC_DIR=$(HOME)/src/github.com/jlmucb/crypto
+SRC_DIR=$(HOME)/src/github.com/jlmucb/crypto/v1
 ifndef SRC_DIR
-SRC_DIR=$(HOME)/crypto
+SRC_DIR=$(HOME)/crypto/v1
 endif
 ifndef OBJ_DIR
-OBJ_DIR=$(HOME)/cryptoobj
+OBJ_DIR=$(HOME)/cryptoobj/v1
 endif
 ifndef EXE_DIR
 EXE_DIR=$(HOME)/cryptobin
@@ -40,19 +39,11 @@ INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(SRC_DIR)/keys -I/usr/local/include -I$(
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
 CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
 
-include ../OSName
-ifdef YOSEMITE
-	CC=clang++
-	LINK=clang++
-	AR=ar
-	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
-else
-	CC=g++
-	LINK=g++
-	AR=ar
-	export LD_LIBRARY_PATH=/usr/local/lib
-	LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
-endif
+CC=g++
+LINK=g++
+AR=ar
+export LD_LIBRARY_PATH=/usr/local/lib
+LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=	$(O)/polynomial.o $(O)/rational.o $(O)/schooftest.o $(O)/util.o \
 	$(O)/bignum.o $(O)/globals.o $(O)/basic_arith.o $(O)/number_theory.o $(O)/arith64.o \

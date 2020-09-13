@@ -10,15 +10,14 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License
-#    Project: New Cloudproxy Crypto
 #    File: pwutil.mak
 
 
 ifndef SRC_DIR
-SRC_DIR=$(HOME)/crypto
+SRC_DIR=$(HOME)/crypto/v1
 endif
 ifndef OBJ_DIR
-OBJ_DIR=$(HOME)/cryptoobj
+OBJ_DIR=$(HOME)/cryptoobj/v1
 endif
 ifndef EXE_DIR
 EXE_DIR=$(HOME)/cryptobin
@@ -39,25 +38,14 @@ INCLUDE= -I$(SRC_DIR)/include -I$(SRC_DIR)/keys -I$(S) -I/usr/local/include -I$(
 
 CRYPTOLIB= $(OBJ_DIR)/jlmcryptolib.a
 
-include ../OSName
-ifdef YOSEMITE
-	CC=clang++
-	LINK=clang++
-	PROTO=protoc
-	AR=ar
-	CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
-	CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
-	LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
-else
-	CC=g++
-	LINK=g++
-	PROTO=protoc
-	AR=ar
-	export LD_LIBRARY_PATH=/usr/local/lib
-	CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
-	CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
-	LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
-endif
+CC=g++
+LINK=g++
+PROTO=protoc
+AR=ar
+export LD_LIBRARY_PATH=/usr/local/lib
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
+LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=	$(O)/pwutil.o $(O)/pwutil.pb.o $(O)/tokenizer.o
 

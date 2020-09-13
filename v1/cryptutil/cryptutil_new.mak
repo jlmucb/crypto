@@ -10,15 +10,14 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License
-#    Project: New Cloudproxy Crypto
 #    File: cryptutil.mak
 
-SRC_DIR=$(HOME)/crypto
+SRC_DIR=$(HOME)/crypto/v1
 ifndef SRC_DIR
-SRC_DIR=$(HOME)/crypto
+SRC_DIR=$(HOME)/crypto/v1
 endif
 ifndef OBJ_DIR
-OBJ_DIR=$(HOME)/cryptoobj
+OBJ_DIR=$(HOME)/cryptoobj/v1
 endif
 ifndef EXE_DIR
 EXE_DIR=$(HOME)/cryptobin
@@ -50,18 +49,10 @@ lobj=   $(LO)/bignum.o $(LO)/basic_arith.o $(LO)/number_theory.o $(LO)/arith64.o
         $(LO)/aesgcm.o $(LO)/aesctrhmac256sympad.o $(LO)/pkcs.o $(LO)/pbkdf2.o \
         $(LO)/ghash.o $(LO)/simonspeck.o $(LO)/rc4.o $(LO)/tea.o
 
-include ../OSName
-ifdef YOSEMITE
-	CC=clang++
-	LINK=clang++
-	LDFLAGS= -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
-else
-	CC=g++
-	LINK=g++
-	export LD_LIBRARY_PATH=/usr/local/lib
-	LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
-endif
-
+CC=g++
+LINK=g++
+export LD_LIBRARY_PATH=/usr/local/lib
+LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=	$(O)/cryptutil.o 
 

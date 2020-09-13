@@ -39,8 +39,8 @@ INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE) -I
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
 CFLAGS1=$(INCLUDE) -O3 -g -Wall -std=c++11
 
-CC=clang++
-LINK=clang++
+CC=g++
+LINK=g++
 LDFLAGS= $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
 
 CRYPTOLIB= $(OBJ_DIR)/jlmcryptolib.a
