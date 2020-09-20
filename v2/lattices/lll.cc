@@ -1,4 +1,5 @@
-// Copyright 2014 John Manferdelli, All Rights Reserved.
+//
+// Copyright 2020 John Manferdelli, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -10,19 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// File: hash.h
+// File: hash.cc
 
 #include "crypto_support.h"
+#include "lattice.h"
 
-#ifndef _CRYPTO_HASH_H__
-#define _CRYPTO_HASH_H__
+bool gso(int n, real_vector* b, real_vector* b_norm, double* u) {
+  return true;
+}
 
-class crypto_hash {
- public:
-  string hash_name_;
-  bool finalized_;
-
-  crypto_hash();
-  virtual ~crypto_hash();
-};
-#endif

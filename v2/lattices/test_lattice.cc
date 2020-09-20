@@ -10,19 +10,41 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// File: hash.h
+// File: test_lattice.cc
 
+#include <gtest/gtest.h>
+#include <gflags/gflags.h>
+#include <stdio.h>
 #include "crypto_support.h"
+#include "support.pb.h"
+#include "lattice.h"
 
-#ifndef _CRYPTO_HASH_H__
-#define _CRYPTO_HASH_H__
 
-class crypto_hash {
- public:
-  string hash_name_;
-  bool finalized_;
+DEFINE_bool(print_all, false, "Print intermediate test computations");
 
-  crypto_hash();
-  virtual ~crypto_hash();
-};
-#endif
+// lll tests
+
+bool test_lll() {
+  return true;
+}
+
+TEST (lll, test_lll) {
+  EXPECT_TRUE(test_lll());
+}
+
+int main(int an, char** av) {
+  gflags::ParseCommandLineFlags(&an, &av, true);
+  an = 1;
+  ::testing::InitGoogleTest(&an, av);
+
+  if (!init_crypto()) {
+    printf("init_crypto failed\n");
+    return 1;
+  }
+
+  int result = RUN_ALL_TESTS();
+
+  close_crypto();
+  printf("\n");
+  return result;
+}

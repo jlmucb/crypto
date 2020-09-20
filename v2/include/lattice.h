@@ -14,15 +14,12 @@
 
 #include "crypto_support.h"
 
-#ifndef _CRYPTO_HASH_H__
-#define _CRYPTO_HASH_H__
+#ifndef _CRYPTO_LATTICE._H__
+#define _CRYPTO_LATTICE._H__
 
-class crypto_hash {
- public:
-  string hash_name_;
-  bool finalized_;
+#include <vector>
+using std::vector;
 
-  crypto_hash();
-  virtual ~crypto_hash();
-};
+typedef vector<double> real_vector;
+
 #endif
