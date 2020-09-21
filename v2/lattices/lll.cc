@@ -109,11 +109,108 @@ bool gso(int n, real_vector* b, real_vector* b_norm, double* u) {
   return true;
 }
 
+const int RUNAWAY = 1000000;
+
+int64_t closest_int(double x) {
+  uint64_t a = (uint64_t) x;
+  if (fabs(x - (double)a) <= 0.5)
+      return a;
+  return a + 1ULL;
+}
+
 // args are input and output
 bool size_reduce(int n, real_vector* b, real_vector* b_norm, double* u) {
+  real_vector v_t;
+  double t;
+  int64_t i_u;
+
+  if (!vector_alloc(n, &v_t))
+      return false;
+
+  if (!gso(n, b, b_norm, u)) 
+      return false;
+
+  for (int i = 1; i < n; i++) {
+    for (int j = (i - 1); j >= 0; j--) {
+      vector_zero(n, &v_t);
+      i_u = closest_int(u[matrix_index(n, n, i, j)]);
+      if (!vector_scalar_mult(n, (const double) i_u,  b[j], &v_t))
+        return false;
+      if (!vector_sub(n, b[i], b[j], &b[i]))
+        return false;
+      for (int k = 0; k < j; k++) {
+        u[matrix_index(n, n, i, j)] -= ((double) i_u) * u[matrix_index(n, n, j, k)];
+      }
+    }
+  }
+
   return true;
 }
 
-bool lll(int n, real_vector* b) {
+bool lovacz_condition(double delta, const double c,
+                      const double B1, const double B2) {
+  if (((delta - c*c) * B1) <= B2)
+    return true;
+  else
+    return false;
+}
+
+bool vector_swap(int n, real_vector* b1, real_vector* b2) {
   return true;
+}
+
+bool lll(const double delta, int n, real_vector* b) {
+  double* B = new double[n];
+  if (B == nullptr)
+    return false;
+  real_vector* b_norm = new real_vector[n];
+  if (b_norm == nullptr)
+    return false;
+  double* u = new double[n * n];
+  if (u == nullptr)
+    return false;
+  bool ret = false;
+  matrix_zero(n, n, u);
+  for (int i = 0; i < n; i++) {
+    vector_alloc(n, b_norm);
+    B[i] = 0.0;
+  }
+
+  bool restart;
+  for (int i = 0; i < RUNAWAY; i++) {
+    if (!gso(n, b, b_norm, u)) {
+      goto done;
+    }
+    if (!size_reduce(n, b, b_norm, u)) {
+      goto done;
+    }
+    for (int j = 0; j < n; j++) {
+      if(!vector_dot_product(n, b_norm[j], b_norm[j], &B[j])) {
+        goto done;
+      }
+    }
+    // check Lovacz condition
+    for (int j = 0; j < (n - 1); j++) {
+      if (!lovacz_condition(delta, u[matrix_index(n, n, i + 1, i)],
+                      B[j], B[j+1])) {
+        vector_swap(n, &b[j], &b[j + 1]);
+        restart = true;
+        break;
+      }
+      restart = false;
+    }
+    if (restart)
+      continue;
+    ret = true;
+    break;
+  }
+
+done:
+  if (B != nullptr)
+    delete []B;
+  if (b_norm != nullptr)
+    delete []b_norm;
+  if (u != nullptr)
+    delete []u;
+  return ret;
 }

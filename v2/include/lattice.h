@@ -36,6 +36,6 @@ bool matrix_zero(int n, int m, double* u);
 
 bool gso(int n, real_vector* b, real_vector* b_norm, double* u);
 bool size_reduce(int n, real_vector* b, real_vector* b_norm, double* u);
-bool lll(int n, real_vector* b);
+bool lll(const double delta, int n, real_vector* b);
 
 #endif
