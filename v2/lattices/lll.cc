@@ -1,4 +1,3 @@
-//
 // Copyright 2020 John Manferdelli, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +15,21 @@
 #include "crypto_support.h"
 #include "lattice.h"
 
+
+void print_vector(real_vector& v) {
+  real_vector::iterator it;
+
+  it = v.begin();
+  printf("(");
+  while (1) {
+    printf("%011.4lf ", *it);
+    if (it == v.end()) 
+      break;
+    it++;
+    printf(", ");
+  }
+  printf(")");
+}
 
 
 bool vector_alloc(int n, real_vector* v) {

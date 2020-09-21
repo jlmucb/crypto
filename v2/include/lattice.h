@@ -26,6 +26,7 @@ inline int matrix_index(int n_rows, int n_cols, int i, int j) {
   return n_cols * i + j;
 }
 
+void print_vector(real_vector& v);
 bool vector_alloc(int n, real_vector* v);
 bool vector_zero(int n, real_vector* v);
 bool vector_add(int n, real_vector& v1,  real_vector& v2, real_vector* v);
@@ -33,6 +34,7 @@ bool vector_sub(int n, real_vector& v1,  real_vector& v2, real_vector* v);
 bool vector_scalar_mult(int n, const double d,  real_vector& v1, real_vector* v);
 bool vector_dot_product(int n, real_vector& v1, real_vector& v2, double* dp);
 bool matrix_zero(int n, int m, double* u);
+int64_t closest_int(double x);
 
 bool gso(int n, real_vector* b, real_vector* b_norm, double* u);
 bool size_reduce(int n, real_vector* b, real_vector* b_norm, double* u);

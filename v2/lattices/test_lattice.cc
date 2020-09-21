@@ -23,8 +23,46 @@
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
 // lll tests
-
 bool test_lll() {
+  int n = 3;
+  real_vector b[3];
+
+  for (int i = 0; i < n; i++)
+    vector_alloc(n, &b[i]); 
+
+  (b[0])[0] = 2.0;
+  (b[0])[1] = 3.0;
+  (b[0])[2] = 14.0;
+  (b[1])[0] = 0.0;
+  (b[1])[1] = 7.0;
+  (b[1])[2] = 11.0;
+  (b[2])[0] = 0.0;
+  (b[2])[1] = 0.0;
+  (b[2])[2] = 23.0;
+
+  // answer is (-2,4,-3), (-4,1,6), (4,6,5)
+
+  if (FLAGS_print_all) {
+    printf("Original vectors: \n");
+    for (int i = 0; i < n; i++) {
+      printf("\tb[%d]: ", i);
+      print_vector(b[i]);
+      printf("\n");
+    }
+  }
+
+  if (!lll(.75, 3, b))
+    return false;
+
+  if (FLAGS_print_all) {
+    printf("Reduced vectors: \n");
+    for (int i = 0; i < n; i++) {
+      printf("\tb[%d]: ", i);
+      print_vector(b[i]);
+      printf("\n");
+    }
+  }
+
   return true;
 }
 
