@@ -45,6 +45,7 @@ AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=	$(O)/test_lattice.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o $(O)/lll.o \
+	$(O)/lwe.o $(O)/ntru.o
 
 all:	test_lattice.exe
 clean:
@@ -79,3 +80,11 @@ $(O)/crypto_names.o: $(S_SUPPORT)/crypto_names.cc
 $(O)/lll.o: $(S)/lll.cc
 	@echo "compiling lll.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/lll.o $(S)/lll.cc
+
+$(O)/lwe.o: $(S)/lwe.cc
+	@echo "compiling lwe.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/lwe.o $(S)/lwe.cc
+
+$(O)/ntru.o: $(S)/ntru.cc
+	@echo "compiling ntru.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/ntru.o $(S)/ntru.cc

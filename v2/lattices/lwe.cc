@@ -15,16 +15,16 @@
 #include "crypto_support.h"
 #include "lattice.h"
 
+// m, n, q, m >=n,  chi is error dist, s.  M= {0,1}^l
+// C = Zq^n Zq^l
+// S in Zq^(m x l), A in Zq^(m x n), E in Zq^(m x l).
+// E is chosen from chi.
+// P = AS+E
+// Encrypt:
+//    v in {0,1}^l, a in {0,1}^m (random)
+//    (u=A^Ta, P^Ta+close(q/2)v)
+//  Decrypt
+//    D = close(close(q/2)^(-1)) (c - S^Tu) mod 2
 class lwe {
 public:
-  // m, n, q, m >=n,  chi is error dist, s.  M= {0,1}^l
-  // C = Zq^n Zq^l
-  // S in Zq^(m x l), A in Zq^(m x n), E in Zq^(m x l).
-  // E is chosen from chi.
-  // P = AS+E
-  // Encrypt:
-  //    v in {0,1}^l, a in {0,1}^m (random)
-  //    (u=A^Ta, P^Ta+close(q/2)v)
-  //  Decrypt
-  //    D = close(close(q/2)^(-1)) (c - S^Tu) mod 2
 };
