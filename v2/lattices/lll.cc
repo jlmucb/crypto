@@ -136,10 +136,16 @@ bool gso(int n, real_vector* b, real_vector* b_norm, double* u) {
 const int RUNAWAY = 1000000;
 
 int64_t closest_int(double x) {
-  uint64_t a = (uint64_t) x;
-  if (fabs(x - (double)a) <= 0.5)
+  int64_t a = (int64_t) x;
+  if (x >= 0) {
+    if (fabs(x - (double)a) <= 0.5)
+        return a;
+    return a + 1ULL;
+  } else {
+    if (fabs(x - (double)a) <= 0.5)
       return a;
-  return a + 1ULL;
+    return a - 1ULL;
+  }
 }
 
 // args are input and output
@@ -160,7 +166,7 @@ bool size_reduce(int n, real_vector* b, real_vector* b_norm, double* u) {
       i_u = closest_int(u[matrix_index(n, n, i, j)]);
       if (!vector_scalar_mult(n, (const double) i_u,  b[j], &v_t))
         return false;
-      if (!vector_sub(n, b[i], b[j], &b[i]))
+      if (!vector_sub(n, b[i], v_t, &b[i]))
         return false;
       for (int k = 0; k <= j; k++) {
         u[matrix_index(n, n, i, k)] -= ((double) i_u) * u[matrix_index(n, n, j, k)];
@@ -173,7 +179,6 @@ bool size_reduce(int n, real_vector* b, real_vector* b_norm, double* u) {
 
 bool lovacz_condition(double delta, const double c,
                       const double B1, const double B2) {
-printf("LC %lf  %lf %lf (%lf, %lf)\n", c, B1, B2, (delta - c*c) * B1, B2);
   if (((delta - c*c) * B1) <= B2)
     return true;
   else
@@ -182,10 +187,6 @@ printf("LC %lf  %lf %lf (%lf, %lf)\n", c, B1, B2, (delta - c*c) * B1, B2);
 
 bool vector_swap(int n, real_vector* b1, real_vector* b2) {
   double t;
-
-printf("swap ");
-print_vector(*b1);print_vector(*b2);
-printf("\n");
 
   for (int i = 0; i < n; i++) {
     t = (*b1)[i];
@@ -217,13 +218,9 @@ bool lll(const double delta, int n, real_vector* b) {
     if (!gso(n, b, b_norm, u)) {
       goto done;
     }
-printf("before size reduce u: \n");
-print_matrix(n, n, u);
    if (!size_reduce(n, b, b_norm, u)) {
       goto done;
     }
-printf("after size reduce u: \n");
-print_matrix(n, n, u);
     for (int j = 0; j < n; j++) {
       if(!vector_dot_product(n, b_norm[j], b_norm[j], &B[j])) {
         goto done;

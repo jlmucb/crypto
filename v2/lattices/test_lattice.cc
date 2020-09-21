@@ -105,6 +105,12 @@ bool test_support_functions() {
   x = .87;
   a =  closest_int(x);
   printf("close(%lf) = %ld\n", x, a);
+  x = -1.33;
+  a =  closest_int(x);
+  printf("close(%lf) = %ld\n", x, a);
+  x = -.87;
+  a =  closest_int(x);
+  printf("close(%lf) = %ld\n", x, a);
 
   return true;
 }
