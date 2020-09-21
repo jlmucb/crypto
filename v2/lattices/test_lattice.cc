@@ -22,7 +22,146 @@
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
+bool test_support_functions() {
+  int n = 3;
+  real_vector b[3];
+  real_vector v_t;
+  double d, x;
+
+  vector_alloc(n, &v_t); 
+  for (int i = 0; i < n; i++)
+    vector_alloc(n, &b[i]); 
+
+  (b[0])[0] = 2.0;
+  (b[0])[1] = 3.0;
+  (b[0])[2] = 14.0;
+  (b[1])[0] = 0.0;
+  (b[1])[1] = 7.0;
+  (b[1])[2] = 11.0;
+  (b[2])[0] = 0.0;
+  (b[2])[1] = 0.0;
+  (b[2])[2] = 23.0;
+
+  vector_zero(n, &v_t);
+  print_vector(v_t);
+  printf("\n");
+
+  if (!vector_add(n, b[0], b[1], &v_t))
+    return false;
+  if (FLAGS_print_all) {
+    print_vector(b[0]);
+    printf(" + ");
+    print_vector(b[1]);
+    printf(" = ");
+    print_vector(v_t);
+    printf("\n");
+  }
+  vector_zero(n, &v_t);
+  if (!vector_sub(n, b[0],  b[1], &v_t))
+    return false;
+  if (FLAGS_print_all) {
+    print_vector(b[0]);
+    printf(" - ");
+    print_vector(b[1]);
+    printf(" = ");
+    print_vector(v_t);
+    printf("\n");
+  }
+  vector_zero(n, &v_t);
+  x = 2.0;
+  if (!vector_scalar_mult(n, x,  b[0], &v_t))
+    return false;
+  if (FLAGS_print_all) {
+    printf("%lf  ", x);
+    print_vector(b[0]);
+    printf(" = ");
+    print_vector(v_t);
+    printf("\n");
+  }
+  vector_zero(n, &v_t);
+  if (!vector_dot_product(n, b[0], b[0], &d))
+    return false;
+  if (FLAGS_print_all) {
+    print_vector(b[0]);
+    printf(" * ");
+    print_vector(b[0]);
+    printf(" = ");
+    printf("%lf\n", d);
+  }
+  vector_zero(n, &v_t);
+  if (!vector_dot_product(n, b[0], b[1], &d))
+    return false;
+  if (FLAGS_print_all) {
+    print_vector(b[0]);
+    printf(" * ");
+    print_vector(b[1]);
+    printf(" = ");
+    printf("%lf\n", d);
+  }
+
+  x = 1.33;
+  int64_t a =  closest_int(x);
+  printf("close(%lf) = %ld\n", x, a);
+  x = .87;
+  a =  closest_int(x);
+  printf("close(%lf) = %ld\n", x, a);
+
+  return true;
+}
+
 // lll tests
+bool test_gso() {
+  int n = 3;
+  real_vector b[3];
+  real_vector b_norm[3];
+  real_vector v_t;
+  double u[n * n];
+  double d, x;
+  matrix_zero(n, n, u);
+
+  vector_alloc(n, &v_t); 
+  for (int i = 0; i < n; i++)
+    vector_alloc(n, &b[i]); 
+  printf("v_t size; %d\n", v_t.size());
+
+  (b[0])[0] = 2.0;
+  (b[0])[1] = 3.0;
+  (b[0])[2] = 14.0;
+  (b[1])[0] = 0.0;
+  (b[1])[1] = 7.0;
+  (b[1])[2] = 11.0;
+  (b[2])[0] = 0.0;
+  (b[2])[1] = 0.0;
+  (b[2])[2] = 23.0;
+
+  if (FLAGS_print_all) {
+    printf("Original vectors: \n");
+    for (int i = 0; i < n; i++) {
+      printf("\tb[%d]: ", i);
+      print_vector(b[i]);
+      printf("\n");
+    }
+  }
+
+  if (!gso(n, b, b_norm, u))
+    return false;
+
+  if (FLAGS_print_all) {
+    printf("Orthogonal vectors: \n");
+    for (int i = 0; i < n; i++) {
+      printf("\tb*[%d]: ", i);
+      print_vector(b_norm[i]);
+      printf("\n");
+    }
+  }
+
+  return true;
+}
+
+bool test_size_reduce() {
+  return true;
+}
+
 bool test_lll() {
   int n = 3;
   real_vector b[3];
@@ -66,6 +205,15 @@ bool test_lll() {
   return true;
 }
 
+TEST (support, test_support) {
+  EXPECT_TRUE(test_support_functions());
+}
+TEST (gso, test_gso) {
+  EXPECT_TRUE(test_gso());
+}
+TEST (size_reduce, test_size_reduce) {
+  EXPECT_TRUE(test_size_reduce());
+}
 TEST (lll, test_lll) {
   EXPECT_TRUE(test_lll());
 }

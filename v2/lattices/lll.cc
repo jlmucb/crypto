@@ -10,29 +10,38 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// File: hash.cc
+// File: lll.cc
 
 #include "crypto_support.h"
 #include "lattice.h"
 
+
+void print_matrix(int n, int m, double* u) {
+  for(int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++)
+      printf("%lf  ", u[matrix_index(n, m, i, j)]);
+    printf("\n");
+  }
+}
 
 void print_vector(real_vector& v) {
   real_vector::iterator it;
 
   it = v.begin();
   printf("(");
-  while (1) {
-    printf("%011.4lf ", *it);
+  while(1) {
+    printf(" %.4lf", *it);
+    it++;
     if (it == v.end()) 
       break;
-    it++;
     printf(", ");
   }
-  printf(")");
+  printf(" )");
 }
 
 
 bool vector_alloc(int n, real_vector* v) {
+  v->clear();
   real_vector::iterator it;
   it = v->begin();
 
@@ -104,7 +113,8 @@ bool gso(int n, real_vector* b, real_vector* b_norm, double* u) {
   u[matrix_index(n, n, 0, 0)] = 1.0;
 
   for (int i = 1; i < n; i++) {
-      b_norm[i] = b[i];
+    b_norm[i] = b[i];
+    u[matrix_index(n, n, i, i)] = 1.0;
     for (int j = 0; j < i; j++) {
       if (!vector_dot_product(n, b_norm[j], b_norm[j], &d))
         return false;
@@ -116,7 +126,7 @@ bool gso(int n, real_vector* b, real_vector* b_norm, double* u) {
       vector_zero(n, &temp);
       if (!vector_scalar_mult(n, (t / d),  b_norm[j], &temp))
         return false;
-      if (!vector_sub(n, b_norm[i],  temp, &b_norm[i]))
+      if (!vector_sub(n, b_norm[i], temp, &b_norm[i]))
         return false;
     }
   }
@@ -152,8 +162,8 @@ bool size_reduce(int n, real_vector* b, real_vector* b_norm, double* u) {
         return false;
       if (!vector_sub(n, b[i], b[j], &b[i]))
         return false;
-      for (int k = 0; k < j; k++) {
-        u[matrix_index(n, n, i, j)] -= ((double) i_u) * u[matrix_index(n, n, j, k)];
+      for (int k = 0; k <= j; k++) {
+        u[matrix_index(n, n, i, k)] -= ((double) i_u) * u[matrix_index(n, n, j, k)];
       }
     }
   }
@@ -163,6 +173,7 @@ bool size_reduce(int n, real_vector* b, real_vector* b_norm, double* u) {
 
 bool lovacz_condition(double delta, const double c,
                       const double B1, const double B2) {
+printf("LC %lf  %lf %lf (%lf, %lf)\n", c, B1, B2, (delta - c*c) * B1, B2);
   if (((delta - c*c) * B1) <= B2)
     return true;
   else
@@ -170,6 +181,17 @@ bool lovacz_condition(double delta, const double c,
 }
 
 bool vector_swap(int n, real_vector* b1, real_vector* b2) {
+  double t;
+
+printf("swap ");
+print_vector(*b1);print_vector(*b2);
+printf("\n");
+
+  for (int i = 0; i < n; i++) {
+    t = (*b1)[i];
+    (*b1)[i] = (*b2)[i];
+    (*b2)[i] = t;
+  }
   return true;
 }
 
@@ -195,9 +217,13 @@ bool lll(const double delta, int n, real_vector* b) {
     if (!gso(n, b, b_norm, u)) {
       goto done;
     }
-    if (!size_reduce(n, b, b_norm, u)) {
+printf("before size reduce u: \n");
+print_matrix(n, n, u);
+   if (!size_reduce(n, b, b_norm, u)) {
       goto done;
     }
+printf("after size reduce u: \n");
+print_matrix(n, n, u);
     for (int j = 0; j < n; j++) {
       if(!vector_dot_product(n, b_norm[j], b_norm[j], &B[j])) {
         goto done;
@@ -205,11 +231,12 @@ bool lll(const double delta, int n, real_vector* b) {
     }
     // check Lovacz condition
     for (int j = 0; j < (n - 1); j++) {
-      if (!lovacz_condition(delta, u[matrix_index(n, n, i + 1, i)],
-                      B[j], B[j+1])) {
+      if (!lovacz_condition(delta, u[matrix_index(n, n, j + 1, j)],
+                            B[j], B[j+1])) {
         vector_swap(n, &b[j], &b[j + 1]);
         restart = true;
         break;
+      } else {
       }
       restart = false;
     }
