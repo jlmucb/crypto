@@ -1,4 +1,4 @@
-// Copyright 2014 John Manferdelli, All Rights Reserved.
+// Copyright 2020 John Manferdelli, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -43,8 +43,10 @@ bool test_support_functions() {
   (b[2])[2] = 23.0;
 
   vector_zero(n, &v_t);
-  print_vector(v_t);
-  printf("\n");
+  if (FLAGS_print_all) {
+    print_vector(v_t);
+    printf("\n");
+  }
 
   if (!vector_add(n, b[0], b[1], &v_t))
     return false;
@@ -101,16 +103,32 @@ bool test_support_functions() {
 
   x = 1.33;
   int64_t a =  closest_int(x);
-  printf("close(%lf) = %ld\n", x, a);
+  if (FLAGS_print_all) {
+    printf("close(%lf) = %ld\n", x, a);
+  }
+  if (a != 1ULL)
+    return false;
   x = .87;
   a =  closest_int(x);
-  printf("close(%lf) = %ld\n", x, a);
+  if (FLAGS_print_all) {
+    printf("close(%lf) = %ld\n", x, a);
+  }
+  if (a != 1ULL)
+    return false;
   x = -1.33;
   a =  closest_int(x);
-  printf("close(%lf) = %ld\n", x, a);
+  if (FLAGS_print_all) {
+    printf("close(%lf) = %ld\n", x, a);
+  }
+  if (a != -1ULL)
+    return false;
   x = -.87;
   a =  closest_int(x);
-  printf("close(%lf) = %ld\n", x, a);
+  if (FLAGS_print_all) {
+    printf("close(%lf) = %ld\n", x, a);
+  }
+  if (a != -1ULL)
+    return false;
 
   return true;
 }
@@ -128,7 +146,10 @@ bool test_gso() {
   vector_alloc(n, &v_t); 
   for (int i = 0; i < n; i++)
     vector_alloc(n, &b[i]); 
-  printf("v_t size; %d\n", v_t.size());
+
+  if (FLAGS_print_all) {
+    printf("v_t size; %d\n", v_t.size());
+  }
 
   (b[0])[0] = 2.0;
   (b[0])[1] = 3.0;
@@ -186,7 +207,6 @@ bool test_lll() {
   (b[2])[2] = 23.0;
 
   // answer is (-2,4,-3), (-4,1,6), (4,6,5)
-
   if (FLAGS_print_all) {
     printf("Original vectors: \n");
     for (int i = 0; i < n; i++) {
