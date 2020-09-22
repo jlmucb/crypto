@@ -386,6 +386,56 @@ bool test_rng() {
   return true;
 }
 
+// n=4, q=23, m=8, alpha=5/23, s= 5
+/*
+  A
+  9  5  11  13
+  13  6   6  2
+  6  21  17  18
+  22 19 20 8
+  2  17  10  21
+ 10  8  17  11
+ 5  16  12 2
+ 5  7  11  7
+
+S
+  5  2  9  1
+  6  8  19  1
+ 19 18  9  18
+  9  2  14 18
+
+E
+  0  22  1  21
+  0  22  22  22
+  22  22  22  0
+  0  0  0  0
+  0  0  1  2
+  1  0  0  1
+  1  22  1  22
+  22  0  0  1
+
+P
+  10  5  21  7
+  3  1  13  1
+  19  15  6  13
+  9  20  0  16
+  8  17  13  4
+  15  21  20  17
+  0  12  3  19
+  16  2  7  15
+
+  v 1,0,1,1
+  a 11010001
+  close(23/2)v 12 0  12 12
+  (u,c) (3,14,2,7), (4,5,7,5)
+  c-S^Tu 11 21 12 10
+  recover  1 0 1 1
+ */
+
+bool test_lwe() {
+  return true;
+}
+
 TEST (support, test_support) {
   EXPECT_TRUE(test_support_functions());
 }
@@ -406,6 +456,9 @@ TEST (rng, test_rng) {
 }
 TEST (matrix, test_matrix) {
   EXPECT_TRUE(test_matrix());
+}
+TEST (lwe, test_lwe) {
+  EXPECT_TRUE(test_lwe());
 }
 
 
