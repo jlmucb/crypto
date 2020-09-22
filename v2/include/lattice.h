@@ -21,6 +21,7 @@
 using std::vector;
 
 typedef vector<double> real_vector;
+typedef vector<int64_t> int_vector;
 
 inline int matrix_index(int n_rows, int n_cols, int i, int j) {
   return n_cols * i + j;
@@ -40,5 +41,46 @@ int64_t closest_int(double x);
 bool gso(int n, real_vector* b, real_vector* b_norm, double* u);
 bool size_reduce(int n, real_vector* b, real_vector* b_norm, double* u);
 bool lll(const double delta, int n, real_vector* b);
+
+void zero_int_matrix(int n, int m, int64_t* A);
+void zero_int_vector(int_vector& v);
+void print_int_matrix(int n, int m, int64_t* A);
+void print_int_vector(int_vector& v);
+bool matrix_multiply(int64_t q, int n1, int n2, int n3, int64_t* A, int64_t* B, int64_t* C);
+bool matrix_add(int64_t q, int n1, int n2, int64_t* A, int64_t* B, int64_t* C);
+bool matrix_scalar_multiply(int64_t q, int n1, int n2, const int64_t d, int64_t* A, int64_t* C);
+bool apply_matrix(int64_t q, int n1, int n2, int64_t* A, int_vector& v, int_vector* w);
+bool apply_matrix_transpose(int64_t q, int n1, int n2, int64_t* A, int_vector& v, int_vector* w);
+bool add_int_vector(int64_t q, int n, int_vector& x, int_vector& y, int_vector* z);
+bool mult_int_vector_by_scalar(int64_t q, int n, int64_t d, int_vector& x, int_vector* z);
+bool random_from_q(const int64_t q, int64_t* out);
+bool random_from_chi(double sigma, int64_t* out);
+
+const double pi = 3.14159265358979323846;
+
+
+class lwe {
+public:
+  bool initialized_;
+  int l_;
+  int m_;
+  int n_;
+  int s_;
+  int64_t q_;
+  int64_t* A_;
+  int64_t* S_;
+  int64_t* E_;
+  int64_t* P_;
+  double sigma_;
+
+  lwe();
+  ~lwe();
+
+  bool init(int l, int m, int n, const int64_t q, const int64_t s_param);
+  bool encrypt(int size_in, byte* in, int_vector* out1, int_vector* out2);
+  bool decrypt(int_vector& in1, int_vector& in2, int* size_out, byte* out);
+};
+
+
 
 #endif

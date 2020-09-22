@@ -104,28 +104,28 @@ bool test_support_functions() {
   x = 1.33;
   int64_t a =  closest_int(x);
   if (FLAGS_print_all) {
-    printf("close(%lf) = %ld\n", x, a);
+    printf("close(%lf) = %lld\n", x, a);
   }
   if (a != 1ULL)
     return false;
   x = .87;
   a =  closest_int(x);
   if (FLAGS_print_all) {
-    printf("close(%lf) = %ld\n", x, a);
+    printf("close(%lf) = %lld\n", x, a);
   }
   if (a != 1ULL)
     return false;
   x = -1.33;
   a =  closest_int(x);
   if (FLAGS_print_all) {
-    printf("close(%lf) = %ld\n", x, a);
+    printf("close(%lf) = %lld\n", x, a);
   }
   if (a != -1ULL)
     return false;
   x = -.87;
   a =  closest_int(x);
   if (FLAGS_print_all) {
-    printf("close(%lf) = %ld\n", x, a);
+    printf("close(%lf) = %lld\n", x, a);
   }
   if (a != -1ULL)
     return false;
@@ -241,14 +241,117 @@ bool test_lll() {
 }
 
 bool test_vector() {
+  int_vector v1(5);
+  int_vector v2(5);
+  int_vector w(5);
+  int n = 5;
+  int q = 37;
+  int64_t d = 3;
+
+  printf("q: %lld\n", q);
+
+  for (int i = 0; i < n; i++) {
+    v1[i] = (int64_t) (i + 1);
+    v2[i] = (int64_t) 3 * i;
+  }
+
+  if (!add_int_vector(q, n, v1, v2, &w))
+      return false;
+  if (FLAGS_print_all) {
+    print_int_vector(v1);
+    printf(" + ");
+    print_int_vector(v2);
+    printf(" = ");
+    print_int_vector(w);
+    printf("\n");
+  }
+
+  zero_int_vector(w);
+  if (!mult_int_vector_by_scalar(q, n, d, v1, &w))
+      return false;
+  if (FLAGS_print_all) {
+    printf(" %lld * ", d);
+    print_int_vector(v1);
+    printf(" = ");
+    print_int_vector(w);
+    printf("\n");
+  }
+
   return true;
 }
 
 bool test_matrix() {
+  int64_t A[5 * 5];
+  int64_t B[5 * 5];
+  int64_t C[5 * 5];
+  int n = 5;
+  int q = 37;
+  int64_t d = 3;
+
+  printf("q: %lld\n", q);
+
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+      A[matrix_index(n, n, i, j)] = (int64_t) (i + j);
+      B[matrix_index(n, n, i, j)] = (int64_t) (5 * i + 4 * j);
+    }
+  }
+
+  zero_int_matrix(n, n, C);
+  if (!matrix_multiply(q, n, n, n, A, B, C))
+    return false;
+  if (FLAGS_print_all) {
+    print_int_matrix(n, n, A);
+    printf(" * \n");
+    print_int_matrix(n, n, B);
+    printf(" = \n");
+    print_int_matrix(n, n, C);
+  }
+
+  zero_int_matrix(n, n, C);
+  if (!matrix_scalar_multiply(q, n, n, d, A, C))
+    return false;
+  if (FLAGS_print_all) {
+    printf(" %lld * ", d);
+    print_int_matrix(n, n, A);
+    printf(" = ");
+    print_int_matrix(n, n, C);
+    printf("\n");
+  }
+
+  zero_int_matrix(n, n, C);
+  if (!matrix_add(q, n, n, A, B, C))
+    return false;
+  if (FLAGS_print_all) {
+    print_int_matrix(n, n, A);
+    printf(" + \n");
+    print_int_matrix(n, n, B);
+    printf(" = \n");
+    print_int_matrix(n, n, C);
+  }
+
+  int_vector v(5);
+  int_vector w(5);
+  for(int i = 0; i < n; i++)
+    v[i] = (int64_t) (1 + i % 2);
+
+  if (!apply_matrix(q, n, n, A, v, &w))
+    return false;
+  if (FLAGS_print_all) {
+    print_int_matrix(n, n, A);
+    printf("  \n");
+    print_int_vector(v);
+    printf(" = \n");
+    print_int_vector(w);
+  }
+
+  // apply_matrix_transpose(int64_t q, int n1, int n2, int64_t* A, int_vector& v, int_vector* w);
   return true;
 }
 
 bool test_rng() {
+  // bool random_from_q(const int64_t q, int64_t* out);
+  // bool random_from_chi(double sigma, int64_t* out);
   return true;
 }
 

@@ -16,42 +16,19 @@
 #include "big_num.h"
 #include "big_num_functions.h"
 
-typedef vector<int64_t> int_vector;
-
-
-// m, n, q, m >=n,  chi is error dist, s.  M= {0,1}^l
-// C = Zq^n x Zq^l
-// S in Zq^(m x l), A in Zq^(m x n), E in Zq^(m x l).
-// E is chosen from chi.
-// P = AS+E
-// Encrypt:
+// LWE
+//  m, n, q, m >=n,  chi is error dist, s.  M= {0,1}^l
+//  C = Zq^n x Zq^l
+//  S in Zq^(m x l), A in Zq^(m x n), E in Zq^(m x l).
+//  E is chosen from chi.
+//  P = AS+E
+//  Encrypt:
 //    v in {0,1}^l, a in {0,1}^m (random)
 //    (u=A^Ta, c = P^Ta+close(q/2)v)
 //  Decrypt
 //    D = close(close(q/2)^(-1)) (c - S^Tu) mod 2
 //
-// sigma = s / sqrt(2 pi).  p(x) = 1/c exp(-x^2/(s sigma^2)), c= \sum_k exp(-k^2/(2 sigma^2))
-class lwe {
-public:
-  bool initialized_;
-  int l_;
-  int m_;
-  int n_;
-  int s_;
-  int64_t q_;
-  int64_t* A_;
-  int64_t* S_;
-  int64_t* E_;
-  int64_t* P_;
-  double sigma_;
-
-  lwe();
-  ~lwe();
-
-  bool init(int l, int m, int n, const int64_t q, const int64_t s_param);
-  bool encrypt(int size_in, byte* in, int_vector* out1, int_vector* out2);
-  bool decrypt(int_vector& in1, int_vector& in2, int* size_out, byte* out);
-};
+//  sigma = s / sqrt(2 pi).  p(x) = 1/c exp(-x^2/(s sigma^2)), c= \sum_k exp(-k^2/(2 sigma^2))
 
 bool matrix_multiply(int64_t q, int n1, int n2, int n3, int64_t* A, int64_t* B, int64_t* C) {
   int64_t t = 0;
@@ -61,11 +38,43 @@ bool matrix_multiply(int64_t q, int n1, int n2, int n3, int64_t* A, int64_t* B, 
       t = 0;
       for (int k = 0; k < n2; k++) {
         t+= A[matrix_index(n1, n2, i, k)] * B[matrix_index(n2, n3, k, j)];
+        t %= q;
       }
       C[matrix_index(n1, n3, i, j)] = t % q;
     }
   }
   return true;
+}
+
+void zero_int_matrix(int n, int m, int64_t* A) {
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+      A[matrix_index(m, n, i, j)] = 0;
+    }
+  }
+}
+
+void print_int_matrix(int n, int m, int64_t* A) {
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+      printf("%lld  ", A[matrix_index(m, n, i, j)]);
+    }
+    printf("\n");
+  }
+}
+
+void print_int_vector(int_vector& v) {
+  printf("( ");
+  for (int i = 0; i < v.size(); i++) {
+    printf("%lld  ", v[i]);
+  }
+  printf(" )");
+}
+
+void zero_int_vector(int_vector& v) {
+  for (int i = 0; i < v.size(); i++) {
+    v[i] = 0;
+  }
 }
 
 bool matrix_add(int64_t q, int n1, int n2, int64_t* A, int64_t* B, int64_t* C) {
@@ -87,6 +96,15 @@ bool matrix_scalar_multiply(int64_t q, int n1, int n2, const int64_t d, int64_t*
 }
 
 bool apply_matrix(int64_t q, int n1, int n2, int64_t* A, int_vector& v, int_vector* w) {
+  int64_t t;
+  for (int i = 0; i < n1; i++) {
+    t = 0;
+    for (int j = 0; j < n2; j++) {
+      t+= A[matrix_index(n1, n2, i, j)] * v[j];
+      t %= q;
+    }
+    (*w)[i] = t % q;
+  }
   return true;
 }
 
@@ -144,7 +162,6 @@ lwe::~lwe() {
   initialized_ = false;
 }
 
-const double pi = 3.14159265358979323846;
 
 bool lwe::init(int l, int m, int n, const int64_t q, const int64_t s_param) {
 
