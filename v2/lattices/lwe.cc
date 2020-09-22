@@ -57,7 +57,7 @@ void zero_int_matrix(int n, int m, int64_t* A) {
 void print_int_matrix(int n, int m, int64_t* A) {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {
-      printf("%lld  ", A[matrix_index(m, n, i, j)]);
+      printf("%5lld  ", A[matrix_index(m, n, i, j)]);
     }
     printf("\n");
   }
@@ -66,7 +66,7 @@ void print_int_matrix(int n, int m, int64_t* A) {
 void print_int_vector(int_vector& v) {
   printf("( ");
   for (int i = 0; i < v.size(); i++) {
-    printf("%lld  ", v[i]);
+    printf("%5lld  ", v[i]);
   }
   printf(" )");
 }

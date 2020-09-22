@@ -288,7 +288,9 @@ bool test_matrix() {
   int q = 37;
   int64_t d = 3;
 
-  printf("q: %lld\n", q);
+  if (FLAGS_print_all) {
+    printf("q: %lld\n", q);
+  }
 
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
@@ -306,15 +308,16 @@ bool test_matrix() {
     print_int_matrix(n, n, B);
     printf(" = \n");
     print_int_matrix(n, n, C);
+    printf("\n");
   }
 
   zero_int_matrix(n, n, C);
   if (!matrix_scalar_multiply(q, n, n, d, A, C))
     return false;
   if (FLAGS_print_all) {
-    printf(" %lld * ", d);
+    printf(" %lld *\n", d);
     print_int_matrix(n, n, A);
-    printf(" = ");
+    printf(" = \n");
     print_int_matrix(n, n, C);
     printf("\n");
   }
@@ -328,6 +331,7 @@ bool test_matrix() {
     print_int_matrix(n, n, B);
     printf(" = \n");
     print_int_matrix(n, n, C);
+    printf("\n");
   }
 
   int_vector v(5);
@@ -343,6 +347,7 @@ bool test_matrix() {
     print_int_vector(v);
     printf(" = \n");
     print_int_vector(w);
+    printf("\n");
   }
 
   // apply_matrix_transpose(int64_t q, int n1, int n2, int64_t* A, int_vector& v, int_vector* w);
