@@ -148,7 +148,7 @@ bool test_gso() {
     vector_alloc(n, &b[i]); 
 
   if (FLAGS_print_all) {
-    printf("v_t size; %d\n", v_t.size());
+    printf("v_t size; %d\n", (int)v_t.size());
   }
 
   (b[0])[0] = 2.0;
@@ -248,7 +248,7 @@ bool test_vector() {
   int q = 37;
   int64_t d = 3;
 
-  printf("q: %lld\n", q);
+  printf("q: %d\n", q);
 
   for (int i = 0; i < n; i++) {
     v1[i] = (int64_t) (i + 1);
@@ -289,7 +289,7 @@ bool test_matrix() {
   int64_t d = 3;
 
   if (FLAGS_print_all) {
-    printf("q: %lld\n", q);
+    printf("q: %d\n", q);
   }
 
   for (int i = 0; i < n; i++) {
@@ -373,7 +373,7 @@ bool test_rng() {
   if (!rn.init(6)) 
     return false;
   for (int i = 0; i < 13; i++) {
-    printf("%.4llf ", rn.probs_[i]);
+    printf("%.4lf ", rn.probs_[i]);
   }
   printf("\n");
 
