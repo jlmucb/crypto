@@ -355,8 +355,20 @@ bool test_matrix() {
 }
 
 bool test_rng() {
-  // bool random_from_q(const int64_t q, int64_t* out);
-  // bool random_from_chi(double sigma, int64_t* out);
+  int64_t q = 1ULL << 12;
+  int64_t x;
+
+  for (int i = 0; i < 5; i++) {
+    if (!random_from_q(q, &x))
+      return false;
+    if (FLAGS_print_all)
+      printf(" %llx ", x);
+
+  }
+  if (FLAGS_print_all)
+    printf("\n");
+
+  // random_from_chi(double sigma, int64_t* out);
   return true;
 }
 

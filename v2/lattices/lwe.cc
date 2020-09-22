@@ -142,7 +142,67 @@ bool random_from_q(const int64_t q, int64_t* out) {
   return true;
 }
 
+chi_dist::chi_dist() {
+  probs_ = nullptr;
+}
+
+chi_dist::~chi_dist() {
+}
+
+bool chi_dist::init(int s) {
+  s_ = s;
+  sigma_ = sqrt(2.0 * pi);
+  probs_ = new double[2 * s + 1];
+  normalize();
+  double y = 0.0;
+  for (int i = -s_; i <= s_; i++) {
+    y += prob(i);
+    probs_[s_ + i] = y;
+  }
+  prec_ = 1ULL << 32;
+  return true;
+}
+
+bool chi_dist::random_from_chi(int64_t* out) {
+  uint64_t u = 0.0;
+  if (crypto_get_random_bytes(4, (byte*)&u) < 0)
+    return false;
+  double t = ((double)u) / ((double)prec_);
+  for (int i = 0; i < 2*s_ + 1; i++) {
+    if (t >= probs_[i - s_]) {
+      *out = (int64_t)i;
+      return(true); 
+    }
+  }
+  *out = 0ULL;
+  return true;
+}
+
+double chi_dist::prob(int k) {
+  double t = (double)k;
+  if (k < -s_ || k > s_)
+    return 0.0;
+  return c_ * exp_f(k);
+}
+
+double chi_dist::exp_f(int k) {
+  double t = (double)k;
+  if (k < -s_ || k > s_)
+    return 0.0;
+  t = (t * t) / (2.0 * sigma_ * sigma_);
+  return exp(-t);
+}
+
+void chi_dist::normalize() {
+  double t = 0.0; 
+  for (int i = -s_; i <= s_; i++) {
+    t+= exp_f(i);
+  }
+  c_ = 1.0 / t;
+}
+
 bool random_from_chi(double sigma, int64_t* out) {
+  *out = 0ULL;
   return true;
 }
 
