@@ -16,7 +16,7 @@
 #include "big_num.h"
 #include "big_num_functions.h"
 
-typedef vector<uint64_t> int_vector;
+typedef vector<int64_t> int_vector;
 
 
 // m, n, q, m >=n,  chi is error dist, s.  M= {0,1}^l
@@ -38,53 +38,80 @@ public:
   int m_;
   int n_;
   int s_;
-  uint64_t q_;
-  uint64_t* A_;
-  uint64_t* S_;
-  uint64_t* E_;
-  uint64_t* P_;
+  int64_t q_;
+  int64_t* A_;
+  int64_t* S_;
+  int64_t* E_;
+  int64_t* P_;
   double sigma_;
 
   lwe();
   ~lwe();
 
-  bool init(int l, int m, int n, const uint64_t q, const uint64_t s_param);
+  bool init(int l, int m, int n, const int64_t q, const int64_t s_param);
   bool encrypt(int size_in, byte* in, int_vector* out1, int_vector* out2);
   bool decrypt(int_vector& in1, int_vector& in2, int* size_out, byte* out);
 };
 
-bool matrix_multiply(uint64_t q, int n1, int n2, int n3, uint64_t* A, uint64_t* B, uint64_t* C) {
+bool matrix_multiply(int64_t q, int n1, int n2, int n3, int64_t* A, int64_t* B, int64_t* C) {
+  int64_t t = 0;
+
+  for (int i = 0; i < n1; i++) {
+    for (int j = 0; j < n3; j++) {
+      t = 0;
+      for (int k = 0; k < n2; k++) {
+        t+= A[matrix_index(n1, n2, i, k)] * B[matrix_index(n2, n3, k, j)];
+      }
+      C[matrix_index(n1, n3, i, j)] = t % q;
+    }
+  }
   return true;
 }
 
-bool matrix_add(uint64_t q, int n1, int n2, uint64_t* A, uint64_t* B, uint64_t* C) {
+bool matrix_add(int64_t q, int n1, int n2, int64_t* A, int64_t* B, int64_t* C) {
+  for (int i = 0; i < n1; i++) {
+    for (int j = 0; j < n2; j++) {
+      C[matrix_index(n1, n2, i, j)] = (A[matrix_index(n1, n2, i, j)] + B[matrix_index(n1, n2, i, j)]) % q;
+    }
+  }
   return true;
 }
 
-bool matrix_scalar_multiply(uint64_t q, int n1, int n2, const uint64_t d, uint64_t* B, uint64_t* C) {
+bool matrix_scalar_multiply(int64_t q, int n1, int n2, const int64_t d, int64_t* A, int64_t* C) {
+  for (int i = 0; i < n1; i++) {
+    for (int j = 0; j < n2; j++) {
+      C[matrix_index(n1, n2, i, j)] = (d * A[matrix_index(n1, n2, i, j)]) % q;
+    }
+  }
   return true;
 }
 
-bool apply_matrix(uint64_t q, int n1, int n2, uint64_t* A, int_vector& v, int_vector* w) {
+bool apply_matrix(int64_t q, int n1, int n2, int64_t* A, int_vector& v, int_vector* w) {
   return true;
 }
 
-bool apply_matrix_transpose(uint64_t q, int n1, int n2, uint64_t* A, int_vector& v, int_vector* w) {
+bool apply_matrix_transpose(int64_t q, int n1, int n2, int64_t* A, int_vector& v, int_vector* w) {
   return true;
 }
 
-bool add_int_vector(uint64_t q, int n, int_vector& x, int_vector& y, int_vector* z) {
-  return false;
+bool add_int_vector(int64_t q, int n, int_vector& x, int_vector& y, int_vector* z) {
+  for (int i = 0; i < n; i++) {
+    (*z)[i] = (x[i] + y[i]) % q;
+  }
+  return true;
 }
 
-bool mult_int_vector_by_scalar(uint64_t q, int n, uint64_t d, int_vector& x, int_vector* z) {
-  return false;
+bool mult_int_vector_by_scalar(int64_t q, int n, int64_t d, int_vector& x, int_vector* z) {
+  for (int i = 0; i < n; i++) {
+    (*z)[i] = (d * x[i]) % q;
+  }
+  return true;
 }
 
-bool random_from_q(const uint64_t q, uint64_t* out) {
-  uint64_t t = 0ULL;
+bool random_from_q(const int64_t q, int64_t* out) {
+  int64_t t = 0ULL;
   int num_bytes = 1;
-  uint64_t u = 0xff;
+  int64_t u = 0xff;
 
   while (u < q) {
     u <<= 8;
@@ -97,7 +124,7 @@ bool random_from_q(const uint64_t q, uint64_t* out) {
   return true;
 }
 
-bool random_from_chi(double sigma, uint64_t* out) {
+bool random_from_chi(double sigma, int64_t* out) {
   return true;
 }
 
@@ -119,7 +146,7 @@ lwe::~lwe() {
 
 const double pi = 3.14159265358979323846;
 
-bool lwe::init(int l, int m, int n, const uint64_t q, const uint64_t s_param) {
+bool lwe::init(int l, int m, int n, const int64_t q, const int64_t s_param) {
 
   q_ = q;
   s_ = s_param;
@@ -129,19 +156,19 @@ bool lwe::init(int l, int m, int n, const uint64_t q, const uint64_t s_param) {
   sigma_ = ((double)s_) / sqrt(2.0 * pi);
 
   // S is n x l
-  S_ = new uint64_t[n * l];
+  S_ = new int64_t[n * l];
   if (S_ == nullptr)
     return false;
   // A is m x n
-  A_ = new uint64_t[m * n];
+  A_ = new int64_t[m * n];
   if (A_ == nullptr)
     return false;
   // E is m x l
-  E_ = new uint64_t[m * l];
+  E_ = new int64_t[m * l];
   if (E_ == nullptr)
     return false;
   // P is m x l
-  P_ = new uint64_t[m * l];
+  P_ = new int64_t[m * l];
   if (P_ == nullptr)
     return false;
 
@@ -179,7 +206,7 @@ bool lwe::init(int l, int m, int n, const uint64_t q, const uint64_t s_param) {
 
 bool lwe::encrypt(int size_in, byte* in, int_vector* out1, int_vector* out2) {
   int_vector a(m_);
-  uint64_t b;
+  int64_t b;
 
   for (int i = 0; i < m_; i++) {
     if (!random_from_q(q_, &b))
@@ -198,7 +225,7 @@ bool lwe::encrypt(int size_in, byte* in, int_vector* out1, int_vector* out2) {
   if (!apply_matrix_transpose(q_, m_, n_, A_, v_a, out1))
     return false;
   int64_t q_r = closest_int(((double)q_) / 2.0);
-  if (!mult_int_vector_by_scalar(q_, l_, (uint64_t) q_r, v_a, &v_r))
+  if (!mult_int_vector_by_scalar(q_, l_, (int64_t) q_r, v_a, &v_r))
     return false;
   if (!apply_matrix_transpose(q_, m_, l_, P_, v_a, &v_t))
     return false;

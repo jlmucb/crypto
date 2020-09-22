@@ -240,6 +240,18 @@ bool test_lll() {
   return true;
 }
 
+bool test_vector() {
+  return true;
+}
+
+bool test_matrix() {
+  return true;
+}
+
+bool test_rng() {
+  return true;
+}
+
 TEST (support, test_support) {
   EXPECT_TRUE(test_support_functions());
 }
@@ -252,6 +264,16 @@ TEST (size_reduce, test_size_reduce) {
 TEST (lll, test_lll) {
   EXPECT_TRUE(test_lll());
 }
+TEST (vector, test_vector) {
+  EXPECT_TRUE(test_vector());
+}
+TEST (rng, test_rng) {
+  EXPECT_TRUE(test_rng());
+}
+TEST (matrix, test_matrix) {
+  EXPECT_TRUE(test_matrix());
+}
+
 
 int main(int an, char** av) {
   gflags::ParseCommandLineFlags(&an, &av, true);
