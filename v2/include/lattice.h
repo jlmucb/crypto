@@ -27,6 +27,10 @@ inline int matrix_index(int n_rows, int n_cols, int i, int j) {
   return n_cols * i + j;
 }
 
+inline int matrix_transpose_index(int n_rows, int n_cols, int i, int j) {
+  return n_cols * j + i;
+}
+
 void print_vector(real_vector& v);
 bool vector_alloc(int n, real_vector* v);
 bool vector_zero(int n, real_vector* v);
@@ -95,7 +99,7 @@ public:
   ~lwe();
 
   bool init(int l, int m, int n, const int64_t q, const int s_param);
-  bool encrypt(int size_in, byte* in, int_vector* out1, int_vector* out2);
+  bool encrypt(int size_in, byte* in, int_vector& a, int_vector* out1, int_vector* out2);
   bool decrypt(int_vector& in1, int_vector& in2, int* size_out, byte* out);
 };
 

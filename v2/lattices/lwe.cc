@@ -97,10 +97,11 @@ bool matrix_scalar_multiply(int64_t q, int n1, int n2, const int64_t d, int64_t*
 
 bool apply_matrix(int64_t q, int n1, int n2, int64_t* A, int_vector& v, int_vector* w) {
   int64_t t;
+
   for (int i = 0; i < n1; i++) {
     t = 0;
     for (int j = 0; j < n2; j++) {
-      t+= A[matrix_index(n1, n2, i, j)] * v[j];
+      t += A[matrix_index(n1, n2, i, j)] * v[j];
       t %= q;
     }
     (*w)[i] = t % q;
@@ -109,6 +110,16 @@ bool apply_matrix(int64_t q, int n1, int n2, int64_t* A, int_vector& v, int_vect
 }
 
 bool apply_matrix_transpose(int64_t q, int n1, int n2, int64_t* A, int_vector& v, int_vector* w) {
+  int64_t t;
+
+  for (int i = 0; i < n1; i++) {
+    t = 0;
+    for (int j = 0; j < n2; j++) {
+      t += A[matrix_transpose_index(n1, n2, i, j)] * v[j];
+      t %= q;
+    }
+    (*w)[i] = t % q;
+  }
   return true;
 }
 
@@ -210,16 +221,15 @@ void chi_dist::normalize() {
 chi_dist g_rn;
 
 bool random_from_chi(int s, int64_t* out) {
-
   if (!g_rn.initialized_) {
     if (!g_rn.init(s)) 
       return false;
   }
   if (!g_rn.initialized_)
     return false;
-
   if (!g_rn.random_from_chi(out))
     return false;
+
   return true;
 }
 
@@ -238,7 +248,6 @@ lwe::~lwe() {
   // P_ = nullptr;
   initialized_ = false;
 }
-
 
 bool lwe::init(int l, int m, int n, const int64_t q, const int s_param) {
 
@@ -298,15 +307,8 @@ bool lwe::init(int l, int m, int n, const int64_t q, const int s_param) {
   return initialized_;
 }
 
-bool lwe::encrypt(int size_in, byte* in, int_vector* out1, int_vector* out2) {
-  int_vector a(m_);
+bool lwe::encrypt(int size_in, byte* in, int_vector& a, int_vector* out1, int_vector* out2) {
   int64_t b;
-
-  for (int i = 0; i < m_; i++) {
-    if (!random_from_q(q_, &b))
-      return false;
-    a[i] = b;
-  }
 
   // turn in into a vector
   int_vector v_a(l_);
