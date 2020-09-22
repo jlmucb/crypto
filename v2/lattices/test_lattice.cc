@@ -355,7 +355,7 @@ bool test_matrix() {
 }
 
 bool test_rng() {
-  int64_t q = 1ULL << 12;
+  int64_t q = 1ULL << 16;
   int64_t x;
 
   for (int i = 0; i < 5; i++) {
@@ -368,7 +368,21 @@ bool test_rng() {
   if (FLAGS_print_all)
     printf("\n");
 
-  // random_from_chi(double sigma, int64_t* out);
+  chi_dist rn;
+
+  if (!rn.init(6)) 
+    return false;
+  for (int i = 0; i < 13; i++) {
+    printf("%.4llf ", rn.probs_[i]);
+  }
+  printf("\n");
+
+  for (int i = 0; i < 40; i++) {
+    if (!rn.random_from_chi(&x))
+      return false;
+    printf("%lld ", x);
+  }
+  printf("\n");
   return true;
 }
 

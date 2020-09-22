@@ -54,11 +54,13 @@ bool apply_matrix_transpose(int64_t q, int n1, int n2, int64_t* A, int_vector& v
 bool add_int_vector(int64_t q, int n, int_vector& x, int_vector& y, int_vector* z);
 bool mult_int_vector_by_scalar(int64_t q, int n, int64_t d, int_vector& x, int_vector* z);
 bool random_from_q(const int64_t q, int64_t* out);
+bool random_from_chi(int s, int64_t* out);
 
 const double pi = 3.14159265358979323846;
 
 class chi_dist {
 public:
+  bool initialized_;
   int s_;
   double c_;
   double sigma_;

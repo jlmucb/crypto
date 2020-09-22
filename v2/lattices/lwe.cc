@@ -144,9 +144,14 @@ bool random_from_q(const int64_t q, int64_t* out) {
 
 chi_dist::chi_dist() {
   probs_ = nullptr;
+  initialized_ = false;
 }
 
 chi_dist::~chi_dist() {
+  if (probs_ != nullptr)
+    delete []probs_;
+  probs_ = nullptr;
+  initialized_ = false;
 }
 
 bool chi_dist::init(int s) {
@@ -160,6 +165,7 @@ bool chi_dist::init(int s) {
     probs_[s_ + i] = y;
   }
   prec_ = 1ULL << 32;
+  initialized_ = true;
   return true;
 }
 
@@ -168,9 +174,9 @@ bool chi_dist::random_from_chi(int64_t* out) {
   if (crypto_get_random_bytes(4, (byte*)&u) < 0)
     return false;
   double t = ((double)u) / ((double)prec_);
-  for (int i = 0; i < 2*s_ + 1; i++) {
-    if (t >= probs_[i - s_]) {
-      *out = (int64_t)i;
+  for (int i = 0; i < 2 * s_ + 1; i++) {
+    if (t <= probs_[i]) {
+      *out = (int64_t)(i - s_);
       return(true); 
     }
   }
@@ -201,8 +207,19 @@ void chi_dist::normalize() {
   c_ = 1.0 / t;
 }
 
-bool random_from_chi(double sigma, int64_t* out) {
-  *out = 0ULL;
+chi_dist g_rn;
+
+bool random_from_chi(int s, int64_t* out) {
+
+  if (!g_rn.initialized_) {
+    if (!g_rn.init(s)) 
+      return false;
+  }
+  if (!g_rn.initialized_)
+    return false;
+
+  if (!g_rn.random_from_chi(out))
+    return false;
   return true;
 }
 
