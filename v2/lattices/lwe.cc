@@ -46,6 +46,19 @@ bool matrix_multiply(int64_t q, int n1, int n2, int n3, int64_t* A, int64_t* B, 
   return true;
 }
 
+// copy A to B
+bool matrix_copy(int m, int n, int64_t* A, int64_t* B) { 
+  int k;
+
+  for (int i = 0; i < m; i++) {
+    for (int j = 0; j < n; j++) {
+    k = matrix_index(m, n, i, j);
+    B[k] = A[k];
+    }
+  }
+  return true;
+}
+
 void zero_int_matrix(int n, int m, int64_t* A) {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {
@@ -371,4 +384,20 @@ bool lwe::decrypt(int_vector& in1, int_vector& in2, int_vector* out) {
     (*out)[i] = (v_u[i] % 2);
 
   return true;
+}
+
+void lwe::debug_replace_params(int64_t* A_t, int64_t* S_t, int64_t* E_t, int64_t* P_t) {
+
+  // A_ is m x n
+  if (!matrix_copy(m_, n_, A_t, A_))
+    return;
+  // S_ is n x l
+  if (!matrix_copy(n_, l_, S_t, S_))
+    return;
+  // E_ is m x l
+  if (!matrix_copy(m_, l_, E_t, E_))
+    return;
+  // P_ is m x l
+  if (!matrix_copy(m_, l_, P_t, P_))
+    return;
 }

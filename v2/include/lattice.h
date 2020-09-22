@@ -50,6 +50,7 @@ void zero_int_matrix(int n, int m, int64_t* A);
 void zero_int_vector(int_vector& v);
 void print_int_matrix(int n, int m, int64_t* A);
 void print_int_vector(int_vector& v);
+bool matrix_copy(int n1, int n2, int64_t* A, int64_t* B);
 bool matrix_multiply(int64_t q, int n1, int n2, int n3, int64_t* A, int64_t* B, int64_t* C);
 bool matrix_add(int64_t q, int n1, int n2, int64_t* A, int64_t* B, int64_t* C);
 bool matrix_scalar_multiply(int64_t q, int n1, int n2, const int64_t d, int64_t* A, int64_t* C);
@@ -89,10 +90,10 @@ public:
   int n_;
   int s_;
   int64_t q_;
-  int64_t* A_;
-  int64_t* S_;
-  int64_t* E_;
-  int64_t* P_;
+  int64_t* A_;      // m x n
+  int64_t* S_;      // n x l
+  int64_t* E_;      // m x l
+  int64_t* P_;      // m x l
   double sigma_;
 
   lwe();
@@ -101,6 +102,8 @@ public:
   bool init(int l, int m, int n, const int64_t q, const int s_param);
   bool encrypt(int_vector& in, int_vector& a, int_vector* out1, int_vector* out2);
   bool decrypt(int_vector& in1, int_vector& in2, int_vector* out);
+
+  void debug_replace_params(int64_t* A_t, int64_t* S_t, int64_t* E_t, int64_t* P_t);
 };
 
 
