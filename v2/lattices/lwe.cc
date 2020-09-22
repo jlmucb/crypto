@@ -319,48 +319,53 @@ bool lwe::init(int l, int m, int n, const int64_t q, const int s_param) {
   return initialized_;
 }
 
-int64_t inverse(int64_t q, int64_t x) {
-  return 0ULL;
+// closer to 0 or q/2?
+bool binary_round(int64_t d, int_vector& v, int_vector* w) {
+  if (d == 0ULL)
+    return false;
+
+  double x, xd;
+  xd = 1.0 / ((double)d);
+  for (int i = 0; i < v.size(); i++) {
+    x = ((double)v[i]) * xd;
+    (*w)[i] = closest_int(x);
+  }
+  return true;
 }
 
+//    v in {0,1}^l, a in {0,1}^m (random)
+//    (u=A^Ta, c = P^Ta+close(q/2)v)
 bool lwe::encrypt(int_vector& in, int_vector& a, int_vector* out1, int_vector* out2) {
-  int64_t b;
-
-  // turn in into a vector
-  int_vector v_a(l_);
   int_vector v_r(l_);
   int_vector v_t(l_);
-  int_vector c(l_);
+  int64_t b;
 
-  //    v in {0,1}^l, a in {0,1}^m (random)
-  //    (u=A^Ta, c = P^Ta+close(q/2)v)
-  if (!apply_matrix_transpose(q_, m_, n_, A_, v_a, out1))
+  if (!apply_matrix_transpose(q_, m_, n_, A_, a, out1))
     return false;
   int64_t q_r = closest_int(((double)q_) / 2.0);
-  if (!mult_int_vector_by_scalar(q_, l_, (int64_t) q_r, v_a, &v_r))
+  if (!mult_int_vector_by_scalar(q_, l_, (int64_t) q_r, a, &v_r))
     return false;
-  if (!apply_matrix_transpose(q_, m_, l_, P_, v_a, &v_t))
+  if (!apply_matrix_transpose(q_, m_, l_, P_, a, &v_t))
     return false;
-  if (!add_int_vector(q_, l_,  v_r, v_t, out2))
+  if (!add_int_vector(q_, l_, v_r, v_t, out2))
     return false;
 
   return true;
 }
 
+//  D = close(close(q/2)^(-1) (c - S^Tu)) mod 2
 bool lwe::decrypt(int_vector& in1, int_vector& in2, int_vector* out) {
   int64_t q_2 = closest_int(((double)q_) / 2.0);
   int_vector v_u(l_);
   int_vector v_t(l_);
-  int64_t q_3 = closest_int(inverse(q_, q_2));
 
-  //  D = close(close(q/2)^(-1)) (c - S^Tu) mod 2
   if (!apply_matrix_transpose(q_, n_, l_, S_, in1, &v_u))
     return false;
   if (!mult_int_vector_by_scalar(q_, l_, -1ULL, v_u, &v_u))
     return false;
   if (!add_int_vector(q_, l_, in2, v_u, &v_t))
     return false;
-  if (!mult_int_vector_by_scalar(q_, l_, q_3, v_t, &v_u))
+  if (!binary_round(q_2, v_t, &v_u))
     return false;
   for (int i = 0; i < l_; i++)
     (*out)[i] = (v_u[i] % 2);
