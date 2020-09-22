@@ -242,10 +242,22 @@ lwe::lwe() {
 }
 
 lwe::~lwe() {
-  // A_ = nullptr;
-  // S_ = nullptr;
-  // E_ = nullptr;
-  // P_ = nullptr;
+  if (A_ != nullptr) {
+    delete []A_;
+    A_ = nullptr;
+  }
+  if (S_ != nullptr) {
+    delete []S_;
+    S_ = nullptr;
+  }
+  if (E_ != nullptr) {
+    delete []E_;
+    E_ = nullptr;
+  }
+  if (P_ != nullptr) {
+    delete []P_;
+    P_ = nullptr;
+  }
   initialized_ = false;
 }
 
@@ -307,7 +319,11 @@ bool lwe::init(int l, int m, int n, const int64_t q, const int s_param) {
   return initialized_;
 }
 
-bool lwe::encrypt(int size_in, byte* in, int_vector& a, int_vector* out1, int_vector* out2) {
+int64_t inverse(int64_t q, int64_t x) {
+  return 0ULL;
+}
+
+bool lwe::encrypt(int_vector& in, int_vector& a, int_vector* out1, int_vector* out2) {
   int64_t b;
 
   // turn in into a vector
@@ -331,7 +347,23 @@ bool lwe::encrypt(int size_in, byte* in, int_vector& a, int_vector* out1, int_ve
   return true;
 }
 
-bool lwe::decrypt(int_vector& in1, int_vector& in2, int* size_out, byte* out) {
+bool lwe::decrypt(int_vector& in1, int_vector& in2, int_vector* out) {
+  int64_t q_2 = closest_int(((double)q_) / 2.0);
+  int_vector v_u(l_);
+  int_vector v_t(l_);
+  int64_t q_3 = closest_int(inverse(q_, q_2));
+
   //  D = close(close(q/2)^(-1)) (c - S^Tu) mod 2
+  if (!apply_matrix_transpose(q_, n_, l_, S_, in1, &v_u))
+    return false;
+  if (!mult_int_vector_by_scalar(q_, l_, -1ULL, v_u, &v_u))
+    return false;
+  if (!add_int_vector(q_, l_, in2, v_u, &v_t))
+    return false;
+  if (!mult_int_vector_by_scalar(q_, l_, q_3, v_t, &v_u))
+    return false;
+  for (int i = 0; i < l_; i++)
+    (*out)[i] = (v_u[i] % 2);
+
   return true;
 }
