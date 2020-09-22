@@ -509,16 +509,19 @@ bool test_lwe() {
     printf("\nS:\n"); print_int_matrix(n, l, lw.S_); printf("\n");
     printf("\nE:\n"); print_int_matrix(m, l, lw.E_); printf("\n");
     printf("\nP:\n"); print_int_matrix(m, l, lw.P_); printf("\n");
-    printf("\tmsg: "); print_int_vector(msg); printf("\n");
+    printf("\nmsg: "); print_int_vector(msg); printf("\n");
+    printf("a  : "); print_int_vector(a); printf("\n");
   }
+
   if (!lw.encrypt(msg, a, &u, &c))
     return false;
   if (FLAGS_print_all) {
-    printf("\t(u, c): ");
+    printf("(u, c): ");
     printf("( "); print_int_vector(u);
     printf(", "); print_int_vector(c);
     printf(" )\n");
   }
+return true;
   if (!lw.decrypt(u, c, &recovered_msg))
     return false;
   if (FLAGS_print_all) {
