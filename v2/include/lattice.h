@@ -94,7 +94,7 @@ public:
   lwe();
   ~lwe();
 
-  bool init(int l, int m, int n, const int64_t q, const int64_t s_param);
+  bool init(int l, int m, int n, const int64_t q, const int s_param);
   bool encrypt(int size_in, byte* in, int_vector* out1, int_vector* out2);
   bool decrypt(int_vector& in1, int_vector& in2, int* size_out, byte* out);
 };

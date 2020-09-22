@@ -433,6 +433,33 @@ P
  */
 
 bool test_lwe() {
+  lwe lw;
+  int l = 4;
+  int m = 4;
+  int n = 4;
+  int64_t q= 23;
+  int s_param = 5;
+
+  if (FLAGS_print_all) {
+    printf("lwe\n\tl: %d, m: %d, n: %d, q: %d, s: %d\n", l, m, n, q, s_param);
+  }
+#if 0
+  if (!lw.init(l, m, n, q, s_param))
+    return false;
+
+  int size_in;
+  int size_out;
+  byte* in;
+  byte* out;
+  int_vector out1(6);
+  int_vector out2(6);
+
+  if (!lw.encrypt(size_in, in, &out1, &out2))
+    return false;
+  if (!lw.decrypt(out1, out2, &size_out, out))
+    return false;
+#endif
+
   return true;
 }
 

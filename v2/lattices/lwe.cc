@@ -240,7 +240,7 @@ lwe::~lwe() {
 }
 
 
-bool lwe::init(int l, int m, int n, const int64_t q, const int64_t s_param) {
+bool lwe::init(int l, int m, int n, const int64_t q, const int s_param) {
 
   q_ = q;
   s_ = s_param;
