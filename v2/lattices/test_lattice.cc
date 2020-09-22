@@ -130,6 +130,25 @@ bool test_support_functions() {
   if (a != -1ULL)
     return false;
 
+  printf("matrix index\n");
+  int nr = 8;
+  int nc = 4;
+  int i, j, k;
+  for (int i = 0; i < nr; i++) {
+    for (int j = 0; j < nc; j++) {
+      k = matrix_index(nr,nc,i,j);
+      printf("(%d, %d, %d, %d): %d\n", nr,nc,i,j,k);
+    }
+  }
+
+  printf("matrix transpose index\n");
+  for (int i = 0; i < nr; i++) {
+    for (int j = 0; j < nc; j++) {
+      k = matrix_transpose_index(nr,nc,i,j);
+      printf("(%d, %d, %d, %d): %d\n", nr,nc,i,j,k);
+    }
+  }
+
   return true;
 }
 
@@ -386,87 +405,125 @@ bool test_rng() {
   return true;
 }
 
-// n=4, q=23, m=8, alpha=5/23, s= 5
-/*
-  A
-  9  5  11  13
-  13  6   6  2
-  6  21  17  18
-  22 19 20 8
-  2  17  10  21
- 10  8  17  11
- 5  16  12 2
- 5  7  11  7
+// A  8 x 4
+int64_t A_t[8 * 4] = {
+   9,  5, 11, 13,
+  13,  6,  6,  2,
+   6, 21, 17, 18,
+  22, 19, 20,  8,
+   2, 17, 10, 21,
+  10,  8, 17, 11,
+   5, 16, 12,  2,
+   5,  7, 11,  7,
+};
 
-S
-  5  2  9  1
-  6  8  19  1
- 19 18  9  18
-  9  2  14 18
+// S 4 x 4
+int64_t S_t[4 * 4] = {
+  5,  2,  9,  1,
+  6,  8, 19,  1,
+ 19, 18,  9, 18,
+  9,  2, 14, 18,
+};
 
-E
-  0  22  1  21
-  0  22  22  22
-  22  22  22  0
-  0  0  0  0
-  0  0  1  2
-  1  0  0  1
-  1  22  1  22
-  22  0  0  1
+// E 8 x 4
+int64_t E_t[8 * 4] = {
+   0, 22,  1,  21,
+   0, 22, 22,  22,
+  22, 22, 22,   0,
+   0,  0,  0,   0,
+   0,  0,  1,   2,
+   1,  0,  0,   1,
+   1, 22,  1,  22,
+  22,  0,  0,   1,
+};
 
-P
-  10  5  21  7
-  3  1  13  1
-  19  15  6  13
-  9  20  0  16
-  8  17  13  4
-  15  21  20  17
-  0  12  3  19
-  16  2  7  15
+// P 8 x 4
+int64_t P_t[8 * 4] = {
+  10,  5, 21,  7,
+   3,  1, 13,  1,
+  19, 15,  6, 13,
+   9, 20,  0, 16,
+   8, 17, 13,  4,
+  15, 21, 20, 17,
+   0, 12,  3, 19,
+  16,  2,  7, 15,
+};
 
-  v 1,0,1,1
-  a 11010001
-  close(23/2)v 12 0  12 12
-  (u,c) (3,14,2,7), (4,5,7,5)
-  c-S^Tu 11 21 12 10
-  recover  1 0 1 1
- */
+int msg_t[4] = {
+  1, 0, 1, 1
+};
+
+int a_t[8] = {
+  1, 1, 0, 1, 0, 0, 0, 1
+};
+
+int u_t[4] =  {
+  3, 14, 2, 7
+};
+
+int c_t[4] =  {
+  4, 5, 7, 5
+};
+
+// Test case: n=4, q=23, m=8, l = 4, alpha=5/23, s= 5
+//   v 1,0,1,1
+//   a 11010001
+//   (u,c) (3,14,2,7), (4,5,7,5)
+//   c-S^Tu 11 21 12 10
+//   recover  1 0 1 1
 
 bool test_lwe() {
   lwe lw;
   int l = 4;
-  int m = 4;
+  int m = 8;
   int n = 4;
-  int64_t q= 23;
+  int64_t q = 23;
   int s_param = 5;
   int b;
+  int_vector msg(4);
+  int_vector a(8);
+  int_vector u(4);
+  int_vector c(4);
+  int_vector recovered_msg(4);
+
+  zero_int_vector(u);
+  zero_int_vector(c);
+  zero_int_vector(recovered_msg);
+
+  for (int i = 0; i < l; i++)
+    msg[i] = msg_t[i];
+  for (int i = 0; i < m; i++)
+    a[i] = a_t[i];
 
   if (FLAGS_print_all) {
-    printf("lwe\n\tl: %d, m: %d, n: %d, q: %d, s: %d\n", l, m, n, q, s_param);
+    printf("lwe\n\tl: %d, m: %d, n: %d, q: %d, s: %d\n", l, m, n, (int)q, s_param);
   }
-#if 0
+
   if (!lw.init(l, m, n, q, s_param))
     return false;
 
-  int size_in;
-  int size_out;
-  byte* in;
-  byte* out;
-  int_vector a(6);
-  int_vector out1(6);
-  int_vector out2(6);
+  lw.debug_replace_params(A_t, S_t, E_t, P_t);
 
-    for (int i = 0; i < 6; i++) {
-    if (!random_from_q(q_, &b))
-      return false;
-    a[i] = b;
+  if (FLAGS_print_all) {
+    printf("\nA:\n"); print_int_matrix(m, n, lw.A_); printf("\n");
+    printf("\nS:\n"); print_int_matrix(n, l, lw.S_); printf("\n");
+    printf("\nE:\n"); print_int_matrix(m, l, lw.E_); printf("\n");
+    printf("\nP:\n"); print_int_matrix(m, l, lw.P_); printf("\n");
+    printf("\tmsg: "); print_int_vector(msg); printf("\n");
   }
-
-  if (!lw.encrypt(size_in, in, a, &out1, &out2))
+  if (!lw.encrypt(msg, a, &u, &c))
     return false;
-  if (!lw.decrypt(out1, out2, &size_out, out))
+  if (FLAGS_print_all) {
+    printf("\t(u, c): ");
+    printf("( "); print_int_vector(u);
+    printf(", "); print_int_vector(c);
+    printf(" )\n");
+  }
+  if (!lw.decrypt(u, c, &recovered_msg))
     return false;
-#endif
+  if (FLAGS_print_all) {
+    printf("\trecovered: "); print_int_vector(recovered_msg); printf("\n");
+  }
 
   return true;
 }

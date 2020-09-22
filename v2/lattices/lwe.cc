@@ -52,8 +52,8 @@ bool matrix_copy(int m, int n, int64_t* A, int64_t* B) {
 
   for (int i = 0; i < m; i++) {
     for (int j = 0; j < n; j++) {
-    k = matrix_index(m, n, i, j);
-    B[k] = A[k];
+      k = matrix_index(m, n, i, j);
+      B[k] = A[k];
     }
   }
   return true;
@@ -67,9 +67,9 @@ void zero_int_matrix(int n, int m, int64_t* A) {
   }
 }
 
-void print_int_matrix(int n, int m, int64_t* A) {
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < m; j++) {
+void print_int_matrix(int m, int n, int64_t* A) {
+  for (int i = 0; i < m; i++) {
+    for (int j = 0; j < n; j++) {
       printf("%5lld  ", A[matrix_index(m, n, i, j)]);
     }
     printf("\n");
@@ -349,6 +349,7 @@ bool binary_round(int64_t d, int_vector& v, int_vector* w) {
 //    v in {0,1}^l, a in {0,1}^m (random)
 //    (u=A^Ta, c = P^Ta+close(q/2)v)
 bool lwe::encrypt(int_vector& in, int_vector& a, int_vector* out1, int_vector* out2) {
+  int_vector v_a(m_);
   int_vector v_r(l_);
   int_vector v_t(l_);
   int64_t b;
@@ -356,9 +357,9 @@ bool lwe::encrypt(int_vector& in, int_vector& a, int_vector* out1, int_vector* o
   if (!apply_matrix_transpose(q_, m_, n_, A_, a, out1))
     return false;
   int64_t q_r = closest_int(((double)q_) / 2.0);
-  if (!mult_int_vector_by_scalar(q_, l_, (int64_t) q_r, a, &v_r))
+  if (!mult_int_vector_by_scalar(q_, m_, (int64_t) q_r, a, &v_a))
     return false;
-  if (!apply_matrix_transpose(q_, m_, l_, P_, a, &v_t))
+  if (!apply_matrix_transpose(q_, m_, l_, P_, v_a, &v_t))
     return false;
   if (!add_int_vector(q_, l_, v_r, v_t, out2))
     return false;
