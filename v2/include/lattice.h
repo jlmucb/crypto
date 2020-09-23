@@ -115,6 +115,10 @@ int poly_degree(int n, int64_t* f);
 bool poly_zero(int n, int64_t* f);
 bool poly_add_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* f,
                        int64_t* g, int64_t* r);
+bool poly_sub_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* f,
+                       int64_t* g, int64_t* r);
+bool poly_mult_by_const(int n, int64_t modulus, int64_t d, int64_t* f,
+                        int64_t* r);
 bool poly_mult_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* f,
                         int64_t* g, int64_t* r);
 bool poly_gcd(int64_t* a, int64_t* b, int64_t* x, int64_t* y, int64_t* g);
