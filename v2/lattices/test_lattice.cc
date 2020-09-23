@@ -536,12 +536,14 @@ bool test_lwe() {
 
   if (FLAGS_print_all)
     printf("\nlwe (2)\nl: %d, m: %d, n: %d, q: %d, s: %d\n", l, m, n, (int)q, s_param);
+  zero_int_vector(u);
+  zero_int_vector(c);
+  zero_int_vector(recovered_msg);
 
   if (!lw2.init(l, m, n, q, s_param))
     return false;
 
   lw2.debug_replace_params(A_t, S_t, E_t, P_t);
-
   if (FLAGS_print_all) {
     printf("\nA:\n"); print_int_matrix(m, n, lw2.A_); printf("\n");
     printf("\nS:\n"); print_int_matrix(n, l, lw2.S_); printf("\n");

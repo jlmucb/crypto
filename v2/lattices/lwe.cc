@@ -36,8 +36,8 @@ bool matrix_multiply(int64_t q, int nr_1, int nc_1, int nc_2, int64_t* A, int64_
   for (int i = 0; i < nr_1; i++) {
     for (int j = 0; j < nc_2; j++) {
       t = 0;
-      for (int k = 0; k < nc_2; k++) {
-        t+= A[matrix_index(nr_1, nc_2, i, k)] * B[matrix_index(nc_1, nc_2, k, j)];
+      for (int k = 0; k < nc_1; k++) {
+        t+= A[matrix_index(nr_1, nc_1, i, k)] * B[matrix_index(nc_1, nc_2, k, j)];
         t %= q;
       }
       C[matrix_index(nr_1, nc_2, i, j)] = t % q;
@@ -340,6 +340,7 @@ bool lwe::init(int l, int m, int n, const int64_t q, const int s_param) {
     return false;
   if (!matrix_add(q, m, l, P_, E_, P_))
     return false;
+
   // PK = (A, P)
   // pk = S
   initialized_ = true;

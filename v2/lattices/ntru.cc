@@ -95,8 +95,14 @@ bool poly_zero(int n, int64_t* f) {
   return true;
 }
 
+bool poly_copy(int n, int64_t* f, int64_t* r) {
+  for (int i = 0; i < n; i++)
+    r[i] = f[i];
+  return true;
+}
+
 bool poly_add_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* f,
-		       int64_t* g, int64_t* r) {
+                       int64_t* g, int64_t* r) {
   for (int i = 0; i < n; i++) {
     r[i] = (f[i] + g[i]) % modulus;
     if (r[i] < 0)
@@ -106,7 +112,7 @@ bool poly_add_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* 
 }
 
 bool poly_mult_by_const(int n, int64_t modulus, int64_t d, int64_t* f,
-		        int64_t* r) {
+                        int64_t* r) {
   for (int i = 0; i < n; i++) {
     r[i] = (d * f[i]) % modulus;
     if (r[i] < 0)
@@ -116,7 +122,7 @@ bool poly_mult_by_const(int n, int64_t modulus, int64_t d, int64_t* f,
 }
 
 bool poly_sub_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* f,
-		       int64_t* g, int64_t* r) {
+                       int64_t* g, int64_t* r) {
   for (int i = 0; i < n; i++) {
     r[i] = (f[i] - g[i]) % modulus;
     if (r[i] < 0)
@@ -125,7 +131,29 @@ bool poly_sub_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* 
   return true;
 }
 
-bool reduce(int m, int64_t* in, int n, int64_t* reducing_poly, int64_t* r) {
+bool reduce(int64_t modulus, int m, int64_t* in, int n, int64_t* reducing_poly, int64_t* r) {
+
+  // reducing poly must be monic
+  int rd = poly_degree(n, reducing_poly);
+  if (reducing_poly[rd] != 1)
+    return false;
+
+  int64_t in_temp[m];
+  int64_t sub_temp[m];
+  poly_zero(m, sub_temp);
+  poly_zero(m, in_temp);
+  poly_copy(m, in, in_temp);
+
+  for (int i = (m-1); i >= rd; i--) {
+    if (in_temp[i] == 0)
+      continue;
+    poly_zero(m, sub_temp);
+    if (!poly_mult_by_const(n, modulus, in_temp[i], reducing_poly, &sub_temp[i - rd]))
+      return false;
+    if (!poly_sub_mod_poly(m, modulus, reducing_poly, in_temp, sub_temp, in_temp))
+      return false;
+  }
+  poly_copy(n, in_temp, r);
   return true;
 }
 
@@ -138,10 +166,10 @@ bool poly_mult_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t*
     for (int j = 0; j < n; j++) {
       temp[i + j] = (temp[i + j] + f[i] * g[j]) % modulus;
       if (temp[i + j] < 0)
-	temp[i + j] += modulus;
+        temp[i + j] += modulus;
     }
   }
-  return reduce(2*n, temp, n, reducing_poly, r);
+  return reduce(modulus, 2*n, temp, n, reducing_poly, r);
 }
 
 // gcd(a, b) = g, ax+by=g
@@ -150,7 +178,7 @@ bool poly_gcd(int64_t* a, int64_t* b, int64_t* x, int64_t* y, int64_t* g) {
 }
 
 bool poly_inverse_mod_poly(int n, int64_t modulus, int64_t* reducing_poly,
-			   int64_t* f, int64_t* g, int64_t* r) {
+                           int64_t* f, int64_t* g, int64_t* r) {
   return true;
 }
 
