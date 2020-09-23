@@ -58,8 +58,44 @@ public:
 void print_poly(int N, int64_t* p) {
 }
 
+// a >= b>0, a = bq+r
+void euclid(int64_t a, int64_t b, int64_t* q, int64_t* r) {
+  *q = a / b;
+  *r = a - (b * (*q));
+}
+
+void move_up(int64_t* x, int64_t* y, int64_t* g) {
+  x[0] = x[1];
+  y[0] = y[1];
+  g[0] = g[1];
+  x[1] = x[2];
+  y[1] = y[2];
+  g[1] = g[2];
+}
+
 // gcd(a, b) = g, ax+by=g
+//    Input: a >= b > 0
 bool int_gcd(int64_t a, int64_t b, int64_t* x, int64_t* y, int64_t* g) {
+  int64_t xc[3], yc[3], gc[3];
+  int64_t q, r;
+
+  // a x[i] + b y[i] = g[i]
+  xc[0] = 1; yc[0] = 0; gc[0] = a;
+  xc[1] = 0; yc[1] = 1; gc[1] = b;
+ 
+  while(1) {
+    euclid(gc[0], gc[1], &q, &r);
+    if (r == 0) {
+      *x = xc[1];
+      *y = yc[1];
+      *g = gc[1];
+      return true;
+    }
+    xc[2] = xc[0] - q * xc[1];
+    yc[2] = yc[0] - q * yc[1];
+    gc[2] = gc[0] - q * gc[1];
+    move_up(xc, yc, gc);
+  }
   return true;
 }
 

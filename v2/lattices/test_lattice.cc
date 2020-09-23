@@ -487,6 +487,8 @@ bool test_lwe() {
   int_vector c(4);
   int_vector recovered_msg(4);
 
+  zero_int_vector(a);
+  zero_int_vector(msg);
   zero_int_vector(u);
   zero_int_vector(c);
   zero_int_vector(recovered_msg);
@@ -569,6 +571,37 @@ bool test_lwe() {
 }
 
 bool test_int_support() {
+  int64_t a = 23;
+  int64_t b = 2;
+  int64_t x = 0;
+  int64_t y = 0;
+  int64_t q = 0;
+  int64_t r = 0;
+  int64_t g = 0;
+
+  if (!int_gcd(a, b, &x, &y, &g))
+    return false;
+  if (FLAGS_print_all) {
+    printf("(%ld)(%ld) + (%ld)(%ld) = %ld\n", a,x,b,y,g);
+  }
+  if (g != 1)
+    return false;
+
+  a = 76;
+  b = 74;
+  x = 0;
+  y = 0;
+  q = 0;
+  r = 0;
+  g = 0;
+  if (!int_gcd(a, b, &x, &y, &g))
+    return false;
+  if (FLAGS_print_all) {
+    printf("(%ld)(%ld) + (%ld)(%ld) = %ld\n", a,x,b,y,g);
+  }
+  if (g != 2)
+    return false;
+
   return true;
 }
 

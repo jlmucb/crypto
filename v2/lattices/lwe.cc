@@ -368,10 +368,9 @@ bool binary_round(int64_t d, int_vector& v, int_vector* w) {
 bool lwe::encrypt(int_vector& in, int_vector& a, int_vector* out1, int_vector* out2) {
   int_vector v_r(l_);
   int_vector v_t(l_);
-  int64_t b;
-
   zero_int_vector(v_r);
   zero_int_vector(v_t);
+  int64_t b;
   int64_t q_r = closest_int(((double)q_) / 2.0);
 
   if (!apply_matrix_transpose(q_, m_, n_, A_, a, out1))
