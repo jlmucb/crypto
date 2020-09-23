@@ -526,7 +526,7 @@ bool test_lwe() {
   if (!lw.decrypt(u, c, &recovered_msg))
     return false;
   if (FLAGS_print_all) {
-    printf("\trecovered: "); print_int_vector(recovered_msg); printf("\n");
+    printf("recovered: "); print_int_vector(recovered_msg); printf("\n");
   }
   if (!int_vector_equal(msg, recovered_msg))
     return false;
@@ -534,7 +534,7 @@ bool test_lwe() {
   lwe lw2;
 
   if (FLAGS_print_all)
-    printf("lwe (2)\nl: %d, m: %d, n: %d, q: %d, s: %d\n", l, m, n, (int)q, s_param);
+    printf("\nlwe (2)\nl: %d, m: %d, n: %d, q: %d, s: %d\n", l, m, n, (int)q, s_param);
 
   if (!lw2.init(l, m, n, q, s_param))
     return false;
@@ -562,7 +562,7 @@ bool test_lwe() {
   if (!lw2.decrypt(u, c, &recovered_msg))
     return false;
   if (FLAGS_print_all) {
-    printf("\trecovered: "); print_int_vector(recovered_msg); printf("\n");
+    printf("recovered: "); print_int_vector(recovered_msg); printf("\n");
   }
   if (!int_vector_equal(msg, recovered_msg))
     return false;
@@ -600,6 +600,21 @@ bool test_int_support() {
     printf("(%ld)(%ld) + (%ld)(%ld) = %ld\n", a,x,b,y,g);
   }
   if (g != 2)
+    return false;
+
+  a = 16 * 5;
+  b = 6 * 5;
+  x = 0;
+  y = 0;
+  q = 0;
+  r = 0;
+  g = 0;
+  if (!int_gcd(a, b, &x, &y, &g))
+    return false;
+  if (FLAGS_print_all) {
+    printf("(%ld)(%ld) + (%ld)(%ld) = %ld\n", a,x,b,y,g);
+  }
+  if (g != 10)
     return false;
 
   return true;
