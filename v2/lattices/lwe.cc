@@ -67,6 +67,16 @@ void zero_int_matrix(int n, int m, int64_t* A) {
   }
 }
 
+bool int_vector_equal(int_vector& x, int_vector& y) {
+  if (x.size() != y.size())
+    return false;
+  for (int i = 0; i < (int)x.size(); i++) {
+    if (x[i] != y[i])
+      return false;
+  }
+  return true;
+}
+
 void print_int_matrix(int m, int n, int64_t* A) {
   for (int i = 0; i < m; i++) {
     for (int j = 0; j < n; j++) {
@@ -363,20 +373,15 @@ bool lwe::encrypt(int_vector& in, int_vector& a, int_vector* out1, int_vector* o
   zero_int_vector(v_r);
   zero_int_vector(v_t);
   int64_t q_r = closest_int(((double)q_) / 2.0);
-printf("q_r : %ld\n", q_r);
 
   if (!apply_matrix_transpose(q_, m_, n_, A_, a, out1))
     return false;
-printf("A^Ta  : "); print_int_vector(*out1); printf("\n");
   if (!mult_int_vector_by_scalar(q_, m_, (int64_t) q_r, in, &v_r))
     return false;
-printf("q/2v  : "); print_int_vector(v_r); printf("\n");
   if (!apply_matrix_transpose(q_, m_, l_, P_, a, &v_t))
     return false;
-printf("P^T a : "); print_int_vector(v_t); printf("\n");
   if (!add_int_vector(q_, l_, v_r, v_t, out2))
     return false;
-printf("msg  : "); print_int_vector(*out2); printf("\n");
 
   return true;
 }
@@ -389,20 +394,15 @@ bool lwe::decrypt(int_vector& in1, int_vector& in2, int_vector* out) {
 
   if (!apply_matrix_transpose(q_, n_, l_, S_, in1, &v_u))
     return false;
-printf("S^Ta  : "); print_int_vector(v_u); printf("\n");
   if (!mult_int_vector_by_scalar(q_, l_, -1ULL, v_u, &v_u))
     return false;
-printf("-S^Ta : "); print_int_vector(v_u); printf("\n");
   if (!add_int_vector(q_, l_, in2, v_u, &v_t))
     return false;
   make_positive(q_, &v_t);
-printf("c-S^Ta: "); print_int_vector(v_t); printf("\n");
   if (!binary_round(q_2, v_t, &v_u))
     return false;
-printf("rounded: "); print_int_vector(v_u); printf("\n");
   for (int i = 0; i < l_; i++)
     (*out)[i] = (v_u[i] % 2);
-printf("out    : "); print_int_vector(*out); printf("\n");
 
   return true;
 }

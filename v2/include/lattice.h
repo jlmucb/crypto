@@ -58,6 +58,7 @@ bool apply_matrix(int64_t q, int nr, int nc, int64_t* A, int_vector& v, int_vect
 bool apply_matrix_transpose(int64_t q, int nr, int nc, int64_t* A, int_vector& v, int_vector* w);
 bool add_int_vector(int64_t q, int n, int_vector& x, int_vector& y, int_vector* z);
 bool mult_int_vector_by_scalar(int64_t q, int n, int64_t d, int_vector& x, int_vector* z);
+bool int_vector_equal(int_vector& x, int_vector& y);
 bool random_from_q(const int64_t q, int64_t* out);
 bool random_from_chi(int s, int64_t* out);
 

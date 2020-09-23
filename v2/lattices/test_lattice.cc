@@ -474,6 +474,7 @@ int c_t[4] =  {
 
 bool test_lwe() {
   lwe lw;
+
   int l = 4;
   int m = 8;
   int n = 4;
@@ -496,13 +497,11 @@ bool test_lwe() {
     a[i] = a_t[i];
 
   if (FLAGS_print_all) {
-    printf("lwe\n\tl: %d, m: %d, n: %d, q: %d, s: %d\n", l, m, n, (int)q, s_param);
+    printf("lwe (1)\nl: %d, m: %d, n: %d, q: %d, s: %d\n", l, m, n, (int)q, s_param);
   }
 
   if (!lw.init(l, m, n, q, s_param))
     return false;
-
-  lw.debug_replace_params(A_t, S_t, E_t, P_t);
 
   if (FLAGS_print_all) {
     printf("\nA:\n"); print_int_matrix(m, n, lw.A_); printf("\n");
@@ -527,9 +526,48 @@ bool test_lwe() {
   if (FLAGS_print_all) {
     printf("\trecovered: "); print_int_vector(recovered_msg); printf("\n");
   }
+  if (!int_vector_equal(msg, recovered_msg))
+    return false;
+
+  lwe lw2;
+
+  if (FLAGS_print_all)
+    printf("lwe (2)\nl: %d, m: %d, n: %d, q: %d, s: %d\n", l, m, n, (int)q, s_param);
+
+  if (!lw2.init(l, m, n, q, s_param))
+    return false;
+
+  lw2.debug_replace_params(A_t, S_t, E_t, P_t);
+
+  if (FLAGS_print_all) {
+    printf("\nA:\n"); print_int_matrix(m, n, lw2.A_); printf("\n");
+    printf("\nS:\n"); print_int_matrix(n, l, lw2.S_); printf("\n");
+    printf("\nE:\n"); print_int_matrix(m, l, lw2.E_); printf("\n");
+    printf("\nP:\n"); print_int_matrix(m, l, lw2.P_); printf("\n");
+    printf("\nmsg: "); print_int_vector(msg); printf("\n");
+    printf("a  : "); print_int_vector(a); printf("\n");
+  }
+
+  if (!lw2.encrypt(msg, a, &u, &c))
+    return false;
+  if (FLAGS_print_all) {
+    printf("(u, c): ");
+    printf("( "); print_int_vector(u);
+    printf(", "); print_int_vector(c);
+    printf(" )\n");
+  }
+
+  if (!lw2.decrypt(u, c, &recovered_msg))
+    return false;
+  if (FLAGS_print_all) {
+    printf("\trecovered: "); print_int_vector(recovered_msg); printf("\n");
+  }
+  if (!int_vector_equal(msg, recovered_msg))
+    return false;
 
   return true;
 }
+
 
 TEST (support, test_support) {
   EXPECT_TRUE(test_support_functions());
