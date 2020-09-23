@@ -36,8 +36,7 @@ public:
   int N_;
   int64_t p_;
   int64_t q_;
-  int d1_;
-  int d2_;
+  int d_;
   int64_t* f_;
   int64_t* g_;
   int64_t* fp_;
@@ -49,12 +48,15 @@ public:
 
   bool init(int N, int64_t p, int64_t q, int d1, int d2);
   bool encode_msg();
-  bool encrypt();
-  bool decrypt();
+  bool encrypt(int64_t* msg, int64_t* r, int64_t* c);
+  bool decrypt(int64_t* c, int64_t* recovered);
   bool decode_msg();
 
-  void debug_set_parameters();
+  void debug_set_parameters(int64_t* f, int64_t* g, int64_t* fp, int64_t* fq, int64_t* h);
 };
+
+void print_poly(int N, int64_t* p) {
+}
 
 // gcd(a, b) = g, ax+by=g
 bool int_gcd(int64_t a, int64_t b, int64_t* x, int64_t* y, int64_t* g) {
@@ -102,11 +104,15 @@ bool ntru::encode_msg() {
   return true;
 }
 
-bool ntru::encrypt() {
+// r is random poly in T(d_, d_)
+//  c= prh + m (mod q_)
+bool ntru::encrypt(int64_t* msg, int64_t* r, int64_t* c) {
   return true;
 }
 
-bool ntru::decrypt() {
+//  a = f c (mod q), -q/2 <= a <= q/2
+//  m = fp a (mod p_)
+bool ntru::decrypt(int64_t* c, int64_t* recovered) {
   return true;
 }
 
@@ -114,6 +120,6 @@ bool ntru::decode_msg() {
   return true;
 }
 
-void ntru::debug_set_parameters() {
+void ntru::debug_set_parameters(int64_t* f, int64_t* g, int64_t* fp, int64_t* fq, int64_t* h) {
 }
 
