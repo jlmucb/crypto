@@ -473,8 +473,6 @@ int c_t[4] =  {
 //   recover  1 0 1 1
 
 bool test_lwe() {
-  lwe lw;
-
   int l = 4;
   int m = 8;
   int n = 4;
@@ -497,6 +495,8 @@ bool test_lwe() {
     msg[i] = msg_t[i];
   for (int i = 0; i < m; i++)
     a[i] = a_t[i];
+
+  lwe lw;
 
   if (FLAGS_print_all) {
     printf("lwe (1)\nl: %d, m: %d, n: %d, q: %d, s: %d\n", l, m, n, (int)q, s_param);
@@ -629,37 +629,27 @@ bool test_ntru() {
 }
 
 
-TEST (support, test_support) {
+// Linux gtest has problems with many TESTs
+TEST (vectors_matricies, vectors_matricies) {
   EXPECT_TRUE(test_support_functions());
-}
-TEST (gso, test_gso) {
-  EXPECT_TRUE(test_gso());
-}
-TEST (size_reduce, test_size_reduce) {
-  EXPECT_TRUE(test_size_reduce());
-}
-TEST (lll, test_lll) {
-  EXPECT_TRUE(test_lll());
-}
-TEST (vector, test_vector) {
-  EXPECT_TRUE(test_vector());
-}
-TEST (rng, test_rng) {
+  EXPECT_TRUE(test_matrix());
   EXPECT_TRUE(test_rng());
 }
-TEST (matrix, test_matrix) {
-  EXPECT_TRUE(test_matrix());
+
+TEST (lll, test_lll) {
+  EXPECT_TRUE(test_gso());
+  EXPECT_TRUE(test_size_reduce());
+  EXPECT_TRUE(test_lll());
 }
+
 TEST (lwe, test_lwe) {
+  EXPECT_TRUE(test_vector());
   EXPECT_TRUE(test_lwe());
 }
-TEST (int_support, test_int_support) {
+
+TEST (int_ntru_support, test_ntru_support) {
   EXPECT_TRUE(test_int_support());
-}
-TEST (poly_support, test_poly_support) {
   EXPECT_TRUE(test_poly_support());
-}
-TEST (ntru, test_ntru) {
   EXPECT_TRUE(test_ntru());
 }
 
