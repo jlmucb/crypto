@@ -568,6 +568,18 @@ bool test_lwe() {
   return true;
 }
 
+bool test_int_support() {
+  return true;
+}
+
+bool test_poly_support() {
+  return true;
+}
+
+bool test_ntru() {
+  return true;
+}
+
 
 TEST (support, test_support) {
   EXPECT_TRUE(test_support_functions());
@@ -592,6 +604,15 @@ TEST (matrix, test_matrix) {
 }
 TEST (lwe, test_lwe) {
   EXPECT_TRUE(test_lwe());
+}
+TEST (int_support, test_int_support) {
+  EXPECT_TRUE(test_int_support());
+}
+TEST (poly_support, test_poly_support) {
+  EXPECT_TRUE(test_poly_support());
+}
+TEST (ntru, test_ntru) {
+  EXPECT_TRUE(test_ntru());
 }
 
 
