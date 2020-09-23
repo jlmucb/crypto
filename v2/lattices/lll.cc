@@ -42,10 +42,8 @@ void print_vector(real_vector& v) {
 
 bool vector_alloc(int n, real_vector* v) {
   v->clear();
-  real_vector::iterator it;
-  it = v->begin();
-
-  v->insert(it, n, 0.0);
+  for (int i = 0; i < n; i++)
+    v->push_back(0.0);
   return true;
 }
 
@@ -197,33 +195,28 @@ bool vector_swap(int n, real_vector* b1, real_vector* b2) {
 }
 
 bool lll(const double delta, int n, real_vector* b) {
-  double* B = new double[n];
-  if (B == nullptr)
-    return false;
-  real_vector* b_norm = new real_vector[n];
-  if (b_norm == nullptr)
-    return false;
-  double* u = new double[n * n];
-  if (u == nullptr)
-    return false;
   bool ret = false;
+  bool restart;
+  double B[n];
+  double u[n * n];
+  real_vector b_norm[n];
+
   matrix_zero(n, n, u);
   for (int i = 0; i < n; i++) {
     vector_alloc(n, b_norm);
     B[i] = 0.0;
   }
 
-  bool restart;
   for (int i = 0; i < RUNAWAY; i++) {
     if (!gso(n, b, b_norm, u)) {
-      goto done;
+      return false;
     }
    if (!size_reduce(n, b, b_norm, u)) {
-      goto done;
+      return false;
     }
     for (int j = 0; j < n; j++) {
       if(!vector_dot_product(n, b_norm[j], b_norm[j], &B[j])) {
-        goto done;
+        return false;
       }
     }
     // check Lovacz condition
@@ -243,12 +236,5 @@ bool lll(const double delta, int n, real_vector* b) {
     break;
   }
 
-done:
-  if (B != nullptr)
-    delete []B;
-  if (b_norm != nullptr)
-    delete []b_norm;
-  if (u != nullptr)
-    delete []u;
-  return ret;
+  return true;
 }

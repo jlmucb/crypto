@@ -88,7 +88,7 @@ void print_int_matrix(int m, int n, int64_t* A) {
 
 void print_int_vector(int_vector& v) {
   printf("( ");
-  for (int i = 0; i < v.size(); i++) {
+  for (int i = 0; i < (int)v.size(); i++) {
     printf("%5lld  ", v[i]);
   }
   printf(" )");
@@ -182,8 +182,10 @@ chi_dist::chi_dist() {
 }
 
 chi_dist::~chi_dist() {
-  if (probs_ != nullptr)
+  if (probs_ != nullptr) {
     delete []probs_;
+    probs_ = nullptr;
+  }
   probs_ = nullptr;
   initialized_ = false;
 }
@@ -200,11 +202,14 @@ bool chi_dist::init(int s) {
   }
   prec_ = 1ULL << 32;
   initialized_ = true;
-  return true;
+  return initialized_;
 }
 
 bool chi_dist::random_from_chi(int64_t* out) {
   uint64_t u = 0.0;
+
+  if (!initialized_)
+    return false;
   if (crypto_get_random_bytes(4, (byte*)&u) < 0)
     return false;
   double t = ((double)u) / ((double)prec_);

@@ -267,7 +267,8 @@ bool test_vector() {
   int q = 37;
   int64_t d = 3;
 
-  printf("q: %d\n", q);
+  if (FLAGS_print_all)
+    printf("q: %d\n", q);
 
   for (int i = 0; i < n; i++) {
     v1[i] = (int64_t) (i + 1);
@@ -582,7 +583,7 @@ bool test_int_support() {
   if (!int_gcd(a, b, &x, &y, &g))
     return false;
   if (FLAGS_print_all) {
-    printf("(%ld)(%ld) + (%ld)(%ld) = %ld\n", a,x,b,y,g);
+    printf("(%lld)(%lld) + (%lld)(%lld) = %lld\n", a,x,b,y,g);
   }
   if (g != 1)
     return false;
@@ -597,7 +598,7 @@ bool test_int_support() {
   if (!int_gcd(a, b, &x, &y, &g))
     return false;
   if (FLAGS_print_all) {
-    printf("(%ld)(%ld) + (%ld)(%ld) = %ld\n", a,x,b,y,g);
+    printf("(%lld)(%lld) + (%lld)(%lld) = %lld\n", a,x,b,y,g);
   }
   if (g != 2)
     return false;
@@ -612,7 +613,7 @@ bool test_int_support() {
   if (!int_gcd(a, b, &x, &y, &g))
     return false;
   if (FLAGS_print_all) {
-    printf("(%ld)(%ld) + (%ld)(%ld) = %ld\n", a,x,b,y,g);
+    printf("(%lld)(%lld) + (%lld)(%lld) = %lld\n", a,x,b,y,g);
   }
   if (g != 10)
     return false;
@@ -629,8 +630,7 @@ bool test_ntru() {
 }
 
 
-// Linux gtest has problems with many TESTs
-TEST (vectors_matricies, vectors_matricies) {
+TEST (support, support_functions) {
   EXPECT_TRUE(test_support_functions());
   EXPECT_TRUE(test_matrix());
   EXPECT_TRUE(test_rng());
@@ -638,7 +638,6 @@ TEST (vectors_matricies, vectors_matricies) {
 
 TEST (lll, test_lll) {
   EXPECT_TRUE(test_gso());
-  EXPECT_TRUE(test_size_reduce());
   EXPECT_TRUE(test_lll());
 }
 
