@@ -107,6 +107,42 @@ public:
   void debug_replace_params(int64_t* A_t, int64_t* S_t, int64_t* E_t, int64_t* P_t);
 };
 
+void euclid(int64_t a, int64_t b, int64_t* q, int64_t* r);
 bool int_gcd(int64_t a, int64_t b, int64_t* x, int64_t* y, int64_t* g);
+
+void print_poly(int n, int64_t* f);
+int poly_degree(int n, int64_t* f);
+bool poly_zero(int n, int64_t* f);
+bool poly_add_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* f,
+                       int64_t* g, int64_t* r);
+bool poly_mult_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* f,
+                        int64_t* g, int64_t* r);
+bool poly_gcd(int64_t* a, int64_t* b, int64_t* x, int64_t* y, int64_t* g);
+bool poly_inverse_mod_poly(int n, int64_t modulus, int64_t* reducing_poly,
+                           int64_t* f, int64_t* g, int64_t* r);
+
+class ntru {
+public:
+  int N_;
+  int64_t p_;
+  int64_t q_;
+  int d_;
+  int64_t* f_;
+  int64_t* g_;
+  int64_t* fp_;
+  int64_t* fq_;
+  int64_t* h_;
+
+  ntru();
+  ~ntru();
+
+  bool init(int N, int64_t p, int64_t q, int d1, int d2);
+  bool encode_msg();
+  bool encrypt(int64_t* msg, int64_t* r, int64_t* c);
+  bool decrypt(int64_t* c, int64_t* recovered);
+  bool decode_msg();
+
+  void debug_set_parameters(int64_t* f, int64_t* g, int64_t* fp, int64_t* fq, int64_t* h);
+};
 
 #endif

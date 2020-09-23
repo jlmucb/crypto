@@ -31,32 +31,6 @@
 //    a = f c (q), a between -((p-1)/2) and ((p-1)/2)
 //    m = fp a (p), a = f c = f(prh + m) (q)
 //    coeff  at most p(2d) + (2d+1)p/2
-class ntru {
-public:
-  int N_;
-  int64_t p_;
-  int64_t q_;
-  int d_;
-  int64_t* f_;
-  int64_t* g_;
-  int64_t* fp_;
-  int64_t* fq_;
-  int64_t* h_;
-
-  ntru();
-  ~ntru();
-
-  bool init(int N, int64_t p, int64_t q, int d1, int d2);
-  bool encode_msg();
-  bool encrypt(int64_t* msg, int64_t* r, int64_t* c);
-  bool decrypt(int64_t* c, int64_t* recovered);
-  bool decode_msg();
-
-  void debug_set_parameters(int64_t* f, int64_t* g, int64_t* fp, int64_t* fq, int64_t* h);
-};
-
-void print_poly(int N, int64_t* p) {
-}
 
 // a >= b>0, a = bq+r
 void euclid(int64_t a, int64_t b, int64_t* q, int64_t* r) {
@@ -99,22 +73,46 @@ bool int_gcd(int64_t a, int64_t b, int64_t* x, int64_t* y, int64_t* g) {
   return true;
 }
 
+void print_poly(int n, int64_t* f) {
+  for (int i = (n-1); i >0; i--) {
+    if (f[i] != 0) {
+      printf("%lld x^%d +", f[i], i);
+    }
+    printf("%lld", f[0]);
+  }
+}
+
+int poly_degree(int n, int64_t* f) {
+  for (int i = (n-1); i >=0; i--)
+    if (f[i] != 0)
+      return i;
+  return 0;
+}
+
+bool poly_zero(int n, int64_t* f) {
+  for (int i =0; i < n; i++)
+    f[i] = 0ULL;
+  return true;
+}
+
+bool poly_add_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* f,
+		       int64_t* g, int64_t* r) {
+  for (int i =0; i < n; i++)
+    r[i] = (f[i] + g[i]) % modulus;
+  return true;
+}
+
+bool poly_mult_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* f,
+                        int64_t* g, int64_t* r) {
+  return true;
+}
+
 // gcd(a, b) = g, ax+by=g
 bool poly_gcd(int64_t* a, int64_t* b, int64_t* x, int64_t* y, int64_t* g) {
   return true;
 }
 
-bool poly_mult_mod_poly(int64_t modulus, int64_t* p, int64_t* f,
-			int64_t* g, int64_t* r) {
-  return true;
-}
-
-bool poly_add_mod_poly(int64_t modulus, int64_t* reducing_poly, int64_t* f,
-		       int64_t* g, int64_t* r) {
-  return true;
-}
-
-bool poly_inverse_mod_poly(int64_t modulus, int64_t* reducing_poly,
+bool poly_inverse_mod_poly(int n, int64_t modulus, int64_t* reducing_poly,
 			   int64_t* f, int64_t* g, int64_t* r) {
   return true;
 }
