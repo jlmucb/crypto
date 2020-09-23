@@ -30,17 +30,17 @@
 //
 //  sigma = s / sqrt(2 pi).  p(x) = 1/c exp(-x^2/(s sigma^2)), c= \sum_k exp(-k^2/(2 sigma^2))
 
-bool matrix_multiply(int64_t q, int n1, int n2, int n3, int64_t* A, int64_t* B, int64_t* C) {
+bool matrix_multiply(int64_t q, int nr_1, int nc_1, int nc_2, int64_t* A, int64_t* B, int64_t* C) {
   int64_t t = 0;
 
-  for (int i = 0; i < n1; i++) {
-    for (int j = 0; j < n3; j++) {
+  for (int i = 0; i < nr_1; i++) {
+    for (int j = 0; j < nc_2; j++) {
       t = 0;
-      for (int k = 0; k < n2; k++) {
-        t+= A[matrix_index(n1, n2, i, k)] * B[matrix_index(n2, n3, k, j)];
+      for (int k = 0; k < nc_2; k++) {
+        t+= A[matrix_index(nr_1, nc_2, i, k)] * B[matrix_index(nc_1, nc_2, k, j)];
         t %= q;
       }
-      C[matrix_index(n1, n3, i, j)] = t % q;
+      C[matrix_index(nr_1, nc_2, i, j)] = t % q;
     }
   }
   return true;
@@ -85,36 +85,36 @@ void print_int_vector(int_vector& v) {
 }
 
 void zero_int_vector(int_vector& v) {
-  for (int i = 0; i < v.size(); i++) {
+  for (int i = 0; i < (int)v.size(); i++) {
     v[i] = 0;
   }
 }
 
-bool matrix_add(int64_t q, int n1, int n2, int64_t* A, int64_t* B, int64_t* C) {
-  for (int i = 0; i < n1; i++) {
-    for (int j = 0; j < n2; j++) {
-      C[matrix_index(n1, n2, i, j)] = (A[matrix_index(n1, n2, i, j)] + B[matrix_index(n1, n2, i, j)]) % q;
+bool matrix_add(int64_t q, int nr, int nc, int64_t* A, int64_t* B, int64_t* C) {
+  for (int i = 0; i < nr; i++) {
+    for (int j = 0; j < nc; j++) {
+      C[matrix_index(nr, nc, i, j)] = (A[matrix_index(nr, nc, i, j)] + B[matrix_index(nr, nc, i, j)]) % q;
     }
   }
   return true;
 }
 
-bool matrix_scalar_multiply(int64_t q, int n1, int n2, const int64_t d, int64_t* A, int64_t* C) {
-  for (int i = 0; i < n1; i++) {
-    for (int j = 0; j < n2; j++) {
-      C[matrix_index(n1, n2, i, j)] = (d * A[matrix_index(n1, n2, i, j)]) % q;
+bool matrix_scalar_multiply(int64_t q, int nr, int nc, const int64_t d, int64_t* A, int64_t* C) {
+  for (int i = 0; i < nr; i++) {
+    for (int j = 0; j < nc; j++) {
+      C[matrix_index(nr, nc, i, j)] = (d * A[matrix_index(nr, nc, i, j)]) % q;
     }
   }
   return true;
 }
 
-bool apply_matrix(int64_t q, int n1, int n2, int64_t* A, int_vector& v, int_vector* w) {
+bool apply_matrix(int64_t q, int nr, int nc, int64_t* A, int_vector& v, int_vector* w) {
   int64_t t;
 
-  for (int i = 0; i < n1; i++) {
+  for (int i = 0; i < nr; i++) {
     t = 0;
-    for (int j = 0; j < n2; j++) {
-      t += A[matrix_index(n1, n2, i, j)] * v[j];
+    for (int j = 0; j < nc; j++) {
+      t += A[matrix_index(nr, nc, i, j)] * v[j];
       t %= q;
     }
     (*w)[i] = t % q;
@@ -122,13 +122,13 @@ bool apply_matrix(int64_t q, int n1, int n2, int64_t* A, int_vector& v, int_vect
   return true;
 }
 
-bool apply_matrix_transpose(int64_t q, int n1, int n2, int64_t* A, int_vector& v, int_vector* w) {
+bool apply_matrix_transpose(int64_t q, int nr, int nc, int64_t* A, int_vector& v, int_vector* w) {
   int64_t t;
 
-  for (int i = 0; i < n1; i++) {
+  for (int i = 0; i < nc; i++) {
     t = 0;
-    for (int j = 0; j < n2; j++) {
-      t += A[matrix_transpose_index(n1, n2, i, j)] * v[j];
+    for (int j = 0; j < nr; j++) {
+      t += A[matrix_transpose_index(nr, nc, i, j)] * v[j];
       t %= q;
     }
     (*w)[i] = t % q;
@@ -332,6 +332,13 @@ bool lwe::init(int l, int m, int n, const int64_t q, const int s_param) {
   return initialized_;
 }
 
+void make_positive(int64_t q, int_vector* w) {
+  for (int i = 0; i < (int)w->size(); i++) {
+    if ((*w)[i] < 0)
+      (*w)[i] += q;
+  }
+}
+
 // closer to 0 or q/2?
 bool binary_round(int64_t d, int_vector& v, int_vector* w) {
   if (d == 0ULL)
@@ -339,7 +346,7 @@ bool binary_round(int64_t d, int_vector& v, int_vector* w) {
 
   double x, xd;
   xd = 1.0 / ((double)d);
-  for (int i = 0; i < v.size(); i++) {
+  for (int i = 0; i < (int)v.size(); i++) {
     x = ((double)v[i]) * xd;
     (*w)[i] = closest_int(x);
   }
@@ -349,20 +356,27 @@ bool binary_round(int64_t d, int_vector& v, int_vector* w) {
 //    v in {0,1}^l, a in {0,1}^m (random)
 //    (u=A^Ta, c = P^Ta+close(q/2)v)
 bool lwe::encrypt(int_vector& in, int_vector& a, int_vector* out1, int_vector* out2) {
-  int_vector v_a(m_);
   int_vector v_r(l_);
   int_vector v_t(l_);
   int64_t b;
 
+  zero_int_vector(v_r);
+  zero_int_vector(v_t);
+  int64_t q_r = closest_int(((double)q_) / 2.0);
+printf("q_r : %ld\n", q_r);
+
   if (!apply_matrix_transpose(q_, m_, n_, A_, a, out1))
     return false;
-  int64_t q_r = closest_int(((double)q_) / 2.0);
-  if (!mult_int_vector_by_scalar(q_, m_, (int64_t) q_r, a, &v_a))
+printf("A^Ta  : "); print_int_vector(*out1); printf("\n");
+  if (!mult_int_vector_by_scalar(q_, m_, (int64_t) q_r, in, &v_r))
     return false;
-  if (!apply_matrix_transpose(q_, m_, l_, P_, v_a, &v_t))
+printf("q/2v  : "); print_int_vector(v_r); printf("\n");
+  if (!apply_matrix_transpose(q_, m_, l_, P_, a, &v_t))
     return false;
+printf("P^T a : "); print_int_vector(v_t); printf("\n");
   if (!add_int_vector(q_, l_, v_r, v_t, out2))
     return false;
+printf("msg  : "); print_int_vector(*out2); printf("\n");
 
   return true;
 }
@@ -375,14 +389,20 @@ bool lwe::decrypt(int_vector& in1, int_vector& in2, int_vector* out) {
 
   if (!apply_matrix_transpose(q_, n_, l_, S_, in1, &v_u))
     return false;
+printf("S^Ta  : "); print_int_vector(v_u); printf("\n");
   if (!mult_int_vector_by_scalar(q_, l_, -1ULL, v_u, &v_u))
     return false;
+printf("-S^Ta : "); print_int_vector(v_u); printf("\n");
   if (!add_int_vector(q_, l_, in2, v_u, &v_t))
     return false;
+  make_positive(q_, &v_t);
+printf("c-S^Ta: "); print_int_vector(v_t); printf("\n");
   if (!binary_round(q_2, v_t, &v_u))
     return false;
+printf("rounded: "); print_int_vector(v_u); printf("\n");
   for (int i = 0; i < l_; i++)
     (*out)[i] = (v_u[i] % 2);
+printf("out    : "); print_int_vector(*out); printf("\n");
 
   return true;
 }

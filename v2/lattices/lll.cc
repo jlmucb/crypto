@@ -49,8 +49,8 @@ bool vector_alloc(int n, real_vector* v) {
   return true;
 }
 
-bool vector_zero(int n, real_vector* v) {
-  for (int i = 0; i < n; i++) {
+bool vector_zero(real_vector* v) {
+  for (int i = 0; i < (int)v->size(); i++) {
     (*v)[i] = 0.0;
   }
   return true;
@@ -123,7 +123,7 @@ bool gso(int n, real_vector* b, real_vector* b_norm, double* u) {
       if (!vector_dot_product(n, b_norm[i], b_norm[j], &t))
         return false;
       u[matrix_index(n, n, i, j)] = t / d;
-      vector_zero(n, &temp);
+      vector_zero(&temp);
       if (!vector_scalar_mult(n, (t / d),  b_norm[j], &temp))
         return false;
       if (!vector_sub(n, b_norm[i], temp, &b_norm[i]))
@@ -138,11 +138,11 @@ const int RUNAWAY = 1000000;
 int64_t closest_int(double x) {
   int64_t a = (int64_t) x;
   if (x >= 0) {
-    if (fabs(x - (double)a) <= 0.5)
+    if (fabs(x - (double)a) < 0.5)
         return a;
     return a + 1ULL;
   } else {
-    if (fabs(x - (double)a) <= 0.5)
+    if (fabs(x - (double)a) < 0.5)
       return a;
     return a - 1ULL;
   }
@@ -162,7 +162,7 @@ bool size_reduce(int n, real_vector* b, real_vector* b_norm, double* u) {
 
   for (int i = 1; i < n; i++) {
     for (int j = (i - 1); j >= 0; j--) {
-      vector_zero(n, &v_t);
+      vector_zero(&v_t);
       i_u = closest_int(u[matrix_index(n, n, i, j)]);
       if (!vector_scalar_mult(n, (const double) i_u,  b[j], &v_t))
         return false;

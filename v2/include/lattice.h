@@ -33,7 +33,7 @@ inline int matrix_transpose_index(int n_rows, int n_cols, int i, int j) {
 
 void print_vector(real_vector& v);
 bool vector_alloc(int n, real_vector* v);
-bool vector_zero(int n, real_vector* v);
+bool vector_zero(real_vector* v);
 bool vector_add(int n, real_vector& v1,  real_vector& v2, real_vector* v);
 bool vector_sub(int n, real_vector& v1,  real_vector& v2, real_vector* v);
 bool vector_scalar_mult(int n, const double d,  real_vector& v1, real_vector* v);
@@ -51,11 +51,11 @@ void zero_int_vector(int_vector& v);
 void print_int_matrix(int n, int m, int64_t* A);
 void print_int_vector(int_vector& v);
 bool matrix_copy(int n1, int n2, int64_t* A, int64_t* B);
-bool matrix_multiply(int64_t q, int n1, int n2, int n3, int64_t* A, int64_t* B, int64_t* C);
-bool matrix_add(int64_t q, int n1, int n2, int64_t* A, int64_t* B, int64_t* C);
-bool matrix_scalar_multiply(int64_t q, int n1, int n2, const int64_t d, int64_t* A, int64_t* C);
-bool apply_matrix(int64_t q, int n1, int n2, int64_t* A, int_vector& v, int_vector* w);
-bool apply_matrix_transpose(int64_t q, int n1, int n2, int64_t* A, int_vector& v, int_vector* w);
+bool matrix_multiply(int64_t q, int nr_1, int nc_1, int nc_2, int64_t* A, int64_t* B, int64_t* C);
+bool matrix_add(int64_t q, int nr, int nc, int64_t* A, int64_t* B, int64_t* C);
+bool matrix_scalar_multiply(int64_t q, int nr, int nc, const int64_t d, int64_t* A, int64_t* C);
+bool apply_matrix(int64_t q, int nr, int nc, int64_t* A, int_vector& v, int_vector* w);
+bool apply_matrix_transpose(int64_t q, int nr, int nc, int64_t* A, int_vector& v, int_vector* w);
 bool add_int_vector(int64_t q, int n, int_vector& x, int_vector& y, int_vector* z);
 bool mult_int_vector_by_scalar(int64_t q, int n, int64_t d, int_vector& x, int_vector* z);
 bool random_from_q(const int64_t q, int64_t* out);

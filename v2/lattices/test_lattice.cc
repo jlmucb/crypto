@@ -42,7 +42,7 @@ bool test_support_functions() {
   (b[2])[1] = 0.0;
   (b[2])[2] = 23.0;
 
-  vector_zero(n, &v_t);
+  vector_zero(&v_t);
   if (FLAGS_print_all) {
     print_vector(v_t);
     printf("\n");
@@ -58,7 +58,7 @@ bool test_support_functions() {
     print_vector(v_t);
     printf("\n");
   }
-  vector_zero(n, &v_t);
+  vector_zero(&v_t);
   if (!vector_sub(n, b[0],  b[1], &v_t))
     return false;
   if (FLAGS_print_all) {
@@ -69,7 +69,7 @@ bool test_support_functions() {
     print_vector(v_t);
     printf("\n");
   }
-  vector_zero(n, &v_t);
+  vector_zero(&v_t);
   x = 2.0;
   if (!vector_scalar_mult(n, x,  b[0], &v_t))
     return false;
@@ -80,7 +80,7 @@ bool test_support_functions() {
     print_vector(v_t);
     printf("\n");
   }
-  vector_zero(n, &v_t);
+  vector_zero(&v_t);
   if (!vector_dot_product(n, b[0], b[0], &d))
     return false;
   if (FLAGS_print_all) {
@@ -90,7 +90,7 @@ bool test_support_functions() {
     printf(" = ");
     printf("%lf\n", d);
   }
-  vector_zero(n, &v_t);
+  vector_zero(&v_t);
   if (!vector_dot_product(n, b[0], b[1], &d))
     return false;
   if (FLAGS_print_all) {
@@ -521,7 +521,7 @@ bool test_lwe() {
     printf(", "); print_int_vector(c);
     printf(" )\n");
   }
-return true;
+
   if (!lw.decrypt(u, c, &recovered_msg))
     return false;
   if (FLAGS_print_all) {
