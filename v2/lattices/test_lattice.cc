@@ -626,12 +626,12 @@ bool test_int_support() {
 
 bool test_poly_support() {
   int64_t poly_1[10] = {
-    1LL, 1LL, 3LL, 4LL, 5LL,
-    7LL, 8LL, 9LL, 12LL, 2LL,
+    1LL, 1LL, 3LL, 0LL, 5LL,
+    0LL, 0LL, 0LL, 0LL, 0LL
   };
   int64_t poly_2[10] = {
     1LL, 1LL, 5LL, 4LL, 5LL,
-    2LL, 8LL, 0LL, 0LL, 0LL,
+    0LL, 0LL, 0LL, 0LL, 0LL
   };
   int64_t poly_3[10];
   int64_t poly_4[10];
@@ -654,7 +654,6 @@ bool test_poly_support() {
     printf("\n");
     poly_zero(10, poly_3);
     printf("zeroed poly, degree %d: ", poly_degree(10, poly_3));
-    print_poly(10, poly_1);
     printf("\n");
     poly_copy(10, poly_2, poly_4);
     printf("copied poly 2, degree %d: ", poly_degree(10, poly_4));
@@ -671,6 +670,13 @@ bool test_poly_support() {
     print_poly(n, poly_2); printf(" = ");
     print_poly(n, poly_5); printf("(mod %lld)\n ", modulus);
   }
+  int64_t a_test[10] = {
+    2, 2, 8, 4, 10,
+    0, 0, 0, 0, 0
+  };
+  if (!poly_equal(n, a_test, poly_5))
+    return false;
+
   if (!poly_sub_mod_poly(n, modulus, reducing_poly, poly_1, poly_1, poly_5))
     return false;
   if (FLAGS_print_all) {
@@ -679,6 +685,8 @@ bool test_poly_support() {
     print_poly(n, poly_1); printf(" = ");
     print_poly(n, poly_5); printf("(mod %lld)\n ", modulus);
   }
+  if (!poly_equal(n,poly_3, poly_5))
+    return false;
 
   int64_t d = 3;
   if (!poly_mult_by_const(n, modulus, d, poly_1, poly_5))
@@ -689,6 +697,12 @@ bool test_poly_support() {
     print_poly(n, poly_1); printf(" = ");
     print_poly(n, poly_5); printf(" (mod %lld)\n ", modulus);
   }
+  int64_t m_test[10] = {
+     3, 3, 9, 0, 4,
+     0, 0, 0, 0, 0
+  };
+  if (!poly_equal(n, m_test, poly_5))
+    return false;
 
   poly_zero(10, poly_5);
   if (!poly_mult_mod_poly(n, modulus, reducing_poly, poly_1, poly_2, poly_5))
@@ -701,6 +715,12 @@ bool test_poly_support() {
     print_poly(n, poly_5); printf("(mod %lld)\n ", modulus);
     printf("Reduced by: "); print_poly(n, reducing_poly); printf("(mod %lld)\n ", modulus);
   }
+  int64_t mm_test[10] = {
+    8, 6, 0, 0, 0,
+    0, 0, 0, 0, 0
+  };
+  if (!poly_equal(n, mm_test, poly_5))
+    return false;
 
   return true;
 }
