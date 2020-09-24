@@ -112,6 +112,7 @@ bool int_gcd(int64_t a, int64_t b, int64_t* x, int64_t* y, int64_t* g);
 
 void print_poly(int n, int64_t* f);
 int poly_degree(int n, int64_t* f);
+bool poly_equal(int n, int64_t* f, int64_t* r);
 bool poly_copy(int n, int64_t* f, int64_t* r);
 bool poly_zero(int n, int64_t* f);
 bool poly_add_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* f,

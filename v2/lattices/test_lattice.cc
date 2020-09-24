@@ -106,28 +106,28 @@ bool test_support_functions() {
   if (FLAGS_print_all) {
     printf("close(%lf) = %lld\n", x, a);
   }
-  if (a != 1ULL)
+  if (a != 1LL)
     return false;
   x = .87;
   a =  closest_int(x);
   if (FLAGS_print_all) {
     printf("close(%lf) = %lld\n", x, a);
   }
-  if (a != 1ULL)
+  if (a != 1LL)
     return false;
   x = -1.33;
   a =  closest_int(x);
   if (FLAGS_print_all) {
     printf("close(%lf) = %lld\n", x, a);
   }
-  if (a != -1ULL)
+  if (a != -1LL)
     return false;
   x = -.87;
   a =  closest_int(x);
   if (FLAGS_print_all) {
     printf("close(%lf) = %lld\n", x, a);
   }
-  if (a != -1ULL)
+  if (a != -1LL)
     return false;
 
   printf("matrix index\n");
@@ -375,7 +375,7 @@ bool test_matrix() {
 }
 
 bool test_rng() {
-  int64_t q = 1ULL << 16;
+  int64_t q = 1LL << 16;
   int64_t x;
 
   for (int i = 0; i < 5; i++) {
@@ -474,6 +474,7 @@ int c_t[4] =  {
 //   recover  1 0 1 1
 
 bool test_lwe() {
+
   int l = 4;
   int m = 8;
   int n = 4;
@@ -624,6 +625,83 @@ bool test_int_support() {
 }
 
 bool test_poly_support() {
+  int64_t poly_1[10] = {
+    1LL, 1LL, 3LL, 4LL, 5LL,
+    7LL, 8LL, 9LL, 12LL, 2LL,
+  };
+  int64_t poly_2[10] = {
+    1LL, 1LL, 5LL, 4LL, 5LL,
+    2LL, 8LL, 0LL, 0LL, 0LL,
+  };
+  int64_t poly_3[10];
+  int64_t poly_4[10];
+  int64_t poly_5[10];
+  int n = 10;
+  int64_t  modulus = 11;
+
+ int64_t reducing_poly[12] = {
+    1LL, 1LL, 1LL, 0LL, 0LL,
+    0LL, 0LL, 0LL, 0LL, 0LL,
+    0LL, 1LL,
+  };
+
+  if (FLAGS_print_all) {
+    printf("\npoly 1, degree %d: ", poly_degree(10, poly_1));
+    print_poly(10, poly_1);
+    printf("\n");
+    printf("poly 2, degree %d: ", poly_degree(10, poly_2));
+    print_poly(10, poly_2);
+    printf("\n");
+    poly_zero(10, poly_3);
+    printf("zeroed poly, degree %d: ", poly_degree(10, poly_3));
+    print_poly(10, poly_1);
+    printf("\n");
+    poly_copy(10, poly_2, poly_4);
+    printf("copied poly 2, degree %d: ", poly_degree(10, poly_4));
+    print_poly(10, poly_4);
+    printf("\n");
+  }
+  if (!poly_equal(10, poly_4, poly_2))
+    return false;
+  if (!poly_add_mod_poly(n, modulus, reducing_poly, poly_1, poly_2, poly_5))
+    return false;
+  if (FLAGS_print_all) {
+    printf("\n");
+    print_poly(n, poly_1); printf(" + ");
+    print_poly(n, poly_2); printf(" = ");
+    print_poly(n, poly_5); printf("(mod %lld)\n ", modulus);
+  }
+  if (!poly_sub_mod_poly(n, modulus, reducing_poly, poly_1, poly_1, poly_5))
+    return false;
+  if (FLAGS_print_all) {
+    printf("\n");
+    print_poly(n, poly_1); printf(" - ");
+    print_poly(n, poly_1); printf(" = ");
+    print_poly(n, poly_5); printf("(mod %lld)\n ", modulus);
+  }
+
+  int64_t d = 3;
+  if (!poly_mult_by_const(n, modulus, d, poly_1, poly_5))
+    return false;
+  if (FLAGS_print_all) {
+    printf("\n");
+    printf(" %lld * ", d);
+    print_poly(n, poly_1); printf(" = ");
+    print_poly(n, poly_5); printf(" (mod %lld)\n ", modulus);
+  }
+
+  poly_zero(10, poly_5);
+  if (!poly_mult_mod_poly(n, modulus, reducing_poly, poly_1, poly_2, poly_5))
+    return false;
+  if (FLAGS_print_all) {
+    printf("\n");
+    printf("Reducing poly: ");print_poly(n, reducing_poly); printf("(mod %lld)\n ", modulus);
+    print_poly(n, poly_1); printf(" * ");
+    print_poly(n, poly_2); printf(" = ");
+    print_poly(n, poly_5); printf("(mod %lld)\n ", modulus);
+    printf("Reduced by: "); print_poly(n, reducing_poly); printf("(mod %lld)\n ", modulus);
+  }
+
   return true;
 }
 

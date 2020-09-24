@@ -74,11 +74,14 @@ bool int_gcd(int64_t a, int64_t b, int64_t* x, int64_t* y, int64_t* g) {
 }
 
 void print_poly(int n, int64_t* f) {
-  for (int i = (n-1); i >0; i--) {
-    if (f[i] != 0) {
-      printf("%lld x^%d +", f[i], i);
+  int64_t* pint = f;
+
+  printf("%lld + ", pint[0]);
+  for (int i = 1; i < n; i++) {
+    if (pint[i] != 0) {
+      printf("%lld", pint[i]);
+      printf(" x^%d +", i);
     }
-    printf("%lld", f[0]);
   }
 }
 
@@ -92,6 +95,14 @@ int poly_degree(int n, int64_t* f) {
 bool poly_zero(int n, int64_t* f) {
   for (int i = 0; i < n; i++)
     f[i] = 0ULL;
+  return true;
+}
+
+bool poly_equal(int n, int64_t* f, int64_t* r) {
+  for (int i = 0; i < n; i++) {
+    if (f[i] != r[i])
+      return false;
+  }
   return true;
 }
 
