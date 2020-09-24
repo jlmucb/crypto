@@ -252,6 +252,29 @@ bool poly_euclid(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* q, int
 }
 
 void poly_move_up(int n, int64_t** x, int64_t** y, int64_t** g) {
+  int64_t* xp1;
+  int64_t* yp1;
+  int64_t* gp1;
+  int64_t* xp2;
+  int64_t* yp2;
+  int64_t* gp2;
+
+  for (int i = 0; i < n; i++) {
+    *xp1 = *xp2;
+    *yp1 = *yp2;
+    *gp1 = *gp2;
+    xp1++; xp2++;
+    yp1++; yp2++;
+    gp1++; gp2++;
+  }
+  for (int i = 0; i < n; i++) {
+    *xp1 = *xp2;
+    *yp1 = *yp2;
+    *gp1 = *gp2;
+    xp1++; xp2++;
+    yp1++; yp2++;
+    gp1++; gp2++;
+  }
 }
 
 // gcd(a, b) = g, ax+by=g
@@ -310,8 +333,20 @@ bool poly_gcd(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* x, int64_
 
 bool poly_inverse_mod_poly(int n, int64_t modulus, int64_t* f,
                            int64_t* g, int64_t* r) {
-  return true;
+  int64_t x[n];
+  int64_t y[n];
+  int64_t gcd[n];
+
+  if (!poly_gcd(n, modulus, f, g, x, y, gcd))
+    return false;
+  if ((poly_degree(n, gcd) > 0) || (gcd[0] == 0))
+    return false;
+  int64_t d = 0;
+  if (!int_inverse(modulus, gcd[0], &d))
+    return false;
+  return poly_mult_by_const(n, modulus, d, y, r);
 }
+
 
 ntru::ntru() {
 }
