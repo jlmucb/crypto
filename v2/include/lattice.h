@@ -38,8 +38,7 @@ bool vector_add(int n, real_vector& v1,  real_vector& v2, real_vector* v);
 bool vector_sub(int n, real_vector& v1,  real_vector& v2, real_vector* v);
 bool vector_scalar_mult(int n, const double d,  real_vector& v1, real_vector* v);
 bool vector_dot_product(int n, real_vector& v1, real_vector& v2, double* dp);
-void print_matrix(int n, int m, double* u);
-bool matrix_zero(int n, int m, double* u);
+
 int64_t closest_int(double x);
 
 bool gso(int n, real_vector* b, real_vector* b_norm, double* u);
@@ -50,15 +49,22 @@ void zero_int_matrix(int n, int m, int64_t* A);
 void zero_int_vector(int_vector& v);
 void print_int_matrix(int n, int m, int64_t* A);
 void print_int_vector(int_vector& v);
+bool int_inverse(int64_t modulus, int64_t a, int64_t* inv);
+bool int_vector_equal(int_vector& x, int_vector& y);
+bool add_int_vector(int64_t q, int n, int_vector& x, int_vector& y, int_vector* z);
+bool mult_int_vector_by_scalar(int64_t q, int n, int64_t d, int_vector& x, int_vector* z);
+void euclid(int64_t a, int64_t b, int64_t* q, int64_t* r);
+bool int_gcd(int64_t a, int64_t b, int64_t* x, int64_t* y, int64_t* g);
+
+void print_matrix(int n, int m, double* u);
+bool matrix_zero(int n, int m, double* u);
 bool matrix_copy(int n1, int n2, int64_t* A, int64_t* B);
 bool matrix_multiply(int64_t q, int nr_1, int nc_1, int nc_2, int64_t* A, int64_t* B, int64_t* C);
 bool matrix_add(int64_t q, int nr, int nc, int64_t* A, int64_t* B, int64_t* C);
 bool matrix_scalar_multiply(int64_t q, int nr, int nc, const int64_t d, int64_t* A, int64_t* C);
 bool apply_matrix(int64_t q, int nr, int nc, int64_t* A, int_vector& v, int_vector* w);
 bool apply_matrix_transpose(int64_t q, int nr, int nc, int64_t* A, int_vector& v, int_vector* w);
-bool add_int_vector(int64_t q, int n, int_vector& x, int_vector& y, int_vector* z);
-bool mult_int_vector_by_scalar(int64_t q, int n, int64_t d, int_vector& x, int_vector* z);
-bool int_vector_equal(int_vector& x, int_vector& y);
+
 bool random_from_q(const int64_t q, int64_t* out);
 bool random_from_chi(int s, int64_t* out);
 
@@ -107,25 +113,26 @@ public:
   void debug_replace_params(int64_t* A_t, int64_t* S_t, int64_t* E_t, int64_t* P_t);
 };
 
-void euclid(int64_t a, int64_t b, int64_t* q, int64_t* r);
-bool int_gcd(int64_t a, int64_t b, int64_t* x, int64_t* y, int64_t* g);
-
 void print_poly(int n, int64_t* f);
 int poly_degree(int n, int64_t* f);
 bool poly_equal(int n, int64_t* f, int64_t* r);
 bool poly_copy(int n, int64_t* f, int64_t* r);
 bool poly_zero(int n, int64_t* f);
-bool poly_add_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* f,
+bool poly_add_mod_poly(int n, int64_t modulus, int64_t* f,
                        int64_t* g, int64_t* r);
-bool poly_sub_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* f,
+bool poly_sub_mod_poly(int n, int64_t modulus, int64_t* f,
                        int64_t* g, int64_t* r);
 bool poly_mult_by_const(int n, int64_t modulus, int64_t d, int64_t* f,
                         int64_t* r);
-bool poly_mult_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* f,
-                        int64_t* g, int64_t* r);
-bool poly_gcd(int64_t* a, int64_t* b, int64_t* x, int64_t* y, int64_t* g);
-bool poly_inverse_mod_poly(int n, int64_t modulus, int64_t* reducing_poly,
-                           int64_t* f, int64_t* g, int64_t* r);
+bool poly_mult_mod_poly(int n, int64_t modulus, int64_t* f, int64_t* g, int64_t* r);
+bool poly_mult_mod_poly_and_reduce(int n, int64_t modulus, int64_t* reducing_poly,
+                        int64_t* f, int64_t* g, int64_t* r);
+bool poly_euclid(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* q,
+                 int64_t* r);
+bool poly_gcd(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* x,
+              int64_t* y, int64_t* g);
+bool poly_inverse_mod_poly(int n, int64_t modulus, int64_t* f,
+                           int64_t* g, int64_t* r);
 
 class ntru {
 public:

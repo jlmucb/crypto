@@ -73,6 +73,18 @@ bool int_gcd(int64_t a, int64_t b, int64_t* x, int64_t* y, int64_t* g) {
   return true;
 }
 
+bool int_inverse(int64_t modulus, int64_t a, int64_t* inv) {
+  int64_t x, y, g;
+
+  if (!int_gcd(modulus, a, &x, &y, &g))
+    return false;
+
+  if ((g % modulus) != 1LL)
+    return false;
+  *inv = y;
+  return true;
+}
+
 void print_poly(int n, int64_t* f) {
   int64_t* pint = f;
 
@@ -112,7 +124,7 @@ bool poly_copy(int n, int64_t* f, int64_t* r) {
   return true;
 }
 
-bool poly_add_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* f,
+bool poly_add_mod_poly(int n, int64_t modulus, int64_t* f,
                        int64_t* g, int64_t* r) {
   for (int i = 0; i < n; i++) {
     r[i] = (f[i] + g[i]) % modulus;
@@ -132,7 +144,7 @@ bool poly_mult_by_const(int n, int64_t modulus, int64_t d, int64_t* f,
   return true;
 }
 
-bool poly_sub_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* f,
+bool poly_sub_mod_poly(int n, int64_t modulus, int64_t* f,
                        int64_t* g, int64_t* r) {
   for (int i = 0; i < n; i++) {
     r[i] = (f[i] - g[i]) % modulus;
@@ -161,35 +173,143 @@ bool reduce(int64_t modulus, int m, int64_t* in, int n, int64_t* reducing_poly, 
     poly_zero(m, sub_temp);
     if (!poly_mult_by_const(n, modulus, in_temp[i], reducing_poly, &sub_temp[i - rd]))
       return false;
-    if (!poly_sub_mod_poly(m, modulus, reducing_poly, in_temp, sub_temp, in_temp))
+    if (!poly_sub_mod_poly(m, modulus, in_temp, sub_temp, in_temp))
       return false;
   }
   poly_copy(n, in_temp, r);
   return true;
 }
 
-bool poly_mult_mod_poly(int n, int64_t modulus, int64_t* reducing_poly, int64_t* f,
-                        int64_t* g, int64_t* r) {
-  int64_t temp[2 * n];
-  poly_zero(2 * n, temp);
-
+bool poly_mult_mod_poly(int n, int64_t modulus, int64_t* f, int64_t* g, int64_t* r) {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
-      temp[i + j] = (temp[i + j] + f[i] * g[j]) % modulus;
-      if (temp[i + j] < 0)
-        temp[i + j] += modulus;
+      r[i + j] = (r[i + j] + f[i] * g[j]) % modulus;
+      if (r[i + j] < 0)
+        r[i + j] += modulus;
     }
   }
-  return reduce(modulus, 2*n, temp, n, reducing_poly, r);
-}
-
-// gcd(a, b) = g, ax+by=g
-bool poly_gcd(int64_t* a, int64_t* b, int64_t* x, int64_t* y, int64_t* g) {
   return true;
 }
 
-bool poly_inverse_mod_poly(int n, int64_t modulus, int64_t* reducing_poly,
-                           int64_t* f, int64_t* g, int64_t* r) {
+bool poly_mult_mod_poly_and_reduce(int n, int64_t modulus, int64_t* reducing_poly, int64_t* f,
+                        int64_t* g, int64_t* r) {
+  int64_t temp[2 * n];
+  poly_zero(2 * n, temp);
+  if (!poly_mult_mod_poly(n, modulus, f, g, temp))
+    return false;
+  return reduce(modulus, 2*n, temp, n, reducing_poly, r);
+}
+
+bool poly_div_step(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* q) {
+  // let dm: degree(b) + dm = degree(a)
+  // figure out coeff of x^dm p, c, so that degree(a - c x^dm) < degree(a),
+  // put q = c x^dm
+
+  int da = poly_degree(n, a);
+  int db = poly_degree(n, b);
+  int dm = da - db;
+  int64_t d ;
+  if (!int_inverse(modulus, b[db], &d))
+    return false;
+  q[dm] = (d * a[da]) % modulus;
+  if (q[dm] < 0)
+    q[dm] += modulus;
+  return true;
+}
+
+// deg(a) >= deg(b) > 0, a = bq+r
+bool poly_euclid(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* q, int64_t* r) {
+    if (poly_degree(n, a) < poly_degree(n, b))
+      return false;
+    int64_t temp_a[n];
+    int64_t temp_b[n];
+    int64_t temp_q[n];
+    poly_zero(n, q);
+    poly_zero(n, r);
+    poly_zero(n, temp_a);
+    poly_zero(n, temp_q);
+    poly_copy(n, a, temp_a);
+
+    while (poly_degree(n, temp_a) >= poly_degree(n, b)) {
+      if (!poly_div_step(n, modulus, temp_a, b, temp_q))
+        return false;
+      if (!poly_add_mod_poly(n, modulus, q, temp_q, q))
+        return false;
+      poly_zero(2 * n, temp_b);
+      if (!poly_mult_mod_poly(n, modulus, b, temp_q, temp_b))
+        return false;
+      if (!poly_sub_mod_poly(n, modulus, temp_a, temp_b, temp_a))
+        return false;
+    }
+
+    poly_zero(2 * n, temp_b);
+    if (!poly_mult_mod_poly(n, modulus, b, q, temp_b))
+      return false;
+    if (!poly_sub_mod_poly(n, modulus, a, temp_b, r))
+      return false;
+      
+  return true;
+}
+
+void poly_move_up(int n, int64_t** x, int64_t** y, int64_t** g) {
+}
+
+// gcd(a, b) = g, ax+by=g
+bool poly_gcd(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* x, int64_t* y, int64_t* g) {
+  int64_t xc[3][n];
+  int64_t yc[3][n];
+  int64_t gc[3][n];
+
+  poly_zero(n, xc[0]);
+  poly_zero(n, xc[1]);
+  poly_zero(n, xc[2]);
+  poly_zero(n, yc[0]);
+  poly_zero(n, yc[1]);
+  poly_zero(n, yc[2]);
+  poly_zero(n, gc[0]);
+  poly_zero(n, gc[1]);
+  poly_zero(n, gc[2]);
+  xc[0][0] = 1LL;
+  yc[0][0] = 0LL;
+  xc[1][0] = 0LL;
+  yc[1][0] = 1LL;
+  poly_copy(n, a, gc[0]);
+  poly_copy(n, b, gc[1]);
+
+  int64_t q[n];
+  int64_t r[n];
+  int64_t temp[n];
+
+  while(1) {
+    if (!poly_euclid(n, modulus, gc[0], gc[1], q, r))
+      return false;
+    if (poly_degree(n, r) == 0) {
+      poly_copy(n, xc[1], x);
+      poly_copy(n, yc[1], y);
+      poly_copy(n, gc[1], g);
+      return true;
+    }
+
+    if (!poly_mult_mod_poly(n, modulus, xc[1], q, temp))
+      return false;
+    if (!poly_sub_mod_poly(n, modulus, xc[0], temp, xc[2]))
+      return false;
+    if (!poly_mult_mod_poly(n, modulus, yc[1], q, temp))
+      return false;
+    if (!poly_sub_mod_poly(n, modulus, yc[0], temp, yc[2]))
+      return false;
+    if (!poly_mult_mod_poly(n, modulus, gc[1], q, temp))
+      return false;
+    if (!poly_sub_mod_poly(n, modulus, gc[0], temp, gc[2]))
+      return false;
+    poly_move_up(n, (int64_t**)xc, (int64_t**)yc, (int64_t**)gc);
+  }
+ 
+  return true;
+}
+
+bool poly_inverse_mod_poly(int n, int64_t modulus, int64_t* f,
+                           int64_t* g, int64_t* r) {
   return true;
 }
 
@@ -201,7 +321,6 @@ ntru::~ntru() {
 
 bool ntru::init(int N, int64_t p, int64_t q, int d1, int d2) {
   // set params
-
   // generate f
   // generate g
   // calculate fp, f fp = 1 (mod p)
@@ -215,7 +334,7 @@ bool ntru::encode_msg() {
 }
 
 // r is random poly in T(d_, d_)
-//  c= prh + m (mod q_)
+// c= prh + m (mod q_)
 bool ntru::encrypt(int64_t* msg, int64_t* r, int64_t* c) {
   return true;
 }
@@ -232,4 +351,3 @@ bool ntru::decode_msg() {
 
 void ntru::debug_set_parameters(int64_t* f, int64_t* g, int64_t* fp, int64_t* fq, int64_t* h) {
 }
-

@@ -662,7 +662,7 @@ bool test_poly_support() {
   }
   if (!poly_equal(10, poly_4, poly_2))
     return false;
-  if (!poly_add_mod_poly(n, modulus, reducing_poly, poly_1, poly_2, poly_5))
+  if (!poly_add_mod_poly(n, modulus, poly_1, poly_2, poly_5))
     return false;
   if (FLAGS_print_all) {
     printf("\n");
@@ -677,7 +677,7 @@ bool test_poly_support() {
   if (!poly_equal(n, a_test, poly_5))
     return false;
 
-  if (!poly_sub_mod_poly(n, modulus, reducing_poly, poly_1, poly_1, poly_5))
+  if (!poly_sub_mod_poly(n, modulus, poly_1, poly_1, poly_5))
     return false;
   if (FLAGS_print_all) {
     printf("\n");
@@ -705,7 +705,7 @@ bool test_poly_support() {
     return false;
 
   poly_zero(10, poly_5);
-  if (!poly_mult_mod_poly(n, modulus, reducing_poly, poly_1, poly_2, poly_5))
+  if (!poly_mult_mod_poly_and_reduce(n, modulus, reducing_poly, poly_1, poly_2, poly_5))
     return false;
   if (FLAGS_print_all) {
     printf("\n");
