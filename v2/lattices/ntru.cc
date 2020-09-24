@@ -252,12 +252,12 @@ bool poly_euclid(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* q, int
 }
 
 void poly_move_up(int n, int64_t** x, int64_t** y, int64_t** g) {
-  int64_t* xp1;
-  int64_t* yp1;
-  int64_t* gp1;
-  int64_t* xp2;
-  int64_t* yp2;
-  int64_t* gp2;
+  int64_t* xp1 = &x[0][0];
+  int64_t* yp1 = &y[0][0];;
+  int64_t* gp1 = &g[0][0];
+  int64_t* xp2 = &x[1][0];
+  int64_t* yp2 = &y[1][0];;
+  int64_t* gp2 = &g[1][0];
 
   for (int i = 0; i < n; i++) {
     *xp1 = *xp2;
@@ -267,6 +267,13 @@ void poly_move_up(int n, int64_t** x, int64_t** y, int64_t** g) {
     yp1++; yp2++;
     gp1++; gp2++;
   }
+
+  xp1 = &x[1][0];
+  yp1 = &y[1][0];;
+  gp1 = &g[1][0];
+  xp2 = &x[2][0];
+  yp2 = &y[2][0];;
+  gp2 = &g[2][0];
   for (int i = 0; i < n; i++) {
     *xp1 = *xp2;
     *yp1 = *yp2;
