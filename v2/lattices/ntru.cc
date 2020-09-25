@@ -401,18 +401,65 @@ bool poly_inverse_mod_poly(int n, int64_t modulus, int64_t* f,
 
 
 ntru::ntru() {
+  initialized_ = false;
+  f_ = nullptr;
+  g_ = nullptr;
+  fp_ = nullptr;
+  fq_ = nullptr;
+  h_ = nullptr;
 }
 
 ntru::~ntru() {
+  initialized_ = false;
+  if (f_ != nullptr) {
+    delete []f_;
+    f_ = nullptr;
+  }
+  if (g_ != nullptr) {
+    delete []g_;
+    g_ = nullptr;
+  }
+  if (fp_ != nullptr) {
+    delete []fp_;
+    fp_ = nullptr;
+  }
+  if (fq_ != nullptr) {
+    delete []fq_;
+    fq_ = nullptr;
+  }
+  if (h_ != nullptr) {
+    delete []h_;
+    h_ = nullptr;
+  }
 }
 
-bool ntru::init(int N, int64_t p, int64_t q, int d1, int d2) {
+
+bool ntru::init(int N, int64_t p, int64_t q, int d) {
   // set params
-  // generate f
-  // generate g
-  // calculate fp, f fp = 1 (mod p)
-  // calculate gp, f f1 = 1 (mod q)
-  // calculate h= fq g
+  N_ = N;
+  n_ = N + 1;
+  p_ = p;
+  q_ = q;
+  d_ = d;
+
+  //  generate f in T(d+1, d)
+  f_ = new int64_t[n_];
+  g_ = new int64_t[n_];
+  fp_ = new int64_t[n_];
+  fq_ = new int64_t[n_];
+  h_ = new int64_t[n_];
+
+  if (f_ == nullptr || g_ == nullptr || fp_ == nullptr ||
+       fq_ == nullptr || h_ == nullptr)
+    return false;
+
+  //  generate f in T(d+1, d)
+  //  generate g in T(d,d)
+  //  calculate fp, f fp = 1 (mod p)
+  //  calculate gp, f f1 = 1 (mod q)
+  //  calculate h= fq g
+  //  pk = (N, p, q, h)
+  //  sk = f
   return true;
 }
 
@@ -437,4 +484,9 @@ bool ntru::decode_msg() {
 }
 
 void ntru::debug_set_parameters(int64_t* f, int64_t* g, int64_t* fp, int64_t* fq, int64_t* h) {
+  poly_copy(n_, f, f_);
+  poly_copy(n_, g, g_);
+  poly_copy(n_, fp, fp_);
+  poly_copy(n_, fq, fq_);
+  poly_copy(n_, h, h_);
 }

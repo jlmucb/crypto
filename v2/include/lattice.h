@@ -136,7 +136,9 @@ bool poly_inverse_mod_poly(int n, int64_t modulus, int64_t* f,
 
 class ntru {
 public:
+  bool initialized_;
   int N_;
+  int n_;	  // N_+1
   int64_t p_;
   int64_t q_;
   int d_;
@@ -149,7 +151,7 @@ public:
   ntru();
   ~ntru();
 
-  bool init(int N, int64_t p, int64_t q, int d1, int d2);
+  bool init(int N, int64_t p, int64_t q, int d);
   bool encode_msg();
   bool encrypt(int64_t* msg, int64_t* r, int64_t* c);
   bool decrypt(int64_t* c, int64_t* recovered);

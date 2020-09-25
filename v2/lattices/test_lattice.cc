@@ -775,9 +775,83 @@ bool test_poly_support() {
     m = x^3 + x, r = x^4 -x
     c = prh + m = 8x^4+21x^3+25x^2+20x+15 (29)
     a = -2x^4+2x^3+4x^2-3x+1
+    r = x^4 - x
     verify:a == prg+fm in R 
  */
+int64_t test_f[6] = {
+  -1, 0, 0, 1, 1, 0
+};
+int64_t test_g[6] = {
+  0, 0, -1, 1, 0, 0
+};
+int64_t test_fp[6] = {
+  -1, 1, -1, -1, 0, 0
+};
+int64_t test_fq[6] = {
+  13, 11, 3, 5, 0, 0
+};
+int64_t test_h[6] = {
+  -5, 13, 11, 2, 8, 0
+};
+int64_t test_m[6] = {
+  0, 1, 0, 1, 0, 0
+};
+int64_t test_c[6] = {
+  15, 20, 25, 21, 8, 0
+};
+int64_t test_a[6] = {
+  1, -3, 4, 2, -2, 0
+};
+int64_t test_r[6] = {
+  0, -1, 0, 0, 1, 0
+};
+
+
 bool test_ntru() {
+  int N = 5;
+  int64_t p = 3LL;
+  int64_t q = 29LL;
+  int d = 1;
+
+  ntru nt;
+
+  if (!nt.init(N, p, q, d)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("N: %d, p: %ld, q: %ld, d: %d\n", nt.N_, nt.p_, nt.q_, nt.d_);
+    printf("f: "); print_poly(nt.n_, nt.f_); printf("\n");
+    printf("g: "); print_poly(nt.n_, nt.g_); printf("\n");
+    printf("fp: "); print_poly(nt.n_, nt.fp_); printf("\n");
+    printf("fq: "); print_poly(nt.n_, nt.fq_); printf("\n");
+    printf("h: "); print_poly(nt.n_, nt.h_); printf("\n");
+  }
+
+  nt.debug_set_parameters(test_f, test_g, test_fp, test_fq, test_h);
+
+  int64_t msg[6];
+  int64_t c[6];
+  int64_t r[6];
+  int64_t recovered[6];
+  poly_copy(6, test_m, msg);
+  poly_copy(6, test_r, r);
+
+  if (FLAGS_print_all) {
+    printf("msg: "); print_poly(nt.n_, msg); printf("\n");
+    printf("r: "); print_poly(nt.n_, r); printf("\n");
+  }
+  if (!nt.encrypt(msg, r, c)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("c: "); print_poly(nt.n_, c); printf("\n");
+  }
+  if (!nt.decrypt(c, recovered)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("recovered: "); print_poly(nt.n_, recovered); printf("\n");
+  }
 
   return true;
 }
