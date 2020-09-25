@@ -837,7 +837,6 @@ bool test_ntru() {
     printf("h: "); print_poly(nt.n_, nt.h_); printf("\n");
     printf("gen: "); print_poly(nt.n_, nt.gen_); printf("\n");
   }
-return true;
 
   nt.debug_set_parameters(test_f, test_g, test_fp, test_fq, test_h);
 

@@ -527,10 +527,16 @@ bool ntru::decrypt(int64_t* c, int64_t* recovered) {
   int64_t temp_b[2 * n_];
   poly_zero(2 * n_, temp_a);
   poly_zero(2 * n_, temp_b);
+
   if (!poly_mult_mod_poly_and_reduce(n_, q_, gen_, f_, c, temp_a))
     return false;
-  if (!poly_mult_mod_poly_and_reduce(n_, p_, gen_, fp_, temp_a, recovered))
+  if (!poly_mult_mod_poly_and_reduce(n_, p_, gen_, fp_, temp_a, temp_b))
     return false;
+
+printf("a  : ");print_poly(n_, temp_a); printf("\n");
+printf("fp : ");print_poly(n_, fp_); printf("\n");
+printf("afp: ");print_poly(n_, temp_b); printf("\n");
+  poly_copy(n_, temp_b, recovered);
   return true;
 }
 
