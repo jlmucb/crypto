@@ -336,6 +336,7 @@ bool poly_gcd(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* x, int64_
       printf("Fail 2\n");
       return false;
     }
+    poly_zero(n, xc[2]);
     if (!poly_sub_mod_poly(n, modulus, xc[0], temp, xc[2])) {
       return false;
     }
@@ -344,6 +345,7 @@ bool poly_gcd(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* x, int64_
       printf("Fail 3\n");
       return false;
     }
+    poly_zero(n, yc[2]);
     if (!poly_sub_mod_poly(n, modulus, yc[0], temp, yc[2])) {
       printf("Fail 4\n");
       return false;
@@ -353,6 +355,7 @@ bool poly_gcd(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* x, int64_
       printf("Fail 5\n");
       return false;
     }
+    poly_zero(n, gc[2]);
     if (!poly_sub_mod_poly(n, modulus, gc[0], temp, gc[2])) {
       printf("Fail 6\n");
       return false;
