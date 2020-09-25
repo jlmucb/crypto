@@ -863,6 +863,8 @@ bool test_ntru() {
   if (FLAGS_print_all) {
     printf("recovered: "); print_poly(nt.n_, recovered); printf("\n");
   }
+  if (!poly_equal(nt.n_, msg, recovered))
+    return false;
 
   return true;
 }
