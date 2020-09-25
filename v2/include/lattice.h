@@ -118,6 +118,7 @@ int poly_degree(int n, int64_t* f);
 bool poly_equal(int n, int64_t* f, int64_t* r);
 bool poly_copy(int n, int64_t* f, int64_t* r);
 bool poly_zero(int n, int64_t* f);
+bool reduce(int64_t modulus, int m, int64_t* in, int n, int64_t* reducing_poly, int64_t* r);
 bool poly_add_mod_poly(int n, int64_t modulus, int64_t* f,
                        int64_t* g, int64_t* r);
 bool poly_sub_mod_poly(int n, int64_t modulus, int64_t* f,
@@ -142,6 +143,7 @@ public:
   int64_t p_;
   int64_t q_;
   int d_;
+  int64_t* gen_;
   int64_t* f_;
   int64_t* g_;
   int64_t* fp_;

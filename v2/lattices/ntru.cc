@@ -403,6 +403,7 @@ bool poly_inverse_mod_poly(int n, int64_t modulus, int64_t* f,
 ntru::ntru() {
   initialized_ = false;
   f_ = nullptr;
+  gen_ = nullptr;
   g_ = nullptr;
   fp_ = nullptr;
   fq_ = nullptr;
@@ -411,6 +412,10 @@ ntru::ntru() {
 
 ntru::~ntru() {
   initialized_ = false;
+  if (gen_ != nullptr) {
+    delete []gen_;
+    f_ = nullptr;
+  }
   if (f_ != nullptr) {
     delete []f_;
     f_ = nullptr;
@@ -443,6 +448,7 @@ bool ntru::init(int N, int64_t p, int64_t q, int d) {
   d_ = d;
 
   //  generate f in T(d+1, d)
+  gen_ = new int64_t[n_];
   f_ = new int64_t[n_];
   g_ = new int64_t[n_];
   fp_ = new int64_t[n_];
@@ -450,36 +456,86 @@ bool ntru::init(int N, int64_t p, int64_t q, int d) {
   h_ = new int64_t[n_];
 
   if (f_ == nullptr || g_ == nullptr || fp_ == nullptr ||
-       fq_ == nullptr || h_ == nullptr)
+      fq_ == nullptr || h_ == nullptr || gen_ == nullptr)
     return false;
 
+  poly_zero(n_, gen_);
+  gen_[0] = -1LL;
+  gen_[N_] = 1LL;
+
   //  generate f in T(d+1, d)
+  poly_zero(n_, f_);
+#if 1
+  extern int64_t* test_f;
+  poly_copy(n_, test_f, f_);
+#else
+#endif
+
   //  generate g in T(d,d)
+  poly_zero(n_, g_);
+#if 1
+  extern int64_t* test_g;
+  poly_copy(n_, test_g, g_);
+#else
+#endif
+
   //  calculate fp, f fp = 1 (mod p)
-  //  calculate gp, f f1 = 1 (mod q)
+  poly_zero(n_, fp_);
+  if (!poly_inverse_mod_poly(n_, p_, gen_, f_, fp_))
+    return false;
+
+  //  calculate fq, f fq= 1 (mod q)
+  poly_zero(n_, fq_);
+  if (!poly_inverse_mod_poly(n_, q_, gen_, f_, fq_))
+    return false;
+
   //  calculate h= fq g
+  poly_zero(n_, fp_);
+  if (!poly_mult_mod_poly_and_reduce(n_, q_, gen_, fq_, g_, h_))
+    return false;
+
   //  pk = (N, p, q, h)
   //  sk = f
-  return true;
+
+  initialized_ = true;
+  return initialized_;
 }
 
 bool ntru::encode_msg() {
   return true;
 }
 
+bool ntru::decode_msg() {
+  return true;
+}
+
 // r is random poly in T(d_, d_)
 // c= prh + m (mod q_)
 bool ntru::encrypt(int64_t* msg, int64_t* r, int64_t* c) {
+  int64_t temp_1[2 * n_];
+  int64_t temp_2[2 * n_];
+  poly_zero(2 * n_, temp_1);
+  poly_zero(2 * n_, temp_2);
+  if (!poly_mult_mod_poly_and_reduce(n_, q_, gen_, r, h_, temp_1))
+    return false;
+  if (!poly_mult_by_const(n_, q_, p_, temp_1, temp_2))
+    return false;
+  if (!poly_add_mod_poly(n_, q_, temp_2, msg, c))
+    return false;
   return true;
 }
 
 //  a = f c (mod q), -q/2 <= a <= q/2
 //  m = fp a (mod p_)
 bool ntru::decrypt(int64_t* c, int64_t* recovered) {
-  return true;
-}
-
-bool ntru::decode_msg() {
+  int64_t temp_a[2 * n_];
+  int64_t temp_b[2 * n_];
+  poly_zero(2 * n_, temp_a);
+  poly_zero(2 * n_, temp_b);
+  if (!poly_mult_mod_poly_and_reduce(n_, q_, gen_, f_, c, temp_a))
+    return false;
+  if (!poly_mult_mod_poly_and_reduce(n_, p_, gen_, fp_, temp_a, recovered))
+    return false;
   return true;
 }
 
