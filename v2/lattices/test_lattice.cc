@@ -820,12 +820,14 @@ bool test_ntru() {
   }
   if (FLAGS_print_all) {
     printf("N: %d, p: %ld, q: %ld, d: %d\n", nt.N_, nt.p_, nt.q_, nt.d_);
+    printf("gen: "); print_poly(nt.n_, nt.gen_); printf("\n");
     printf("f: "); print_poly(nt.n_, nt.f_); printf("\n");
     printf("g: "); print_poly(nt.n_, nt.g_); printf("\n");
     printf("fp: "); print_poly(nt.n_, nt.fp_); printf("\n");
     printf("fq: "); print_poly(nt.n_, nt.fq_); printf("\n");
     printf("h: "); print_poly(nt.n_, nt.h_); printf("\n");
   }
+return true;
 
   nt.debug_set_parameters(test_f, test_g, test_fp, test_fq, test_h);
 

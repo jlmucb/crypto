@@ -462,19 +462,23 @@ bool ntru::init(int N, int64_t p, int64_t q, int d) {
   poly_zero(n_, gen_);
   gen_[0] = -1LL;
   gen_[N_] = 1LL;
-
   //  generate f in T(d+1, d)
   poly_zero(n_, f_);
 #if 1
-  extern int64_t* test_f;
+  static int64_t test_f[6] = {
+  -1, 0, 0, 1, 1, 0
+  };
   poly_copy(n_, test_f, f_);
+  printf("test_f: "); print_poly(n_, test_f); printf("\n");
 #else
 #endif
 
   //  generate g in T(d,d)
   poly_zero(n_, g_);
 #if 1
-  extern int64_t* test_g;
+  static int64_t test_g[6] = {
+  0, 0, -1, 1, 0, 0
+  };
   poly_copy(n_, test_g, g_);
 #else
 #endif
