@@ -722,22 +722,25 @@ bool test_poly_support() {
   if (!poly_equal(n, mm_test, poly_5))
     return false;
 
+  poly_zero(10, poly_2);
   if (!poly_mult_mod_poly(n, modulus,  poly_1, poly_1, poly_2))
+    return false;
   poly_zero(10, poly_4);
   poly_zero(10, poly_5);
-#if 0
   if (!poly_euclid(n, modulus, poly_2, poly_1, poly_4, poly_5))
     return false;
   if (FLAGS_print_all) {
-    print_poly(n, poly_2); printf(" = ");
-    print_poly(n, poly_1); printf(" * ");
-    print_poly(n, poly_4); printf(" = ");
+    printf("\nEuclid: \n");
+    print_poly(n, poly_2); printf(" =\n");
+    print_poly(n, poly_1); printf(" * \n");
+    print_poly(n, poly_4); printf(" +\n");
     print_poly(n, poly_5); printf("\n");
   }
   poly_2[0] = (poly_2[0] + 1LL) % modulus;
   poly_zero(10, poly_3);
   poly_zero(10, poly_4);
   poly_zero(10, poly_5);
+#if 0
   if (!poly_gcd(n, modulus, poly_1, poly_2, poly_3, poly_4, poly_5))
     return false;
   if (FLAGS_print_all) {

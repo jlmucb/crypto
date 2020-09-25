@@ -209,8 +209,11 @@ bool poly_div_step(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* q) {
   int db = poly_degree(n, b);
   int dm = da - db;
   int64_t d ;
+
   if (!int_inverse(modulus, b[db], &d))
     return false;
+  if (d < 0)
+    d += modulus;
   q[dm] = (d * a[da]) % modulus;
   if (q[dm] < 0)
     q[dm] += modulus;
@@ -219,34 +222,39 @@ bool poly_div_step(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* q) {
 
 // deg(a) >= deg(b) > 0, a = bq+r
 bool poly_euclid(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* q, int64_t* r) {
-    if (poly_degree(n, a) < poly_degree(n, b))
-      return false;
-    int64_t temp_a[n];
-    int64_t temp_b[n];
-    int64_t temp_q[n];
-    poly_zero(n, q);
-    poly_zero(n, r);
-    poly_zero(n, temp_a);
+  if (poly_degree(n, a) < poly_degree(n, b))
+    return false;
+  int64_t temp_a[n];
+  int64_t temp_b[2*n];
+  int64_t temp_c[n];
+  int64_t temp_q[n];
+  poly_zero(n, q);
+  poly_zero(n, r);
+  poly_zero(n, temp_a);
+  poly_zero(n, temp_q);
+  poly_copy(n, a, temp_a);
+  int k = n;
+
+  while (poly_degree(n, temp_a) >= poly_degree(n, b) && k-- > 0) {
     poly_zero(n, temp_q);
-    poly_copy(n, a, temp_a);
-
-    while (poly_degree(n, temp_a) >= poly_degree(n, b)) {
-      if (!poly_div_step(n, modulus, temp_a, b, temp_q))
-        return false;
-      if (!poly_add_mod_poly(n, modulus, q, temp_q, q))
-        return false;
-      poly_zero(2 * n, temp_b);
-      if (!poly_mult_mod_poly(n, modulus, b, temp_q, temp_b))
-        return false;
-      if (!poly_sub_mod_poly(n, modulus, temp_a, temp_b, temp_a))
-        return false;
-    }
-
+    if (!poly_div_step(n, modulus, temp_a, b, temp_q))
+      return false;
+    if (!poly_add_mod_poly(n, modulus, q, temp_q, q))
+      return false;
     poly_zero(2 * n, temp_b);
-    if (!poly_mult_mod_poly(n, modulus, b, q, temp_b))
+    if (!poly_mult_mod_poly(n, modulus, b, temp_q, temp_b))
       return false;
-    if (!poly_sub_mod_poly(n, modulus, a, temp_b, r))
+    if (!poly_sub_mod_poly(n, modulus, temp_a, temp_b, temp_c))
       return false;
+    poly_zero(n, temp_a);
+    poly_copy(n, temp_c, temp_a);
+  }
+
+  poly_zero(2 * n, temp_b);
+  if (!poly_mult_mod_poly(n, modulus, b, q, temp_b))
+    return false;
+  if (!poly_sub_mod_poly(n, modulus, a, temp_b, r))
+    return false;
       
   return true;
 }
