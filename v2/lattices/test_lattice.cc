@@ -763,7 +763,22 @@ bool test_poly_support() {
   return true;
 }
 
+/*
+  Example
+    N=5, p=3, q=29, d=1
+    f in T(2,1) = x^4+x^3-1
+    g in T(1,1) = x^3-x^2
+    fp = -x^3-x^2+x-1, fq=-5x^4+8x^3+3x^2+11x+13
+    h = fqg =8x^4+2x^3+11x^2+13x-5 (29)
+    sk = f
+    pk = (N, p, q, h)
+    m = x^3 + x, r = x^4 -x
+    c = prh + m = 8x^4+21x^3+25x^2+20x+15 (29)
+    a = -2x^4+2x^3+4x^2-3x+1
+    verify:a == prg+fm in R 
+ */
 bool test_ntru() {
+
   return true;
 }
 
