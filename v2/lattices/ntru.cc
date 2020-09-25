@@ -520,6 +520,20 @@ bool ntru::encrypt(int64_t* msg, int64_t* r, int64_t* c) {
   return true;
 }
 
+int64_t reduced_coefficient(int64_t modulus, int64_t t) {
+  t %= modulus;
+  if (t > (modulus / 2))
+    t -= modulus;
+  if (t < -(modulus / 2))
+    t += modulus;
+  return t;
+}
+
+void reduce_cefficients(int64_t modulus, int n, int64_t* u) {
+  for (int i = 0; i < n; i++)
+    u[i] = reduced_coefficient(modulus, u[i]);
+}
+
 //  a = f c (mod q), -q/2 <= a <= q/2
 //  m = fp a (mod p_)
 bool ntru::decrypt(int64_t* c, int64_t* recovered) {
@@ -530,13 +544,12 @@ bool ntru::decrypt(int64_t* c, int64_t* recovered) {
 
   if (!poly_mult_mod_poly_and_reduce(n_, q_, gen_, f_, c, temp_a))
     return false;
+  reduce_cefficients(q_, n_, temp_a);
   if (!poly_mult_mod_poly_and_reduce(n_, p_, gen_, fp_, temp_a, temp_b))
     return false;
-
-printf("a  : ");print_poly(n_, temp_a); printf("\n");
-printf("fp : ");print_poly(n_, fp_); printf("\n");
-printf("afp: ");print_poly(n_, temp_b); printf("\n");
+  reduce_cefficients(p_, n_, temp_b);
   poly_copy(n_, temp_b, recovered);
+
   return true;
 }
 
