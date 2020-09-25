@@ -259,37 +259,17 @@ bool poly_euclid(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* q, int
   return true;
 }
 
-void poly_move_up(int n, int64_t** x, int64_t** y, int64_t** g) {
-  int64_t* xp1 = &x[0][0];
-  int64_t* yp1 = &y[0][0];;
-  int64_t* gp1 = &g[0][0];
-  int64_t* xp2 = &x[1][0];
-  int64_t* yp2 = &y[1][0];;
-  int64_t* gp2 = &g[1][0];
-
-  for (int i = 0; i < n; i++) {
-    *xp1 = *xp2;
-    *yp1 = *yp2;
-    *gp1 = *gp2;
-    xp1++; xp2++;
-    yp1++; yp2++;
-    gp1++; gp2++;
-  }
-
-  xp1 = &x[1][0];
-  yp1 = &y[1][0];;
-  gp1 = &g[1][0];
-  xp2 = &x[2][0];
-  yp2 = &y[2][0];;
-  gp2 = &g[2][0];
-  for (int i = 0; i < n; i++) {
-    *xp1 = *xp2;
-    *yp1 = *yp2;
-    *gp1 = *gp2;
-    xp1++; xp2++;
-    yp1++; yp2++;
-    gp1++; gp2++;
-  }
+void debug_print_stack(const char* label, int n, int64_t* xcc, int64_t* ycc, int64_t* gcc) {
+  printf("%s: ", label);
+  for (int i = 0; i < n; i++)
+    printf("%lld ", xcc[i]);
+  printf(" ;  ");
+  for (int i = 0; i < n; i++)
+    printf("%lld ", ycc[i]);
+  printf(" ;  ");
+  for (int i = 0; i < n; i++)
+    printf("%lld ", gcc[i]);
+  printf("\n");
 }
 
 // gcd(a, b) = g, ax+by=g
@@ -320,47 +300,84 @@ bool poly_gcd(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* x, int64_
   int k = 0;
 
   while(k++ < n) {
+printf("Loop start:\n");
+debug_print_stack("row 0", n, xc[0], yc[0], gc[0]);
+debug_print_stack("row 1", n, xc[1], yc[1], gc[1]);
+debug_print_stack("row 2", n, xc[2], yc[2], gc[2]);
+printf("\n");
     if (!poly_euclid(n, modulus, gc[0], gc[1], q, r)) {
       printf("Fail 1\n");
       return false;
     }
-    if (poly_degree(n, r) == 0) {
+printf("q: ");
+print_poly(n, q);
+printf("\n");
+printf("r: ");
+print_poly(n, r);
+printf("\n");
+    if (poly_degree(n, r) == 0 && r[0] == 0LL) {
       poly_copy(n, xc[1], x);
       poly_copy(n, yc[1], y);
       poly_copy(n, gc[1], g);
       return true;
     }
 
-    poly_zero(2*n, temp);
+    poly_zero(2 * n, temp);
     if (!poly_mult_mod_poly(n, modulus, xc[1], q, temp)) {
       printf("Fail 2\n");
       return false;
     }
+printf("q * xc[1]: ");
+print_poly(n, temp);
+printf("\n");
     poly_zero(n, xc[2]);
     if (!poly_sub_mod_poly(n, modulus, xc[0], temp, xc[2])) {
       return false;
     }
+printf("new xc[2]: ");
+print_poly(n, xc[2]);
+printf("\n");
     poly_zero(2*n, temp);
     if (!poly_mult_mod_poly(n, modulus, yc[1], q, temp)) {
       printf("Fail 3\n");
       return false;
     }
+printf("q * yc[1]: ");
+print_poly(n, temp);
+printf("\n");
     poly_zero(n, yc[2]);
     if (!poly_sub_mod_poly(n, modulus, yc[0], temp, yc[2])) {
       printf("Fail 4\n");
       return false;
     }
+printf("new yc[2]: ");
+print_poly(n, yc[2]);
+printf("\n");
     poly_zero(2*n, temp);
     if (!poly_mult_mod_poly(n, modulus, gc[1], q, temp)) {
       printf("Fail 5\n");
       return false;
     }
+printf("q * gc[1]: ");
+print_poly(n, temp);
+printf("\n");
     poly_zero(n, gc[2]);
     if (!poly_sub_mod_poly(n, modulus, gc[0], temp, gc[2])) {
       printf("Fail 6\n");
       return false;
     }
-    poly_move_up(n, (int64_t**)xc, (int64_t**)yc, (int64_t**)gc);
+printf("new gc[2]: ");
+print_poly(n, gc[2]);
+printf("\n");
+    // move coefficient stack up
+    for (int j = 0; j < n; j++) {
+      xc[0][j] = xc[1][j];
+      yc[0][j] = yc[1][j];
+      gc[0][j] = gc[1][j];
+      xc[1][j] = xc[2][j];
+      yc[1][j] = yc[2][j];
+      gc[1][j] = gc[2][j];
+    }
   }
  
   return true;

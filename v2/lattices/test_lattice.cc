@@ -749,7 +749,6 @@ bool test_poly_support() {
     printf(" [ "); print_poly(n, poly_4); printf(" ] = ");
     printf(" [ "); print_poly(n, poly_5); printf(" ]\n");
   }
-#if 0
   poly_zero(10, poly_3);
   poly_zero(10, poly_4);
   poly_zero(10, poly_5);
@@ -757,10 +756,9 @@ bool test_poly_support() {
     return false;
   if (FLAGS_print_all) {
     printf("[ "); print_poly(n, poly_1); printf(" ] ^ (-1) ");
-    printf("(mod  [ "); print_poly(n, poly_3); printf(" ]) = ");
+    printf("(mod  [ "); print_poly(n, poly_2); printf(" ]) = ");
     printf("[ "); print_poly(n, poly_5); printf(" ]\n");
   }
-#endif
 
   return true;
 }
