@@ -591,6 +591,14 @@ bool test_int_support() {
   if (g != 1)
     return false;
 
+  if (!int_gcd(b, a, &y, &x, &g))
+    return false;
+  if (FLAGS_print_all) {
+    printf("Reversed (%lld)(%lld) + (%lld)(%lld) = %lld\n", a,x,b,y,g);
+  }
+  if (g != 1)
+    return false;
+
   a = 76;
   b = 74;
   x = 0;
@@ -815,17 +823,19 @@ bool test_ntru() {
 
   ntru nt;
 
+  printf("\nntru\n");
+
   if (!nt.init(N, p, q, d)) {
     return false;
   }
   if (FLAGS_print_all) {
     printf("N: %d, p: %ld, q: %ld, d: %d\n", nt.N_, nt.p_, nt.q_, nt.d_);
-    printf("gen: "); print_poly(nt.n_, nt.gen_); printf("\n");
     printf("f: "); print_poly(nt.n_, nt.f_); printf("\n");
-    printf("g: "); print_poly(nt.n_, nt.g_); printf("\n");
     printf("fp: "); print_poly(nt.n_, nt.fp_); printf("\n");
+    printf("g: "); print_poly(nt.n_, nt.g_); printf("\n");
     printf("fq: "); print_poly(nt.n_, nt.fq_); printf("\n");
     printf("h: "); print_poly(nt.n_, nt.h_); printf("\n");
+    printf("gen: "); print_poly(nt.n_, nt.gen_); printf("\n");
   }
 return true;
 

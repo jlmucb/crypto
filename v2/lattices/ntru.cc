@@ -48,8 +48,11 @@ void move_up(int64_t* x, int64_t* y, int64_t* g) {
 }
 
 // gcd(a, b) = g, ax+by=g
-//    Input: a >= b > 0
 bool int_gcd(int64_t a, int64_t b, int64_t* x, int64_t* y, int64_t* g) {
+  if (b > a) 
+    return int_gcd(b, a, y, x, g);
+
+  // now: a >= b > 0
   int64_t xc[3], yc[3], gc[3];
   int64_t q, r;
 
@@ -274,6 +277,9 @@ void debug_print_stack(const char* label, int n, int64_t* xcc, int64_t* ycc, int
 
 // gcd(a, b) = g, ax+by=g
 bool poly_gcd(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* x, int64_t* y, int64_t* g) {
+  if (poly_degree(n, b) > poly_degree(n, a))
+    return poly_gcd(n, modulus, b, a, y, x, g);
+
   int64_t xc[3][n];
   int64_t yc[3][n];
   int64_t gc[3][n];
@@ -300,21 +306,23 @@ bool poly_gcd(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* x, int64_
   int k = 0;
 
   while(k++ < n) {
+    if (!poly_euclid(n, modulus, gc[0], gc[1], q, r)) {
+      printf("Fail 1\n");
+      return false;
+    }
+#if 0
 printf("Loop start:\n");
 debug_print_stack("row 0", n, xc[0], yc[0], gc[0]);
 debug_print_stack("row 1", n, xc[1], yc[1], gc[1]);
 debug_print_stack("row 2", n, xc[2], yc[2], gc[2]);
 printf("\n");
-    if (!poly_euclid(n, modulus, gc[0], gc[1], q, r)) {
-      printf("Fail 1\n");
-      return false;
-    }
 printf("q: ");
 print_poly(n, q);
 printf("\n");
 printf("r: ");
 print_poly(n, r);
 printf("\n");
+#endif
     if (poly_degree(n, r) == 0 && r[0] == 0LL) {
       poly_copy(n, xc[1], x);
       poly_copy(n, yc[1], y);
@@ -327,48 +335,30 @@ printf("\n");
       printf("Fail 2\n");
       return false;
     }
-printf("q * xc[1]: ");
-print_poly(n, temp);
-printf("\n");
     poly_zero(n, xc[2]);
     if (!poly_sub_mod_poly(n, modulus, xc[0], temp, xc[2])) {
       return false;
     }
-printf("new xc[2]: ");
-print_poly(n, xc[2]);
-printf("\n");
     poly_zero(2*n, temp);
     if (!poly_mult_mod_poly(n, modulus, yc[1], q, temp)) {
       printf("Fail 3\n");
       return false;
     }
-printf("q * yc[1]: ");
-print_poly(n, temp);
-printf("\n");
     poly_zero(n, yc[2]);
     if (!poly_sub_mod_poly(n, modulus, yc[0], temp, yc[2])) {
       printf("Fail 4\n");
       return false;
     }
-printf("new yc[2]: ");
-print_poly(n, yc[2]);
-printf("\n");
     poly_zero(2*n, temp);
     if (!poly_mult_mod_poly(n, modulus, gc[1], q, temp)) {
       printf("Fail 5\n");
       return false;
     }
-printf("q * gc[1]: ");
-print_poly(n, temp);
-printf("\n");
     poly_zero(n, gc[2]);
     if (!poly_sub_mod_poly(n, modulus, gc[0], temp, gc[2])) {
       printf("Fail 6\n");
       return false;
     }
-printf("new gc[2]: ");
-print_poly(n, gc[2]);
-printf("\n");
     // move coefficient stack up
     for (int j = 0; j < n; j++) {
       xc[0][j] = xc[1][j];
@@ -396,6 +386,8 @@ bool poly_inverse_mod_poly(int n, int64_t modulus, int64_t* f,
   int64_t d = 0;
   if (!int_inverse(modulus, gcd[0], &d))
     return false;
+  if (d < 0)
+    d += modulus;
   return poly_mult_by_const(n, modulus, d, y, r);
 }
 
@@ -469,7 +461,6 @@ bool ntru::init(int N, int64_t p, int64_t q, int d) {
   -1, 0, 0, 1, 1, 0
   };
   poly_copy(n_, test_f, f_);
-  printf("test_f: "); print_poly(n_, test_f); printf("\n");
 #else
 #endif
 
@@ -494,7 +485,7 @@ bool ntru::init(int N, int64_t p, int64_t q, int d) {
     return false;
 
   //  calculate h= fq g
-  poly_zero(n_, fp_);
+  poly_zero(n_, h_);
   if (!poly_mult_mod_poly_and_reduce(n_, q_, gen_, fq_, g_, h_))
     return false;
 
