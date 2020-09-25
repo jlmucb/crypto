@@ -316,11 +316,14 @@ bool poly_gcd(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* x, int64_
 
   int64_t q[n];
   int64_t r[n];
-  int64_t temp[n];
+  int64_t temp[2*n];
+  int k = 0;
 
-  while(1) {
-    if (!poly_euclid(n, modulus, gc[0], gc[1], q, r))
+  while(k++ < n) {
+    if (!poly_euclid(n, modulus, gc[0], gc[1], q, r)) {
+      printf("Fail 1\n");
       return false;
+    }
     if (poly_degree(n, r) == 0) {
       poly_copy(n, xc[1], x);
       poly_copy(n, yc[1], y);
@@ -328,18 +331,32 @@ bool poly_gcd(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* x, int64_
       return true;
     }
 
-    if (!poly_mult_mod_poly(n, modulus, xc[1], q, temp))
+    poly_zero(2*n, temp);
+    if (!poly_mult_mod_poly(n, modulus, xc[1], q, temp)) {
+      printf("Fail 2\n");
       return false;
-    if (!poly_sub_mod_poly(n, modulus, xc[0], temp, xc[2]))
+    }
+    if (!poly_sub_mod_poly(n, modulus, xc[0], temp, xc[2])) {
       return false;
-    if (!poly_mult_mod_poly(n, modulus, yc[1], q, temp))
+    }
+    poly_zero(2*n, temp);
+    if (!poly_mult_mod_poly(n, modulus, yc[1], q, temp)) {
+      printf("Fail 3\n");
       return false;
-    if (!poly_sub_mod_poly(n, modulus, yc[0], temp, yc[2]))
+    }
+    if (!poly_sub_mod_poly(n, modulus, yc[0], temp, yc[2])) {
+      printf("Fail 4\n");
       return false;
-    if (!poly_mult_mod_poly(n, modulus, gc[1], q, temp))
+    }
+    poly_zero(2*n, temp);
+    if (!poly_mult_mod_poly(n, modulus, gc[1], q, temp)) {
+      printf("Fail 5\n");
       return false;
-    if (!poly_sub_mod_poly(n, modulus, gc[0], temp, gc[2]))
+    }
+    if (!poly_sub_mod_poly(n, modulus, gc[0], temp, gc[2])) {
+      printf("Fail 6\n");
       return false;
+    }
     poly_move_up(n, (int64_t**)xc, (int64_t**)yc, (int64_t**)gc);
   }
  
