@@ -111,7 +111,7 @@ Timing attacks
 --------------
 
   This code is not meant to be resistant to timing attacks.  In fact,
-  it is extremely not timing attack resistant.  To make resistant requires 
+  it is extremely not timing attack resistant.  To make it resistant requires 
   changing all the calculations be fixed length and "if-free" in (at a minumum) 
   intel64_arith.cc and in the function ModExp and in number_theory.cc.  So my advice
   in not to use it for on-line encryption/decryption without extensive changes.
@@ -119,7 +119,7 @@ Timing attacks
 How to build
 ------------
 
-  The command buildall in the root directory builds all the code once you set up
+  for v1, the command buildall in the root directory builds all the code once you set up
   directories for the object files and binaries.  I put binaries in ~/cryptobin and
   object files in ~/cryptoobj (in several subdirectories).  Most of the executables
   buildall builds are tests; however, there is a command line utility called cryptutil.
@@ -127,7 +127,7 @@ How to build
   You need a c-11 compiler with the standard libraries, protobuf, gtest and gflags all
   of which are available in open source.  Currently, the code is Intel64 only (the
   assembly assist assumes Intel64 and RNG and aes use Ivy Bridge and later instructions
-  fore aesni and RNG.
+  for aesni and RNG).
 
 Feedback
 --------
