@@ -135,6 +135,9 @@ bool poly_gcd(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* x,
 bool poly_inverse_mod_poly(int n, int64_t modulus, int64_t* f,
                            int64_t* g, int64_t* r);
 
+bool pick_T_values(int n, int d1, int d2, int64_t* u);
+
+
 class ntru {
 public:
   bool initialized_;

@@ -821,9 +821,15 @@ bool test_ntru() {
   int64_t q = 29LL;
   int d = 1;
 
-  ntru nt;
+  int64_t t_values[N+1];
+  if (!pick_T_values(N+1, d+1, d, t_values))
+    return false;
+  for (int j = 0; j < (N+1); j++)
+    printf("%2ld ", t_values[j]);
+  printf("\n");
 
   printf("\nntru\n");
+  ntru nt;
 
   if (!nt.init(N, p, q, d)) {
     return false;

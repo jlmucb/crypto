@@ -430,6 +430,40 @@ ntru::~ntru() {
   }
 }
 
+// d1 1 entries, d2 -1 entries
+bool pick_T_values(int n, int d1, int d2, int64_t* u) {
+  int choices[n];
+  for (int i = 0; i < n; i++) {
+    choices[i] = i;
+    u[i] = 0LL;
+  }
+  int64_t d = 0LL;
+  int64_t l_n = (int64_t)n;
+
+  int l;
+  for( int k = 0; k < d1; k++) {
+    if (!random_from_q(l_n, &d))
+      return false;
+    l = (int)d;
+    u[choices[l]] = 1;
+    l_n--;
+    for (int j = l; j < (int)l_n; j++)
+      choices[j] = choices[j+1];
+  }
+
+  for( int k = 0; k < d2; k++) {
+    if (!random_from_q(l_n, &d))
+      return false;
+    l = (int)d;
+    u[choices[l]] = -1;
+    l_n--;
+    for (int j = l; j < (int)l_n; j++)
+      choices[j] = choices[j+1];
+  }
+  
+  return true;
+}
+
 
 bool ntru::init(int N, int64_t p, int64_t q, int d) {
   // set params
@@ -462,6 +496,8 @@ bool ntru::init(int N, int64_t p, int64_t q, int d) {
   };
   poly_copy(n_, test_f, f_);
 #else
+  if (!pick_T_values(n_, d + 1, d, f_))
+    return false;
 #endif
 
   //  generate g in T(d,d)
@@ -472,6 +508,8 @@ bool ntru::init(int N, int64_t p, int64_t q, int d) {
   };
   poly_copy(n_, test_g, g_);
 #else
+  if (!pick_T_values(n_, d, d, g_))
+    return false;
 #endif
 
   //  calculate fp, f fp = 1 (mod p)
