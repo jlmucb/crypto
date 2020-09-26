@@ -490,27 +490,13 @@ bool ntru::init(int N, int64_t p, int64_t q, int d) {
   gen_[N_] = 1LL;
   //  generate f in T(d+1, d)
   poly_zero(n_, f_);
-#if 1
-  static int64_t test_f[6] = {
-  -1, 0, 0, 1, 1, 0
-  };
-  poly_copy(n_, test_f, f_);
-#else
   if (!pick_T_values(n_, d + 1, d, f_))
     return false;
-#endif
 
   //  generate g in T(d,d)
   poly_zero(n_, g_);
-#if 1
-  static int64_t test_g[6] = {
-  0, 0, -1, 1, 0, 0
-  };
-  poly_copy(n_, test_g, g_);
-#else
   if (!pick_T_values(n_, d, d, g_))
     return false;
-#endif
 
   //  calculate fp, f fp = 1 (mod p)
   poly_zero(n_, fp_);

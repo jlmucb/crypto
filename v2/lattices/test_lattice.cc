@@ -815,7 +815,7 @@ int64_t test_r[6] = {
 };
 
 
-bool test_ntru() {
+bool test_ntru(bool fakeinit) {
   int N = 5;
   int64_t p = 3LL;
   int64_t q = 29LL;
@@ -844,7 +844,8 @@ bool test_ntru() {
     printf("gen: "); print_poly(nt.n_, nt.gen_); printf("\n");
   }
 
-  nt.debug_set_parameters(test_f, test_g, test_fp, test_fq, test_h);
+  if (fakeinit)
+    nt.debug_set_parameters(test_f, test_g, test_fp, test_fq, test_h);
 
   int64_t msg[6];
   int64_t c[6];
@@ -895,7 +896,8 @@ TEST (lwe, test_lwe) {
 TEST (int_ntru_support, test_ntru_support) {
   EXPECT_TRUE(test_int_support());
   EXPECT_TRUE(test_poly_support());
-  EXPECT_TRUE(test_ntru());
+  EXPECT_TRUE(test_ntru(true));
+  //EXPECT_TRUE(test_ntru(false));
 }
 
 
