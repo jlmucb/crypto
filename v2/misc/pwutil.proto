@@ -1,0 +1,19 @@
+// To compile: protoc -I=. --cpp_out=. pwutil.proto
+
+message pw_time {
+    optional int32 year                         =1;
+    optional int32 month                        =2;
+    optional int32 day                          =3;
+    optional int32 hour                         =4;
+    optional int32 minutes                      =5;
+    optional float seconds                      =6;
+  }
+
+message pw_message {
+    required string pw_name                    = 1;
+    optional int32  pw_epoch                   = 2;
+    optional string pw_status                  = 3;
+    optional string pw_value                   = 4;
+    optional pw_time pw_time_point             = 5;
+  }
+
