@@ -1,18 +1,12 @@
-New Cloudproxy Crypto Project
-=============================
-
-
+Crypto Project
+==============
 This code was written for educational purposes and to experiment with some of
 Google's public source code, mainly protobuf, gtest and gflags.  It may also
 be incorporated into Cloudproxy at some point after I do more testing but
-maybe not.
-
-This is a work in progress, I plan some improvements and additions (see the "todo"
-file in ROOT/new).
+maybe not. [2020: not.  Cloudproxy uses the GO crypto library]
 
 License
 -------
-
 Except as expressly set forth in particular files, all files in this project are
 licensed under the Apache 2.0 license, a copy of which is in this main directory
 in the file LICENSE-2.0.txt.
@@ -20,8 +14,7 @@ in the file LICENSE-2.0.txt.
 
 Pre-existing code license incorporated in this project
 ------------------------------------------------------
-
-Tinyxml (in the xml subdirectory)
+Tinyxml (in the xml subdirectory) [No longer used]
 Downloaded from https://github.com/leethomason/tinyxml2
 http://www.grinninglizard.com/tinyxml2/ on September 4, 2014 
 Original author:
@@ -109,17 +102,14 @@ License
 
 Timing attacks
 --------------
-
   This code is not meant to be resistant to timing attacks.  In fact,
   it is extremely not timing attack resistant.  To make it resistant requires 
-  changing all the calculations be fixed length and "if-free" in (at a minumum) 
-  intel64_arith.cc and in the function ModExp and in number_theory.cc.  So my advice
+  changing all the calculations be fixed length and "if-free".  So my advice
   in not to use it for on-line encryption/decryption without extensive changes.
 
 How to build
 ------------
-
-  for v1, the command buildall in the root directory builds all the code once you set up
+  For v1, the command buildall in the root directory builds all the code once you set up
   directories for the object files and binaries.  I put binaries in ~/cryptobin and
   object files in ~/cryptoobj (in several subdirectories).  Most of the executables
   buildall builds are tests; however, there is a command line utility called cryptutil.
@@ -131,7 +121,6 @@ How to build
 
 Feedback
 --------
-
   I welcome corrections and suggestions.  Please do not send material that you are not
   authorized to send.  All feedback will be treated as licensed under the same terms
   as this code; so don't send any information or feedback that you cannot or do
@@ -139,14 +128,13 @@ Feedback
 
 Version 2
 ---------
-
-In September, 2020, I rewrote most of the cryptocode to be cleaner and align
-with my current C++ code style. The new version is in v2.  I also added LLL
-and some lattice based crypto.  The original version remains in the v1
-directory.  I've also done an ARM version of the assembly assisted bignum
-arithmetic which I'll move into the directory soon, I hope.  Also, I've
-removed dependencies on any serialization except protobuf.  Same license
-conditions apply.
+  In September, 2020, I rewrote most of the cryptocode to be cleaner and align
+  with my current C++ coding style. The new version is in v2.  I also added LLL
+  and some lattice based crypto.  The original version remains in the v1
+  directory.  I've also done an ARM version of the assembly assisted bignum
+  arithmetic which I'll move into the directory soon, I hope.  Also, I've
+  removed dependencies on any serialization except protobuf.  Same license
+  conditions apply.
 
 
 John
