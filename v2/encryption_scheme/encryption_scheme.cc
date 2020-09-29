@@ -169,36 +169,26 @@ encryption_scheme::~encryption_scheme() {
 
 bool encryption_scheme::recover_encryption_scheme_from_message() {
 /*
-  bool initialized_;
-
-  scheme_message* scheme_msg_;
-  int   mode_;
-  int   pad_;
-  bool  nonce_data_valid_;
-  string initial_nonce_;
-  string running_nonce_;
-  big_num* counter_nonce_;
-  int operation_;
-  int total_message_size_;
-  int encrypted_bytes_output_;
-  int total_bytes_output_;
-  int block_size_;
-  int hmac_digest_size_;
-  int hmac_block_size_;
-  bool message_valid_;
-  aes enc_obj_;
-  hmac_sha256 int_obj_;
- if (alg == nullptr)
-    return false;
-
-   // NONE = 0, AES= 0x01, SHA2 = 0x01, SYMMETRIC_PAD = 0x01, MODE = 0x01
+  get these from message
+  string alg_;
+  string enc_alg_name_;
+  string hmac_alg_name_;
+  int enc_key_size_;
+  int hmac_key_size_;
+  int nonce_size_;
+  int enc_key_size_bytes_;
+  int hmac_key_size_bytes_;
+  int size_nonce_bytes_;
+  string encryption_key_;
+  string hmac_key_;
+  string nonce_;
+   
   if (pad == nullptr)
     return false;
   if (strcmp(pad, "sym-pad") == 0)
     pad_ = SYMMETRIC_PAD;
   else
     return false;
-
   if (mode == nullptr)
     return false;
   if (strcmp(mode, "ctr") == 0) {
@@ -208,54 +198,7 @@ bool encryption_scheme::recover_encryption_scheme_from_message() {
   } else {
     return false;
   }
-
-  if (strcmp(enc_alg, "aes") == 0) {
-    if (!enc_obj_.init(size_enc_key, (byte*)enc_key.data(), aes::BOTH))
-      return false;
-    block_size_ = aes::BLOCKBYTESIZE;
-  } else {
-    return false;
-  }
-
-  if (strcmp(hmac_alg, "hmac-sha256") == 0) {
-    if (!int_obj_.init(size_hmac_key, (byte*)hmac_key.data()))
-      return false;
-    hmac_digest_size_ = sha256::DIGESTBYTESIZE;
-    hmac_block_size_ = sha256::BLOCKBYTESIZE;
-  } else {
-    return false;
-  }
-
-  initial_nonce_.clear();
-  running_nonce_.clear();
-
-
-  int size_nonce_bytes = size_nonce / NBITSINBYTE;
-  if (size_nonce_bytes > block_size_)
-      size_nonce_bytes = block_size_;
-
-  if (mode_ == CTR) {
-    counter_nonce_->zero_num();
-    memcpy(counter_nonce_->value_ptr(), (byte*)nonce.data(), size_nonce_bytes);
-    counter_nonce_->normalize();
-    fill_big_num_to_block(block_size_, *counter_nonce_, &initial_nonce_);
-  } else {
-    if (((int)nonce.size()) < block_size_) {
-      initial_nonce_.assign((char*)nonce.data(), ((int)nonce.size()));
-      initial_nonce_.append(block_size_ -  ((int)nonce.size()), 0);
-    } else {
-      initial_nonce_.assign((char*)nonce.data(), block_size_);
-    }
-  }
-  running_nonce_.assign(initial_nonce_.data(), block_size_);
-  nonce_data_valid_ = true;
-
-  encrypted_bytes_output_ = 0;
-  total_bytes_output_ = 0;
-
-  size_nonce_bytes_ =;
 */
-  initialized_ = true;
   return true;
 }
 
@@ -335,6 +278,18 @@ bool encryption_scheme::encryption_scheme::init(const char* alg, const char* id_
 
   if (alg == nullptr)
     return false;
+  alg_.assign(alg);
+  enc_key_size_ = size_enc_key;
+  hmac_key_size_ = size_hmac_key;
+  nonce_size_ = size_nonce;
+  enc_key_size_bytes_ = (enc_key_size_ + NBITSINBYTE - 1) / NBITSINBYTE;
+  hmac_key_size_bytes_= (hmac_key_size_ + NBITSINBYTE - 1) / NBITSINBYTE;
+  size_nonce_bytes_= (nonce_size_ + NBITSINBYTE - 1) / NBITSINBYTE;
+  enc_alg_name_.assign(enc_alg);
+  hmac_alg_name_.assign(hmac_alg);
+  encryption_key_.assign(enc_key);
+  hmac_key_.assign(hmac_key);
+  nonce_.assign(nonce);
 
    // NONE = 0, AES= 0x01, SHA2 = 0x01, SYMMETRIC_PAD = 0x01, MODE = 0x01
   if (pad == nullptr)
@@ -354,8 +309,10 @@ bool encryption_scheme::encryption_scheme::init(const char* alg, const char* id_
     return false;
   }
 
-  if (strcmp(enc_alg, "aes") == 0) {
-    if (!enc_obj_.init(size_enc_key, (byte*)enc_key.data(), aes::BOTH))
+/*
+
+  if (strcmp(enc_alg_name_.c_str(), "aes") == 0) {
+    if (!enc_obj_.init(enc_key_size_bytes_, (byte*)encryption_key_.data(), aes::BOTH))
       return false;
     block_size_ = aes::BLOCKBYTESIZE;
   } else {
@@ -396,13 +353,15 @@ bool encryption_scheme::encryption_scheme::init(const char* alg, const char* id_
 
   encrypted_bytes_output_ = 0;
   total_bytes_output_ = 0;
+*/
 
   scheme_msg_ = make_scheme(alg, id_name, mode, pad, purpose,
       not_before, not_after, enc_alg, size_enc_key, enc_key,
       enc_key_name, hmac_alg, size_hmac_key,  hmac_key, size_nonce, nonce);
   if (scheme_msg_ == nullptr)
     return false;
-  return true;
+  initialized_ = init();
+  return initialized_;
 }
 
 bool encryption_scheme::get_nonce_data(int size, byte* out) {

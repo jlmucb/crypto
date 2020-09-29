@@ -10,7 +10,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// File: test_hash.cc
+// File: test_encryption_scheme.cc
 
 #include <gtest/gtest.h>
 #include <gflags/gflags.h>
@@ -135,7 +135,6 @@ printf("ctr init failed\n");  // REMOVE
   memcpy(plain, (byte*)message, msg_encrypt_size);
   memset(cipher, 0, allocated);
   memset(recovered, 0, allocated);
-
   // encrypt
   if (!enc_scheme.encrypt_message(msg_encrypt_size, plain, allocated, cipher)) {
 printf("ctr encrypt_message failed\n");  // REMOVE
@@ -145,6 +144,7 @@ printf("ctr encrypt_message failed\n");  // REMOVE
 
   msg_decrypt_size = enc_scheme.get_total_bytes_output();
   if (FLAGS_print_all) {
+    printf("aes-sh256-ctr\n");
     printf("encryption alg: %s\n", "aes");
     printf("encryption key: "); print_bytes((int)enc_key.size(), (byte*)enc_key.data());
     printf("hmac alg      : %s\n", "hmac-sha256");
@@ -274,6 +274,7 @@ bool test_aes_sha256_cbc_test1() {
 
   msg_decrypt_size = enc_scheme.get_total_bytes_output();
   if (FLAGS_print_all) {
+    printf("aes-sh256-cbc\n");
     printf("encryption alg: %s\n", "aes");
     printf("encryption key: "); print_bytes((int)enc_key.size(), (byte*)enc_key.data());
     printf("hmac alg      : %s\n", "hmac-sha256");
@@ -465,6 +466,7 @@ bool test_aes_sha256_cbc_test2() {
 
   msg_decrypt_size = enc_scheme.get_total_bytes_output();
   if (FLAGS_print_all) {
+    printf("aes-sh256-cbc\n");
     printf("encryption alg: %s\n", "aes");
     printf("encryption key: "); print_bytes((int)enc_key.size(), (byte*)enc_key.data());
     printf("hmac alg      : %s\n", "hmac-sha256");

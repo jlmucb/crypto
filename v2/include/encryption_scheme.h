@@ -29,19 +29,22 @@ public:
   bool initialized_;
 
   scheme_message* scheme_msg_;
+  string alg_;
   string enc_alg_name_;
   string hmac_alg_name_;
   int enc_key_size_;
   int hmac_key_size_;
+  int nonce_size_;
+  int enc_key_size_bytes_;
+  int hmac_key_size_bytes_;
+  int size_nonce_bytes_;
   string encryption_key_;
   string hmac_key_;
-  int nonce_size_;
   string nonce_;
 
   int   mode_;
   int   pad_;
 
-  int size_nonce_bytes_;
   bool  nonce_data_valid_;
   string initial_nonce_;
   string running_nonce_;
