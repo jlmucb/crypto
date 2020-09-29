@@ -75,7 +75,7 @@ std::string cryptutil_ops[] = {
     "\n",
     "--operation=scheme_encrypt --scheme_file=scheme_file " \
     "--algorithm=alg --input_file=file --output_file=file",
-    "--operation=schem_decrypt --scheme_file=scheme_file" \
+    "--operation=scheme_decrypt --scheme_file=scheme_file" \
     " --algorithm=alg --input_file=file --output_file=file" \
     "\n",
     "--operation=pkcs_sign_with_key --algorithm=alg --keyfile=file " \
@@ -129,6 +129,27 @@ DEFINE_string(proteced_key_file, "", "protected key file");
 DEFINE_string(unproteced_key_file, "", "unprotected key file");
 
 DEFINE_bool(print_all, false, "printall flag");
+
+bool read_scheme(scheme_message* msg) {
+  file_util in_file;
+  printf("File: %s\n", FLAGS_input_file.c_str());
+
+  if (!in_file.open(FLAGS_input_file.c_str())) {
+    printf("Can't open %s\n", FLAGS_input_file.c_str());
+    return false;
+  }
+  int size_in = in_file.bytes_in_file();
+  byte in_buf[size_in];
+  in_file.close();
+  if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in_buf) < size_in) {
+    printf("Can't read %s\n", FLAGS_input_file.c_str());
+    return false;
+  }
+  string serialized;
+  serialized.assign( (char*)in_buf, (size_t)size_in);
+  msg->ParseFromString(serialized);
+  return true;
+}
 
 
 int main(int an, char** av) {
@@ -380,7 +401,7 @@ int main(int an, char** av) {
     string serialized;
     msg->SerializeToString(&serialized);
     file_util out_file;
-     if (!out_file.write_file(FLAGS_scheme_file.c_str(), (int) serialized.size(),
+     if (!out_file.write_file(FLAGS_output_file.c_str(), (int) serialized.size(),
           (byte*) serialized.data())) {
       printf("Can't write %s\n", FLAGS_output_file.c_str());
       ret = 1;
@@ -389,26 +410,43 @@ int main(int an, char** av) {
     print_scheme_message(*msg);
     goto done;
   } else if ("read_scheme" == FLAGS_operation) {
-    // scheme_message scheme_msg;
+    scheme_message msg;
+    if (!read_scheme(&msg)) {
+      ret = 1;
+      goto done;
+    }
+    print_scheme_message(msg);
   } else if ("scheme_encrypt" == FLAGS_operation) {
-    if (FLAGS_algorithm == "aes-hmac-sha256-ctr") {
-    } else if (FLAGS_algorithm == "aes-hmac-sha256-cbc") {
-    } else {
-      printf("scheme_encrypt: unsupported algorithm %s\n",
-              FLAGS_algorithm.c_str());
+    encryption_scheme scheme;
+    if (!read_scheme(scheme.scheme_msg_)) {
+      ret = 1;
+      goto done;
+    }
+    print_scheme_message(*scheme.scheme_msg_);
+    if (!scheme.recover_encryption_scheme_from_message()) {
+      ret = 1;
+      goto done;
+    }
+    file_util in_file;
+    if (!in_file.open(FLAGS_input_file.c_str())) {
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    int size_in = in_file.bytes_in_file();
+    in_file.close();
+    byte in[size_in];
+    //   int block_size_;
+    // int hmac_digest_size_;
+    int size_out = size_in + 3 * scheme.get_block_size() + scheme.get_mac_size();
+    byte out[size_out];
+    if (!scheme.encrypt_message(size_in, in, size_out, out)) {
+      printf("Scheme encrypt failed\n");
       ret = 1;
       goto done;
     }
   } else if ("scheme_decrypt" == FLAGS_operation) {
-    // encryption_scheme
-    if (FLAGS_algorithm == "aes-hmac-sha256-ctr") {
-    } else if (FLAGS_algorithm == "aes-hmac-sha256-cbc") {
-    } else {
-      printf("scheme_decrypt: unsupported algorithm %s\n",
-              FLAGS_algorithm.c_str());
-      ret = 1;
-      goto done;
-    }
+    scheme_message msg;
   } else if ("generate_key" == FLAGS_operation) {
   } else if ("read_key" == FLAGS_operation) {
   } else if ("get_random" == FLAGS_operation) {

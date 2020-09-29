@@ -63,7 +63,7 @@ public:
   encryption_scheme();
   ~encryption_scheme();
 
-  bool recover_encryption_scheme_from_message(string& s);
+  bool recover_encryption_scheme_from_message();
   bool get_encryption_scheme_message(string* s);
 
 

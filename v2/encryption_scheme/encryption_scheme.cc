@@ -167,7 +167,7 @@ encryption_scheme::~encryption_scheme() {
   delete counter_nonce_;
 }
 
-bool encryption_scheme::recover_encryption_scheme_from_message(string& s) {
+bool encryption_scheme::recover_encryption_scheme_from_message() {
   return true;
 }
 
