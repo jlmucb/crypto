@@ -186,15 +186,105 @@ int main(int an, char** av) {
     }
     goto done;
   } else if ("frombase64" == FLAGS_operation) {
-    // base64_to_bytes(string& b64, string* b);
+    file_util in_file;
+    file_util out_file;
+
+    if (!in_file.open(FLAGS_input_file.c_str())) {
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    int size_in = in_file.bytes_in_file();
+    byte in_buf[size_in];
+    in_file.close();
+    if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in_buf) < size_in) {
+      printf("Can't read %s\n", FLAGS_input_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    string bytes;
+    string base64;
+    base64.assign((const char*) in_buf, (size_t) size_in);
+    if (!base64_to_bytes(base64, &bytes)) {
+      printf("Can't convert from base64\n");
+      ret = 1;
+      goto done;
+    }
+    if (!out_file.write_file(FLAGS_output_file.c_str(), (int) base64.size(),
+            (byte*) base64.data())) {
+      printf("Can't write %s\n", FLAGS_output_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    goto done;
   } else if ("todecimal" == FLAGS_operation) {
     // digit_convert_to_decimal(int size_a, uint64_t* n, string* s);
   } else if ("fromdecimal" == FLAGS_operation) {
     // digit_convert_from_decimal(string& s, int size_n, uint64_t* n);
   } else if ("tohex" == FLAGS_operation) {
-    // bytes_to_hex(string& b, string* h);
+    file_util in_file;
+    file_util out_file;
+
+    if (!in_file.open(FLAGS_input_file.c_str())) {
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    int size_in = in_file.bytes_in_file();
+    byte in_buf[size_in];
+    in_file.close();
+    if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in_buf) < size_in) {
+      printf("Can't read %s\n", FLAGS_input_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    string bytes;
+    string hex;
+    bytes.assign((const char*) in_buf, (size_t) size_in);
+    if (!bytes_to_hex(bytes, &bytes)) {
+      printf("Can't convert to hex\n");
+      ret = 1;
+      goto done;
+    }
+    if (!out_file.write_file(FLAGS_output_file.c_str(), (int) hex.size(),
+            (byte*) hex.data())) {
+      printf("Can't write %s\n", FLAGS_output_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    goto done;
   } else if ("fromhex" == FLAGS_operation) {
-    // hex_to_bytes(string& h, string* b);
+    file_util in_file;
+    file_util out_file;
+
+    if (!in_file.open(FLAGS_input_file.c_str())) {
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    int size_in = in_file.bytes_in_file();
+    byte in_buf[size_in];
+    in_file.close();
+    if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in_buf) < size_in) {
+      printf("Can't read %s\n", FLAGS_input_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    string bytes;
+    string hex;
+    hex.assign((const char*) in_buf, (size_t) size_in);
+    if (!hex_to_bytes(hex, &bytes)) {
+      printf("Can't convert to base64\n");
+      ret = 1;
+      goto done;
+    }
+    if (!out_file.write_file(FLAGS_output_file.c_str(), (int) bytes.size(),
+            (byte*) bytes.data())) {
+      printf("Can't write %s\n", FLAGS_output_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    goto done;
   } else if ("hash" == FLAGS_operation) {
   } else if ("encrypt_with_key" == FLAGS_operation) {
     if (FLAGS_algorithm == "aes") {
@@ -215,35 +305,93 @@ int main(int an, char** av) {
       printf("Decrypt: Unknown encryption alg\n");
     }
   } else if ("generate_scheme" == FLAGS_operation) {
-    // scheme_message* make_scheme(const char* alg, const char* id_name,
-    //   const char* mode, const char* pad, const char* purpose,
-    //   const char* not_before, const char* not_after,
-    //   const char* enc_alg, int size_enc_key, string& enc_key,
-    //   const char* enc_key_name, const char* hmac_alg,
-    //   int size_hmac_key,  string& hmac_key, int size_nonce,
-    //   string& nonce);
+    int size_nonce = 128 / NBITSINBYTE;
+    int size_enc_key = FLAGS_encrypt_key_size / NBITSINBYTE;
+    int size_hmac_key = FLAGS_mac_key_size / NBITSINBYTE;
+    byte e_key[size_enc_key];
+    byte m_key[size_hmac_key];
+    byte n_key[size_enc_key];
+    string enc_key;
+    string mac_key;
+    string nonce;
+
+    // make keys and nonces and set them in strings
+    if (crypto_get_random_bytes(size_nonce, n_key) < size_nonce) {
+      printf("Can't generate nonce\n");
+      ret = 1;
+      goto done;
+    }
+    if (crypto_get_random_bytes(size_enc_key, e_key) < size_enc_key) {
+      printf("Can't generate enc key\n");
+      ret = 1;
+      goto done;
+    }
+    if (crypto_get_random_bytes(size_hmac_key, m_key) < size_hmac_key) {
+      printf("Can't generate enc key\n");
+      ret = 1;
+      goto done;
+    }
+    nonce.assign((const char*) n_key, (size_t) size_nonce);
+    enc_key.assign((const char*) e_key, (size_t) size_enc_key);
+    mac_key.assign((const char*) m_key, (size_t) size_hmac_key);
+
+    // notbefore, notafter
+    time_point t1, t2;
+    t1.time_now();
+    string s1, s2;
+    if (!t1.encode_time(&s1)) {
+      ret = 1;
+      goto done;
+    }
+    t2.add_interval_to_time(t1, 5 * 365 * 86400.0);
+    if (!t2.encode_time(&s2)) {
+      ret = 1;
+      goto done;
+    }
+
+    char* mode;
+    const char* pad = "sym-pad";
+    char* enc_alg;
+    char* hmac_alg;
+
     if (FLAGS_algorithm == "aes-hmac-sha256-ctr") {
+      mode = (char*)"ctr";
+      enc_alg = (char*)"aes";
+      hmac_alg = (char*)"hmac-sha256";
     } else if (FLAGS_algorithm == "aes-hmac-sha256-cbc") {
+      mode = (char*)"cbc";
+      enc_alg = (char*)"aes";
+      hmac_alg = (char*)"hmac-sha256";
     } else {
       printf("scheme_decrypt: unsupported algorithm %s\n",
               FLAGS_algorithm.c_str());
       ret = 1;
       goto done;
     }
+    scheme_message* msg = make_scheme(FLAGS_algorithm.c_str(), "",
+          mode, pad, "", s1.c_str(), s2.c_str(), enc_alg,
+          FLAGS_encrypt_key_size, enc_key, FLAGS_key_name.c_str(), hmac_alg,
+          FLAGS_mac_key_size,  mac_key, 128, nonce);
+    if ( msg == nullptr) {
+      printf("Can't create scheme message\n");
+      ret = 1;
+      goto done;
+    }
+    string serialized;
+    msg->SerializeToString(&serialized);
+    file_util out_file;
+     if (!out_file.write_file(FLAGS_scheme_file.c_str(), (int) serialized.size(),
+          (byte*) serialized.data())) {
+      printf("Can't write %s\n", FLAGS_output_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    print_scheme_message(*msg);
+    goto done;
   } else if ("read_scheme" == FLAGS_operation) {
     // scheme_message scheme_msg;
   } else if ("scheme_encrypt" == FLAGS_operation) {
     if (FLAGS_algorithm == "aes-hmac-sha256-ctr") {
-
-      // bool init(const char* alg, const char* id_name,
-      // const char* mode, const char* pad, const char* purpose,
-      // const char* not_before, const char* not_after,
-      // const char* enc_alg, int size_enc_key, string& enc_key,
-      // const char* enc_key_name, const char* hmac_alg,
-      // int size_hmac_key,  string& hmac_key, int size_nonce,
-      // string& nonce);
-      // bool encrypt_message(int size_in, byte* in, int size_out, byte* out);
-      // bool decrypt_message(int size_in, byte* in, int size_out, byte* out);
     } else if (FLAGS_algorithm == "aes-hmac-sha256-cbc") {
     } else {
       printf("scheme_encrypt: unsupported algorithm %s\n",
