@@ -29,13 +29,24 @@ public:
   bool initialized_;
 
   scheme_message* scheme_msg_;
+  string enc_alg_name_;
+  string hmac_alg_name_;
+  int enc_key_size_;
+  int hmac_key_size_;
+  string encryption_key_;
+  string hmac_key_;
+  int nonce_size_;
+  string nonce_;
+
   int   mode_;
   int   pad_;
 
+  int size_nonce_bytes_;
   bool  nonce_data_valid_;
   string initial_nonce_;
   string running_nonce_;
   big_num* counter_nonce_;
+
 
   int operation_;
   int total_message_size_;
@@ -67,6 +78,8 @@ public:
   bool get_encryption_scheme_message(string* s);
 
 
+  // initialize objects from recovered data
+  bool init();
   bool init(const char* alg, const char* id_name,
       const char* mode, const char* pad, const char* purpose,
       const char* not_before, const char* not_after,

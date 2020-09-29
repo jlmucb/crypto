@@ -168,10 +168,161 @@ encryption_scheme::~encryption_scheme() {
 }
 
 bool encryption_scheme::recover_encryption_scheme_from_message() {
+/*
+  bool initialized_;
+
+  scheme_message* scheme_msg_;
+  int   mode_;
+  int   pad_;
+  bool  nonce_data_valid_;
+  string initial_nonce_;
+  string running_nonce_;
+  big_num* counter_nonce_;
+  int operation_;
+  int total_message_size_;
+  int encrypted_bytes_output_;
+  int total_bytes_output_;
+  int block_size_;
+  int hmac_digest_size_;
+  int hmac_block_size_;
+  bool message_valid_;
+  aes enc_obj_;
+  hmac_sha256 int_obj_;
+ if (alg == nullptr)
+    return false;
+
+   // NONE = 0, AES= 0x01, SHA2 = 0x01, SYMMETRIC_PAD = 0x01, MODE = 0x01
+  if (pad == nullptr)
+    return false;
+  if (strcmp(pad, "sym-pad") == 0)
+    pad_ = SYMMETRIC_PAD;
+  else
+    return false;
+
+  if (mode == nullptr)
+    return false;
+  if (strcmp(mode, "ctr") == 0) {
+    mode_ = CTR;
+  } else if (strcmp(mode, "cbc") == 0) {
+    mode_ = CBC;
+  } else {
+    return false;
+  }
+
+  if (strcmp(enc_alg, "aes") == 0) {
+    if (!enc_obj_.init(size_enc_key, (byte*)enc_key.data(), aes::BOTH))
+      return false;
+    block_size_ = aes::BLOCKBYTESIZE;
+  } else {
+    return false;
+  }
+
+  if (strcmp(hmac_alg, "hmac-sha256") == 0) {
+    if (!int_obj_.init(size_hmac_key, (byte*)hmac_key.data()))
+      return false;
+    hmac_digest_size_ = sha256::DIGESTBYTESIZE;
+    hmac_block_size_ = sha256::BLOCKBYTESIZE;
+  } else {
+    return false;
+  }
+
+  initial_nonce_.clear();
+  running_nonce_.clear();
+
+
+  int size_nonce_bytes = size_nonce / NBITSINBYTE;
+  if (size_nonce_bytes > block_size_)
+      size_nonce_bytes = block_size_;
+
+  if (mode_ == CTR) {
+    counter_nonce_->zero_num();
+    memcpy(counter_nonce_->value_ptr(), (byte*)nonce.data(), size_nonce_bytes);
+    counter_nonce_->normalize();
+    fill_big_num_to_block(block_size_, *counter_nonce_, &initial_nonce_);
+  } else {
+    if (((int)nonce.size()) < block_size_) {
+      initial_nonce_.assign((char*)nonce.data(), ((int)nonce.size()));
+      initial_nonce_.append(block_size_ -  ((int)nonce.size()), 0);
+    } else {
+      initial_nonce_.assign((char*)nonce.data(), block_size_);
+    }
+  }
+  running_nonce_.assign(initial_nonce_.data(), block_size_);
+  nonce_data_valid_ = true;
+
+  encrypted_bytes_output_ = 0;
+  total_bytes_output_ = 0;
+
+  size_nonce_bytes_ =;
+*/
+  initialized_ = true;
   return true;
 }
 
 bool encryption_scheme::get_encryption_scheme_message(string* s) {
+/*
+  if (strcmp(pad, "sym-pad") == 0)
+    pad_ = SYMMETRIC_PAD;
+  else
+    return false;
+
+  if (mode == nullptr)
+    return false;
+  if (strcmp(mode, "ctr") == 0) {
+    mode_ = CTR;
+  } else if (strcmp(mode, "cbc") == 0) {
+    mode_ = CBC;
+  } else {
+    return false;
+  }
+ */
+  return true;
+}
+
+bool encryption_scheme::init() {
+
+  if (strcmp(enc_alg_name_.c_str(), "aes") == 0) {
+    if (!enc_obj_.init(enc_key_size_, (byte*)encryption_key_.data(), aes::BOTH))
+      return false;
+    block_size_ = aes::BLOCKBYTESIZE;
+  } else {
+    return false;
+  }
+
+  if (strcmp(hmac_alg_name_.c_str(), "hmac-sha256") == 0) {
+    if (!int_obj_.init(hmac_key_size_, (byte*)hmac_key_.data()))
+      return false;
+    hmac_digest_size_ = sha256::DIGESTBYTESIZE;
+    hmac_block_size_ = sha256::BLOCKBYTESIZE;
+  } else {
+    return false;
+  }
+
+  initial_nonce_.clear();
+  running_nonce_.clear();
+
+  if (size_nonce_bytes_ > block_size_)
+      size_nonce_bytes_ = block_size_;
+
+  if (mode_ == CTR) {
+    counter_nonce_->zero_num();
+    memcpy(counter_nonce_->value_ptr(), (byte*)nonce_.data(), size_nonce_bytes_);
+    counter_nonce_->normalize();
+    fill_big_num_to_block(block_size_, *counter_nonce_, &initial_nonce_);
+  } else {
+    if (((int)nonce_.size()) < block_size_) {
+      initial_nonce_.assign((char*)nonce_.data(), ((int)nonce_.size()));
+      initial_nonce_.append(block_size_ -  ((int)nonce_.size()), 0);
+    } else {
+      initial_nonce_.assign((char*)nonce_.data(), block_size_);
+    }
+  }
+  running_nonce_.assign(initial_nonce_.data(), block_size_);
+  nonce_data_valid_ = true;
+
+  encrypted_bytes_output_ = 0;
+  total_bytes_output_ = 0;
+  initialized_ = true;
   return true;
 }
 
