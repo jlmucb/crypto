@@ -132,17 +132,17 @@ DEFINE_bool(print_all, false, "printall flag");
 
 bool read_scheme(scheme_message* msg) {
   file_util in_file;
-  printf("File: %s\n", FLAGS_input_file.c_str());
+  printf("File: %s\n", FLAGS_scheme_file.c_str());
 
-  if (!in_file.open(FLAGS_input_file.c_str())) {
-    printf("Can't open %s\n", FLAGS_input_file.c_str());
+  if (!in_file.open(FLAGS_scheme_file.c_str())) {
+    printf("Can't open %s\n", FLAGS_scheme_file.c_str());
     return false;
   }
   int size_in = in_file.bytes_in_file();
   byte in_buf[size_in];
   in_file.close();
-  if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in_buf) < size_in) {
-    printf("Can't read %s\n", FLAGS_input_file.c_str());
+  if (in_file.read_file(FLAGS_scheme_file.c_str(), size_in, in_buf) < size_in) {
+    printf("Can't read %s\n", FLAGS_scheme_file.c_str());
     return false;
   }
   string serialized;
@@ -401,9 +401,9 @@ int main(int an, char** av) {
     string serialized;
     msg->SerializeToString(&serialized);
     file_util out_file;
-     if (!out_file.write_file(FLAGS_output_file.c_str(), (int) serialized.size(),
+     if (!out_file.write_file(FLAGS_scheme_file.c_str(), (int) serialized.size(),
           (byte*) serialized.data())) {
-      printf("Can't write %s\n", FLAGS_output_file.c_str());
+      printf("Can't write %s\n", FLAGS_scheme_file.c_str());
       ret = 1;
       goto done;
     }
@@ -416,7 +416,8 @@ int main(int an, char** av) {
       goto done;
     }
     print_scheme_message(msg);
-  } else if ("scheme_encrypt" == FLAGS_operation) {
+  } else if ("scheme_encrypt" == FLAGS_operation ||
+      "scheme_decrypt" == FLAGS_operation) {
     encryption_scheme scheme;
     if (!read_scheme(scheme.scheme_msg_)) {
       ret = 1;
@@ -427,6 +428,17 @@ int main(int an, char** av) {
       ret = 1;
       goto done;
     }
+    if (!scheme.recover_encryption_scheme_from_message()) {
+      printf("Can't recover encryption scheme\n");
+      ret = 1;
+      goto done;
+    }
+    if (!scheme.init()) {
+      printf("Can't init encryption scheme\n");
+      ret = 1;
+      goto done;
+    }
+
     file_util in_file;
     if (!in_file.open(FLAGS_input_file.c_str())) {
       printf("Can't open %s\n", FLAGS_input_file.c_str());
@@ -436,17 +448,40 @@ int main(int an, char** av) {
     int size_in = in_file.bytes_in_file();
     in_file.close();
     byte in[size_in];
-    //   int block_size_;
-    // int hmac_digest_size_;
-    int size_out = size_in + 3 * scheme.get_block_size() + scheme.get_mac_size();
-    byte out[size_out];
-    if (!scheme.encrypt_message(size_in, in, size_out, out)) {
-      printf("Scheme encrypt failed\n");
-      ret = 1;
-      goto done;
+
+    if ("scheme_encrypt" == FLAGS_operation) {
+      int size_out = size_in + 3 * scheme.get_block_size() + scheme.get_mac_size();
+      byte out[size_out];
+      if (!scheme.encrypt_message(size_in, in, size_out, out)) {
+        printf("Scheme encrypt failed\n");
+        ret = 1;
+        goto done;
+      }
+      file_util out_file;
+      out_file.write_file(FLAGS_output_file.c_str(), scheme.get_total_bytes_output(), out);
+      printf("Plain: ");
+      print_bytes(size_in, in);
+      printf("\n");
+      printf("Encrypted: ");
+      print_bytes(scheme.get_total_bytes_output(), out);
+      printf("\n");
+    } else {
+      int size_out = size_in;
+      byte out[size_out];
+      if (!scheme.decrypt_message(size_in, in, size_out, out)) {
+        printf("Scheme decrypt failed\n");
+        ret = 1;
+        goto done;
+      }
+      file_util out_file;
+      out_file.write_file(FLAGS_output_file.c_str(), scheme.get_total_bytes_output(), out);
+      printf("Cipher: ");
+      print_bytes(size_in, in);
+      printf("\n");
+      printf("Decrypted: ");
+      print_bytes(scheme.get_total_bytes_output(), out);
+      printf("\n");
     }
-  } else if ("scheme_decrypt" == FLAGS_operation) {
-    scheme_message msg;
   } else if ("generate_key" == FLAGS_operation) {
   } else if ("read_key" == FLAGS_operation) {
   } else if ("get_random" == FLAGS_operation) {

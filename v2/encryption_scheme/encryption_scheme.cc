@@ -168,58 +168,56 @@ encryption_scheme::~encryption_scheme() {
 }
 
 bool encryption_scheme::recover_encryption_scheme_from_message() {
-/*
-  get these from message
-  string alg_;
-  string enc_alg_name_;
-  string hmac_alg_name_;
-  int enc_key_size_;
-  int hmac_key_size_;
-  int nonce_size_;
-  int enc_key_size_bytes_;
-  int hmac_key_size_bytes_;
-  int size_nonce_bytes_;
-  string encryption_key_;
-  string hmac_key_;
-  string nonce_;
-   
-  if (pad == nullptr)
+  if (scheme_msg_ == nullptr)
     return false;
-  if (strcmp(pad, "sym-pad") == 0)
-    pad_ = SYMMETRIC_PAD;
-  else
+
+  if (!scheme_msg_->has_scheme_type())
     return false;
-  if (mode == nullptr)
-    return false;
-  if (strcmp(mode, "ctr") == 0) {
+  if (strcmp(scheme_msg_->scheme_type().c_str(), "aes-hmac-sha256-ctr") == 0) {
+    alg_.assign("aes-hmac-sha256-ctr");
+    enc_alg_name_.assign("aes");
+    hmac_alg_name_.assign("hmac-sha256");;
     mode_ = CTR;
-  } else if (strcmp(mode, "cbc") == 0) {
+    pad_ = SYMMETRIC_PAD;
+  } else if (strcmp(scheme_msg_->scheme_type().c_str(), "aes-hmac-sha256-cbc") == 0) {
+    alg_.assign("aes-hmac-sha256-ctr");
+    enc_alg_name_.assign("aes");
+    hmac_alg_name_.assign("hmac-sha256");;
     mode_ = CBC;
-  } else {
+    pad_ = SYMMETRIC_PAD;
+  } else  {
     return false;
   }
-*/
+  if (!scheme_msg_->has_encryption_key())
+    return false;
+  if (!scheme_msg_->has_parameters())
+    return false;
+  if (!scheme_msg_->has_public_nonce())
+    return false;
+  if (!scheme_msg_->encryption_key().has_key_size())
+    return false;
+  if (!scheme_msg_->encryption_key().has_secret())
+    return false;
+  if (!scheme_msg_->parameters().has_size())
+    return false;
+  if (!scheme_msg_->parameters().has_secret())
+    return false;
+  enc_key_size_= scheme_msg_->encryption_key().key_size();
+  hmac_key_size_ = scheme_msg_->parameters().size();
+  enc_key_size_bytes_ = enc_key_size_ / NBITSINBYTE;
+  hmac_key_size_bytes_ = hmac_key_size_ / NBITSINBYTE;
+  size_nonce_bytes_ = scheme_msg_->public_nonce().size();
+  nonce_size_= size_nonce_bytes_* NBITSINBYTE;
+  encryption_key_.assign(scheme_msg_->encryption_key().secret());
+  hmac_key_.assign(scheme_msg_->parameters().secret());
+  nonce_.assign(scheme_msg_->public_nonce());
   return true;
 }
 
 bool encryption_scheme::get_encryption_scheme_message(string* s) {
-/*
-  if (strcmp(pad, "sym-pad") == 0)
-    pad_ = SYMMETRIC_PAD;
-  else
+  if (scheme_msg_ == nullptr)
     return false;
-
-  if (mode == nullptr)
-    return false;
-  if (strcmp(mode, "ctr") == 0) {
-    mode_ = CTR;
-  } else if (strcmp(mode, "cbc") == 0) {
-    mode_ = CBC;
-  } else {
-    return false;
-  }
- */
-  return true;
+  return scheme_msg_->SerializeToString(s);
 }
 
 bool encryption_scheme::init() {
