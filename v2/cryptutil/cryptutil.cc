@@ -419,6 +419,11 @@ int main(int an, char** av) {
   } else if ("scheme_encrypt" == FLAGS_operation ||
       "scheme_decrypt" == FLAGS_operation) {
     encryption_scheme scheme;
+    scheme.scheme_msg_ = new scheme_message;
+    if (scheme.scheme_msg_ == nullptr) {
+      ret = 1;
+      goto done;
+    }
     if (!read_scheme(scheme.scheme_msg_)) {
       ret = 1;
       goto done;
@@ -448,10 +453,18 @@ int main(int an, char** av) {
     int size_in = in_file.bytes_in_file();
     in_file.close();
     byte in[size_in];
+    if (!in_file.read_file(FLAGS_input_file.c_str(), size_in, in)) {
+      printf("Can't read %s\n", FLAGS_input_file.c_str());
+      ret = 1;
+      goto done;
+    }
 
     if ("scheme_encrypt" == FLAGS_operation) {
       int size_out = size_in + 3 * scheme.get_block_size() + scheme.get_mac_size();
       byte out[size_out];
+      printf("\nPlain: ");
+      print_bytes(size_in, in);
+      printf("\n");
       if (!scheme.encrypt_message(size_in, in, size_out, out)) {
         printf("Scheme encrypt failed\n");
         ret = 1;
@@ -459,15 +472,15 @@ int main(int an, char** av) {
       }
       file_util out_file;
       out_file.write_file(FLAGS_output_file.c_str(), scheme.get_total_bytes_output(), out);
-      printf("Plain: ");
-      print_bytes(size_in, in);
-      printf("\n");
       printf("Encrypted: ");
       print_bytes(scheme.get_total_bytes_output(), out);
       printf("\n");
     } else {
       int size_out = size_in;
       byte out[size_out];
+      printf("\nCipher: ");
+      print_bytes(size_in, in);
+      printf("\n");
       if (!scheme.decrypt_message(size_in, in, size_out, out)) {
         printf("Scheme decrypt failed\n");
         ret = 1;
@@ -475,9 +488,6 @@ int main(int an, char** av) {
       }
       file_util out_file;
       out_file.write_file(FLAGS_output_file.c_str(), scheme.get_total_bytes_output(), out);
-      printf("Cipher: ");
-      print_bytes(size_in, in);
-      printf("\n");
       printf("Decrypted: ");
       print_bytes(scheme.get_total_bytes_output(), out);
       printf("\n");
