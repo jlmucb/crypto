@@ -214,8 +214,14 @@ int main(int an, char** av) {
     } else {
       printf("Decrypt: Unknown encryption alg\n");
     }
-  } else if ("scheme_decrypt" == FLAGS_operation) {
-    // encryption_scheme
+  } else if ("generate_scheme" == FLAGS_operation) {
+    // scheme_message* make_scheme(const char* alg, const char* id_name,
+    //   const char* mode, const char* pad, const char* purpose,
+    //   const char* not_before, const char* not_after,
+    //   const char* enc_alg, int size_enc_key, string& enc_key,
+    //   const char* enc_key_name, const char* hmac_alg,
+    //   int size_hmac_key,  string& hmac_key, int size_nonce,
+    //   string& nonce);
     if (FLAGS_algorithm == "aes-hmac-sha256-ctr") {
     } else if (FLAGS_algorithm == "aes-hmac-sha256-cbc") {
     } else {
@@ -224,6 +230,8 @@ int main(int an, char** av) {
       ret = 1;
       goto done;
     }
+  } else if ("read_scheme" == FLAGS_operation) {
+    // scheme_message scheme_msg;
   } else if ("scheme_encrypt" == FLAGS_operation) {
     if (FLAGS_algorithm == "aes-hmac-sha256-ctr") {
 
@@ -243,14 +251,8 @@ int main(int an, char** av) {
       ret = 1;
       goto done;
     }
-  } else if ("generate_scheme" == FLAGS_operation) {
-    // scheme_message* make_scheme(const char* alg, const char* id_name,
-    //   const char* mode, const char* pad, const char* purpose,
-    //   const char* not_before, const char* not_after,
-    //   const char* enc_alg, int size_enc_key, string& enc_key,
-    //   const char* enc_key_name, const char* hmac_alg,
-    //   int size_hmac_key,  string& hmac_key, int size_nonce,
-    //   string& nonce);
+  } else if ("scheme_decrypt" == FLAGS_operation) {
+    // encryption_scheme
     if (FLAGS_algorithm == "aes-hmac-sha256-ctr") {
     } else if (FLAGS_algorithm == "aes-hmac-sha256-cbc") {
     } else {
@@ -259,8 +261,6 @@ int main(int an, char** av) {
       ret = 1;
       goto done;
     }
-  } else if ("read_scheme" == FLAGS_operation) {
-    // scheme_message scheme_msg;
   } else if ("generate_key" == FLAGS_operation) {
   } else if ("read_key" == FLAGS_operation) {
   } else if ("get_random" == FLAGS_operation) {
