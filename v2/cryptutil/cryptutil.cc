@@ -161,7 +161,7 @@ bool keys_from_pass_phrase(const char* phrase, int* size, byte* key) {
   byte salt_buf[32];
   for (int i = 0; i < num_passes; i++) {
     h.init();
-    sprintf((char*)salt_buf, "JLM_salt_%d", i);
+    sprintf((char*)salt_buf, "JLM_salt_%d", i + 3);
     h.add_to_hash(strlen((char*)salt_buf), (byte*)salt_buf);
     h.add_to_hash(strlen(phrase), (byte*)phrase);
     h.add_to_hash(strlen((char*)salt_buf), (byte*)salt_buf);
@@ -546,30 +546,32 @@ int main(int an, char** av) {
       ret = 1;
       goto done;
     }
-    int size_nonce = 128 / NBITSINBYTE;
-    int size_enc_key = FLAGS_encrypt_key_size / NBITSINBYTE;
-    int size_hmac_key = FLAGS_mac_key_size / NBITSINBYTE;
+    int size_nonce_bytes = 128 / NBITSINBYTE;
+    int size_enc_key_bytes = FLAGS_encrypt_key_size / NBITSINBYTE;
+    int size_hmac_key_bytes = FLAGS_mac_key_size / NBITSINBYTE;
     string enc_key;
     string mac_key;
     string nonce;
 
-    int tmp_key_size = size_enc_key + size_hmac_key + size_nonce;
+    int tmp_key_size = size_enc_key_bytes + size_hmac_key_bytes + 32;
     byte tmp_key[tmp_key_size];
-    printf("Pass phrase: %s\n", FLAGS_pass.c_str());
     if (!keys_from_pass_phrase(FLAGS_pass.c_str(), &tmp_key_size, tmp_key)) {
         printf("keys_from_pass_phrase failed\n");
         ret = 1;
         goto done;
     }
-    enc_key.assign((char*)tmp_key, (size_t)size_enc_key);
-    mac_key.assign((char*)&tmp_key[size_enc_key], (size_t)size_hmac_key);
-    nonce.assign((char*)&tmp_key[size_enc_key + size_hmac_key], (size_t)size_nonce);
+    printf("Pass phrase: %s, tmp key size: %d\n", FLAGS_pass.c_str(), tmp_key_size);
+    enc_key.assign((char*)tmp_key, (size_t)size_enc_key_bytes);
+    mac_key.assign((char*)&tmp_key[size_enc_key_bytes], (size_t)size_hmac_key_bytes);
+    // nonce.assign((char*)&tmp_key[size_enc_key_bytes + size_hmac_key_bytes], (size_t)16);
+    nonce.assign((char*)&tmp_key[size_enc_key_bytes], (size_t)16);
     if (!scheme.init(FLAGS_algorithm.c_str(), "",
-          mode, pad, "", "", "", enc_alg, size_enc_key, enc_key,
-          "tmpkey", hmac_alg, size_hmac_key,  mac_key, size_nonce, nonce)) {
+          mode, pad, "", "now", "later", enc_alg, FLAGS_encrypt_key_size, enc_key,
+          "tmpkey", hmac_alg, FLAGS_mac_key_size,  mac_key, 128, nonce)) {
       printf("password: can't init scheme\n");
+        ret = 1;
+      goto done;
     }
-    goto done;
 
     file_util in_file;
     if (!in_file.open(FLAGS_input_file.c_str())) {
@@ -585,6 +587,10 @@ int main(int an, char** av) {
       ret = 1;
       goto done;
     }
+
+    printf("Derived encryption key: "); print_bytes((int)enc_key.size(), (byte*)enc_key.data());
+    printf("Derived mac key: "); print_bytes((int)mac_key.size(), (byte*)mac_key.data());
+    printf("Derived nonce: "); print_bytes((int)nonce.size(), (byte*)nonce.data());
 
     if ("encrypt_with_password" == FLAGS_operation) {
       int size_out = size_in + 3 * scheme.get_block_size() + scheme.get_mac_size();
@@ -619,6 +625,7 @@ int main(int an, char** av) {
       print_bytes(scheme.get_bytes_encrypted(), out);
       printf("\n");
     }
+    goto done;
   } else if ("generate_key" == FLAGS_operation) {
   } else if ("pkcs_sign_with_key" == FLAGS_operation) {
   } else if ("pkcs_verify_with_key" == FLAGS_operation) {
