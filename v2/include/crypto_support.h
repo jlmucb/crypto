@@ -194,8 +194,7 @@ scheme_message* make_scheme(const char* alg, const char* id_name,
       const char* not_before, const char* not_after,
       const char* enc_alg, int size_enc_key, string& enc_key,
       const char* enc_key_name, const char* hmac_alg,
-      int size_hmac_key,  string& hmac_key, int size_nonce,
-      string& nonce);
+      int size_hmac_key, string& hmac_key);
 
 void print_binary_blob(binary_blob_message& m);
 void print_encrypted_message(encrypted_message& m);

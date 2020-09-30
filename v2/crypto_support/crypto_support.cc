@@ -905,10 +905,9 @@ scheme_message* make_scheme(const char* alg, const char* id_name,
       const char* not_before, const char* not_after,
       const char* enc_alg, int size_enc_key, string& enc_key,
       const char* enc_key_name, const char* hmac_alg,
-      int size_hmac_key,  string& hmac_key, int size_nonce,
-      string& nonce) {
+      int size_hmac_key,  string& hmac_key) {
 
-  scheme_message* m= new(scheme_message);
+  scheme_message* m = new(scheme_message);
   m->set_scheme_type(alg);
   m->set_scheme_instance_identifier(id_name);
   m->set_mode(mode);
@@ -924,8 +923,6 @@ scheme_message* make_scheme(const char* alg, const char* id_name,
   hp->set_size(size_hmac_key);
   hp->set_secret(hmac_key);
   m->set_allocated_parameters(hp);
-  m->set_public_nonce(nonce.data(), nonce.size());
-
   return m;
 }
 
@@ -1105,10 +1102,6 @@ void print_scheme_message(scheme_message& m) {
   if (m.has_parameters()) {
     hmac_parameters_message* hp = m.mutable_parameters();
     print_hmac_parameters_message(*hp);
-  }
-  if (m.has_public_nonce()) {
-    printf("nonce: "); print_bytes((int)m.public_nonce().size(),
-         (byte*)m.public_nonce().data());
   }
 }
 

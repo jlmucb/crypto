@@ -192,8 +192,6 @@ bool encryption_scheme::recover_encryption_scheme_from_message() {
     return false;
   if (!scheme_msg_->has_parameters())
     return false;
-  if (!scheme_msg_->has_public_nonce())
-    return false;
   if (!scheme_msg_->encryption_key().has_key_size())
     return false;
   if (!scheme_msg_->encryption_key().has_secret())
@@ -205,10 +203,8 @@ bool encryption_scheme::recover_encryption_scheme_from_message() {
 
   enc_key_size_= scheme_msg_->encryption_key().key_size();
   hmac_key_size_ = scheme_msg_->parameters().size();
-  nonce_size_= scheme_msg_->public_nonce().size() * NBITSINBYTE;
   encryption_key_.assign(scheme_msg_->encryption_key().secret());
   hmac_key_.assign(scheme_msg_->parameters().secret());
-  nonce_.assign(scheme_msg_->public_nonce());
   return true;
 }
 
@@ -284,20 +280,17 @@ bool encryption_scheme::encryption_scheme::init(const char* alg, const char* id_
         const char* mode, const char* pad, const char* purpose,
         const char* not_before, const char* not_after, const char* enc_alg,
         int size_enc_key, string& enc_key, const char* enc_key_name,
-        const char* hmac_alg, int size_hmac_key,  string& hmac_key,
-        int size_nonce, string& nonce) {
+        const char* hmac_alg, int size_hmac_key, string& hmac_key) {
 
   if (alg == nullptr)
     return false;
   alg_.assign(alg);
   enc_key_size_ = size_enc_key;
   hmac_key_size_ = size_hmac_key;
-  nonce_size_ = size_nonce;
   enc_alg_name_.assign(enc_alg);
   hmac_alg_name_.assign(hmac_alg);
   encryption_key_.assign(enc_key);
   hmac_key_.assign(hmac_key);
-  nonce_.assign(nonce);
 
   // NONE = 0, AES= 0x01, SHA2 = 0x01, SYMMETRIC_PAD = 0x01, MODE = 0x01
   if (pad == nullptr)
@@ -319,7 +312,7 @@ bool encryption_scheme::encryption_scheme::init(const char* alg, const char* id_
 
   scheme_msg_ = make_scheme(alg, id_name, mode, pad, purpose,
       not_before, not_after, enc_alg, size_enc_key, enc_key,
-      enc_key_name, hmac_alg, size_hmac_key,  hmac_key, size_nonce, nonce);
+      enc_key_name, hmac_alg, size_hmac_key, hmac_key);
   if (scheme_msg_ == nullptr)
     return false;
   initialized_ = init();

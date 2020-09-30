@@ -103,7 +103,7 @@ bool test_aes_sha256_ctr_test1() {
   if (!enc_scheme.init("aes128-hmacsha256-ctr", "scheme-test",
         "ctr", "sym-pad", "testing", s1.c_str(), s2.c_str(),
         "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
-        hmac_key.size(),  hmac_key, 256, nonce)) {
+        256, hmac_key)) {
 printf("ctr init failed\n");  // REMOVE
     return false;
   }
@@ -166,7 +166,7 @@ printf("ctr ms valid failed\n");  // REMOVE
   if (!enc_scheme.init("aes128-hmacsha256-ctr", "scheme-test",
         "ctr", "sym-pad", "testing", s1.c_str(), s2.c_str(),
         "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
-        hmac_key.size(),  hmac_key, 256, nonce)) {
+        256,  hmac_key)) {
 printf("ctr decrypt init failed\n");  // REMOVE
     ret_value = false;
     goto done;
@@ -234,7 +234,7 @@ bool test_aes_sha256_cbc_test1() {
   if (!enc_scheme.init("aes128-hmacsha256-cbc", "scheme-test",
         "cbc", "sym-pad", "testing", s1.c_str(), s2.c_str(),
         "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
-        hmac_key.size(),  hmac_key, 256, nonce)) {
+        256,  hmac_key)) {
     return false;
   }
 
@@ -295,7 +295,7 @@ bool test_aes_sha256_cbc_test1() {
   if (!enc_scheme.init("aes128-hmacsha256-cbc", "scheme-test",
         "cbc", "sym-pad", "testing", s1.c_str(), s2.c_str(),
         "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
-        hmac_key.size(),  hmac_key, 256, nonce)) {
+        256,  hmac_key)) {
     ret_value = false;
     goto done;
   }
@@ -427,7 +427,7 @@ bool test_aes_sha256_cbc_test2() {
   if (!enc_scheme.init("aes128-hmacsha256-cbc", "scheme-test",
         "cbc", "sym-pad", "testing", s1.c_str(), s2.c_str(),
         "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
-        hmac_key.size(),  hmac_key, 256, nonce)) {
+        256,  hmac_key)) {
     return false;
   }
 
@@ -487,7 +487,7 @@ bool test_aes_sha256_cbc_test2() {
   if (!enc_scheme.init("aes128-hmacsha256-cbc", "scheme-test",
         "cbc", "sym-pad", "testing", s1.c_str(), s2.c_str(),
         "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
-        hmac_key.size(),  hmac_key, 256, nonce)) {
+        256,  hmac_key)) {
     ret_value = false;
     goto done;
   }

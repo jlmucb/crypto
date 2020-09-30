@@ -102,7 +102,6 @@ message scheme_message {
   optional string notafter                      = 6;
   optional key_message encryption_key           = 7;
   optional hmac_parameters_message parameters   = 8;
-  optional bytes public_nonce                   = 9;  // should get rid of this
 };
 
 message crypto_signature_message {

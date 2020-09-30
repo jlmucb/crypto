@@ -415,7 +415,7 @@ int main(int an, char** av) {
     scheme_message* msg = make_scheme(FLAGS_algorithm.c_str(), "",
           mode, pad, "", s1.c_str(), s2.c_str(), enc_alg,
           FLAGS_encrypt_key_size, enc_key, FLAGS_key_name.c_str(), hmac_alg,
-          FLAGS_mac_key_size,  mac_key, 128, nonce);
+          FLAGS_mac_key_size, mac_key);
     if ( msg == nullptr) {
       printf("Can't create scheme message\n");
       ret = 1;
@@ -568,7 +568,7 @@ int main(int an, char** av) {
     nonce.assign((char*)&tmp_key[size_enc_key_bytes + size_hmac_key_bytes], (size_t)16);
     if (!scheme.init(FLAGS_algorithm.c_str(), "",
           mode, pad, "", "now", "later", enc_alg, FLAGS_encrypt_key_size, enc_key,
-          "tmpkey", hmac_alg, FLAGS_mac_key_size,  mac_key, 128, nonce)) {
+          "tmpkey", hmac_alg, FLAGS_mac_key_size,  mac_key)) {
       printf("password: can't init scheme\n");
         ret = 1;
       goto done;

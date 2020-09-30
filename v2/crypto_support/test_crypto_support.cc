@@ -529,8 +529,7 @@ bool scheme_message_test() {
 
   scheme_message* m = make_scheme("aes-hmac-sha256-ctr", "scheme-id",
       "ctr", "sym-pad", "testing", s1.c_str(), s2.c_str(),
-      "aes", 128, enc_key, "aes_test_key", "hmac-sha256",
-      hmac_key.size(),  hmac_key, 256, nonce);
+      "aes", 128, enc_key, "aes_test_key", "hmac-sha256", 256,  hmac_key);
   if (m == nullptr)
     return false;
   print_scheme_message(*m);
