@@ -548,12 +548,10 @@ int main(int an, char** av) {
       ret = 1;
       goto done;
     }
-    int size_nonce_bytes = 128 / NBITSINBYTE;
     int size_enc_key_bytes = FLAGS_encrypt_key_size / NBITSINBYTE;
     int size_hmac_key_bytes = FLAGS_mac_key_size / NBITSINBYTE;
     string enc_key;
     string mac_key;
-    string nonce;
 
     int tmp_key_size = size_enc_key_bytes + size_hmac_key_bytes + 32;
     byte tmp_key[tmp_key_size];
@@ -565,7 +563,6 @@ int main(int an, char** av) {
     printf("Pass phrase: %s, tmp key size: %d\n", FLAGS_pass.c_str(), tmp_key_size);
     enc_key.assign((char*)tmp_key, (size_t)size_enc_key_bytes);
     mac_key.assign((char*)&tmp_key[size_enc_key_bytes], (size_t)size_hmac_key_bytes);
-    nonce.assign((char*)&tmp_key[size_enc_key_bytes + size_hmac_key_bytes], (size_t)16);
     if (!scheme.init(FLAGS_algorithm.c_str(), "",
           mode, pad, "", "now", "later", enc_alg, FLAGS_encrypt_key_size, enc_key,
           "tmpkey", hmac_alg, FLAGS_mac_key_size,  mac_key)) {
@@ -591,7 +588,6 @@ int main(int an, char** av) {
 
     printf("Derived encryption key: "); print_bytes((int)enc_key.size(), (byte*)enc_key.data());
     printf("Derived mac key: "); print_bytes((int)mac_key.size(), (byte*)mac_key.data());
-    printf("Derived nonce: "); print_bytes((int)nonce.size(), (byte*)nonce.data());
 
     if ("encrypt_with_password" == FLAGS_operation) {
       int size_out = size_in + 3 * scheme.get_block_size() + scheme.get_mac_size();
