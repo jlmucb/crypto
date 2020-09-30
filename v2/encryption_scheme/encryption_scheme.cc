@@ -433,7 +433,10 @@ bool encryption_scheme::encrypt_message(int size_in, byte* in, int size_out, byt
   int block_size = get_block_size();
   int bytes_left = size_in;
 
-  if (!init_nonce((int)nonce_.size(), (byte*)nonce_.data()))
+  string nonce(block_size, 0);
+  if (crypto_get_random_bytes(block_size_, (byte*)nonce.data()) < block_size)
+    return false;
+  if (!init_nonce((int)nonce.size(), (byte*)nonce.data()))
     return false;
   // first, output nonce
   memcpy(cur_out, (byte*)initial_nonce_.data(), block_size);
@@ -480,8 +483,7 @@ bool encryption_scheme::decrypt_message(int size_in, byte* in, int size_out, byt
   int mac_size = get_mac_size();
   int bytes_left = size_in;
 
-  // first, get nonce and transform it, ignore the nonces in class,
-  // they are from encrypt init
+  // first, get nonce and transform it
   if (!init_nonce(block_size_, in))
     return false;
 #if 0
