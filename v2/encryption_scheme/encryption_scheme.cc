@@ -140,7 +140,7 @@ bool encryption_scheme::get_message_valid() {
 
 void encryption_scheme::clear() {
   initialized_ = false;
-  scheme_msg_ = nullptr;
+  // scheme_msg_ = nullptr;
   initial_nonce_.clear();
   mode_ = encryption_scheme::NONE;
   pad_= encryption_scheme::NONE;
@@ -180,9 +180,9 @@ bool encryption_scheme::recover_encryption_scheme_from_message() {
     mode_ = CTR;
     pad_ = SYMMETRIC_PAD;
   } else if (strcmp(scheme_msg_->scheme_type().c_str(), "aes-hmac-sha256-cbc") == 0) {
-    alg_.assign("aes-hmac-sha256-ctr");
+    alg_.assign("aes-hmac-sha256-cbc");
     enc_alg_name_.assign("aes");
-    hmac_alg_name_.assign("hmac-sha256");;
+    hmac_alg_name_.assign("hmac-sha256");
     mode_ = CBC;
     pad_ = SYMMETRIC_PAD;
   } else  {
@@ -202,6 +202,7 @@ bool encryption_scheme::recover_encryption_scheme_from_message() {
     return false;
   if (!scheme_msg_->parameters().has_secret())
     return false;
+
   enc_key_size_= scheme_msg_->encryption_key().key_size();
   hmac_key_size_ = scheme_msg_->parameters().size();
   enc_key_size_bytes_ = enc_key_size_ / NBITSINBYTE;
@@ -229,7 +230,6 @@ bool encryption_scheme::init() {
   } else {
     return false;
   }
-
   if (strcmp(hmac_alg_name_.c_str(), "hmac-sha256") == 0) {
     if (!int_obj_.init(hmac_key_size_, (byte*)hmac_key_.data()))
       return false;
@@ -264,7 +264,7 @@ bool encryption_scheme::init() {
   encrypted_bytes_output_ = 0;
   total_bytes_output_ = 0;
   initialized_ = true;
-  return true;
+  return initialized_;
 }
 
 bool encryption_scheme::encryption_scheme::init(const char* alg, const char* id_name,
@@ -306,52 +306,6 @@ bool encryption_scheme::encryption_scheme::init(const char* alg, const char* id_
   } else {
     return false;
   }
-
-/*
-
-  if (strcmp(enc_alg_name_.c_str(), "aes") == 0) {
-    if (!enc_obj_.init(enc_key_size_bytes_, (byte*)encryption_key_.data(), aes::BOTH))
-      return false;
-    block_size_ = aes::BLOCKBYTESIZE;
-  } else {
-    return false;
-  }
-
-  if (strcmp(hmac_alg, "hmac-sha256") == 0) {
-    if (!int_obj_.init(size_hmac_key, (byte*)hmac_key.data()))
-      return false;
-    hmac_digest_size_ = sha256::DIGESTBYTESIZE;
-    hmac_block_size_ = sha256::BLOCKBYTESIZE;
-  } else {
-    return false;
-  }
-
-  initial_nonce_.clear();
-  running_nonce_.clear();
-
-  int size_nonce_bytes = size_nonce / NBITSINBYTE;
-  if (size_nonce_bytes > block_size_)
-      size_nonce_bytes = block_size_;
-
-  if (mode_ == CTR) {
-    counter_nonce_->zero_num();
-    memcpy(counter_nonce_->value_ptr(), (byte*)nonce.data(), size_nonce_bytes);
-    counter_nonce_->normalize();
-    fill_big_num_to_block(block_size_, *counter_nonce_, &initial_nonce_);
-  } else {
-    if (((int)nonce.size()) < block_size_) {
-      initial_nonce_.assign((char*)nonce.data(), ((int)nonce.size()));
-      initial_nonce_.append(block_size_ -  ((int)nonce.size()), 0);
-    } else {
-      initial_nonce_.assign((char*)nonce.data(), block_size_);
-    }
-  }
-  running_nonce_.assign(initial_nonce_.data(), block_size_);
-  nonce_data_valid_ = true;
-
-  encrypted_bytes_output_ = 0;
-  total_bytes_output_ = 0;
-*/
 
   scheme_msg_ = make_scheme(alg, id_name, mode, pad, purpose,
       not_before, not_after, enc_alg, size_enc_key, enc_key,
@@ -541,7 +495,7 @@ bool encryption_scheme::decrypt_message(int size_in, byte* in, int size_out, byt
 
   if (bytes_left != (block_size + mac_size)) {
     return false;
-}
+  }
 
   int additional_bytes = size_out - total_bytes_output_;
   byte computed_mac[128];
