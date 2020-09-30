@@ -37,6 +37,7 @@ hmac_sha256::~hmac_sha256() {
 }
 
 bool hmac_sha256::init(int size, byte* key) {
+
   if (size <= 0 || key == nullptr)
     return false;
   macvalid_ = false;

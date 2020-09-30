@@ -205,9 +205,6 @@ bool encryption_scheme::recover_encryption_scheme_from_message() {
 
   enc_key_size_= scheme_msg_->encryption_key().key_size();
   hmac_key_size_ = scheme_msg_->parameters().size();
-  enc_key_size_bytes_ = enc_key_size_ / NBITSINBYTE;
-  hmac_key_size_bytes_ = hmac_key_size_ / NBITSINBYTE;
-  size_nonce_bytes_ = scheme_msg_->public_nonce().size();
   nonce_size_= size_nonce_bytes_* NBITSINBYTE;
   encryption_key_.assign(scheme_msg_->encryption_key().secret());
   hmac_key_.assign(scheme_msg_->parameters().secret());
@@ -222,6 +219,9 @@ bool encryption_scheme::get_encryption_scheme_message(string* s) {
 }
 
 bool encryption_scheme::init() {
+  enc_key_size_bytes_ = (enc_key_size_ + NBITSINBYTE - 1) / NBITSINBYTE;
+  hmac_key_size_bytes_= (hmac_key_size_ + NBITSINBYTE - 1) / NBITSINBYTE;
+  size_nonce_bytes_= (nonce_size_ + NBITSINBYTE - 1) / NBITSINBYTE;
 
   if (strcmp(enc_alg_name_.c_str(), "aes") == 0) {
     if (!enc_obj_.init(enc_key_size_, (byte*)encryption_key_.data(), aes::BOTH))
@@ -231,7 +231,7 @@ bool encryption_scheme::init() {
     return false;
   }
   if (strcmp(hmac_alg_name_.c_str(), "hmac-sha256") == 0) {
-    if (!int_obj_.init(hmac_key_size_, (byte*)hmac_key_.data()))
+    if (!int_obj_.init(hmac_key_size_bytes_, (byte*)hmac_key_.data()))
       return false;
     hmac_digest_size_ = sha256::DIGESTBYTESIZE;
     hmac_block_size_ = sha256::BLOCKBYTESIZE;
@@ -280,9 +280,6 @@ bool encryption_scheme::encryption_scheme::init(const char* alg, const char* id_
   enc_key_size_ = size_enc_key;
   hmac_key_size_ = size_hmac_key;
   nonce_size_ = size_nonce;
-  enc_key_size_bytes_ = (enc_key_size_ + NBITSINBYTE - 1) / NBITSINBYTE;
-  hmac_key_size_bytes_= (hmac_key_size_ + NBITSINBYTE - 1) / NBITSINBYTE;
-  size_nonce_bytes_= (nonce_size_ + NBITSINBYTE - 1) / NBITSINBYTE;
   enc_alg_name_.assign(enc_alg);
   hmac_alg_name_.assign(hmac_alg);
   encryption_key_.assign(enc_key);
