@@ -153,11 +153,13 @@ bool read_scheme(scheme_message* msg) {
 
 bool keys_from_pass_phrase(const char* phrase, int* size, byte* key) {
   sha256 h;
+  memset(key,0, *size);
 
-  if (*size < h.DIGESTBYTESIZE) {
+  if ((*size) < h.DIGESTBYTESIZE) {
     printf("keys_from_pass_phrase(%d): buffer too small, %s\n", *size, phrase);
+    return false;
   }
-  int num_passes = *size / h.DIGESTBYTESIZE;
+  int num_passes = (*size) / h.DIGESTBYTESIZE;
   byte salt_buf[32];
   for (int i = 0; i < num_passes; i++) {
     h.init();
@@ -166,7 +168,7 @@ bool keys_from_pass_phrase(const char* phrase, int* size, byte* key) {
     h.add_to_hash(strlen(phrase), (byte*)phrase);
     h.add_to_hash(strlen((char*)salt_buf), (byte*)salt_buf);
     h.finalize();
-    h.get_digest(h.DIGESTBYTESIZE, &key[i]);
+    h.get_digest(h.DIGESTBYTESIZE, &key[i * h.DIGESTBYTESIZE]);
   }
   *size = num_passes * h.DIGESTBYTESIZE;
   return true;
@@ -563,8 +565,8 @@ int main(int an, char** av) {
     printf("Pass phrase: %s, tmp key size: %d\n", FLAGS_pass.c_str(), tmp_key_size);
     enc_key.assign((char*)tmp_key, (size_t)size_enc_key_bytes);
     mac_key.assign((char*)&tmp_key[size_enc_key_bytes], (size_t)size_hmac_key_bytes);
-    // nonce.assign((char*)&tmp_key[size_enc_key_bytes + size_hmac_key_bytes], (size_t)16);
-    nonce.assign((char*)&tmp_key[size_enc_key_bytes], (size_t)16);
+    nonce.assign((char*)&tmp_key[size_enc_key_bytes + size_hmac_key_bytes], (size_t)16);
+    //nonce.assign((char*)&tmp_key[size_enc_key_bytes], (size_t)16);
     if (!scheme.init(FLAGS_algorithm.c_str(), "",
           mode, pad, "", "now", "later", enc_alg, FLAGS_encrypt_key_size, enc_key,
           "tmpkey", hmac_alg, FLAGS_mac_key_size,  mac_key, 128, nonce)) {

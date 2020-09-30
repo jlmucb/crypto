@@ -176,7 +176,7 @@ bool encryption_scheme::recover_encryption_scheme_from_message() {
   if (strcmp(scheme_msg_->scheme_type().c_str(), "aes-hmac-sha256-ctr") == 0) {
     alg_.assign("aes-hmac-sha256-ctr");
     enc_alg_name_.assign("aes");
-    hmac_alg_name_.assign("hmac-sha256");;
+    hmac_alg_name_.assign("hmac-sha256");
     mode_ = CTR;
     pad_ = SYMMETRIC_PAD;
   } else if (strcmp(scheme_msg_->scheme_type().c_str(), "aes-hmac-sha256-cbc") == 0) {
@@ -205,7 +205,7 @@ bool encryption_scheme::recover_encryption_scheme_from_message() {
 
   enc_key_size_= scheme_msg_->encryption_key().key_size();
   hmac_key_size_ = scheme_msg_->parameters().size();
-  nonce_size_= size_nonce_bytes_* NBITSINBYTE;
+  nonce_size_= scheme_msg_->public_nonce().size() * NBITSINBYTE;
   encryption_key_.assign(scheme_msg_->encryption_key().secret());
   hmac_key_.assign(scheme_msg_->parameters().secret());
   nonce_.assign(scheme_msg_->public_nonce());
@@ -218,10 +218,45 @@ bool encryption_scheme::get_encryption_scheme_message(string* s) {
   return scheme_msg_->SerializeToString(s);
 }
 
+bool encryption_scheme::init_nonce(int size, byte* value) {
+#if 0
+printf("init_nonce: ");print_bytes(size, value);
+#endif
+
+  initial_nonce_.clear();
+  running_nonce_.clear();
+
+  if (size_nonce_bytes_ > block_size_)
+      size_nonce_bytes_ = block_size_;
+
+  if (mode_ == CTR) {
+    counter_nonce_->zero_num();
+    memcpy(counter_nonce_->value_ptr(), value, size);
+    counter_nonce_->normalize();
+    fill_big_num_to_block(block_size_, *counter_nonce_, &initial_nonce_);
+  } else {
+    if (size < block_size_) {
+      initial_nonce_.assign((char*)value, size);
+      initial_nonce_.append(block_size_ -  size, 0);
+    } else {
+      initial_nonce_.assign((char*)value, block_size_);
+    }
+  }
+  running_nonce_.assign(initial_nonce_.data(), block_size_);
+  nonce_data_valid_ = true;
+  return true;
+}
+
 bool encryption_scheme::init() {
   enc_key_size_bytes_ = (enc_key_size_ + NBITSINBYTE - 1) / NBITSINBYTE;
   hmac_key_size_bytes_= (hmac_key_size_ + NBITSINBYTE - 1) / NBITSINBYTE;
   size_nonce_bytes_= (nonce_size_ + NBITSINBYTE - 1) / NBITSINBYTE;
+#if 0
+printf("nonce_size_: %d\n", nonce_size_);
+printf("size_nonce_bytes_: %d\n", size_nonce_bytes_);
+printf("hmac_key_size_: %d, hmac_key_size_bytes_: %d\n", hmac_key_size_, hmac_key_size_bytes_);
+print_bytes(hmac_key_size_bytes_, (byte*)hmac_key_.data());
+#endif
 
   if (strcmp(enc_alg_name_.c_str(), "aes") == 0) {
     if (!enc_obj_.init(enc_key_size_, (byte*)encryption_key_.data(), aes::BOTH))
@@ -238,28 +273,6 @@ bool encryption_scheme::init() {
   } else {
     return false;
   }
-
-  initial_nonce_.clear();
-  running_nonce_.clear();
-
-  if (size_nonce_bytes_ > block_size_)
-      size_nonce_bytes_ = block_size_;
-
-  if (mode_ == CTR) {
-    counter_nonce_->zero_num();
-    memcpy(counter_nonce_->value_ptr(), (byte*)nonce_.data(), size_nonce_bytes_);
-    counter_nonce_->normalize();
-    fill_big_num_to_block(block_size_, *counter_nonce_, &initial_nonce_);
-  } else {
-    if (((int)nonce_.size()) < block_size_) {
-      initial_nonce_.assign((char*)nonce_.data(), ((int)nonce_.size()));
-      initial_nonce_.append(block_size_ -  ((int)nonce_.size()), 0);
-    } else {
-      initial_nonce_.assign((char*)nonce_.data(), block_size_);
-    }
-  }
-  running_nonce_.assign(initial_nonce_.data(), block_size_);
-  nonce_data_valid_ = true;
 
   encrypted_bytes_output_ = 0;
   total_bytes_output_ = 0;
@@ -286,7 +299,7 @@ bool encryption_scheme::encryption_scheme::init(const char* alg, const char* id_
   hmac_key_.assign(hmac_key);
   nonce_.assign(nonce);
 
-   // NONE = 0, AES= 0x01, SHA2 = 0x01, SYMMETRIC_PAD = 0x01, MODE = 0x01
+  // NONE = 0, AES= 0x01, SHA2 = 0x01, SYMMETRIC_PAD = 0x01, MODE = 0x01
   if (pad == nullptr)
     return false;
   if (strcmp(pad, "sym-pad") == 0)
@@ -420,8 +433,13 @@ bool encryption_scheme::encrypt_message(int size_in, byte* in, int size_out, byt
   int block_size = get_block_size();
   int bytes_left = size_in;
 
-  // first, output nonce, which was set up in init
+  if (!init_nonce((int)nonce_.size(), (byte*)nonce_.data()))
+    return false;
+  // first, output nonce
   memcpy(cur_out, (byte*)initial_nonce_.data(), block_size);
+#if 0
+printf("First hash: "); print_bytes(block_size_, cur_out);
+#endif
   int_obj_.add_to_inner_hash(block_size_, cur_out);
   cur_out += block_size;
   total_bytes_output_ += block_size;
@@ -464,6 +482,11 @@ bool encryption_scheme::decrypt_message(int size_in, byte* in, int size_out, byt
 
   // first, get nonce and transform it, ignore the nonces in class,
   // they are from encrypt init
+  if (!init_nonce(block_size_, in))
+    return false;
+#if 0
+printf("First hash: "); print_bytes(block_size_, in);
+#endif
   int_obj_.add_to_inner_hash(block_size_, in);
   initial_nonce_.assign((char*)in, block_size_);
   running_nonce_.assign((char*)in, block_size_);
@@ -526,5 +549,10 @@ bool encryption_scheme::decrypt_message(int size_in, byte* in, int size_out, byt
   }
 
   message_valid_ = (memcmp(cur_in, computed_mac, hmac_digest_size_) == 0);
+#if 0
+if (message_valid_)printf("message valid\n"); else printf("message not valid\n");
+print_bytes(hmac_digest_size_, computed_mac);
+print_bytes(hmac_digest_size_, cur_in);
+#endif
   return message_valid_;
 }

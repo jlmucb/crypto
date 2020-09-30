@@ -82,6 +82,7 @@ public:
 
 
   // initialize objects from recovered data
+  bool init_nonce(int size, byte* value);
   bool init();
   bool init(const char* alg, const char* id_name,
       const char* mode, const char* pad, const char* purpose,
