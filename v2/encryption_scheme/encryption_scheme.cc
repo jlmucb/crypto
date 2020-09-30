@@ -140,7 +140,7 @@ bool encryption_scheme::get_message_valid() {
 
 void encryption_scheme::clear() {
   initialized_ = false;
-  // scheme_msg_ = nullptr;
+  scheme_msg_ = nullptr;
   initial_nonce_.clear();
   mode_ = encryption_scheme::NONE;
   pad_= encryption_scheme::NONE;

@@ -59,7 +59,7 @@ std::string cryptutil_ops[] = {
     "\n",
     "--operation=hash --algorithm=alg --input_file=file",
     "--operation=generate_mac --algorithm=alg --key_file=file --input_file=file " \
-    "--output_file=file",
+    "--output_file=file --encrypt_key_size=128 --mac_key_size=256",
     "--operation=verify_mac --algorithm=alg --keyfile=file --input_file=file " \
     "--input2_file=file" \
     "\n",
@@ -148,6 +148,27 @@ bool read_scheme(scheme_message* msg) {
   string serialized;
   serialized.assign( (char*)in_buf, (size_t)size_in);
   msg->ParseFromString(serialized);
+  return true;
+}
+
+bool keys_from_pass_phrase(const char* phrase, int* size, byte* key) {
+  sha256 h;
+
+  if (*size < h.DIGESTBYTESIZE) {
+    printf("keys_from_pass_phrase(%d): buffer too small, %s\n", *size, phrase);
+  }
+  int num_passes = *size / h.DIGESTBYTESIZE;
+  byte salt_buf[32];
+  for (int i = 0; i < num_passes; i++) {
+    h.init();
+    sprintf((char*)salt_buf, "JLM_salt_%d", i);
+    h.add_to_hash(strlen((char*)salt_buf), (byte*)salt_buf);
+    h.add_to_hash(strlen(phrase), (byte*)phrase);
+    h.add_to_hash(strlen((char*)salt_buf), (byte*)salt_buf);
+    h.finalize();
+    h.get_digest(h.DIGESTBYTESIZE, &key[i]);
+  }
+  *size = num_passes * h.DIGESTBYTESIZE;
   return true;
 }
 
@@ -496,8 +517,109 @@ int main(int an, char** av) {
   } else if ("read_key" == FLAGS_operation) {
   } else if ("get_random" == FLAGS_operation) {
     // int crypto_get_random_bytes(int num_bytes, byte* buf);
-  } else if ("encrypt_with_scheme" == FLAGS_operation) {
-  } else if ("decrypt_with_password" == FLAGS_operation) {
+  } else if ("encrypt_with_password" == FLAGS_operation ||
+             "decrypt_with_password" == FLAGS_operation) {
+    encryption_scheme scheme;
+    scheme.scheme_msg_ = new scheme_message;
+    if (scheme.scheme_msg_ == nullptr) {
+      ret = 1;
+      goto done;
+    }
+    char* enc_alg;
+    char* hmac_alg;
+    char* mode;
+    char* pad;
+
+    if (FLAGS_algorithm == "aes-hmac-sha256-ctr") {
+      mode = (char*)"ctr";
+      pad = (char*)"sym-pad";
+      enc_alg = (char*)"aes";
+      hmac_alg = (char*)"hmac-sha256";
+    } else if (FLAGS_algorithm == "aes-hmac-sha256-cbc") {
+      pad = (char*)"sym-pad";
+      mode = (char*)"cbc";
+      enc_alg = (char*)"aes";
+      hmac_alg = (char*)"hmac-sha256";
+    } else {
+      printf("password: unsupported algorithm %s\n",
+              FLAGS_algorithm.c_str());
+      ret = 1;
+      goto done;
+    }
+    int size_nonce = 128 / NBITSINBYTE;
+    int size_enc_key = FLAGS_encrypt_key_size / NBITSINBYTE;
+    int size_hmac_key = FLAGS_mac_key_size / NBITSINBYTE;
+    string enc_key;
+    string mac_key;
+    string nonce;
+
+    int tmp_key_size = size_enc_key + size_hmac_key + size_nonce;
+    byte tmp_key[tmp_key_size];
+    printf("Pass phrase: %s\n", FLAGS_pass.c_str());
+    if (!keys_from_pass_phrase(FLAGS_pass.c_str(), &tmp_key_size, tmp_key)) {
+        printf("keys_from_pass_phrase failed\n");
+        ret = 1;
+        goto done;
+    }
+    enc_key.assign((char*)tmp_key, (size_t)size_enc_key);
+    mac_key.assign((char*)&tmp_key[size_enc_key], (size_t)size_hmac_key);
+    nonce.assign((char*)&tmp_key[size_enc_key + size_hmac_key], (size_t)size_nonce);
+    if (!scheme.init(FLAGS_algorithm.c_str(), "",
+          mode, pad, "", "", "", enc_alg, size_enc_key, enc_key,
+          "tmpkey", hmac_alg, size_hmac_key,  mac_key, size_nonce, nonce)) {
+      printf("password: can't init scheme\n");
+    }
+    goto done;
+
+    file_util in_file;
+    if (!in_file.open(FLAGS_input_file.c_str())) {
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    int size_in = in_file.bytes_in_file();
+    in_file.close();
+    byte in[size_in];
+    if (!in_file.read_file(FLAGS_input_file.c_str(), size_in, in)) {
+      printf("Can't read %s\n", FLAGS_input_file.c_str());
+      ret = 1;
+      goto done;
+    }
+
+    if ("encrypt_with_password" == FLAGS_operation) {
+      int size_out = size_in + 3 * scheme.get_block_size() + scheme.get_mac_size();
+      byte out[size_out];
+      printf("\nPlain (%d): ", size_in);
+      print_bytes(size_in, in);
+      printf("\n");
+      if (!scheme.encrypt_message(size_in, in, size_out, out)) {
+        printf("Scheme encrypt failed\n");
+        ret = 1;
+        goto done;
+      }
+      file_util out_file;
+      out_file.write_file(FLAGS_output_file.c_str(), scheme.get_total_bytes_output(), out);
+      printf("Encrypted (%d): ", scheme.get_total_bytes_output());
+      print_bytes(scheme.get_total_bytes_output(), out);
+      printf("\n");
+    } else {
+      int size_out = size_in;
+      byte out[size_out];
+      printf("\nCipher (%d): ", size_in);
+      print_bytes(size_in, in);
+      printf("\n");
+      if (!scheme.decrypt_message(size_in, in, size_out, out)) {
+        printf("Scheme decrypt failed\n");
+        ret = 1;
+        goto done;
+      }
+      file_util out_file;
+      out_file.write_file(FLAGS_output_file.c_str(), scheme.get_bytes_encrypted(), out);
+      printf("Decrypted (%d): ", scheme.get_bytes_encrypted());
+      print_bytes(scheme.get_bytes_encrypted(), out);
+      printf("\n");
+    }
+  } else if ("generate_key" == FLAGS_operation) {
   } else if ("pkcs_sign_with_key" == FLAGS_operation) {
   } else if ("pkcs_verify_with_key" == FLAGS_operation) {
     if (FLAGS_algorithm == "aes-hmac-sha256-ctr") {
