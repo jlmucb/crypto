@@ -566,7 +566,6 @@ int main(int an, char** av) {
     enc_key.assign((char*)tmp_key, (size_t)size_enc_key_bytes);
     mac_key.assign((char*)&tmp_key[size_enc_key_bytes], (size_t)size_hmac_key_bytes);
     nonce.assign((char*)&tmp_key[size_enc_key_bytes + size_hmac_key_bytes], (size_t)16);
-    //nonce.assign((char*)&tmp_key[size_enc_key_bytes], (size_t)16);
     if (!scheme.init(FLAGS_algorithm.c_str(), "",
           mode, pad, "", "now", "later", enc_alg, FLAGS_encrypt_key_size, enc_key,
           "tmpkey", hmac_alg, FLAGS_mac_key_size,  mac_key, 128, nonce)) {
