@@ -39,17 +39,17 @@
 
 int num_cryptutil_ops;
 std::string cryptutil_ops[] = {
-    "--operation=tobase64 --direction=[left-right|right-left] " \
+    "--operation=tobase64 " \
     "--input_file=file --output_file=file",
-    "--operation=frombase64 --direction=[left-right|right-left] " \
+    "--operation=frombase64" \
     "--input_file=file --output_file=file",
-    "--operation=tohex --direction=[left-right|right-left] --input_file=file " \
+    "--operation=tohex --input_file=file " \
     "--output_file=file",
-    "--operation=fromhex--direction=[left-right|right-left] --input_file=file " \
+    "--operation=fromhex  --input_file=file " \
     "--output_file=file",
-    "--operation=todecimal --direction=[left-right|right-left] " \
+    "--operation=todecimal " \
     "--input_file=file --output_file=file",
-    "--operation=fromdecimal --direction=[left-right|right-left] " \
+    "--operation=fromdecimal " \
     "--input_file=file --output_file=file",
     "\n",
     "--operation=get_random --size=num-bits --output_file=file",
@@ -69,9 +69,9 @@ std::string cryptutil_ops[] = {
     "--input_file=file --output_file=file"
     "\n",
     "--operation=generate_scheme --algorithm=alg --key_name=name " \
-    "encrypt_key_size=size --mac_key_size=size --duration=dur --output_file=file",
+    "encrypt_key_size=size --mac_key_size=size --duration=dur --scheme_file=file",
     "--operation=read_scheme --algorithm=alg --key_name=name" \
-    " --duration=dur --input_file=file" \
+    " --duration=dur --scheme_file=file" \
     "\n",
     "--operation=scheme_encrypt --scheme_file=scheme_file " \
     "--algorithm=alg --input_file=file --output_file=file",

@@ -1,6 +1,4 @@
-//
-// Copyright 2020 John Manferdelli, All Rights Reserved.
-//
+// Copyright 2014-2020, John Manferdelli, All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -826,19 +824,17 @@ bool big_mont_mult(big_num& aR, big_num& bR, big_num& m, uint64_t r, big_num& m_
   return ret;
 }
 
-/*
- *  mont_exp
- *    Let mont_(a,b)= abR^-1 (mod p)
- *    R= b^r, m'= -m^(-1) (mod p), e= (e[t]...e[0])_2
- *    X= mont_(x, R^2(mod p))
- *    A= R (mod p)
- *    for(i=t; i>=0; i--) {
- *      A= mont_(A,A)
- *      if(e[i]==1) A= mont_(A,X)
- *    }
- *    A= mont_(A,1)
- *    return A
- */
+//  mont_exp
+//    Let mont_(a,b)= abR^-1 (mod p)
+//    R= b^r, m'= -m^(-1) (mod p), e= (e[t]...e[0])_2
+//    X= mont_(x, R^2(mod p))
+//    A= R (mod p)
+//    for(i=t; i>=0; i--) {
+//      A= mont_(A,A)
+//      if(e[i]==1) A= mont_(A,X)
+//    }
+//    A= mont_(A,1)
+//    return A
 bool big_mont_exp(big_num& b, big_num& e, int r, big_num& m, big_num& m_prime,
                 big_num& out) {
   int n = (r + NBITSINUINT64 - 1) / NBITSINUINT64;
