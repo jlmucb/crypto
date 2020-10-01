@@ -52,24 +52,8 @@ std::string cryptutil_ops[] = {
     "--operation=fromdecimal " \
     "--input_file=file --output_file=file",
     "\n",
-    "--operation=get_random --size=num-bits --output_file=file",
-    "--operation=read_key --input_file=file",
-    "--operation=generate_key --algorithm=alg --key_name=name " \
-    "--purpose=pur --owner=own --duration=dur --output_file=file" \
-    "\n",
-    "--operation=hash --algorithm=alg --input_file=file",
-    "--operation=generate_mac --algorithm=alg --key_file=file --input_file=file " \
-    "--output_file=file --encrypt_key_size=128 --mac_key_size=256",
-    "--operation=verify_mac --algorithm=alg --keyfile=file --input_file=file " \
-    "--input2_file=file" \
-    "\n",
-    "--operation=encrypt_with_key --key_file=key_file --algorithm=alg " \
-    "--input_file=file --output_file=file",
-    "--operation=decrypt_with_key --key_file=key_file --algorithm=alg " \
-    "--input_file=file --output_file=file"
-    "\n",
     "--operation=generate_scheme --algorithm=alg --key_name=name " \
-    "encrypt_key_size=size --mac_key_size=size --duration=dur --scheme_file=file",
+    "--encrypt_key_size=size --mac_key_size=size --duration=dur --scheme_file=file",
     "--operation=read_scheme --algorithm=alg --key_name=name" \
     " --duration=dur --scheme_file=file" \
     "\n",
@@ -77,6 +61,22 @@ std::string cryptutil_ops[] = {
     "--algorithm=alg --input_file=file --output_file=file",
     "--operation=scheme_decrypt --scheme_file=scheme_file" \
     " --algorithm=alg --input_file=file --output_file=file" \
+    "\n",
+    "--operation=hash --algorithm=sha256 --input_file=in --output_file=out",
+    "--operation=generate_mac --algorithm=alg --key_file=file --mac_key_size=256 " \
+    "--input_file=file --output_file=file  --mac_key_size=256",
+    "--operation=verify_mac --algorithm=alg --keyfile=file --input_file=file " \
+    "--hash_file=file" \
+    "\n",
+    "--operation=get_random --size=num-bits --output_file=file",
+    "--operation=read_key --input_file=file",
+    "--operation=generate_key --algorithm=alg --key_name=name " \
+    "--purpose=pur --owner=own --duration=dur --output_file=file" \
+    "\n",
+    "--operation=encrypt_with_key --key_file=key_file --algorithm=alg " \
+    "--input_file=file --output_file=file",
+    "--operation=decrypt_with_key --key_file=key_file --algorithm=alg " \
+    "--input_file=file --output_file=file"
     "\n",
     "--operation=pkcs_sign_with_key --algorithm=alg --keyfile=file " \
     "--hash_file= file --input_file=file --output_file=file",
@@ -115,6 +115,7 @@ DEFINE_string(input2_file, "", "Second input file name");
 DEFINE_string(output_file, "", "Output file name");
 DEFINE_string(direction, "left-right",
               "string value direction left-right or right-left");
+DEFINE_int32(random_size, 128, "random-size-in-bits");
 DEFINE_int32(encrypt_key_size, 128, "encrypt-key-size-in-bits");
 DEFINE_int32(mac_key_size, 128, "mac-key-size-in-bits");
 DEFINE_string(algorithm, "sha256", "hash algorithm");
@@ -261,9 +262,9 @@ int main(int an, char** av) {
       goto done;
     }
     goto done;
-  } else if ("todecimal" == FLAGS_operation) {
+  } else if ("to_decimal" == FLAGS_operation) {
     // digit_convert_to_decimal(int size_a, uint64_t* n, string* s);
-  } else if ("fromdecimal" == FLAGS_operation) {
+  } else if ("from_decimal" == FLAGS_operation) {
     // digit_convert_from_decimal(string& s, int size_n, uint64_t* n);
   } else if ("tohex" == FLAGS_operation) {
     file_util in_file;
@@ -329,7 +330,6 @@ int main(int an, char** av) {
       goto done;
     }
     goto done;
-  } else if ("hash" == FLAGS_operation) {
   } else if ("encrypt_with_key" == FLAGS_operation) {
     if (FLAGS_algorithm == "aes") {
     } else if (FLAGS_algorithm == "twofish") {
@@ -515,10 +515,20 @@ int main(int an, char** av) {
       print_bytes(scheme.get_bytes_encrypted(), out);
       printf("\n");
     }
-  } else if ("generate_key" == FLAGS_operation) {
-  } else if ("read_key" == FLAGS_operation) {
   } else if ("get_random" == FLAGS_operation) {
-    // int crypto_get_random_bytes(int num_bytes, byte* buf);
+    byte buf[FLAGS_random_size];
+    int byte_size = (FLAGS_random_size + NBITSINBYTE - 1) / NBITSINBYTE;
+    if (crypto_get_random_bytes(byte_size, buf) < byte_size) {
+      printf("Can't generate random\n");
+      ret = 1;
+      goto done;
+    }
+    file_util out_file;
+    out_file.write_file(FLAGS_output_file.c_str(), byte_size, buf);
+    printf("Random bytes (%d): ", byte_size);
+    print_bytes(byte_size, buf);
+    printf("\n");
+    goto done;
   } else if ("encrypt_with_password" == FLAGS_operation ||
              "decrypt_with_password" == FLAGS_operation) {
     encryption_scheme scheme;
@@ -626,17 +636,61 @@ int main(int an, char** av) {
       printf("\n");
     }
     goto done;
-  } else if ("generate_key" == FLAGS_operation) {
-  } else if ("pkcs_sign_with_key" == FLAGS_operation) {
-  } else if ("pkcs_verify_with_key" == FLAGS_operation) {
-    if (FLAGS_algorithm == "aes-hmac-sha256-ctr") {
-    } else if (FLAGS_algorithm == "aes-hmac-sha256-cbc") {
-    } else {
-      printf("scheme_decrypt: unsupported algorithm %s\n",
-              FLAGS_algorithm.c_str());
+  } else if ("hash" == FLAGS_operation) {
+
+    file_util in_file;
+    if (!in_file.open(FLAGS_input_file.c_str())) {
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
       ret = 1;
       goto done;
     }
+    int size_in = in_file.bytes_in_file();
+    in_file.close();
+    byte in[size_in];
+    if (!in_file.read_file(FLAGS_input_file.c_str(), size_in, in)) {
+      printf("Can't read %s\n", FLAGS_input_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    const int max_hash = 256;
+    byte hash[max_hash];
+    int hash_size_bytes = 0;
+
+    if (strcmp("sha1", FLAGS_algorithm.c_str()) == 0) {
+      sha1 h;
+ 
+      hash_size_bytes = h.DIGESTBYTESIZE; 
+      h.init();
+      h.add_to_hash(size_in, in);
+      h.finalize();
+      h.get_digest(hash_size_bytes, hash);
+    } else if (strcmp("sha256", FLAGS_algorithm.c_str()) == 0) {
+      sha256 h;
+ 
+      hash_size_bytes = h.DIGESTBYTESIZE; 
+      h.init();
+      h.add_to_hash(size_in, in);
+      h.finalize();
+      h.get_digest(hash_size_bytes, hash);
+    } else if (strcmp("sha3", FLAGS_algorithm.c_str()) == 0) {
+      sha3 h(512);
+ 
+      hash_size_bytes = h.DIGESTBYTESIZE; 
+      h.init();
+      h.add_to_hash(size_in, in);
+      h.finalize();
+      h.get_digest(hash_size_bytes, hash);
+    } else {
+      printf("%s: unsupported algorithm\n", FLAGS_algorithm.c_str());
+    }
+
+    printf("to hash : "); print_bytes(size_in, in);
+    printf("hash    : "); print_bytes(hash_size_bytes, hash);
+    goto done;
+  } else if ("generate_key" == FLAGS_operation) {
+  } else if ("read_key" == FLAGS_operation) {
+  } else if ("pkcs_sign_with_key" == FLAGS_operation) {
+  } else if ("pkcs_verify_with_key" == FLAGS_operation) {
   } else if ("pkcs_seal_with_key" == FLAGS_operation) {
   } else if ("pkcs_unseal_with_key" == FLAGS_operation) {
   } else if ("sign_digest_with_key" == FLAGS_operation) {
