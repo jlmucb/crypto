@@ -131,6 +131,9 @@ DEFINE_string(unproteced_key_file, "", "unprotected key file");
 
 DEFINE_bool(print_all, false, "printall flag");
 
+const int size_of_64_bit_unsigned = 7;
+
+
 bool read_scheme(scheme_message* msg) {
   file_util in_file;
   printf("File: %s\n", FLAGS_scheme_file.c_str());
@@ -263,9 +266,123 @@ int main(int an, char** av) {
     }
     goto done;
   } else if ("to_decimal" == FLAGS_operation) {
-    // digit_convert_to_decimal(int size_a, uint64_t* n, string* s);
+    file_util in_file;
+    printf("Input file: %s, ", FLAGS_input_file.c_str());
+    printf("output file: %s\n", FLAGS_output_file.c_str());
+
+    if (!in_file.open(FLAGS_input_file.c_str())) {
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
+      return false;
+    }
+    int size_in = in_file.bytes_in_file();
+
+    byte in_buf[size_in];
+    in_file.close();
+    if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in_buf) < size_in) {
+      printf("Can't read %s\n", FLAGS_input_file.c_str());
+      ret = 1;
+      goto done;
+    }
+
+    int size_n = (size_in + size_of_64_bit_unsigned - 1) / size_of_64_bit_unsigned;
+    big_num n(size_n);
+
+    string bytes;
+    bytes.assign((char*)in_buf, size_in);
+    printf("bytes in: "); print_bytes((int)bytes.size(), (byte*)bytes.data());
+
+    if (bytes_to_u64_array(bytes, n.capacity(), n.value_ptr()) < 0) {
+      printf("Can't convert to uint array\n");
+      ret = 1;
+      goto done;
+    }
+    n.normalize();
+
+    string decimal;
+    if (!digit_convert_to_decimal(n.capacity(), n.value_ptr(), &decimal)) {
+      printf("Can't convert to decimal\n");
+      ret = 1;
+      goto done;
+    }
+    printf("number: "); n.print();printf("\n");
+    printf("decimal: ");
+    if (n.is_negative())
+      printf("-");
+    printf("%s\n", decimal.c_str());
+    goto done;
+
   } else if ("from_decimal" == FLAGS_operation) {
-    // digit_convert_from_decimal(string& s, int size_n, uint64_t* n);
+    printf("Input file: %s, ", FLAGS_input_file.c_str());
+    printf("output file: %s\n", FLAGS_output_file.c_str());
+
+    file_util in_file;
+    if (!in_file.open(FLAGS_input_file.c_str())) {
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
+      return false;
+    }
+    int size_in = in_file.bytes_in_file();
+    in_file.close();
+
+    byte in_buf[size_in + 1];
+    in_buf[size_in] = 0;
+    if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in_buf) < size_in) {
+      printf("Can't read %s\n", FLAGS_input_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    printf("decimal string: %s\n", (const char*) in_buf);
+
+    string bytes;
+    string decimal;
+
+    bool sign = false;
+    char* in = (char*)in_buf;
+    char* p = in;
+    while (*p != '\0') {
+      if (*p == ' ') {
+        p++;
+        in = p;
+        continue;
+      } else if (*p == '-') {
+        sign = true;
+        p++;
+        in = p;
+        continue;
+      } else if (*p < '0' || *p > '9') {
+        *p = 0;
+        break;
+      }
+      p++;
+    }
+    decimal.assign((const char*)in);
+    
+    big_num* n = big_convert_from_decimal(decimal);
+    if (n == nullptr) {
+      printf("Can't convert to big_num\n");
+      ret = 1;
+      goto done;
+    }
+    n->normalize();
+    int size_out = u64_array_to_bytes(n->size(), n->value_ptr(), &bytes);
+    if (size_out < 0) {
+      printf("Can't convert u64 to bytes\n");
+      ret = 1;
+      goto done;
+    }
+
+    file_util out_file;
+    if (!out_file.write_file(FLAGS_output_file.c_str(), (int) bytes.size(),
+            (byte*) bytes.data())) {
+      printf("Can't write %s\n", FLAGS_output_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    if (sign)
+      n->toggle_sign();
+    printf("number :"); n->print(); printf("\n");
+    printf("bytes  :"); print_bytes((int) bytes.size(), (byte*)bytes.data());
+    delete n;
+    goto done;
   } else if ("tohex" == FLAGS_operation) {
     file_util in_file;
     file_util out_file;
