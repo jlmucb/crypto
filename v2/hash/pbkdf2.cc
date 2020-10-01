@@ -18,27 +18,25 @@
 #include "sha256.h"
 #include "hmac_sha256.h"
 
-/*
- *  pbkdf2
- *  Input: P Password, S Salt, C Iteration count
- *   kLen Length of MK in bits; at most (2^32-1)xhLen
- *  Parameter: PRF HMAC with an approved hash function
- *    hlen Digest size of the hash function
- *  Output: mk Master key
- *  Algorithm:
- *    len = ceil(kLen/hLen);
- *    r = kLen–(len–1)xhLen ;
- *   for i = 1 to len {
- *      T[i]= 0;
- *      U[0]= S || Int(i);
- *      for j = 1 to C {
- *        U[j]= HMAC(P, U[j-1])
- *        T[i]= T[i]^U[j]
- *      }
- *    }
- *  return MK = T[1] || T[2] || ...
- */
 
+//  pbkdf2
+//  Input: P Password, S Salt, C Iteration count
+//   kLen Length of MK in bits; at most (2^32-1)xhLen
+//  Parameter: PRF HMAC with an approved hash function
+//    hlen Digest size of the hash function
+//  Output: mk Master key
+//  Algorithm:
+//    len = ceil(kLen/hLen);
+//    r = kLen–(len–1)xhLen ;
+//   for i = 1 to len {
+//      T[i]= 0;
+//      U[0]= S || Int(i);
+//      for j = 1 to C {
+//        U[j]= HMAC(P, U[j-1])
+//        T[i]= T[i]^U[j]
+//      }
+//    }
+//  return MK = T[1] || T[2] || ...
 bool pbkdf2(const char* pass, int saltLen, byte* salt, int iter, int out_size,
             byte* out) {
   hmac_sha256 hmac;

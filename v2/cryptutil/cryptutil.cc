@@ -412,10 +412,10 @@ int main(int an, char** av) {
       ret = 1;
       goto done;
     }
-    scheme_message* msg = make_scheme(FLAGS_algorithm.c_str(), "",
-          mode, pad, "", s1.c_str(), s2.c_str(), enc_alg,
-          FLAGS_encrypt_key_size, enc_key, FLAGS_key_name.c_str(), hmac_alg,
-          FLAGS_mac_key_size, mac_key);
+    scheme_message* msg = make_scheme(FLAGS_algorithm.c_str(),
+          FLAGS_key_name.c_str(), mode, pad, "", s1.c_str(),
+          s2.c_str(), enc_alg, FLAGS_encrypt_key_size, enc_key,
+          FLAGS_key_name.c_str(), hmac_alg, FLAGS_mac_key_size, mac_key);
     if ( msg == nullptr) {
       printf("Can't create scheme message\n");
       ret = 1;
@@ -553,10 +553,13 @@ int main(int an, char** av) {
     string enc_key;
     string mac_key;
 
-    int tmp_key_size = size_enc_key_bytes + size_hmac_key_bytes + 32;
+    int tmp_key_size = size_enc_key_bytes + size_hmac_key_bytes + 16;
     byte tmp_key[tmp_key_size];
-    if (!keys_from_pass_phrase(FLAGS_pass.c_str(), &tmp_key_size, tmp_key)) {
-        printf("keys_from_pass_phrase failed\n");
+    const char* salt_str = "jlm ucb math"; 
+    const int num_iter = 100;
+    if (!pbkdf2(FLAGS_pass.c_str(), strlen(salt_str), (byte*)salt_str,
+                num_iter, tmp_key_size, tmp_key)) {
+        printf("Password derivation failed\n");
         ret = 1;
         goto done;
     }
