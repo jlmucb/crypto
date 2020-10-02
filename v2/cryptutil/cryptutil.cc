@@ -3,7 +3,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //     http://www.apache.org/licenses/LICENSE-2.0
-// or in the the file LICENSE-2.0.txt in the top level sourcedirectory
+// or in the the file LICENSE-2.0.txt in the top level directory
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -473,6 +473,8 @@ int main(int an, char** av) {
     goto done;
   } else if ("encrypt_with_key" == FLAGS_operation ||
              "decrypt_with_key" == FLAGS_operation) {
+
+    rsa rk;
     key_message* km = new key_message;
     if (!read_key(km)) {
       printf("Can't read %s\n", FLAGS_key_file.c_str());
@@ -491,8 +493,6 @@ int main(int an, char** av) {
     int key_size_bit = km->key_size();
     int key_size_byte =  key_size_bit / NBITSINBYTE;
     byte* key = (byte*)km->secret().data();
-    rsa rk;
-    ecc ek;
 
     if (strcmp(alg, "aes") == 0) {
       if (!km->has_secret()) {
@@ -530,13 +530,17 @@ int main(int an, char** av) {
       }
       block_size = tea::BLOCKBYTESIZE;
     } else if (strcmp(alg,  "rsa") == 0) {
-      rk.rsa_key_ = km;
+      rk.rsa_key_ = new key_message;
+      if (!read_key(rk.rsa_key_)) {
+        printf("Can't read %s (rsa)\n", FLAGS_key_file.c_str());
+        ret = 1;
+        goto done;
+      }
       if (!rk.retrieve_parameters_from_key_message()) {
         printf("Can't retrieve parameters\n");
         ret = 1;
         goto done;
       }
-      rk.rsa_key_ = nullptr;  // so we don't double free
       block_size = rk.bit_size_modulus_ / NBITSINBYTE;
     } else {
       printf("unsupported algorithm %s\n", alg);
@@ -545,7 +549,6 @@ int main(int an, char** av) {
     }
 
     file_util in_file;
-
 
     if (!in_file.open(FLAGS_input_file.c_str())) {
       printf("Can't open %s\n", FLAGS_input_file.c_str());
@@ -589,35 +592,38 @@ int main(int an, char** av) {
       byte out2[block_size];
       memset(out, 0, block_size);
       memset(out2, 0, block_size);
+
 #if 0
+      printf("in       : "); print_bytes(64, in);
       rk.encrypt(64, in, &size_out, out, 0);
       printf("out      : "); print_bytes(block_size, out);
       rk.decrypt(size_out, out, &size_out2, out2, 0);
       printf("out2     : "); print_bytes(size_out2, out2);
 #else
-      big_num b_1(32);
-      big_num b_2(32);
-      big_num b_3(32);
 
-      printf("in       : "); print_bytes(64, in);
+      big_num b_1(36);
+      big_num b_2(36);
+      big_num b_3(36);
+
+      printf("modulus: "); rk.m_->print();printf("\n");
       reverse_bytes(block_size, in, (byte*)b_1.value_ptr());
+      printf("in       : "); print_bytes(64, in);
       b_1.normalize();
       printf("b1     : "); b_1.print();printf("\n");
-      b_1.normalize();
       if (!big_mod_exp(b_1, *rk.e_, *rk.m_, b_2)) {
         printf("Can't exp\n");
         ret = 1;
         goto done;
       }
       printf("b2     : "); b_2.print();printf("\n");
-      reverse_bytes(block_size, (byte*)b_2.value_ptr(), out);
       printf("out      : "); print_bytes(block_size, out);
       b_2.normalize();
-      if (!big_mod_exp(b_1, *rk.d_, *rk.m_, b_3)) {
+      if (!big_mod_exp(b_2, *rk.d_, *rk.m_, b_3)) {
         printf("Can't exp\n");
         ret = 1;
         goto done;
       }
+      reverse_bytes(block_size, (byte*)b_2.value_ptr(), out);
       printf("b3     : "); b_3.print();printf("\n");
       reverse_bytes(block_size, (byte*)b_3.value_ptr(), out2);
       printf("out2     : "); print_bytes(block_size, out2);
@@ -1062,6 +1068,21 @@ int main(int an, char** av) {
         ret = 1;
         goto done;
       }
+
+#if 0
+      // can use this to check d is OK.
+      big_num z1(2 * big_num_size + 1);
+      if (!big_mod_mult(e, d, exp_mod, z1)) {
+        printf("mult fails \n");
+        ret = 1;
+        goto done;
+      }
+      if (big_compare(z1, big_one) != 0) {
+        printf("bad d\n");
+        ret = 1;
+        goto done;
+      }
+#endif
 
       string s_mod;
       string s_e;

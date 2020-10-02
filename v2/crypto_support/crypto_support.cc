@@ -748,7 +748,7 @@ int bytes_to_u64_array(string& b, int size_n, uint64_t* n) {
       break;
     real_size_b--;
   }
-  if (((real_size_b + (int)sizeof(uint64_t) -1) / (int)sizeof(uint64_t)) > size_n)
+  if (((real_size_b + (int)sizeof(uint64_t) - 1) / (int)sizeof(uint64_t)) > size_n)
     return false;
   if (real_size_b == 0) {
     n[0] = 0ULL;
@@ -768,7 +768,7 @@ int bytes_to_u64_array(string& b, int size_n, uint64_t* n) {
   n[real_size_n - 1] = big_endian;
 #endif
   p+= partial_64_size;
-  for (int i = real_size_n - 2; i >=0; i--) {
+  for (int i = real_size_n - 2; i >= 0; i--) {
 #ifndef BIG_ENDIAN
     memcpy((byte*)&x, p, sizeof(uint64_t));
     n[i] = x;
@@ -980,44 +980,44 @@ void print_key_message(key_message& m) {
   }
   if (m.has_rsa_pub()) {
     if (m.rsa_pub().has_modulus() && (int)m.rsa_pub().modulus().size() > 0) {
-      printf("modulus: ");
+      printf("  modulus: ");
       print_bytes((int)(m.rsa_pub().modulus().size()),
           (byte*)m.rsa_pub().modulus().data());
     }
     if (m.rsa_pub().has_e() && (int)m.rsa_pub().e().size() > 0) {
-      printf("e      : ");
+      printf("  e      : ");
       print_bytes((int)(m.rsa_pub().e().size()),
         (byte*)m.rsa_pub().e().data());
     }
   }
   if (m.has_rsa_priv() && (int)m.rsa_priv().d().size() > 0) {
     if (m.rsa_priv().has_d()) {
-      printf("d      : ");
+      printf("  d      : ");
       print_bytes((int)(m.rsa_priv().d().size()),
          (byte*)m.rsa_priv().d().data());
     }
     if (m.rsa_priv().has_p() && (int)m.rsa_priv().p().size() > 0) {
-      printf("p      : ");
+      printf("  p      : ");
       print_bytes((int)(m.rsa_priv().p().size()),
          (byte*)m.rsa_priv().p().data());
     }
     if (m.rsa_priv().has_q() && (int)m.rsa_priv().q().size() > 0) {
-      printf("q      : ");
+      printf("  q      : ");
       print_bytes((int)(m.rsa_priv().q().size()),
         (byte*)m.rsa_priv().q().data());
     }
     if (m.rsa_priv().has_m_prime() && (int)m.rsa_priv().m_prime().size() > 0) {
-      printf("m_prime: ");
+      printf("  m_prime: ");
       print_bytes((int)(m.rsa_priv().m_prime().size()),
         (byte*)m.rsa_priv().m_prime().data());
     }
     if (m.rsa_priv().has_p_prime() && (int)m.rsa_priv().p_prime().size() > 0) {
-      printf("p_prime: ");
+      printf("  p_prime: ");
       print_bytes((int)(m.rsa_priv().p_prime().size()),
         (byte*)m.rsa_priv().p_prime().data());
     }
     if (m.rsa_priv().has_q_prime() && (int)m.rsa_priv().q_prime().size() > 0) {
-      printf("q_prime: ");
+      printf("  q_prime: ");
       print_bytes((int)(m.rsa_priv().q_prime().size() / NBITSINBYTE),
         (byte*)m.rsa_priv().q_prime().data());
     }
@@ -1027,50 +1027,50 @@ void print_key_message(key_message& m) {
     if (pub->has_cm()) {
       curve_message* cmsg= pub->mutable_cm();
       if (cmsg->has_curve_name())  
-        printf("curve name       : %s\n", cmsg->curve_name().c_str());
+        printf("  curve name       : %s\n", cmsg->curve_name().c_str());
       if (cmsg->has_curve_p())   {
-        printf("curve p          : ");
+        printf("  curve p          : ");
         print_bytes((int)cmsg->curve_p().size(), (byte*)cmsg->curve_p().data());
       }
       if (cmsg->has_curve_a())   {
-        printf("curve a          : ");
+        printf("  curve a          : ");
         print_bytes((int)cmsg->curve_a().size(), (byte*)cmsg->curve_a().data());
       }
       if (cmsg->has_curve_b())   {
-        printf("curve b          : ");
+        printf("  curve b          : ");
         print_bytes((int)cmsg->curve_b().size(), (byte*)cmsg->curve_b().data());
       }
     }
     if (pub->has_base_point()) {
         point_message* pt= pub->mutable_base_point();
         if (pt->has_x()) {
-          printf("curve base x     : ");
+          printf("  curve base x     : ");
           print_bytes((int)pt->x().size(), (byte*)pt->x().data());
         }
         if (pt->has_y()) {
-          printf("curve base y     : ");
+          printf("  curve base y     : ");
           print_bytes((int)pt->y().size(), (byte*)pt->y().data());
         }
     }
     if (pub->has_public_point()) {
         point_message* pt= pub->mutable_public_point();
         if (pt->has_x()) {
-          printf("curve public x   : ");
+          printf("  curve public x   : ");
           print_bytes((int)pt->x().size(), (byte*)pt->x().data());
         }
         if (pt->has_y()) {
-          printf("curve public y   : ");
+          printf("  curve public y   : ");
           print_bytes((int)pt->y().size(), (byte*)pt->y().data());
         }
     }
     if (pub->has_order_of_base_point()) {
-        printf("order of base    : ");
+        printf("  order of base    : ");
         print_bytes((int)pub->order_of_base_point().size(), (byte*)pub->order_of_base_point().data());
     }
 
   }
   if (m.has_ecc_priv() && (int)m.ecc_priv().private_multiplier().size() > 0) {
-      printf("private multiplier: ");
+      printf("  private multiplier: ");
       print_bytes((int)m.ecc_priv().private_multiplier().size(), (byte*)m.ecc_priv().private_multiplier().data());
   }
 }

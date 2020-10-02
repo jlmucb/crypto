@@ -188,7 +188,7 @@ bool rsa::retrieve_parameters_from_key_message() {
   if (rsa_key_->has_notafter())
     not_after_.assign(rsa_key_->notafter().c_str());
 
-  int u64_len = 1 + bit_size_modulus_ / (sizeof(uint64_t) * NBITSINBYTE);
+  int u64_len = 1 + (bit_size_modulus_ / (sizeof(uint64_t) * NBITSINBYTE));
   int k = 0;
 
   if (rsa_key_->has_rsa_pub() && rsa_key_->rsa_pub().has_modulus()) {
@@ -200,7 +200,9 @@ bool rsa::retrieve_parameters_from_key_message() {
     if (bytes_to_u64_array((string&)(rsa_key_->rsa_pub().modulus()), u64_len, m_->value_ptr()) < 0) {
       return false;
     }
+    m_->normalize();
   }
+
   if (rsa_key_->has_rsa_pub() && rsa_key_->rsa_pub().has_e()) {
     if (e_ != nullptr) {
       delete e_;
@@ -211,7 +213,9 @@ bool rsa::retrieve_parameters_from_key_message() {
     if (bytes_to_u64_array((string&)(rsa_key_->rsa_pub().e()), e_len, e_->value_ptr()) < 0) {
       return false;
     }
+    e_->normalize();
   }
+
   if (rsa_key_->has_rsa_priv() && rsa_key_->rsa_priv().has_d()) {
     if (d_ != nullptr) {
       delete d_;
@@ -221,7 +225,9 @@ bool rsa::retrieve_parameters_from_key_message() {
     if (bytes_to_u64_array((string&)(rsa_key_->rsa_priv().d()), u64_len, d_->value_ptr()) < 0) {
       return false;
     }
+    d_->normalize();
   }
+
   if (rsa_key_->has_rsa_priv() && rsa_key_->rsa_priv().has_p()) {
     if (p_ != nullptr) {
       delete p_;
@@ -231,7 +237,9 @@ bool rsa::retrieve_parameters_from_key_message() {
     if (bytes_to_u64_array((string&)(rsa_key_->rsa_priv().p()), u64_len, p_->value_ptr()) < 0) {
       return false;
     }
+    p_->normalize();
   }
+
   if (rsa_key_->has_rsa_priv() && rsa_key_->rsa_priv().has_q()) {
     if (q_ != nullptr) {
       delete q_;
@@ -241,7 +249,9 @@ bool rsa::retrieve_parameters_from_key_message() {
     if (bytes_to_u64_array((string&)(rsa_key_->rsa_priv().q()), u64_len, q_->value_ptr()) < 0) {
       return false;
     }
+    q_->normalize();
   }
+
   if (rsa_key_->has_rsa_priv() && rsa_key_->rsa_priv().has_dp()) {
     if (dp_ != nullptr) {
       delete dp_;
@@ -251,7 +261,9 @@ bool rsa::retrieve_parameters_from_key_message() {
     if (bytes_to_u64_array((string&)(rsa_key_->rsa_priv().dp()), u64_len, dp_->value_ptr()) < 0) {
       return false;
     }
+    dp_->normalize();
   }
+
   if (rsa_key_->has_rsa_priv() && rsa_key_->rsa_priv().has_dq()) {
     if (dq_ != nullptr) {
       delete dq_;
@@ -261,7 +273,9 @@ bool rsa::retrieve_parameters_from_key_message() {
     if (bytes_to_u64_array((string&)(rsa_key_->rsa_priv().dq()), u64_len, dq_->value_ptr()) < 0) {
       return false;
     }
+    dq_->normalize();
   }
+
   if (rsa_key_->has_rsa_priv() && rsa_key_->rsa_priv().has_m_prime()) {
     if (m_prime_ != nullptr) {
       delete m_prime_;
@@ -271,7 +285,9 @@ bool rsa::retrieve_parameters_from_key_message() {
     if (bytes_to_u64_array((string&)(rsa_key_->rsa_priv().m_prime()), u64_len, m_prime_->value_ptr()) < 0) {
       return false;
     }
+    m_prime_->normalize();
   }
+
   if (rsa_key_->has_rsa_priv() && rsa_key_->rsa_priv().has_p_prime()) {
     if (p_prime_ != nullptr) {
       delete p_prime_;
@@ -281,7 +297,9 @@ bool rsa::retrieve_parameters_from_key_message() {
     if (bytes_to_u64_array((string&)(rsa_key_->rsa_priv().p_prime()), u64_len, p_prime_->value_ptr()) < 0) {
       return false;
     }
+    p_prime_->normalize();
   }
+
   if (rsa_key_->has_rsa_priv() && rsa_key_->rsa_priv().has_q_prime()) {
     if (q_prime_ != nullptr) {
       delete q_prime_;
@@ -291,6 +309,7 @@ bool rsa::retrieve_parameters_from_key_message() {
     if (bytes_to_u64_array((string&)(rsa_key_->rsa_priv().q_prime()), u64_len, q_prime_->value_ptr()) < 0) {
       return false;
     }
+    q_prime_->normalize();
   }
   
   return true;
