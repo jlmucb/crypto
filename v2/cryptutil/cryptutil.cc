@@ -949,6 +949,7 @@ int main(int an, char** av) {
         ret = 1;
         goto done;
       }
+
       // notbefore, notafter
       time_point t1, t2;
       t1.time_now();
@@ -1067,15 +1068,67 @@ int main(int an, char** av) {
       delete km;
       goto done;
     } else if (strcmp(FLAGS_algorithm.c_str(), "ecc") == 0) {
+      ecc key;
+
+      // notbefore, notafter
+      time_point t1, t2;
+      t1.time_now();
+      string s1, s2;
+      if (!t1.encode_time(&s1)) {
+        ret = 1;
+        goto done;
+      }
+      t2.add_interval_to_time(t1, 5 * 365 * 86400.0);
+      if (!t2.encode_time(&s2)) {
+        ret = 1;
+        goto done;
+      }
+
 #if 0
+      if (!init_ecc_curves()) {
+        printf("Can't init ecc curves\n");
+        ret = 1;
+        goto done;
+      }
+      if (!key.generate_ecc_from_standard_template("FLAGS_curve_name", "test_key-20",
+              "anything", seconds_in_common_year)) {
+        printf("Can't generate ecc from template\n");
+        ret = 1;
+        goto done;
+      }
+      key.print();
+      string curve_p;
+      string curve_a;
+      string curve_b;
+      string curve_base_x;
+      string curve_base_y;
+      string order_base_point;
+      string secret;
+      string curve_public_point_x;
+      string curve_public_point_y;
+
       key_message* km = make_ecckey(FLAGS_key_name, FLAGS_key_size, "",
-                         const char* not_before, const char* not_after,
-                         string& curve_name, string& curve_p,
-                         string& curve_a, string& curve_b,
-                         string& curve_base_x, string& curve_base_y,
-                         string& order_base_point, string& secret,
-                         string& curve_public_point_x, string& curve_public_point_y);
+                         s1.c_str(), s2.c_str()l FLAGS_curve_name, curve_p,
+                         curve_a, curve_b, curve_base_x, curve_base_y,
+                         order_base_point, secret,
+                         curve_public_point_x, curve_public_point_y);
+      if (km == nullptr) {
+        printf("Can't make ecc key\");
+        ret = 1;
+        goto done;
+      }
 #endif
+      string s;
+      km->SerializeToString(&s);
+      file_util out_file;
+      if (!out_file.write_file(FLAGS_key_file.c_str(), (int) s.size(), (byte*) s.data())) {
+        printf("Can't write %s\n", FLAGS_key_file.c_str());
+        ret = 1;
+        goto done;
+      }
+      print_key_message(*km);
+      delete km;
+      goto done;
     } else {
       printf("Unknown key type\n");
       ret = 1;
