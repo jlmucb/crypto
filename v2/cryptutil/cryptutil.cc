@@ -120,6 +120,7 @@ DEFINE_int32(encrypt_key_size, 128, "encrypt-key-size-in-bits");
 DEFINE_int32(mac_key_size, 128, "mac-key-size-in-bits");
 DEFINE_int32(key_size, 128, "key-size-in-bits");
 DEFINE_string(algorithm, "sha256", "hash algorithm");
+DEFINE_string(ecc_curve_name, "p-256", "ecc curve name");
 DEFINE_string(duration, "1Y", "duration");
 DEFINE_string(pass, "password", "password");
 DEFINE_string(purpose, "channel-encryption", "purpose");
