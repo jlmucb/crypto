@@ -538,17 +538,14 @@ int main(int an, char** av) {
       }
       rk.rsa_key_ = nullptr;  // so we don't double free
       block_size = rk.bit_size_modulus_ / NBITSINBYTE;
-    } else if (strcmp(alg,  "ecc") == 0) {
-      if (!km->has_secret()) {
-        printf("Can't get keys (2)\n");
+    } else {
+      printf("unsupported algorithm %s\n", alg);
         ret = 1;
         goto done;
-      }
-    } else {
-      printf("unknown encryption alg %s\n", FLAGS_algorithm.c_str());
     }
 
     file_util in_file;
+
 
     if (!in_file.open(FLAGS_input_file.c_str())) {
       printf("Can't open %s\n", FLAGS_input_file.c_str());
@@ -587,24 +584,49 @@ int main(int an, char** av) {
     } else if (strcmp(alg, "simon") == 0) {
     } else if (strcmp(alg, "tea") == 0) {
     } else if (strcmp(alg, "rsa") == 0) {
-      // HACK
-      in_out_size = block_size;
-printf("in_out_size: %d\n", in_out_size);
-      int size_out = in_out_size;
-      if ("encrypt_with_key" == FLAGS_operation) {
-        reverse_bytes_in_place(in_out_size, in);      
-        rk.encrypt(in_out_size,  in, &size_out, out, 0);
-      } else {
-        rk.decrypt(in_out_size, in, &size_out, out, 0);
-        //reverse_bytes_in_place(in_out_size, out);      
+      int size_out = block_size;
+      int size_out2 = block_size;
+      byte out2[block_size];
+      memset(out, 0, block_size);
+      memset(out2, 0, block_size);
+#if 0
+      rk.encrypt(64, in, &size_out, out, 0);
+      printf("out      : "); print_bytes(block_size, out);
+      rk.decrypt(size_out, out, &size_out2, out2, 0);
+      printf("out2     : "); print_bytes(size_out2, out2);
+#else
+      big_num b_1(32);
+      big_num b_2(32);
+      big_num b_3(32);
+
+      printf("in       : "); print_bytes(64, in);
+      reverse_bytes(block_size, in, (byte*)b_1.value_ptr());
+      b_1.normalize();
+      printf("b1     : "); b_1.print();printf("\n");
+      b_1.normalize();
+      if (!big_mod_exp(b_1, *rk.e_, *rk.m_, b_2)) {
+        printf("Can't exp\n");
+        ret = 1;
+        goto done;
       }
+      printf("b2     : "); b_2.print();printf("\n");
+      reverse_bytes(block_size, (byte*)b_2.value_ptr(), out);
+      printf("out      : "); print_bytes(block_size, out);
+      b_2.normalize();
+      if (!big_mod_exp(b_1, *rk.d_, *rk.m_, b_3)) {
+        printf("Can't exp\n");
+        ret = 1;
+        goto done;
+      }
+      printf("b3     : "); b_3.print();printf("\n");
+      reverse_bytes(block_size, (byte*)b_3.value_ptr(), out2);
+      printf("out2     : "); print_bytes(block_size, out2);
+#endif
+      goto done;
     } else if (strcmp(alg, "ecc") == 0) {
     } else {
       printf("unknown encryption alg %s\n", FLAGS_algorithm.c_str());
     }
-
-    printf("in       : "); print_bytes(in_out_size, in);
-    printf("out      : "); print_bytes(in_out_size, out);
 
     file_util out_file;
     out_file.write_file(FLAGS_output_file.c_str(), in_out_size, out);
@@ -1021,28 +1043,15 @@ printf("in_out_size: %d\n", in_out_size);
         ret = 1;
         goto done;
       }
-      if (!big_mult(p_minus_1, q_minus_1, t_exp)) {
+      if (!big_mult(p_minus_1, q_minus_1, exp_mod)) {
         printf("Can't compute exponent modulus\n");
         ret = 1;
         goto done;
       }
 
-      big_num x(big_num_size + 1);
-      big_num y(big_num_size + 1);
-      big_num g(big_num_size + 1);
-      if (!big_extended_gcd(p_minus_1, q_minus_1, x, y, g)) {
-        printf("Can't compute gcd (p-1, q-1)\n");
-        ret = 1;
-        goto done;
-      }
-      if (!big_div(t_exp, g, exp_mod)) {
-        printf("Can't compute exponent modulus\n");
-        ret = 1;
-        goto done;
-      }
-      x.zero_num();
-      y.zero_num();
-      g.zero_num();
+      big_num x(2 * big_num_size + 1);
+      big_num y(2 * big_num_size + 1);
+      big_num g(2 * big_num_size + 1);
       if (!big_extended_gcd(e, exp_mod, d, y, g)) {
         printf("Can't compute d (1)\n");
         ret = 1;
