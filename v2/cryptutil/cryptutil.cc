@@ -891,7 +891,8 @@ int main(int an, char** av) {
     }
     print_key_message(km);
     goto done;
-  } else if ("generate_mac" == FLAGS_operation) {
+  } else if ("generate_mac" == FLAGS_operation ||
+             "verify_mac" == FLAGS_operation) {
 
     file_util in_file;
 
@@ -937,17 +938,31 @@ int main(int an, char** av) {
       goto done;
     }
     printf("hmac key (%d): ", FLAGS_key_size); print_bytes(byte_size, hmac_key);
-    printf("input (%d): ", size_in); print_bytes(size_in, in);
-    printf("hmac      :"); print_bytes(mac_size, hmac);
+    printf("input (%d)   : ", size_in); print_bytes(size_in, in);
+    printf("computed hmac: "); print_bytes(mac_size, hmac);
 
-    file_util out_file;
-    if (!out_file.write_file(FLAGS_output_file.c_str(), byte_size, hmac)) {
-      printf("Can't write %s\n", FLAGS_output_file.c_str());
-      ret = 1;
-      goto done;
+    if ("generate_mac" == FLAGS_operation) {
+
+      file_util out_file;
+      if (!out_file.write_file(FLAGS_output_file.c_str(), byte_size, hmac)) {
+        printf("Can't write %s\n", FLAGS_output_file.c_str());
+        ret = 1;
+        goto done;
+      }
+    } else {
+      byte recovered_hmac[mac_size];
+      if (!in_file.read_file(FLAGS_input2_file.c_str(), byte_size, recovered_hmac)) {
+        printf("Can't read %s\n", FLAGS_input2_file.c_str());
+        return false;
+      }
+      if (memcmp(hmac, recovered_hmac, byte_size) == 0) {
+        printf("mac verified\n");
+      } else {
+        printf("mac does not verify\n");
+        print_bytes(byte_size, recovered_hmac);
+      }
     }
     goto done;
-  } else if ("verify_mac" == FLAGS_operation) {
   } else if ("pkcs_sign_with_key" == FLAGS_operation) {
   } else if ("pkcs_verify_with_key" == FLAGS_operation) {
   } else if ("pkcs_seal_with_key" == FLAGS_operation) {
