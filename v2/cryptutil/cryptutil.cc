@@ -155,7 +155,6 @@ bool read_key(key_message* km) {
   return true;
 }
 
-
 bool read_scheme(scheme_message* msg) {
   file_util in_file;
   printf("File: %s\n", FLAGS_scheme_file.c_str());
@@ -295,7 +294,8 @@ int main(int an, char** av) {
 
     if (!in_file.open(FLAGS_input_file.c_str())) {
       printf("Can't open %s\n", FLAGS_input_file.c_str());
-      return false;
+      ret = 1;
+      goto done;
     }
     int size_in = in_file.bytes_in_file();
 
@@ -341,7 +341,8 @@ int main(int an, char** av) {
     file_util in_file;
     if (!in_file.open(FLAGS_input_file.c_str())) {
       printf("Can't open %s\n", FLAGS_input_file.c_str());
-      return false;
+      ret = 1;
+      goto done;
     }
     int size_in = in_file.bytes_in_file();
     in_file.close();
@@ -586,8 +587,8 @@ int main(int an, char** av) {
 
     // notbefore, notafter
     time_point t1, t2;
-    t1.time_now();
     string s1, s2;
+    t1.time_now();
     if (!t1.encode_time(&s1)) {
       ret = 1;
       goto done;
@@ -926,7 +927,155 @@ int main(int an, char** av) {
       km = make_symmetrickey(FLAGS_algorithm.c_str(), FLAGS_key_name.c_str(),
               FLAGS_key_size, "", s1.c_str(), s2.c_str(), bytes);
     } else if (strcmp(FLAGS_algorithm.c_str(), "rsa") == 0) {
+      int big_num_size = (FLAGS_key_size + 63) / 64;
+      big_num p(big_num_size);
+      big_num q(big_num_size);
+      int prime_key_size_bit = FLAGS_key_size / 2;
+      if (!big_gen_prime(p, prime_key_size_bit, 2500)) {
+        printf("Can't generate p\n");
+        ret = 1;
+        goto done;
+      }
+      p.normalize();
+      if (!big_gen_prime(q, prime_key_size_bit, 2500)) {
+        printf("Can't generate q\n");
+        ret = 1;
+        goto done;
+      }
+      q.normalize();
+      big_num modulus(big_num_size + 1);
+      if (!big_mult(p, q, modulus)) {
+        printf("Can't compute modulus\n");
+        ret = 1;
+        goto done;
+      }
+      // notbefore, notafter
+      time_point t1, t2;
+      t1.time_now();
+      string s1, s2;
+      if (!t1.encode_time(&s1)) {
+        ret = 1;
+        goto done;
+      }
+      t2.add_interval_to_time(t1, 5 * 365 * 86400.0);
+      if (!t2.encode_time(&s2)) {
+        ret = 1;
+        goto done;
+      }
+
+      big_num e(1, ((1ULL<<16) + 1ULL));
+      big_num d(big_num_size + 1);
+      big_num p_minus_1(big_num_size + 1);
+      big_num q_minus_1(big_num_size + 1);
+      big_num t_exp(big_num_size + 1);
+      big_num exp_mod(big_num_size + 1);
+
+      if (big_sub(p, big_one, p_minus_1)) {
+        ret = 1;
+        goto done;
+      }
+      if (big_sub(q, big_one, q_minus_1)) {
+        ret = 1;
+        goto done;
+      }
+      if (!big_mult(p_minus_1, q_minus_1, t_exp)) {
+        printf("Can't compute exponent modulus\n");
+        ret = 1;
+        goto done;
+      }
+      big_num x(big_num_size + 1);
+      big_num y(big_num_size + 1);
+      big_num g(big_num_size + 1);
+      if (!big_extended_gcd(p_minus_1, q_minus_1, x, y, g)) {
+        printf("Can't compute gcd (p-1, q-1)\n");
+        ret = 1;
+        goto done;
+      }
+      if (!big_div(t_exp, g, exp_mod)) {
+        printf("Can't compute exponent modulus\n");
+        ret = 1;
+        goto done;
+      }
+      x.zero_num();
+      y.zero_num();
+      g.zero_num();
+      if (!big_extended_gcd(e, exp_mod, d, y, g)) {
+        printf("Can't compute d\n");
+        ret = 1;
+        goto done;
+      }
+      if (!big_compare(g, big_one) != 0) {
+        printf("Can't compute d\n");
+        ret = 1;
+        goto done;
+      }
+
+      string s_mod;
+      string s_e;
+      string s_d;
+      string s_p;
+      string s_q;
+      string s_dp;
+      string s_dq;
+      string s_p_prime;
+      string s_q_prime;
+      string s_m_prime;
+
+      if (!u64_array_to_bytes(modulus.size(), modulus.value_ptr(), &s_mod)) {
+        printf("Can't serialize modulus\n");
+        ret = 1;
+        goto done;
+      }
+      if (!u64_array_to_bytes(e.size(), e.value_ptr(), &s_e)) {
+        printf("Can't serialize exponent\n");
+        ret = 1;
+        goto done;
+      }
+      if (!u64_array_to_bytes(d.size(), d.value_ptr(), &s_d)) {
+        printf("Can't serialize d\n");
+        ret = 1;
+        goto done;
+      }
+      if (!u64_array_to_bytes(p.size(), p.value_ptr(), &s_p)) {
+        printf("Can't serialize p\n");
+        ret = 1;
+        goto done;
+      }
+      if (!u64_array_to_bytes(q.size(), q.value_ptr(), &s_q)) {
+        printf("Can't serialize q\n");
+        ret = 1;
+        goto done;
+      }
+
+      km = make_rsakey("rsa", FLAGS_key_name.c_str(), FLAGS_key_size,
+          "", s1.c_str(), s2.c_str(), s_mod, s_e, s_d, s_p, s_q, s_dp,
+          s_dq, s_m_prime, s_p_prime, s_q_prime);
+      if (km == nullptr) {
+        printf("Can't make rsa message\n");
+        ret = 1;
+        goto done;
+      }
+      string s;
+      km->SerializeToString(&s);
+      file_util out_file;
+      if (!out_file.write_file(FLAGS_key_file.c_str(), (int) s.size(), (byte*) s.data())) {
+        printf("Can't write %s\n", FLAGS_key_file.c_str());
+        ret = 1;
+        goto done;
+      }
+      print_key_message(*km);
+      delete km;
+      goto done;
     } else if (strcmp(FLAGS_algorithm.c_str(), "ecc") == 0) {
+#if 0
+      key_message* km = make_ecckey(FLAGS_key_name, FLAGS_key_size, "",
+                         const char* not_before, const char* not_after,
+                         string& curve_name, string& curve_p,
+                         string& curve_a, string& curve_b,
+                         string& curve_base_x, string& curve_base_y,
+                         string& order_base_point, string& secret,
+                         string& curve_public_point_x, string& curve_public_point_y);
+#endif
     } else {
       printf("Unknown key type\n");
       ret = 1;
@@ -1034,7 +1183,6 @@ int main(int an, char** av) {
   } else if ("pkcs_seal_with_key" == FLAGS_operation) {
   } else if ("pkcs_unseal_with_key" == FLAGS_operation) {
   } else if ("sign_digest_with_key" == FLAGS_operation) {
-  } else if ("verify_digest_with_key" == FLAGS_operation) {
   } else {
     printf("%s: unsupported operation\n", FLAGS_operation.c_str());
     ret = 1;
