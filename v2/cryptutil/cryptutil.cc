@@ -482,9 +482,8 @@ int main(int an, char** av) {
     int block_size;
     print_key_message(*km);
 
-    if (!km->has_key_size() || !km->has_secret() ||
-        !km->has_algorithm_type()) {
-      printf("Can't get keys\n");
+    if (!km->has_key_size() || !km->has_algorithm_type()) {
+      printf("Can't get keys (1)\n");
       ret = 1;
       goto done;
     }
@@ -492,17 +491,59 @@ int main(int an, char** av) {
     int key_size_bit = km->key_size();
     int key_size_byte =  key_size_bit / NBITSINBYTE;
     byte* key = (byte*)km->secret().data();
+    rsa rk;
+    ecc ek;
 
     if (strcmp(alg, "aes") == 0) {
+      if (!km->has_secret()) {
+        printf("Can't get keys (2)\n");
+        ret = 1;
+        goto done;
+      }
       block_size = aes::BLOCKBYTESIZE;
     } else if (strcmp(alg,  "twofish") == 0) {
+      if (!km->has_secret()) {
+        printf("Can't get keys (2)\n");
+        ret = 1;
+        goto done;
+      }
       block_size = two_fish::BLOCKBYTESIZE;
     } else if (strcmp(alg,  "rc4") == 0) {
+      if (!km->has_secret()) {
+        printf("Can't get keys (2)\n");
+        ret = 1;
+        goto done;
+      }
       block_size = 1;  // its a stream cipher
     } else if (strcmp(alg,  "simon") == 0) {
+      if (!km->has_secret()) {
+        printf("Can't get keys (2)\n");
+        ret = 1;
+        goto done;
+      }
       block_size = simon128::BLOCKBYTESIZE;
     } else if (strcmp(alg,  "tea") == 0) {
+      if (!km->has_secret()) {
+        printf("Can't get keys (2)\n");
+        ret = 1;
+        goto done;
+      }
       block_size = tea::BLOCKBYTESIZE;
+    } else if (strcmp(alg,  "rsa") == 0) {
+      rk.rsa_key_ = km;
+      if (!rk.retrieve_parameters_from_key_message()) {
+        printf("Can't retrieve parameters\n");
+        ret = 1;
+        goto done;
+      }
+      rk.rsa_key_ = nullptr;  // so we don't double free
+      block_size = rk.bit_size_modulus_ / NBITSINBYTE;
+    } else if (strcmp(alg,  "ecc") == 0) {
+      if (!km->has_secret()) {
+        printf("Can't get keys (2)\n");
+        ret = 1;
+        goto done;
+      }
     } else {
       printf("unknown encryption alg %s\n", FLAGS_algorithm.c_str());
     }
@@ -545,6 +586,19 @@ int main(int an, char** av) {
     } else if (strcmp(alg, "rc4") == 0) {
     } else if (strcmp(alg, "simon") == 0) {
     } else if (strcmp(alg, "tea") == 0) {
+    } else if (strcmp(alg, "rsa") == 0) {
+      // HACK
+      in_out_size = block_size;
+printf("in_out_size: %d\n", in_out_size);
+      int size_out = in_out_size;
+      if ("encrypt_with_key" == FLAGS_operation) {
+        reverse_bytes_in_place(in_out_size, in);      
+        rk.encrypt(in_out_size,  in, &size_out, out, 0);
+      } else {
+        rk.decrypt(in_out_size, in, &size_out, out, 0);
+        //reverse_bytes_in_place(in_out_size, out);      
+      }
+    } else if (strcmp(alg, "ecc") == 0) {
     } else {
       printf("unknown encryption alg %s\n", FLAGS_algorithm.c_str());
     }

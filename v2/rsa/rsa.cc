@@ -178,6 +178,7 @@ bool rsa::retrieve_parameters_from_key_message() {
 
   if (!initialized_ || rsa_key_ == nullptr)
     return false;
+  bit_size_modulus_
 
   if (rsa_key_->has_key_size())
     bit_size_modulus_ = rsa_key_->key_size();
