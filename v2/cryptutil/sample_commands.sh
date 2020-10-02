@@ -20,9 +20,8 @@ $BIN/cryptutil.exe --operation=to_decimal --input_file="bytes.out" --output_file
 $BIN/cryptutil.exe --operation=generate_mac --algorithm=hmac-sha256 --key_file=random.out --mac_key_size=256 --input_file=test_plain --output_file=mac_out
 $BIN/cryptutil.exe --operation=verify_mac --algorithm=hmac-sha256 --key_file=random.out --mac_key_size=256 --input_file=test_plain --input2_file=mac_out
 
-$BIN/cryptutil.exe --operation=generate_key --algorithm=aes --key_file=test_file --key_size=256 --key_name=test_key
-$BIN/cryptutil.exe --operation=read_key --key_file=test_file
-
-$BIN/cryptutil.exe --operation=encrypt_with_key --key_file=test_file --key_size=256 --input_file=encrypt_in --output_file=encrypt_out
-$BIN/cryptutil.exe --operation=decrypt_with_key --key_file=test_file --input_file=encrypt_out --output_file=decrypted
+$BIN/cryptutil.exe --operation=generate_key --algorithm=aes --key_file=enc.key --key_size=256 --key_name=test_key
+$BIN/cryptutil.exe --operation=read_key --key_file=enc.key
+$BIN/cryptutil.exe --operation=encrypt_with_key --key_file=enc.key --input_file=test_plain --output_file=encrypt_out
+$BIN/cryptutil.exe --operation=decrypt_with_key --key_file=enc.key --input_file=encrypt_out --output_file=decrypted
 

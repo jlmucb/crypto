@@ -73,9 +73,9 @@ std::string cryptutil_ops[] = {
     "--operation=generate_key --algorithm=alg --key_name=name " \
     "--purpose=pur --owner=own --duration=dur --output_file=file" \
     "\n",
-    "--operation=encrypt_with_key --key_file=key_file --algorithm=alg " \
+    "--operation=encrypt_with_key --key_file=key_file " \
     "--input_file=file --output_file=file",
-    "--operation=decrypt_with_key --key_file=key_file --algorithm=alg " \
+    "--operation=decrypt_with_key --key_file=key_file " \
     "--input_file=file --output_file=file"
     "\n",
     "--operation=pkcs_sign_with_key --algorithm=alg --keyfile=file " \
@@ -469,24 +469,89 @@ int main(int an, char** av) {
       goto done;
     }
     goto done;
-  } else if ("encrypt_with_key" == FLAGS_operation) {
-    if (FLAGS_algorithm == "aes") {
-    } else if (FLAGS_algorithm == "twofish") {
-    } else if (FLAGS_algorithm == "rc4") {
-    } else if (FLAGS_algorithm == "simon") {
-    } else if (FLAGS_algorithm == "tea") {
+  } else if ("encrypt_with_key" == FLAGS_operation ||
+             "decrypt_with_key" == FLAGS_operation) {
+    key_message* km = new key_message;
+    if (!read_key(km)) {
+      printf("Can't read %s\n", FLAGS_key_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    int block_size;
+    print_key_message(*km);
+
+    if (!km->has_key_size() || !km->has_secret() ||
+        !km->has_algorithm_type()) {
+      printf("Can't get keys\n");
+      ret = 1;
+      goto done;
+    }
+    const char* alg = km->algorithm_type().c_str();
+    int key_size_bit = km->key_size();
+    int key_size_byte =  key_size_bit / NBITSINBYTE;
+    byte* key = (byte*)km->secret().data();
+
+    if (strcmp(alg, "aes") == 0) {
+      block_size = aes::BLOCKBYTESIZE;
+    } else if (strcmp(alg,  "twofish") == 0) {
+      block_size = two_fish::BLOCKBYTESIZE;
+    } else if (strcmp(alg,  "rc4") == 0) {
+      block_size = 1;  // its a stream cipher
+    } else if (strcmp(alg,  "simon") == 0) {
+      block_size = simon128::BLOCKBYTESIZE;
+    } else if (strcmp(alg,  "tea") == 0) {
+      block_size = tea::BLOCKBYTESIZE;
     } else {
       printf("unknown encryption alg %s\n", FLAGS_algorithm.c_str());
     }
-  } else if ("decrypt_with_key" == FLAGS_operation) {
-    if (FLAGS_algorithm == "aes") {
-    } else if (FLAGS_algorithm == "twofish") {
-    } else if (FLAGS_algorithm == "simon") {
-    } else if (FLAGS_algorithm == "rc4") {
-    } else if (FLAGS_algorithm == "tea") {
-    } else {
-      printf("Decrypt: Unknown encryption alg\n");
+
+    file_util in_file;
+
+    if (!in_file.open(FLAGS_input_file.c_str())) {
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
+      ret = 1;
+      goto done;
     }
+    int size_in = in_file.bytes_in_file();
+    in_file.close();
+    int in_out_size = (size_in + block_size - 1) / block_size;;
+    in_out_size *= block_size;
+    byte in[in_out_size];
+    byte out[in_out_size];
+    memset(in, 0, in_out_size);
+    memset(out, 0, in_out_size);
+
+    if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in) < size_in) {
+      printf("Can't read %s\n", FLAGS_input_file.c_str());
+      ret = 1;
+      goto done;
+    }
+
+    if (strcmp(alg, "aes") == 0) {
+      aes t;
+      if (!t.init(key_size_bit, key, aes::BOTH)) {
+        printf("Can't init aes\n");
+        ret = 1;
+        goto done;
+      }
+      if ("encrypt_with_key" == FLAGS_operation) {
+        t.encrypt(in_out_size, in, out);
+      } else {
+        t.decrypt(in_out_size, in, out);
+      }
+    } else if (strcmp(alg, "twofish") == 0) {
+    } else if (strcmp(alg, "rc4") == 0) {
+    } else if (strcmp(alg, "simon") == 0) {
+    } else if (strcmp(alg, "tea") == 0) {
+    } else {
+      printf("unknown encryption alg %s\n", FLAGS_algorithm.c_str());
+    }
+
+    printf("in       : "); print_bytes(in_out_size, in);
+    printf("out      : "); print_bytes(in_out_size, out);
+
+    file_util out_file;
+    out_file.write_file(FLAGS_output_file.c_str(), in_out_size, out);
   } else if ("generate_scheme" == FLAGS_operation) {
     int size_nonce = 128 / NBITSINBYTE;
     int size_enc_key = FLAGS_encrypt_key_size / NBITSINBYTE;
