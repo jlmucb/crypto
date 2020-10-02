@@ -950,20 +950,6 @@ int main(int an, char** av) {
         goto done;
       }
 
-      // notbefore, notafter
-      time_point t1, t2;
-      t1.time_now();
-      string s1, s2;
-      if (!t1.encode_time(&s1)) {
-        ret = 1;
-        goto done;
-      }
-      t2.add_interval_to_time(t1, 5 * 365 * 86400.0);
-      if (!t2.encode_time(&s2)) {
-        ret = 1;
-        goto done;
-      }
-
       big_num e(1, ((1ULL<<16) + 1ULL));
       big_num d(big_num_size + 1);
       big_num p_minus_1(big_num_size + 1);
@@ -971,11 +957,13 @@ int main(int an, char** av) {
       big_num t_exp(big_num_size + 1);
       big_num exp_mod(big_num_size + 1);
 
-      if (big_sub(p, big_one, p_minus_1)) {
+      if (!big_sub(p, big_one, p_minus_1)) {
+        printf("big_sub 1 failed\n");
         ret = 1;
         goto done;
       }
-      if (big_sub(q, big_one, q_minus_1)) {
+      if (!big_sub(q, big_one, q_minus_1)) {
+        printf("big_sub 2 failed\n");
         ret = 1;
         goto done;
       }
@@ -984,6 +972,7 @@ int main(int an, char** av) {
         ret = 1;
         goto done;
       }
+
       big_num x(big_num_size + 1);
       big_num y(big_num_size + 1);
       big_num g(big_num_size + 1);
@@ -1001,12 +990,12 @@ int main(int an, char** av) {
       y.zero_num();
       g.zero_num();
       if (!big_extended_gcd(e, exp_mod, d, y, g)) {
-        printf("Can't compute d\n");
+        printf("Can't compute d (1)\n");
         ret = 1;
         goto done;
       }
-      if (!big_compare(g, big_one) != 0) {
-        printf("Can't compute d\n");
+      if (big_compare(g, big_one) != 0) {
+        printf("Can't compute d (2)\n");
         ret = 1;
         goto done;
       }

@@ -25,3 +25,4 @@ $BIN/cryptutil.exe --operation=read_key --key_file=enc.key
 $BIN/cryptutil.exe --operation=encrypt_with_key --key_file=enc.key --input_file=test_plain --output_file=encrypt_out
 $BIN/cryptutil.exe --operation=decrypt_with_key --key_file=enc.key --input_file=encrypt_out --output_file=decrypted
 
+$BIN/cryptutil.exe --operation=generate_key --algorithm=rsa --key_file=rsa_enc.key --key_size=1024 --key_name=rsa_test_key

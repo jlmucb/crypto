@@ -981,39 +981,39 @@ void print_key_message(key_message& m) {
   if (m.has_rsa_pub()) {
     if (m.rsa_pub().has_modulus() && (int)m.rsa_pub().modulus().size() > 0) {
       printf("modulus: ");
-      print_bytes((int)(m.rsa_pub().modulus().size() /NBITSINBYTE),
+      print_bytes((int)(m.rsa_pub().modulus().size()),
           (byte*)m.rsa_pub().modulus().data());
     }
     if (m.rsa_pub().has_e() && (int)m.rsa_pub().e().size() > 0) {
       printf("e      : ");
-      print_bytes((int)(m.rsa_pub().e().size() / NBITSINBYTE),
+      print_bytes((int)(m.rsa_pub().e().size()),
         (byte*)m.rsa_pub().e().data());
     }
   }
   if (m.has_rsa_priv() && (int)m.rsa_priv().d().size() > 0) {
     if (m.rsa_priv().has_d()) {
       printf("d      : ");
-      print_bytes((int)(m.rsa_priv().d().size() / NBITSINBYTE),
+      print_bytes((int)(m.rsa_priv().d().size()),
          (byte*)m.rsa_priv().d().data());
     }
     if (m.rsa_priv().has_p() && (int)m.rsa_priv().p().size() > 0) {
       printf("p      : ");
-      print_bytes((int)(m.rsa_priv().p().size()  / NBITSINBYTE),
+      print_bytes((int)(m.rsa_priv().p().size()),
          (byte*)m.rsa_priv().p().data());
     }
     if (m.rsa_priv().has_q() && (int)m.rsa_priv().q().size() > 0) {
       printf("q      : ");
-      print_bytes((int)(m.rsa_priv().q().size()  / NBITSINBYTE),
+      print_bytes((int)(m.rsa_priv().q().size()),
         (byte*)m.rsa_priv().q().data());
     }
     if (m.rsa_priv().has_m_prime() && (int)m.rsa_priv().m_prime().size() > 0) {
       printf("m_prime: ");
-      print_bytes((int)(m.rsa_priv().m_prime().size() / NBITSINBYTE),
+      print_bytes((int)(m.rsa_priv().m_prime().size()),
         (byte*)m.rsa_priv().m_prime().data());
     }
     if (m.rsa_priv().has_p_prime() && (int)m.rsa_priv().p_prime().size() > 0) {
       printf("p_prime: ");
-      print_bytes((int)(m.rsa_priv().p_prime().size()  / NBITSINBYTE),
+      print_bytes((int)(m.rsa_priv().p_prime().size()),
         (byte*)m.rsa_priv().p_prime().data());
     }
     if (m.rsa_priv().has_q_prime() && (int)m.rsa_priv().q_prime().size() > 0) {
