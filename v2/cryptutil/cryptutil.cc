@@ -262,12 +262,61 @@ bool decrypt_aes(int size_in, byte* in,
 
 bool encrypt_rsa(int size_in, byte* in,
                  int size_out, byte* out) {
-  return true;
+
+  rsa rk;
+  rk.rsa_key_ = new key_message;
+
+  if (!read_key(rk.rsa_key_)) {
+    printf("Can't read %s\n", FLAGS_key_file.c_str());
+    return false;
+  }
+  print_key_message(*rk.rsa_key_);
+
+  if (!rk.rsa_key_->has_key_size() || !rk.rsa_key_->has_algorithm_type()) {
+    printf("Can't get keys (1)\n");
+    return false;
+  }
+  const char* alg = rk.rsa_key_->algorithm_type().c_str();
+  int key_size_bit = rk.rsa_key_->key_size();
+  int key_size_byte =  key_size_bit / NBITSINBYTE;
+  if (strcmp(alg, "rsa") != 0) {
+    printf("Not an RSA key\n");
+    return false;
+    }
+  if (!rk.retrieve_parameters_from_key_message()) {
+    printf("Can't retrieve parameters\n");
+    return false;
+  }
+  return rk.encrypt(size_in, in, &size_out, out, 0);
 }
 
 bool decrypt_rsa(int size_in, byte* in,
                  int size_out, byte* out) {
-  return true;
+  rsa rk;
+  rk.rsa_key_ = new key_message;
+
+  if (!read_key(rk.rsa_key_)) {
+    printf("Can't read %s\n", FLAGS_key_file.c_str());
+    return false;
+  }
+  print_key_message(*rk.rsa_key_);
+
+  if (!rk.rsa_key_->has_key_size() || !rk.rsa_key_->has_algorithm_type()) {
+    printf("Can't get keys (1)\n");
+    return false;
+  }
+  const char* alg = rk.rsa_key_->algorithm_type().c_str();
+  int key_size_bit = rk.rsa_key_->key_size();
+  int key_size_byte =  key_size_bit / NBITSINBYTE;
+  if (strcmp(alg, "rsa") != 0) {
+    printf("Not an RSA key\n");
+    return false;
+    }
+  if (!rk.retrieve_parameters_from_key_message()) {
+    printf("Can't retrieve parameters\n");
+    return false;
+  }
+  return rk.decrypt(size_in, in, &size_out, out, 0);
 }
 
 int main(int an, char** av) {
@@ -555,12 +604,12 @@ int main(int an, char** av) {
 
     key_message km;
     if (!read_key(&km)) {
-      printf("Can't read aes key\n");
+      printf("Can't read key\n");
       ret = 1;
       goto done;
     }
     if (!km.has_key_size() || !km.has_algorithm_type()) {
-      printf("Bad aes key\n");
+      printf("Bad key\n");
       ret = 1;
       goto done;
     }
@@ -579,14 +628,14 @@ int main(int an, char** av) {
       block_size = tea::BLOCKBYTESIZE;
     } else if (strcmp(alg, "rsa") == 0) {
       key_message km;
-    } else if (strcmp(alg, "ecc") == 0) {
-      key_message km;
     
       if (!read_key(&km)) {
         printf("Can't read ecc key\n");
         ret = 1;
         goto done;
       }
+      block_size = km.key_size() / NBITSINBYTE;
+    } else if (strcmp(alg, "ecc") == 0) {
     } else {
       printf("unsupported algorithm %s\n", alg);
       ret = 1;
