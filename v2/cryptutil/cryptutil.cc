@@ -118,6 +118,7 @@ DEFINE_string(direction, "left-right",
 DEFINE_int32(random_size, 128, "random-size-in-bits");
 DEFINE_int32(encrypt_key_size, 128, "encrypt-key-size-in-bits");
 DEFINE_int32(mac_key_size, 128, "mac-key-size-in-bits");
+DEFINE_int32(key_size, 128, "key-size-in-bits");
 DEFINE_string(algorithm, "sha256", "hash algorithm");
 DEFINE_string(duration, "1Y", "duration");
 DEFINE_string(pass, "password", "password");
@@ -132,6 +133,26 @@ DEFINE_string(unproteced_key_file, "", "unprotected key file");
 DEFINE_bool(print_all, false, "printall flag");
 
 const int size_of_64_bit_unsigned = 7;
+const int max_hash = 256;
+
+bool read_key(key_message* km) {
+  file_util in_file;
+    if (!in_file.open(FLAGS_key_file.c_str())) {
+      printf("Can't open %s\n", FLAGS_key_file.c_str());
+      return false;
+    }
+    int size_in = in_file.bytes_in_file();
+    in_file.close();
+    byte in[size_in];
+    if (!in_file.read_file(FLAGS_key_file.c_str(), size_in, in)) {
+      printf("Can't read %s\n", FLAGS_key_file.c_str());
+      return false;
+    }
+   string s;
+   s.assign((char*)in, size_in);
+   km->ParseFromString(s);
+  return true;
+}
 
 
 bool read_scheme(scheme_message* msg) {
@@ -203,7 +224,6 @@ int main(int an, char** av) {
 
   if ("tobase64" == FLAGS_operation) {
     file_util in_file;
-    file_util out_file;
 
     if (!in_file.open(FLAGS_input_file.c_str())) {
       printf("Can't open %s\n", FLAGS_input_file.c_str());
@@ -226,6 +246,8 @@ int main(int an, char** av) {
       ret = 1;
       goto done;
     }
+
+    file_util out_file;
     if (!out_file.write_file(FLAGS_output_file.c_str(), (int) base64.size(),
             (byte*) base64.data())) {
       printf("Can't write %s\n", FLAGS_output_file.c_str());
@@ -769,7 +791,6 @@ int main(int an, char** av) {
       ret = 1;
       goto done;
     }
-    const int max_hash = 256;
     byte hash[max_hash];
     int hash_size_bytes = 0;
 
@@ -805,7 +826,128 @@ int main(int an, char** av) {
     printf("hash    : "); print_bytes(hash_size_bytes, hash);
     goto done;
   } else if ("generate_key" == FLAGS_operation) {
+
+    // notbefore, notafter
+    time_point t1, t2;
+    t1.time_now();
+    string s1, s2;
+    if (!t1.encode_time(&s1)) {
+      ret = 1;
+      goto done;
+    }
+    t2.add_interval_to_time(t1, 5 * 365 * 86400.0);
+    if (!t2.encode_time(&s2)) {
+      ret = 1;
+      goto done;
+    }
+    key_message* km = nullptr;
+    int byte_size =  (FLAGS_key_size + NBITSINBYTE - 1) / NBITSINBYTE;
+
+    if (strcmp(FLAGS_algorithm.c_str(), "aes") == 0 ||
+          strcmp(FLAGS_algorithm.c_str(), "twofish") == 0 ||
+          strcmp(FLAGS_algorithm.c_str(), "tea") == 0 ||
+          strcmp(FLAGS_algorithm.c_str(), "rc4") == 0) {
+        byte key[byte_size];
+        memset(key, 0, byte_size);
+
+      if (crypto_get_random_bytes(byte_size, key) < byte_size) {
+        printf("Can't generate random key\n");
+        ret = 1;
+        goto done;
+      }
+      string bytes;
+      bytes.assign((char*)key, byte_size);
+      km = make_symmetrickey(FLAGS_algorithm.c_str(), FLAGS_key_name.c_str(),
+              FLAGS_key_size, "", s1.c_str(), s2.c_str(), bytes);
+    } else if (strcmp(FLAGS_algorithm.c_str(), "rsa") == 0) {
+    } else if (strcmp(FLAGS_algorithm.c_str(), "ecc") == 0) {
+    } else {
+      printf("Unknown key type\n");
+      ret = 1;
+      goto done;
+    }
+    if (km == nullptr) {
+      printf("Can't print key message\n");
+      ret = 1;
+      goto done;
+    }
+    string s;
+    km->SerializeToString(&s);
+    file_util out_file;
+    if (!out_file.write_file(FLAGS_key_file.c_str(), (int) s.size(), (byte*) s.data())) {
+      printf("Can't write %s\n", FLAGS_key_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    print_key_message(*km);
+    delete km;
+    goto done;
   } else if ("read_key" == FLAGS_operation) {
+    key_message km;
+    if (!read_key(&km)) {
+      printf("Can't read key message\n");
+      ret = 1;
+      goto done;
+    }
+    print_key_message(km);
+    goto done;
+  } else if ("generate_mac" == FLAGS_operation) {
+
+    file_util in_file;
+
+    int byte_size = (FLAGS_key_size + NBITSINBYTE - 1) / NBITSINBYTE;
+    byte hmac_key[byte_size];
+    if (!in_file.read_file(FLAGS_key_file.c_str(), byte_size, hmac_key)) {
+      printf("Can't read %s\n", FLAGS_key_file.c_str());
+      return false;
+    }
+
+    if (!in_file.open(FLAGS_input_file.c_str())) {
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
+      return false;
+    }
+    int size_in = in_file.bytes_in_file();
+    in_file.close();
+
+    byte in[size_in];
+    if (!in_file.read_file(FLAGS_input_file.c_str(), size_in, in)) {
+      printf("Can't read %s\n", FLAGS_input_file.c_str());
+      return false;
+    }
+    byte hmac[max_hash];
+    int mac_size;
+
+    if (strcmp(FLAGS_algorithm.c_str(), "hmac-sha256") == 0) {
+      hmac_sha256 m;
+
+      mac_size = m.MACBYTESIZE;
+      if (!m.init(byte_size, hmac_key)) {
+        ret = 1;
+        goto done;
+      }
+      m.add_to_inner_hash(size_in, in);
+      m.finalize();
+      if (!m.get_hmac(mac_size, hmac)) {
+        ret = 1;
+        goto done;
+      }
+    } else {
+      printf("unsupported algorithm %s\n", FLAGS_algorithm.c_str());
+      ret = 1;
+      goto done;
+    }
+    printf("hmac key (%d): ", FLAGS_key_size); print_bytes(byte_size, hmac_key);
+    printf("input (%d): ", size_in); print_bytes(size_in, in);
+    printf("hmac      :"); print_bytes(mac_size, hmac);
+
+    file_util out_file;
+    if (!out_file.write_file(FLAGS_output_file.c_str(), byte_size, hmac)) {
+      printf("Can't write %s\n", FLAGS_output_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    goto done;
+  } else if ("verify_mac" == FLAGS_operation) {
   } else if ("pkcs_sign_with_key" == FLAGS_operation) {
   } else if ("pkcs_verify_with_key" == FLAGS_operation) {
   } else if ("pkcs_seal_with_key" == FLAGS_operation) {
