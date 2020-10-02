@@ -199,6 +199,76 @@ bool keys_from_pass_phrase(const char* phrase, int* size, byte* key) {
   return true;
 }
 
+bool encrypt_aes(int size_in, byte* in,
+                 int size_out, byte* out) {
+  key_message km;
+
+  if (!read_key(&km)) {
+    printf("Can't read key\n");
+    return false;
+  }
+  print_key_message(km);
+
+  if (!km.has_key_size() || !km.has_algorithm_type() ||
+      !km.has_secret() || !km.has_algorithm_type() ||
+      strcmp(km.algorithm_type().c_str(), "aes") != 0) {
+    printf("Bad key\n");
+    return false;
+  }
+  const char* alg = km.algorithm_type().c_str();
+  int key_size_bits = km.key_size();
+  int key_size_byte =  key_size_bits / NBITSINBYTE;
+  byte* key = (byte*)km.secret().data();
+
+  aes t;
+  if (!t.init(key_size_bits, key, aes::BOTH)) {
+    printf("Can't init aes\n");
+    return false;
+  }
+  t.encrypt(size_in, in, out);
+  return true;
+}
+
+bool decrypt_aes(int size_in, byte* in,
+                 int size_out, byte* out) {
+  key_message km;
+
+  if (!read_key(&km)) {
+    printf("Can't read key\n");
+    return false;
+  }
+  int block_size;
+  print_key_message(km);
+
+  if (!km.has_key_size() || !km.has_algorithm_type() ||
+      !km.has_secret() || !km.has_algorithm_type() ||
+      strcmp(km.algorithm_type().c_str(), "aes") != 0) {
+    printf("Bad key\n");
+    return false;
+  }
+  const char* alg = km.algorithm_type().c_str();
+  int key_size_bits = km.key_size();
+  int key_size_byte =  key_size_bits / NBITSINBYTE;
+  byte* key = (byte*)km.secret().data();
+
+  aes t;
+  if (!t.init(key_size_bits, key, aes::BOTH)) {
+    printf("Can't init aes\n");
+    return false;
+  }
+  t.decrypt(size_in, in, out);
+  return true;
+}
+
+bool encrypt_rsa(int size_in, byte* in,
+                 int size_out, byte* out) {
+  return true;
+}
+
+bool decrypt_rsa(int size_in, byte* in,
+                 int size_out, byte* out) {
+  return true;
+}
 
 int main(int an, char** av) {
 #ifdef __linux__
@@ -474,82 +544,7 @@ int main(int an, char** av) {
   } else if ("encrypt_with_key" == FLAGS_operation ||
              "decrypt_with_key" == FLAGS_operation) {
 
-    rsa rk;
-    key_message* km = new key_message;
-    if (!read_key(km)) {
-      printf("Can't read %s\n", FLAGS_key_file.c_str());
-      ret = 1;
-      goto done;
-    }
-    int block_size;
-    print_key_message(*km);
-
-    if (!km->has_key_size() || !km->has_algorithm_type()) {
-      printf("Can't get keys (1)\n");
-      ret = 1;
-      goto done;
-    }
-    const char* alg = km->algorithm_type().c_str();
-    int key_size_bit = km->key_size();
-    int key_size_byte =  key_size_bit / NBITSINBYTE;
-    byte* key = (byte*)km->secret().data();
-
-    if (strcmp(alg, "aes") == 0) {
-      if (!km->has_secret()) {
-        printf("Can't get keys (2)\n");
-        ret = 1;
-        goto done;
-      }
-      block_size = aes::BLOCKBYTESIZE;
-    } else if (strcmp(alg,  "twofish") == 0) {
-      if (!km->has_secret()) {
-        printf("Can't get keys (2)\n");
-        ret = 1;
-        goto done;
-      }
-      block_size = two_fish::BLOCKBYTESIZE;
-    } else if (strcmp(alg,  "rc4") == 0) {
-      if (!km->has_secret()) {
-        printf("Can't get keys (2)\n");
-        ret = 1;
-        goto done;
-      }
-      block_size = 1;  // its a stream cipher
-    } else if (strcmp(alg,  "simon") == 0) {
-      if (!km->has_secret()) {
-        printf("Can't get keys (2)\n");
-        ret = 1;
-        goto done;
-      }
-      block_size = simon128::BLOCKBYTESIZE;
-    } else if (strcmp(alg,  "tea") == 0) {
-      if (!km->has_secret()) {
-        printf("Can't get keys (2)\n");
-        ret = 1;
-        goto done;
-      }
-      block_size = tea::BLOCKBYTESIZE;
-    } else if (strcmp(alg,  "rsa") == 0) {
-      rk.rsa_key_ = new key_message;
-      if (!read_key(rk.rsa_key_)) {
-        printf("Can't read %s (rsa)\n", FLAGS_key_file.c_str());
-        ret = 1;
-        goto done;
-      }
-      if (!rk.retrieve_parameters_from_key_message()) {
-        printf("Can't retrieve parameters\n");
-        ret = 1;
-        goto done;
-      }
-      block_size = rk.bit_size_modulus_ / NBITSINBYTE;
-    } else {
-      printf("unsupported algorithm %s\n", alg);
-        ret = 1;
-        goto done;
-    }
-
     file_util in_file;
-
     if (!in_file.open(FLAGS_input_file.c_str())) {
       printf("Can't open %s\n", FLAGS_input_file.c_str());
       ret = 1;
@@ -557,13 +552,52 @@ int main(int an, char** av) {
     }
     int size_in = in_file.bytes_in_file();
     in_file.close();
-    int in_out_size = (size_in + block_size - 1) / block_size;;
-    in_out_size *= block_size;
+
+    key_message km;
+    if (!read_key(&km)) {
+      printf("Can't read aes key\n");
+      ret = 1;
+      goto done;
+    }
+    if (!km.has_key_size() || !km.has_algorithm_type()) {
+      printf("Bad aes key\n");
+      ret = 1;
+      goto done;
+    }
+
+    const char* alg = km.algorithm_type().c_str();
+    int block_size;
+    if (strcmp(alg, "aes") == 0) {
+      block_size = aes::BLOCKBYTESIZE;
+    } else if (strcmp(alg, "twofish") == 0) {
+      block_size = two_fish::BLOCKBYTESIZE;
+    } else if (strcmp(alg, "rc4") == 0) {
+      block_size = 1;   //stream cipher
+    } else if (strcmp(alg, "simon") == 0) {
+      block_size = simon128::BLOCKBYTESIZE;
+    } else if (strcmp(alg, "tea") == 0) {
+      block_size = tea::BLOCKBYTESIZE;
+    } else if (strcmp(alg, "rsa") == 0) {
+      key_message km;
+    } else if (strcmp(alg, "ecc") == 0) {
+      key_message km;
+    
+      if (!read_key(&km)) {
+        printf("Can't read ecc key\n");
+        ret = 1;
+        goto done;
+      }
+    } else {
+      printf("unsupported algorithm %s\n", alg);
+      ret = 1;
+      goto done;
+    }
+
+    int in_out_size = block_size * ((size_in + block_size - 1) / block_size);
     byte in[in_out_size];
     byte out[in_out_size];
     memset(in, 0, in_out_size);
     memset(out, 0, in_out_size);
-
     if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in) < size_in) {
       printf("Can't read %s\n", FLAGS_input_file.c_str());
       ret = 1;
@@ -571,71 +605,65 @@ int main(int an, char** av) {
     }
 
     if (strcmp(alg, "aes") == 0) {
-      aes t;
-      if (!t.init(key_size_bit, key, aes::BOTH)) {
-        printf("Can't init aes\n");
-        ret = 1;
-        goto done;
-      }
       if ("encrypt_with_key" == FLAGS_operation) {
-        t.encrypt(in_out_size, in, out);
+        if (!encrypt_aes(in_out_size, in, in_out_size, out)) {
+          printf("Can't encrypt_aes\n");
+          ret = 1;
+          goto done;
+        }
       } else {
-        t.decrypt(in_out_size, in, out);
+        if (!decrypt_aes(in_out_size, in, in_out_size, out)) {
+          printf("Can't encrypt_aes\n");
+          ret = 1;
+          goto done;
+        }
       }
-    } else if (strcmp(alg, "twofish") == 0) {
-    } else if (strcmp(alg, "rc4") == 0) {
-    } else if (strcmp(alg, "simon") == 0) {
-    } else if (strcmp(alg, "tea") == 0) {
-    } else if (strcmp(alg, "rsa") == 0) {
-      int size_out = block_size;
-      int size_out2 = block_size;
-      byte out2[block_size];
-      memset(out, 0, block_size);
-      memset(out2, 0, block_size);
-
-#if 0
-      printf("in       : "); print_bytes(64, in);
-      rk.encrypt(64, in, &size_out, out, 0);
-      printf("out      : "); print_bytes(block_size, out);
-      rk.decrypt(size_out, out, &size_out2, out2, 0);
-      printf("out2     : "); print_bytes(size_out2, out2);
-#else
-
-      big_num b_1(36);
-      big_num b_2(36);
-      big_num b_3(36);
-
-      printf("modulus: "); rk.m_->print();printf("\n");
-      reverse_bytes(block_size, in, (byte*)b_1.value_ptr());
-      printf("in       : "); print_bytes(64, in);
-      b_1.normalize();
-      printf("b1     : "); b_1.print();printf("\n");
-      if (!big_mod_exp(b_1, *rk.e_, *rk.m_, b_2)) {
-        printf("Can't exp\n");
-        ret = 1;
-        goto done;
+    } else if (strcmp(alg,  "twofish") == 0) {
+      if ("encrypt_with_key" == FLAGS_operation) {
+      } else {
       }
-      printf("b2     : "); b_2.print();printf("\n");
-      printf("out      : "); print_bytes(block_size, out);
-      b_2.normalize();
-      if (!big_mod_exp(b_2, *rk.d_, *rk.m_, b_3)) {
-        printf("Can't exp\n");
-        ret = 1;
-        goto done;
+    } else if (strcmp(alg,  "rc4") == 0) {
+      if ("encrypt_with_key" == FLAGS_operation) {
+      } else {
       }
-      reverse_bytes(block_size, (byte*)b_2.value_ptr(), out);
-      printf("b3     : "); b_3.print();printf("\n");
-      reverse_bytes(block_size, (byte*)b_3.value_ptr(), out2);
-      printf("out2     : "); print_bytes(block_size, out2);
-#endif
-      goto done;
+    } else if (strcmp(alg,  "simon") == 0) {
+      if ("encrypt_with_key" == FLAGS_operation) {
+      } else {
+      }
+    } else if (strcmp(alg,  "tea") == 0) {
+      if ("encrypt_with_key" == FLAGS_operation) {
+      } else {
+      }
+    } else if (strcmp(alg,  "rsa") == 0) {
+      if ("encrypt_with_key" == FLAGS_operation) {
+        if (!encrypt_rsa(in_out_size, in, in_out_size, out)) {
+          printf("Can't encrypt_aes\n");
+          ret = 1;
+          goto done;
+        }
+      } else {
+        if (!decrypt_rsa(in_out_size, in, in_out_size, out)) {
+          printf("Can't encrypt_aes\n");
+          ret = 1;
+          goto done;
+        }
+      }
     } else if (strcmp(alg, "ecc") == 0) {
+      if ("encrypt_with_key" == FLAGS_operation) {
+      } else {
+      }
     } else {
-      printf("unknown encryption alg %s\n", FLAGS_algorithm.c_str());
+      printf("unsupported algorithm %s\n", alg);
+      ret = 1;
+      goto done;
     }
+
+    printf("in       : "); print_bytes(in_out_size, in);
+    printf("out      : "); print_bytes(in_out_size, out);
 
     file_util out_file;
     out_file.write_file(FLAGS_output_file.c_str(), in_out_size, out);
+    goto done;
   } else if ("generate_scheme" == FLAGS_operation) {
     int size_nonce = 128 / NBITSINBYTE;
     int size_enc_key = FLAGS_encrypt_key_size / NBITSINBYTE;
