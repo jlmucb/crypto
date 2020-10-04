@@ -309,6 +309,47 @@ bool decrypt_rsa(int size_in, byte* in,
   return rk.decrypt(size_in, in, &size_out, out, 0);
 }
 
+bool pkcs_sign_rsa_hash(const char* hash_alg, rsa& rk, byte* digest, int block_size,
+                   string* s_signature) {
+
+  byte signature[block_size];
+  byte signature_block[block_size];
+  memset(signature_block, 0, block_size);
+  memset(signature, 0, block_size);
+
+  if (!pkcs_encode(hash_alg, digest, block_size, signature_block)) {
+    printf("Can't pkcs encode signature\n");
+    return false;
+  }
+
+  int signature_size = block_size;
+  if (!rk.decrypt(block_size, signature_block, &signature_size, signature, 0)) {
+    printf("Can't sign signature block\n");
+    return false;
+  } 
+  s_signature->assign((char*)signature, (size_t)block_size);
+  return true;
+}
+
+bool pkcs_verify_hash(const char* hash_alg, rsa& rk, byte* digest, int block_size,
+                   string& signature) {
+
+    byte unsealed_signature[block_size];
+    memset(unsealed_signature, 0, block_size);
+    int signature_size = block_size;
+
+    if (!rk.encrypt((int)signature.size(), (byte*)signature.data(), &signature_size, unsealed_signature, 0)) {
+        printf("Can't verify signature block\n");
+    } 
+    if (pkcs_verify("sha-256", digest, block_size, unsealed_signature)) {
+      return true;
+    } else {
+      return false;
+    }
+  return true;
+}
+
+
 int main(int an, char** av) {
 #ifdef __linux__
   gflags::ParseCommandLineFlags(&an, &av, true);
@@ -1410,11 +1451,13 @@ int main(int an, char** av) {
     int signature_block_size;
     int hash_size;
     int block_size;
+    const char* hash_alg;
     if (strcmp(FLAGS_algorithm.c_str(), "rsa-2048-sha-256-pkcs") == 0 ||
         strcmp(FLAGS_algorithm.c_str(), "rsa-1024-sha-256-pkcs") == 0) {
         hash_size = sha256::DIGESTBYTESIZE;
         signature_block_size = pkcs_sha256_sigblock_size;
         block_size = rk.bit_size_modulus_ / NBITSINBYTE;
+        hash_alg = "sha-256";
       } else {
         printf("unsupported signing algorithm: %s\n", FLAGS_algorithm.c_str());
         ret = 1;
@@ -1429,28 +1472,15 @@ int main(int an, char** av) {
     h.add_to_hash(size_in, in);
     h.finalize();
     h.get_digest(hash_size, digest);
-   
-    byte signature_block[block_size];
-    byte signature[block_size];
-    memset(signature_block, 0, block_size);
-    memset(signature, 0, block_size);
 
-    if (!pkcs_encode("sha-256", digest, block_size, signature_block)) {
-        printf("Can't pkcs encode signature\n");
-        ret = 1;
-        goto done;
+    string s_signature;
+    if (!pkcs_sign_rsa_hash(hash_alg, rk, digest, block_size, &s_signature)) {
+      printf("Can't rsa sign\n");
+      ret = 1;
+      goto done;
     }
 
-    int signature_size = block_size;
-    if (!rk.decrypt(signature_block_size, signature_block, &signature_size, signature, 0)) {
-        printf("Can't sign signature block\n");
-        ret = 1;
-        goto done;
-    } 
-
     signature_message sm;
-    string s_signature;
-    s_signature.assign((char*)signature, (size_t)block_size);
     sm.set_encryption_algorithm_name(FLAGS_algorithm.c_str());
     sm.set_key_name(FLAGS_key_name.c_str());
     sm.set_signature(s_signature);
@@ -1497,14 +1527,14 @@ int main(int an, char** av) {
       goto done;
     }
 
-    int signature_block_size;
     int hash_size;
     int block_size;
+    const char* hash_alg;
     if (strcmp(FLAGS_algorithm.c_str(), "rsa-2048-sha-256-pkcs") == 0 ||
         strcmp(FLAGS_algorithm.c_str(), "rsa-1024-sha-256-pkcs") == 0) {
         hash_size = sha256::DIGESTBYTESIZE;
-        signature_block_size = pkcs_sha256_sigblock_size;
         block_size = rk.bit_size_modulus_ / NBITSINBYTE;
+        hash_alg = "sha-256";
       } else {
         printf("unsupported signing algorithm: %s\n", FLAGS_algorithm.c_str());
         ret = 1;
@@ -1519,13 +1549,6 @@ int main(int an, char** av) {
     h.add_to_hash(size_in, in);
     h.finalize();
     h.get_digest(hash_size, digest);
-   
-    byte signature_block[block_size];
-    byte sealed_signature[block_size];
-    byte unsealed_signature[block_size];
-    memset(signature_block, 0, block_size);
-    memset(sealed_signature, 0, block_size);
-    memset(unsealed_signature, 0, block_size);
 
     signature_message sm;
     if (!in_file.open(FLAGS_signature_file.c_str())) {
@@ -1545,22 +1568,23 @@ int main(int an, char** av) {
     serialized_signature.assign((char*)sig, (size_t)size_sig);
     sm.ParseFromString(serialized_signature);
 
-    int signature_size = block_size;
-    if (!rk.encrypt((int)sm.signature().size(), (byte*)sm.signature().data(), &signature_size, unsealed_signature, 0)) {
-        printf("Can't sign signature block\n");
-        ret = 1;
-        goto done;
-    } 
+    if (!sm.has_signature()) {
+      printf("No signature element\n");
+      ret = 1;
+      goto done;
+    }
 
-    printf("Algorithm: %s\n", sm.encryption_algorithm_name().c_str());
-    printf("Key name: %s\n", sm.key_name().c_str());
-    printf("Signer name: %s\n", sm.signer_name().c_str());
-
-    if (pkcs_verify("sha-256", digest, block_size, unsealed_signature)) {
+    string s_signature;
+    s_signature.assign((char*)sm.signature().data(), (size_t)sm.signature().size());
+    if (pkcs_verify_hash(hash_alg, rk, digest, block_size, s_signature)) {
       printf("Signature verifies\n");
     } else {
       printf("Signature does not verify\n");
     }
+
+    printf("Algorithm: %s\n", sm.encryption_algorithm_name().c_str());
+    printf("Key name: %s\n", sm.key_name().c_str());
+    printf("Signer name: %s\n", sm.signer_name().c_str());
 
     goto done;
   } else if ("make_certificate_info" == FLAGS_operation) {
