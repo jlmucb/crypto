@@ -15,19 +15,24 @@
 syntax="proto2";
 
 message binary_blob_message {
- optional string blob                          = 1;
+  optional string blob                          = 1;
 };
 
 message encrypted_message {
- optional string scheme_identifier             = 1;
- optional string message_identifier            = 2;
- optional string source                        = 3;
- optional string destination                   = 4;
- optional string date                          = 5;
- optional bytes buffer                         = 6;
+  optional string scheme_identifier             = 1;
+  optional string message_identifier            = 2;
+  optional string source                        = 3;
+  optional string destination                   = 4;
+  optional string date                          = 5;
+  optional bytes buffer                         = 6;
 };
 
 message signature_message {
+  optional string encryption_algorithm_name     = 1;
+  optional string key_name                      = 2;
+  optional string serialized_statement          = 3;
+  optional string signature                     = 4;
+  optional string signer_name                   = 5;
 };
 
 message rsa_public_parameters_message {

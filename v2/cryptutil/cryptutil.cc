@@ -1382,10 +1382,100 @@ int main(int an, char** av) {
     }
     goto done;
   } else if ("pkcs_sign_with_key" == FLAGS_operation) {
+
+    file_util in_file;
+    if (!in_file.open(FLAGS_input_file.c_str())) {
+      printf("Can't open %s\n", FLAGS_input_file.c_str());
+      ret = 1;
+      goto done;
+    }
+    int size_in = in_file.bytes_in_file();
+    byte in[size_in];
+    in_file.close();
+    if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in) < size_in) {
+      printf("Can't read %s\n", FLAGS_input_file.c_str());
+      ret = 1;
+      goto done;
+    }
+
+    rsa rk;
+    
+    rk.rsa_key_ = new key_message;
+    if (!read_key(rk.rsa_key_)) {
+      printf("Can't read signing key\n");
+      ret = 1;
+      goto done;
+    }
+    if (!rk.retrieve_parameters_from_key_message()) {
+      printf("Can't retreive signing key data\n");
+      ret = 1;
+      goto done;
+    }
+
+    int signature_block_size;
+    int hash_size;
+    int block_size;
+    if (strcmp(FLAGS_algorithm.c_str(), "rsa-2048-sha-256-pkcs") == 0 ||
+        strcmp(FLAGS_algorithm.c_str(), "rsa-1024-sha-256-pkcs") == 0) {
+        hash_size = sha256::DIGESTBYTESIZE;
+        signature_block_size = pkcs_sha256_sigblock_size;
+        block_size = rk.bit_size_modulus_ / NBITSINBYTE;
+      } else {
+        printf("unsupported signing algorithm: %s\n", FLAGS_algorithm.c_str());
+        ret = 1;
+        goto done;
+      }
+
+    byte digest[hash_size];
+    memset(digest, 0, hash_size);
+    sha256 h;
+
+    h.init();
+    h.add_to_hash(size_in, in);
+    h.finalize();
+    h.get_digest(hash_size, digest);
+   
+    byte signature_block[block_size];
+    byte signature[block_size];
+    memset(signature_block, 0, block_size);
+    memset(signature, 0, block_size);
+
+    signature_message sm;
+
+    if (!pkcs_encode("sha-256", digest, signature_block_size, signature_block)) {
+        printf("Can't pkcs encode signature\n");
+        ret = 1;
+        goto done;
+    }
+
+    int signature_size = block_size;
+    if (!rk.decrypt(signature_block_size, signature_block, &signature_size, signature, 0)) {
+        printf("Can't sign signature block\n");
+        ret = 1;
+        goto done;
+    } 
+
+    string s_signature;
+    s_signature.assign((char*)signature, (size_t)block_size);
+
+    sm.set_encryption_algorithm_name("1");
+    sm.set_key_name("2");
+    sm.set_serialized_statement(s_signature);
+    sm.set_signature(s_signature);
+    sm.set_signer_name("John");
+
+    string serialized_signature;
+    sm.SerializeToString(&serialized_signature);
+
+
+    file_util out_file;
+    if (!out_file.write_file(FLAGS_output_file.c_str(), (int) serialized_signature.size(),
+            (byte*) serialized_signature.data())) {
+      printf("Can't write %s\n", FLAGS_output_file.c_str());
+      ret = 1;
+      goto done;
+    }
   } else if ("pkcs_verify_with_key" == FLAGS_operation) {
-  } else if ("pkcs_seal_with_key" == FLAGS_operation) {
-  } else if ("pkcs_unseal_with_key" == FLAGS_operation) {
-  } else if ("sign_digest_with_key" == FLAGS_operation) {
   } else {
     printf("%s: unsupported operation\n", FLAGS_operation.c_str());
     ret = 1;

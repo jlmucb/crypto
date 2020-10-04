@@ -19,6 +19,8 @@
 
 #ifndef _CRYPTO_PKCS_H__
 #define _CRYPTO_PKCS_H__
+const int pkcs_sha256_sigblock_size = 58;
+
 bool pkcs_encode(const char* hash_alg, byte* hash, int out_size, byte* out);
 bool pkcs_verify(const char* hash_alg, byte* hash, int in_size, byte* in);
 bool pkcs_embed(int in_size, byte* in, int out_size, byte* out);
