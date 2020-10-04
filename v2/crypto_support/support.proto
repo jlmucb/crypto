@@ -30,9 +30,8 @@ message encrypted_message {
 message signature_message {
   optional string encryption_algorithm_name     = 1;
   optional string key_name                      = 2;
-  optional string serialized_statement          = 3;
-  optional string signature                     = 4;
-  optional string signer_name                   = 5;
+  optional bytes signature                      = 3;
+  optional string signer_name                   = 4;
 };
 
 message rsa_public_parameters_message {

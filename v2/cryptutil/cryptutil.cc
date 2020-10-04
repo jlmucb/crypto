@@ -79,7 +79,7 @@ std::string cryptutil_ops[] = {
     "--input_file=file --output_file=file"
     "\n",
     "--operation=pkcs_sign_with_key --algorithm=alg --keyfile=file " \
-    "--signature_file= file --input_file=file",
+    "--signature_file= file --input_file=file --signer_name=signer",
     "--operation=pkcs_verify_with_key --algorithm=alg --keyfile=file " \
     "--signature_file= file --input_file= file",
     "--operation=pkcs_seal_with_key--keyfile=file --algorithm=alg " \
@@ -127,7 +127,8 @@ DEFINE_string(purpose, "channel-encryption", "purpose");
 DEFINE_int32(size, 128, "size");
 DEFINE_string(hash_file, "", "file to hash");
 DEFINE_string(hash_alg, "sha-256", "hash alg");
-DEFINE_string(signature_file, "", "signature file");
+DEFINE_string(signature_file, "sig", "signature file");
+DEFINE_string(signer_name, "jlm", "signer name");
 
 DEFINE_bool(print_all, false, "printall flag");
 
@@ -213,9 +214,7 @@ bool encrypt_aes(int size_in, byte* in,
     printf("Bad key\n");
     return false;
   }
-  const char* alg = km.algorithm_type().c_str();
   int key_size_bits = km.key_size();
-  int key_size_byte =  key_size_bits / NBITSINBYTE;
   byte* key = (byte*)km.secret().data();
 
   aes t;
@@ -235,7 +234,6 @@ bool decrypt_aes(int size_in, byte* in,
     printf("Can't read key\n");
     return false;
   }
-  int block_size;
   print_key_message(km);
 
   if (!km.has_key_size() || !km.has_algorithm_type() ||
@@ -244,9 +242,7 @@ bool decrypt_aes(int size_in, byte* in,
     printf("Bad key\n");
     return false;
   }
-  const char* alg = km.algorithm_type().c_str();
   int key_size_bits = km.key_size();
-  int key_size_byte =  key_size_bits / NBITSINBYTE;
   byte* key = (byte*)km.secret().data();
 
   aes t;
@@ -275,8 +271,6 @@ bool encrypt_rsa(int size_in, byte* in,
     return false;
   }
   const char* alg = rk.rsa_key_->algorithm_type().c_str();
-  int key_size_bit = rk.rsa_key_->key_size();
-  int key_size_byte =  key_size_bit / NBITSINBYTE;
   if (strcmp(alg, "rsa") != 0) {
     printf("Not an RSA key\n");
     return false;
@@ -304,8 +298,6 @@ bool decrypt_rsa(int size_in, byte* in,
     return false;
   }
   const char* alg = rk.rsa_key_->algorithm_type().c_str();
-  int key_size_bit = rk.rsa_key_->key_size();
-  int key_size_byte =  key_size_bit / NBITSINBYTE;
   if (strcmp(alg, "rsa") != 0) {
     printf("Not an RSA key\n");
     return false;
@@ -634,6 +626,7 @@ int main(int an, char** av) {
       }
       block_size = km.key_size() / NBITSINBYTE;
     } else if (strcmp(alg, "ecc") == 0) {
+      goto done;
     } else {
       printf("unsupported algorithm %s\n", alg);
       ret = 1;
@@ -1316,12 +1309,14 @@ int main(int an, char** av) {
     byte hmac_key[byte_size];
     if (!in_file.read_file(FLAGS_key_file.c_str(), byte_size, hmac_key)) {
       printf("Can't read %s\n", FLAGS_key_file.c_str());
-      return false;
+      ret = 1;
+      goto done;
     }
 
     if (!in_file.open(FLAGS_input_file.c_str())) {
       printf("Can't open %s\n", FLAGS_input_file.c_str());
-      return false;
+      ret = 1;
+      goto done;
     }
     int size_in = in_file.bytes_in_file();
     in_file.close();
@@ -1329,7 +1324,8 @@ int main(int an, char** av) {
     byte in[size_in];
     if (!in_file.read_file(FLAGS_input_file.c_str(), size_in, in)) {
       printf("Can't read %s\n", FLAGS_input_file.c_str());
-      return false;
+      ret = 1;
+      goto done;
     }
     byte hmac[max_hash];
     int mac_size;
@@ -1369,7 +1365,8 @@ int main(int an, char** av) {
       byte recovered_hmac[mac_size];
       if (!in_file.read_file(FLAGS_input2_file.c_str(), byte_size, recovered_hmac)) {
         printf("Can't read %s\n", FLAGS_input2_file.c_str());
-        return false;
+        ret = 1;
+        goto done;
       }
       if (memcmp(hmac, recovered_hmac, byte_size) == 0) {
         printf("mac verified\n");
@@ -1438,9 +1435,7 @@ int main(int an, char** av) {
     memset(signature_block, 0, block_size);
     memset(signature, 0, block_size);
 
-    signature_message sm;
-
-    if (!pkcs_encode("sha-256", digest, signature_block_size, signature_block)) {
+    if (!pkcs_encode("sha-256", digest, block_size, signature_block)) {
         printf("Can't pkcs encode signature\n");
         ret = 1;
         goto done;
@@ -1453,18 +1448,16 @@ int main(int an, char** av) {
         goto done;
     } 
 
+    signature_message sm;
     string s_signature;
     s_signature.assign((char*)signature, (size_t)block_size);
-
-    sm.set_encryption_algorithm_name("1");
-    sm.set_key_name("2");
-    sm.set_serialized_statement(s_signature);
+    sm.set_encryption_algorithm_name(FLAGS_algorithm.c_str());
+    sm.set_key_name(FLAGS_key_name.c_str());
     sm.set_signature(s_signature);
-    sm.set_signer_name("John");
+    sm.set_signer_name(FLAGS_signer_name.c_str());
 
     string serialized_signature;
     sm.SerializeToString(&serialized_signature);
-
 
     file_util out_file;
     if (!out_file.write_file(FLAGS_signature_file.c_str(), (int) serialized_signature.size(),
@@ -1563,7 +1556,7 @@ int main(int an, char** av) {
     printf("Key name: %s\n", sm.key_name().c_str());
     printf("Signer name: %s\n", sm.signer_name().c_str());
 
-    if (!pkcs_verify("sha-256", digest, block_size, unsealed_signature)) {
+    if (pkcs_verify("sha-256", digest, block_size, unsealed_signature)) {
       printf("Signature verifies\n");
     } else {
       printf("Signature does not verify\n");
