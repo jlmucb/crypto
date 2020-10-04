@@ -1,0 +1,7 @@
+1. Implement protobuf certificate format and read public keys from them
+2. Put the ecc stuff back in cryptutil
+3. Put lwe and ntru in cryptoutil with real parameters (like frodo and NIST ntru)
+4. Put assembly version of speedups for ARM64 in arm_digit_arith.cc
+5. Do more automated testing
+6. Find heisenbug in lwe
+
