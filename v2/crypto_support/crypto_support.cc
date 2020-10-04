@@ -1108,23 +1108,71 @@ void print_scheme_message(scheme_message& m) {
 void print_crypto_signature_message(crypto_signature_message& m) {
 }
 
-void print_cert_name_message(cert_name_message& m) {
+void print_certificate_name_message(certificate_name_message& m) {
+  if (m.has_name_type()) 
+    printf("  Name type: %s, ", m.name_type().c_str());
+  if (m.has_name_value()) 
+    printf("  name     : %s\n", m.name_value().c_str());
 }
 
-void print_cert_principal_name_message(cert_principal_name_message& m) {
+void print_algorithm_message(certificate_algorithm_message& am) {
+  printf("  Algorithm name: %s\n", am.algorithm_name().c_str());
+  if (strcmp(am.algorithm_name().c_str(), "rsa") == 0) {
+    rsa_public_parameters_message* rm = am.mutable_rsa_params();
+    print_rsa_public_parameters_message(*rm);
+  } else if (strcmp(am.algorithm_name().c_str(), "ecc") == 0) {
+      ecc_public_parameters_message* em = am.mutable_ecc_params();
+      print_ecc_public_parameters_message(*em);
+  } else {
+    printf("  unsupported cert algorithm\n");
+  }
 }
 
-void print_cert_rsa_parameters_message(cert_rsa_parameters_message& m) {
-}
-
-void print_cert_ecc_parameters_message(cert_ecc_parameters_message& m) {
-}
-
-void print_cert_algorithm_message(cert_algorithm_message& m) {
-}
-
-void print_cert_properties_message(cert_properties_message& m) {
+void print_certificate_body(certificate_body_message& cbm) {
+  if (cbm.has_version()) {
+    printf("  Version: %s\n", cbm.version().c_str());
+  }
+  if (cbm.has_subject()) {
+    certificate_name_message* sn = cbm.mutable_subject();
+    printf("  Subject       : \n");
+    print_certificate_name_message(*sn);
+  }
+  if (cbm.has_subject_key()) {
+    printf("  Subject key : \n");
+    certificate_algorithm_message* sk = cbm.mutable_subject_key();
+    print_algorithm_message(*sk);
+  }
+  if (cbm.has_purpose()) {
+    printf(" Purpose      : %s\n", cbm.purpose().c_str());
+  }
+  if (cbm.has_not_before()) {
+    printf(" Not before   : %s\n", cbm.not_before().c_str());
+  }
+  if (cbm.has_not_after()) {
+    printf(" Not after    : %s\n", cbm.not_after().c_str());
+  }
+  if (cbm.has_revocation_address()) {
+    printf(" Revocation   : %s\n", cbm.revocation_address().c_str());
+  }
+  if (cbm.has_date_signed()) {
+    printf(" Date signed  : %s\n", cbm.date_signed().c_str());
+  }
 }
 
 void print_certificate_message(certificate_message& m) {
+  if (m.has_info()) {
+    certificate_body_message* cbm = m.mutable_info();
+    print_certificate_body(*cbm);
+  }
+  if (m.has_issuer()) {
+    certificate_name_message* in = m.mutable_issuer();
+    printf("  Issuer        : \n");
+    print_certificate_name_message(*in);
+  }
+  if (m.has_signing_key()) {
+    certificate_algorithm_message* ik = m.mutable_signing_key();
+    print_algorithm_message(*ik);
+  }
+  printf("  Signature     : ");
+  print_bytes((int)m.signature().size(), (byte*)m.signature().data());
 }

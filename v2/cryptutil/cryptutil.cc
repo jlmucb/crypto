@@ -1563,6 +1563,21 @@ int main(int an, char** av) {
     }
 
     goto done;
+  } else if ("make_certificate_info" == FLAGS_operation) {
+    /*
+      certificate_body_message cm;
+        required string version                         = 1;
+        repeated cert_name_message subject              = 2;
+        optional cert_algorithm_message subject_key     = 3;
+        repeated cert_properties_message properties     = 4;
+        optional string purpose                         = 5;
+        optional string not_before                      = 6;
+        optional string not_after                       = 7;
+        optional bytes  nonce                           = 8;
+        optional bytes  canonical                       = 9;
+        optional string revocation_address              = 10;
+        optional string date_signed                     = 11;
+     */
   } else {
     printf("%s: unsupported operation\n", FLAGS_operation.c_str());
     ret = 1;

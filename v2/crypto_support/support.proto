@@ -109,57 +109,47 @@ message scheme_message {
 };
 
 message crypto_signature_message {
-  required string encryption_algorithm_name       = 1;
-  required string serialized_statement            = 2;
+  optional string encryption_algorithm_name       = 1;
+  optional string serialized_statement            = 2;
   optional string signature                       = 3;
   optional string signer_name                     = 4;
 }
 
-message cert_name_message {
+message certificate_name_message {
   optional string name_type                       = 1;
   optional string name_value                      = 2;
 }
 
-message cert_principal_name_message {
-  repeated cert_name_message names                = 1;
+message certficate_principal_name_message {
+  repeated certificate_name_message names          = 1;
 }
 
-message cert_rsa_parameters_message {
-  optional int32 modulus_size                     = 1;
-  optional int32 exponent_size                    = 2;
-  optional bytes exponent                         = 3;
-  optional bytes modulus                          = 4;
+message certificate_algorithm_message {
+  optional string algorithm_name                    = 1;
+  optional rsa_public_parameters_message rsa_params = 2;
+  optional ecc_public_parameters_message ecc_params = 3;
 }
 
-message cert_ecc_parameters_message {
-  optional int32 prime_size                       = 1;
-  optional bytes prime                            = 2;
-}
-
-message cert_algorithm_message {
-  required string algorithm_name                  = 1;
-  optional cert_rsa_parameters_message rsa_params = 2;
-  optional cert_ecc_parameters_message ecc_params = 3;
-}
-
-message cert_properties_message {
+message certificate_properties_message {
   optional string property_name                   = 1;
   optional string property_value                  = 2;
 }
 
+message certificate_body_message {
+  optional string version                             = 1;
+  optional certificate_name_message subject           = 2;
+  optional certificate_algorithm_message subject_key  = 3;
+  optional string purpose                             = 4;
+  optional string not_before                          = 5;
+  optional string not_after                           = 6;
+  optional bytes  nonce                               = 7;
+  optional string revocation_address                  = 8;
+  optional string date_signed                         = 9;
+}
+
 message certificate_message {
-  required string version                         = 1;
-  repeated cert_name_message subject              = 2;
-  optional cert_algorithm_message subject_key     = 3;
-  repeated cert_properties_message properties     = 4;
-  optional string purpose                         = 5;
-  optional string not_before                      = 6;
-  optional string not_after                       = 7;
-  optional bytes  nonce                           = 8;
-  optional bytes  canonical                       = 9;
-  optional string revocation_address              = 10;
-  optional string date_signed                     = 11;
-  repeated cert_name_message issuer               = 12;
-  optional cert_algorithm_message signing_key     = 13;
-  optional bytes signature                        = 14;
+  optional certificate_body_message info              = 1;
+  optional certificate_name_message issuer            = 2;
+  optional certificate_algorithm_message signing_key  = 3;
+  optional bytes signature                            = 4;
 }

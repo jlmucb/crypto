@@ -196,6 +196,15 @@ scheme_message* make_scheme(const char* alg, const char* id_name,
       const char* enc_key_name, const char* hmac_alg,
       int size_hmac_key, string& hmac_key);
 
+certificate_body_message* make_certificate_body(string& version, string& subject_name_type,
+      string& subject_name, key_message& subject_key, string& purpose,
+      string& not_before, string& note_after, string& nonce, string& revocation_address,
+      string& date_signed);
+
+certificate_message* make_certificate_body(certificate_body_message& cbm,
+      string& issuer_name_type, string& issuer_name, key_message& issuer_key,
+      string& signature);
+
 void print_binary_blob(binary_blob_message& m);
 void print_encrypted_message(encrypted_message& m);
 void print_signature_message(signature_message& m);
@@ -207,13 +216,11 @@ void print_hmac_parameters_message(hmac_parameters_message& m);
 void print_key_message(key_message& m);
 void print_scheme_message(scheme_message& m);
 void print_crypto_signature_message(crypto_signature_message& m);
-void print_cert_name_message(cert_name_message& m);
-void print_cert_principal_name_message(cert_principal_name_message& m);
-void print_cert_rsa_parameters_message(cert_rsa_parameters_message& m);
-void print_cert_ecc_parameters_message(cert_ecc_parameters_message& m);
-void print_cert_algorithm_message(cert_algorithm_message& m);
-void print_cert_properties_message(cert_properties_message& m);
+void print_certificate_name_message(certificate_name_message& m);
+void print_certificate_algorithm_message(certificate_algorithm_message& m);
 void print_certificate_message(certificate_message& m);
+void print_certificate_body(certificate_body_message& cbm);
+void print_certificate(certificate_message& cm);
 
 int crypto_get_random_bytes(int num_bytes, byte* buf);
 bool init_crypto();
