@@ -982,6 +982,8 @@ void print_signature_message(signature_message& m) {
 }
 
 void print_rsa_public_parameters_message(rsa_public_parameters_message& m) {
+  printf("    modulus  :"); print_bytes((int)m.modulus().size(), (byte*)m.modulus().data());
+  printf("    e        :"); print_bytes((int)m.e().size(), (byte*)m.e().data());
 }
 
 void print_ecc_public_parameters_message(ecc_public_parameters_message& m) {
