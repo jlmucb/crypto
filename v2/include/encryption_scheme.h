@@ -1,6 +1,4 @@
-//
-// Copyright 2014 John Manferdelli, All Rights Reserved.
-//
+// Copyright 2014-2020, John Manferdelli, All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -106,6 +104,9 @@ public:
 
   bool encrypt_message(int size_in, byte* in, int size_out, byte* out);
   bool decrypt_message(int size_in, byte* in, int size_out, byte* out);
+
+  bool encrypt_file(const char* file_in, const char* file_out);
+  bool decrypt_file(const char* file_in, const char* file_out);
 };
 
 #endif

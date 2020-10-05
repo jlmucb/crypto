@@ -1,5 +1,4 @@
 // Copyright 2020 John Manferdelli, All Rights Reserved.
-//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -246,10 +245,7 @@ printf("init_nonce: ");print_bytes(size, value);
 bool encryption_scheme::init() {
   enc_key_size_bytes_ = (enc_key_size_ + NBITSINBYTE - 1) / NBITSINBYTE;
   hmac_key_size_bytes_= (hmac_key_size_ + NBITSINBYTE - 1) / NBITSINBYTE;
-  size_nonce_bytes_= (nonce_size_ + NBITSINBYTE - 1) / NBITSINBYTE;
 #if 0
-printf("nonce_size_: %d\n", nonce_size_);
-printf("size_nonce_bytes_: %d\n", size_nonce_bytes_);
 printf("hmac_key_size_: %d, hmac_key_size_bytes_: %d\n", hmac_key_size_, hmac_key_size_bytes_);
 print_bytes(hmac_key_size_bytes_, (byte*)hmac_key_.data());
 #endif
@@ -480,11 +476,11 @@ bool encryption_scheme::decrypt_message(int size_in, byte* in, int size_out, byt
   if (!init_nonce(block_size_, in))
     return false;
 #if 0
-printf("First hash: "); print_bytes(block_size_, in);
+printf("First hash: "); print_bytes(block_size, in);
 #endif
-  int_obj_.add_to_inner_hash(block_size_, in);
-  initial_nonce_.assign((char*)in, block_size_);
-  running_nonce_.assign((char*)in, block_size_);
+  int_obj_.add_to_inner_hash(block_size, in);
+  initial_nonce_.assign((char*)in, block_size);
+  running_nonce_.assign((char*)in, block_size);
   cur_in += block_size;
   bytes_left -= block_size;
   if (mode_ == CTR) {
@@ -509,13 +505,15 @@ printf("First hash: "); print_bytes(block_size_, in);
   }
 
   if (bytes_left != (block_size + mac_size)) {
+    printf("Blocks left is wrong\n");
     return false;
   }
 
   int additional_bytes = size_out - total_bytes_output_;
-  byte computed_mac[128];
-  memset(computed_mac, 0, 128);
+  byte computed_mac[mac_size];
+  memset(computed_mac, 0, mac_size);
   if (!finalize_decrypt(bytes_left, cur_in, &additional_bytes, cur_out, computed_mac)) {
+    printf("finalize_decrypt failed\n");
     return false;
   }
   total_bytes_output_ += additional_bytes;
@@ -524,12 +522,16 @@ printf("First hash: "); print_bytes(block_size_, in);
   cur_in += additional_bytes;
   bytes_left -= additional_bytes;
 
+printf("cur_in: "); print_bytes(bytes_left, cur_in);
+printf("cur_out: "); print_bytes(bytes_left, cur_out);
+
   // now fix message size
   byte* pb = cur_out - 1;
   int i;
   for (i = 0; i < block_size_; i++) {
     if (*pb != 0) {
       if (*pb != 0x80) {
+        printf("bad pad 1\n");
         message_valid_= false;
         return false;
       }
@@ -539,6 +541,7 @@ printf("First hash: "); print_bytes(block_size_, in);
     pb--;
   }
   if (i >= block_size_) {
+    printf("bad pad 2\n");
     message_valid_= false;
     return false;
   }
@@ -551,3 +554,244 @@ print_bytes(hmac_digest_size_, cur_in);
 #endif
   return message_valid_;
 }
+
+const int file_buffer_size = 4096;
+
+bool encryption_scheme::encrypt_file(const char* infile, const char* outfile) {
+
+  file_util in_file;
+  file_util out_file;
+
+  if (!in_file.open(infile)) {
+    printf("Can't open %s\n", infile);
+    return false;
+  }
+  if (out_file.create(outfile)) {
+    printf("Can't creat %s\n", outfile);
+    return false;
+  }
+
+  byte in_buf[file_buffer_size];
+  byte out_buf[file_buffer_size];
+
+  if (!message_info(in_file.bytes_in_file(), encryption_scheme::ENCRYPT))
+    return false;
+
+  int block_size = get_block_size();
+  int num_blocks_in_buffer = file_buffer_size / block_size;
+  int bytes_left_in_buffer = 0;
+  int bytes_left_in_file = in_file.bytes_in_file();
+  int bytes_in_output_buffer= 0;
+
+  string nonce(block_size, 0);
+  if (crypto_get_random_bytes(block_size_, (byte*)nonce.data()) < block_size)
+    return false;
+  if (!init_nonce((int)nonce.size(), (byte*)nonce.data()))
+    return false;
+
+  // process nonce block
+  int_obj_.add_to_inner_hash(block_size_, (byte*)nonce.data());
+  out_file.write_a_block(block_size, (byte*)nonce.data());
+  total_bytes_output_ += block_size;
+
+  byte* cur_in;
+  byte* cur_out;
+
+  for(;;) {
+    if (bytes_left_in_buffer <= 0) {
+      if (bytes_in_output_buffer > 0) {
+         out_file.write_a_block(bytes_in_output_buffer, out_buf);
+      }
+      bytes_left_in_buffer = in_file.read_a_block(num_blocks_in_buffer * block_size, in_buf);
+      if (bytes_left_in_buffer <= 0) {
+          return false;
+      }
+      cur_in = in_buf;
+      cur_out = out_buf;
+      bytes_in_output_buffer = 0;
+    }
+
+    while (bytes_left_in_buffer > 0) {
+      if (bytes_left_in_file < block_size) {
+        if (bytes_in_output_buffer > 0) {
+          out_file.write_a_block(bytes_in_output_buffer, out_buf);
+          bytes_in_output_buffer = 0;
+          cur_out = out_buf;
+        }
+        if (bytes_left_in_buffer == 0) {
+          // make sure buffer is filled
+          break;
+        }
+        int additional_bytes = num_blocks_in_buffer * block_size;
+        if (!finalize_encrypt(bytes_left_in_buffer, cur_in, &additional_bytes, cur_out)) {
+          return false;
+        }
+        total_bytes_output_ += additional_bytes;
+        encrypted_bytes_output_ += additional_bytes - get_mac_size();
+        message_valid_ = true;
+        in_file.close();
+        out_file.close();
+        return message_valid_;
+      }
+      if (mode_ == CTR) {
+        ctr_encrypt_step(cur_in, cur_out);
+      } else if (mode_ == CBC) {
+        cbc_encrypt_step(cur_in, cur_out);
+      } else {
+          return false;
+      }
+      encrypted_bytes_output_ += block_size;
+      total_bytes_output_ += block_size;
+      cur_in += block_size;
+      cur_out += block_size;
+      bytes_left_in_file -= block_size;
+      bytes_in_output_buffer += block_size;
+    }
+  }
+  return true;
+}
+
+bool encryption_scheme::decrypt_file(const char* infile, const char* outfile) {
+
+  file_util in_file;
+  file_util out_file;
+
+  if (!in_file.open(infile)) {
+    printf("Can't open %s\n", infile);
+    return false;
+  }
+  if (out_file.create(outfile)) {
+    printf("Can't creat %s\n", outfile);
+    return false;
+  }
+
+  byte in_buf[file_buffer_size];
+  byte out_buf[file_buffer_size];
+    return false;
+
+  int mac_size = get_mac_size();
+  int block_size = get_block_size();
+  int num_blocks = file_buffer_size / block_size;
+  int bytes_left_in_buffer = 0;
+  int bytes_left_in_file = in_file.bytes_in_file();
+  int bytes_in_output_buffer= 0;
+
+  if (!message_info(in_file.bytes_in_file(), encryption_scheme::DECRYPT))
+
+  // read nonce and process it
+  if (in_file.read_a_block(block_size, in_buf) < block_size)
+    return false;
+  if (!init_nonce(block_size, in_buf))
+    return false;
+  int_obj_.add_to_inner_hash(block_size, in_buf);
+  initial_nonce_.assign((char*)in_buf, block_size);
+  running_nonce_.assign((char*)in_buf, block_size);
+  bytes_left_in_file -= block_size;
+  if (mode_ == CTR) {
+    // big--> little endian
+    reverse_bytes(block_size, in_buf, (byte*)counter_nonce_->value_ptr());
+    counter_nonce_->normalize();
+  }
+
+  byte* cur_in;
+  byte* cur_out;
+
+  for(;;) {
+    if (bytes_left_in_buffer <= 0) {
+      if (bytes_in_output_buffer > 0) {
+         out_file.write_a_block(bytes_in_output_buffer, out_buf);
+      }
+      bytes_left_in_buffer = in_file.read_a_block(num_blocks * block_size, in_buf);
+      if (bytes_left_in_buffer <= 0) {
+          return false;
+      }
+      cur_in = in_buf;
+      cur_out = out_buf;
+      bytes_in_output_buffer = 0;
+    }
+
+    while (bytes_left_in_buffer > 0) {
+      if (bytes_left_in_file <= (block_size + mac_size)) {
+        if (bytes_in_output_buffer > 0) {
+          out_file.write_a_block(bytes_in_output_buffer, out_buf);
+          bytes_in_output_buffer = 0;
+          cur_out = out_buf;
+        }
+        if (bytes_left_in_buffer < (block_size + mac_size)) {
+          // make sure buffer is filled
+          memcpy(in_buf, cur_in, bytes_left_in_buffer);
+          int n = in_file.read_a_block(num_blocks * block_size, &in_buf[bytes_left_in_buffer]);
+          cur_in = in_buf;
+          bytes_left_in_buffer += n;
+          break;
+        }
+        int additional_bytes = num_blocks * block_size;
+        byte computed_mac[mac_size];
+        memset(computed_mac, 0, mac_size);
+        if (!finalize_decrypt(bytes_left_in_buffer, cur_in, &additional_bytes, cur_out, computed_mac)) {
+          in_file.close();
+          out_file.close();
+          return false;
+        }
+        total_bytes_output_ += additional_bytes;
+        encrypted_bytes_output_ += additional_bytes;
+        cur_out += additional_bytes;
+        cur_in += additional_bytes;
+        bytes_left_in_file -= additional_bytes;
+        bytes_left_in_buffer -= additional_bytes;
+
+        // now fix message size
+        byte* pb = cur_out - 1;
+        int i;
+        for (i = 0; i < block_size_; i++) {
+          if (*pb != 0) {
+            if (*pb != 0x80) {
+              message_valid_= false;
+              in_file.close();
+              out_file.close();
+              return false;
+            }
+            encrypted_bytes_output_ -= (i + 1);
+            break;
+          }
+          pb--;
+        }
+        if (i >= block_size_) {
+          message_valid_= false;
+          in_file.close();
+          out_file.close();
+          return false;
+        }
+        message_valid_ = (memcmp(cur_in, computed_mac, hmac_digest_size_) == 0);
+#if 0
+if (message_valid_)printf("message valid\n"); else printf("message not valid\n");
+print_bytes(hmac_digest_size_, computed_mac);
+print_bytes(hmac_digest_size_, cur_in);
+#endif
+        in_file.close();
+        out_file.close();
+        return (message_valid_);
+      }
+
+    if (mode_ == CTR) {
+        ctr_decrypt_step(cur_in, cur_out);
+      } else if (mode_ == CBC) {
+        cbc_decrypt_step(cur_in, cur_out);
+      } else {
+        in_file.close();
+        out_file.close();
+        return false;
+      }
+
+      encrypted_bytes_output_ += block_size;
+      total_bytes_output_ += block_size;
+      cur_in += block_size;
+      cur_out += block_size;
+      bytes_left_in_file -= block_size;
+      bytes_in_output_buffer += block_size;
+    }
+  }
+
+  return true;
+}
+

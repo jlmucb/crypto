@@ -68,6 +68,11 @@ std::string cryptutil_ops[] = {
     "--operation=verify_mac --algorithm=alg --keyfile=file --input_file=file " \
     "--hash_file=file" \
     "\n",
+    "--operation=scheme_encrypt_file --scheme_file=scheme_file " \
+    "--algorithm=alg --input_file=file --output_file=file",
+    "--operation=scheme_decrypt_file--scheme_file=scheme_file" \
+    " --algorithm=alg --input_file=file --output_file=file" \
+    "\n",
     "--operation=get_random --size=num-bits --output_file=file",
     "--operation=read_key --input_file=file",
     "--operation=generate_key --algorithm=alg --key_name=name " \
@@ -78,6 +83,16 @@ std::string cryptutil_ops[] = {
     "--operation=decrypt_with_key --key_file=key_file " \
     "--input_file=file --output_file=file"
     "\n",
+    "--operation=encrypt_with_password --algorithm=alg --encrypt_key_size=size " \
+    "--mac_key_size=size --pass=pw --input_file=file --output_file=file",
+    "--operation=decrypt_with_password --algorithm=file --encrypt_key_size=size " \
+    "--mac_key_size=size --pass=pw --input_file=file --output_file=file"
+    "\n",
+    "--operation=encrypt_file_with_password --algorithm=alg --encrypt_key_size=size " \
+    "--mac_key_size=size --pass=pw --input_file=file --output_file=file",
+    "--operation=decrypt_file_with_password --algorithm=file --encrypt_key_size=size " \
+    "--mac_key_size=size --pass=pw --input_file=file --output_file=file"
+    "\n",
     "--operation=pkcs_sign_with_key --algorithm=alg --keyfile=file " \
     "--signature_file= file --input_file=file --signer_name=signer",
     "--operation=pkcs_verify_with_key --algorithm=alg --keyfile=file " \
@@ -86,6 +101,7 @@ std::string cryptutil_ops[] = {
     "--input_file=file --output_file=file",
     "--operation=pkcs_unseal_with_key--keyfile=file --algorithm=alg " \
     "--input_file=file --output_file=file",
+    "\n",
 };
 
 int num_cryptutil_algs;
@@ -353,6 +369,9 @@ bool pkcs_verify_hash(const char* hash_alg, rsa& rk, byte* digest, int block_siz
   return true;
 }
 
+const char* salt_str = "jlm ucb math"; 
+const int num_iter = 100;
+
 
 int main(int an, char** av) {
 #ifdef __linux__
@@ -441,6 +460,7 @@ int main(int an, char** av) {
       goto done;
     }
     goto done;
+
   } else if ("to_decimal" == FLAGS_operation) {
     file_util in_file;
     printf("Input file: %s, ", FLAGS_input_file.c_str());
@@ -487,7 +507,6 @@ int main(int an, char** av) {
       printf("-");
     printf("%s\n", decimal.c_str());
     goto done;
-
   } else if ("from_decimal" == FLAGS_operation) {
     printf("Input file: %s, ", FLAGS_input_file.c_str());
     printf("output file: %s\n", FLAGS_output_file.c_str());
@@ -561,6 +580,7 @@ int main(int an, char** av) {
     printf("bytes  :"); print_bytes((int) bytes.size(), (byte*)bytes.data());
     delete n;
     goto done;
+
   } else if ("tohex" == FLAGS_operation) {
     file_util in_file;
     file_util out_file;
@@ -625,6 +645,7 @@ int main(int an, char** av) {
       goto done;
     }
     goto done;
+
   } else if ("encrypt_with_key" == FLAGS_operation ||
              "decrypt_with_key" == FLAGS_operation) {
 
@@ -749,6 +770,7 @@ int main(int an, char** av) {
     file_util out_file;
     out_file.write_file(FLAGS_output_file.c_str(), in_out_size, out);
     goto done;
+
   } else if ("generate_scheme" == FLAGS_operation) {
     int size_nonce = 128 / NBITSINBYTE;
     int size_enc_key = FLAGS_encrypt_key_size / NBITSINBYTE;
@@ -840,6 +862,23 @@ int main(int an, char** av) {
       goto done;
     }
     print_scheme_message(msg);
+
+  } else if ("get_random" == FLAGS_operation) {
+    byte buf[FLAGS_random_size];
+    int byte_size = (FLAGS_random_size + NBITSINBYTE - 1) / NBITSINBYTE;
+    if (crypto_get_random_bytes(byte_size, buf) < byte_size) {
+      printf("Can't generate random\n");
+      ret = 1;
+      goto done;
+    }
+    file_util out_file;
+    out_file.write_file(FLAGS_output_file.c_str(), byte_size, buf);
+    printf("Random bytes (%d): ", byte_size);
+    print_bytes(byte_size, buf);
+    printf("\n");
+    goto done;
+
+
   } else if ("scheme_encrypt" == FLAGS_operation ||
       "scheme_decrypt" == FLAGS_operation) {
     encryption_scheme scheme;
@@ -882,7 +921,6 @@ int main(int an, char** av) {
       ret = 1;
       goto done;
     }
-
     if ("scheme_encrypt" == FLAGS_operation) {
       int size_out = size_in + 3 * scheme.get_block_size() + scheme.get_mac_size();
       byte out[size_out];
@@ -916,20 +954,7 @@ int main(int an, char** av) {
       print_bytes(scheme.get_bytes_encrypted(), out);
       printf("\n");
     }
-  } else if ("get_random" == FLAGS_operation) {
-    byte buf[FLAGS_random_size];
-    int byte_size = (FLAGS_random_size + NBITSINBYTE - 1) / NBITSINBYTE;
-    if (crypto_get_random_bytes(byte_size, buf) < byte_size) {
-      printf("Can't generate random\n");
-      ret = 1;
-      goto done;
-    }
-    file_util out_file;
-    out_file.write_file(FLAGS_output_file.c_str(), byte_size, buf);
-    printf("Random bytes (%d): ", byte_size);
-    print_bytes(byte_size, buf);
-    printf("\n");
-    goto done;
+
   } else if ("encrypt_with_password" == FLAGS_operation ||
              "decrypt_with_password" == FLAGS_operation) {
     encryption_scheme scheme;
@@ -964,10 +989,10 @@ int main(int an, char** av) {
     string enc_key;
     string mac_key;
 
-    int tmp_key_size = size_enc_key_bytes + size_hmac_key_bytes + 16;
+    int tmp_key_size = size_enc_key_bytes + size_hmac_key_bytes + 128;
     byte tmp_key[tmp_key_size];
-    const char* salt_str = "jlm ucb math"; 
-    const int num_iter = 100;
+    memset(tmp_key, 0, tmp_key_size);
+
     if (!pbkdf2(FLAGS_pass.c_str(), strlen(salt_str), (byte*)salt_str,
                 num_iter, tmp_key_size, tmp_key)) {
         printf("Password derivation failed\n");
@@ -1010,7 +1035,7 @@ int main(int an, char** av) {
       print_bytes(size_in, in);
       printf("\n");
       if (!scheme.encrypt_message(size_in, in, size_out, out)) {
-        printf("Scheme encrypt failed\n");
+        printf("Password encrypt failed\n");
         ret = 1;
         goto done;
       }
@@ -1026,7 +1051,7 @@ int main(int an, char** av) {
       print_bytes(size_in, in);
       printf("\n");
       if (!scheme.decrypt_message(size_in, in, size_out, out)) {
-        printf("Scheme decrypt failed\n");
+        printf("Password decrypt failed\n");
         ret = 1;
         goto done;
       }
@@ -1037,6 +1062,122 @@ int main(int an, char** av) {
       printf("\n");
     }
     goto done;
+
+  } else if ("scheme_encrypt_file" == FLAGS_operation ||
+      "scheme_decrypt_file" == FLAGS_operation) {
+    encryption_scheme scheme;
+    scheme.scheme_msg_ = new scheme_message;
+    if (scheme.scheme_msg_ == nullptr) {
+      ret = 1;
+      goto done;
+    }
+    if (!read_scheme(scheme.scheme_msg_)) {
+      ret = 1;
+      goto done;
+    }
+    print_scheme_message(*scheme.scheme_msg_);
+    if (!scheme.recover_encryption_scheme_from_message()) {
+      ret = 1;
+      goto done;
+    }
+    if (!scheme.recover_encryption_scheme_from_message()) {
+      printf("Can't recover encryption scheme\n");
+      ret = 1;
+      goto done;
+    }
+    if (!scheme.init()) {
+      printf("Can't init encryption scheme\n");
+      ret = 1;
+      goto done;
+    }
+
+    if ("scheme_encrypt_file" == FLAGS_operation) {
+      if (!scheme.encrypt_file(FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
+        printf("Can't file encrypt\n");
+        ret = 1;
+        goto done;
+      }
+    } else {
+      if (!scheme.decrypt_file(FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
+        printf("Can't file decrypt\n");
+        ret = 1;
+        goto done;
+      }
+    }
+  goto done;
+
+  } else if ("encrypt_file_with_password" == FLAGS_operation ||
+             "decrypt_file_with_password" == FLAGS_operation) {
+    encryption_scheme scheme;
+    scheme.scheme_msg_ = new scheme_message;
+    if (scheme.scheme_msg_ == nullptr) {
+      ret = 1;
+      goto done;
+    }
+    char* enc_alg;
+    char* hmac_alg;
+    char* mode;
+    char* pad;
+
+    if (FLAGS_algorithm == "aes-hmac-sha256-ctr") {
+      mode = (char*)"ctr";
+      pad = (char*)"sym-pad";
+      enc_alg = (char*)"aes";
+      hmac_alg = (char*)"hmac-sha256";
+    } else if (FLAGS_algorithm == "aes-hmac-sha256-cbc") {
+      pad = (char*)"sym-pad";
+      mode = (char*)"cbc";
+      enc_alg = (char*)"aes";
+      hmac_alg = (char*)"hmac-sha256";
+    } else {
+      printf("password: unsupported algorithm %s\n",
+              FLAGS_algorithm.c_str());
+      ret = 1;
+      goto done;
+    }
+    int size_enc_key_bytes = FLAGS_encrypt_key_size / NBITSINBYTE;
+    int size_hmac_key_bytes = FLAGS_mac_key_size / NBITSINBYTE;
+    string enc_key;
+    string mac_key;
+
+    int tmp_key_size = size_enc_key_bytes + size_hmac_key_bytes + 128;
+    byte tmp_key[tmp_key_size];
+    memset(tmp_key, 0, tmp_key_size);
+    if (!pbkdf2(FLAGS_pass.c_str(), strlen(salt_str), (byte*)salt_str,
+                num_iter, tmp_key_size, tmp_key)) {
+        printf("Password derivation failed\n");
+        ret = 1;
+        goto done;
+    }
+    printf("Pass phrase: %s, tmp key size: %d\n", FLAGS_pass.c_str(), tmp_key_size);
+    enc_key.assign((char*)tmp_key, (size_t)size_enc_key_bytes);
+    mac_key.assign((char*)&tmp_key[size_enc_key_bytes], (size_t)size_hmac_key_bytes);
+    if (!scheme.init(FLAGS_algorithm.c_str(), "",
+          mode, pad, "", "now", "later", enc_alg, FLAGS_encrypt_key_size, enc_key,
+          "tmpkey", hmac_alg, FLAGS_mac_key_size,  mac_key)) {
+      printf("password: can't init scheme\n");
+        ret = 1;
+      goto done;
+    }
+
+    printf("Derived encryption key: "); print_bytes((int)enc_key.size(), (byte*)enc_key.data());
+    printf("Derived mac key: "); print_bytes((int)mac_key.size(), (byte*)mac_key.data());
+
+    if ("encrypt_file_with_password" == FLAGS_operation) {
+      if (!scheme.encrypt_file(FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
+        printf("Can't file encrypt\n");
+        ret = 1;
+        goto done;
+      }
+    } else {
+      if (!scheme.decrypt_file(FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
+        printf("Can't file decrypt\n");
+        ret = 1;
+        goto done;
+      }
+    }
+    goto done;
+
   } else if ("hash" == FLAGS_operation) {
 
     file_util in_file;
