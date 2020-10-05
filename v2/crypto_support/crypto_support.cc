@@ -960,7 +960,11 @@ certificate_message* make_certificate(certificate_body_message& cbm,
   cnm->set_name_type(issuer_name_type.c_str());
   cnm->set_name_value(issuer_name_value.c_str());
   cm->set_signing_algorithm(signing_algorithm);
-  // set signing_key
+  certificate_algorithm_message* cam = cm->mutable_signing_key();
+  cam->set_algorithm_name(signing_algorithm.c_str());
+  rsa_public_parameters_message* rpm = cam->mutable_rsa_params();
+  rpm->set_modulus(issuer_key.rsa_pub().modulus());
+  rpm->set_e(issuer_key.rsa_pub().e());
   cm->set_signature(signature);
   return cm;
 }
