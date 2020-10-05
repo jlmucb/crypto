@@ -130,6 +130,9 @@ DEFINE_string(hash_alg, "sha-256", "hash alg");
 DEFINE_string(signature_file, "sig", "signature file");
 DEFINE_string(signer_name, "jlm", "signer name");
 DEFINE_string(key2_file, "", "Key file name");
+DEFINE_string(issuer_name, "", "Issuer name");
+DEFINE_string(subject_name, "", "Subject name");
+
 
 DEFINE_bool(print_all, false, "printall flag");
 
@@ -139,14 +142,14 @@ const int max_hash = 256;
 bool read_key(const char* file, key_message* km) {
   file_util in_file;
     if (!in_file.open(file)) {
-      printf("Can't open %s\n", file);
+      printf("read_key: Can't open %s\n", file);
       return false;
     }
     int size_in = in_file.bytes_in_file();
     in_file.close();
     byte in[size_in];
     if (!in_file.read_file(file, size_in, in)) {
-      printf("Can't read %s\n", FLAGS_key_file.c_str());
+      printf("read_key: Can't read %s\n", FLAGS_key_file.c_str());
       return false;
     }
    string s;
@@ -335,18 +338,18 @@ bool pkcs_sign_rsa_hash(const char* hash_alg, rsa& rk, byte* digest, int block_s
 bool pkcs_verify_hash(const char* hash_alg, rsa& rk, byte* digest, int block_size,
                    string& signature) {
 
-    byte unsealed_signature[block_size];
-    memset(unsealed_signature, 0, block_size);
-    int signature_size = block_size;
+  byte unsealed_signature[block_size];
+  memset(unsealed_signature, 0, block_size);
+  int signature_size = block_size;
 
-    if (!rk.encrypt((int)signature.size(), (byte*)signature.data(), &signature_size, unsealed_signature, 0)) {
-        printf("Can't verify signature block\n");
-    } 
-    if (pkcs_verify("sha-256", digest, block_size, unsealed_signature)) {
-      return true;
-    } else {
-      return false;
-    }
+  if (!rk.encrypt((int)signature.size(), (byte*)signature.data(), &signature_size, unsealed_signature, 0)) {
+      printf("Can't verify signature block\n");
+  } 
+  if (pkcs_verify(hash_alg, digest, block_size, unsealed_signature)) {
+    return true;
+  } else {
+    return false;
+  }
   return true;
 }
 
@@ -1436,7 +1439,6 @@ int main(int an, char** av) {
     }
 
     rsa rk;
-    
     rk.rsa_key_ = new key_message;
     if (!read_key(FLAGS_key_file.c_str(), rk.rsa_key_)) {
       printf("Can't read signing key\n");
@@ -1515,7 +1517,6 @@ int main(int an, char** av) {
     }
 
     rsa rk;
-    
     rk.rsa_key_ = new key_message;
     if (!read_key(FLAGS_key_file.c_str(), rk.rsa_key_)) {
       printf("Can't read signing key\n");
@@ -1589,91 +1590,108 @@ int main(int an, char** av) {
 
     goto done;
   } else if ("make_certificate_and_sign" == FLAGS_operation) {
-  string version;
-  string subject_name_type("common");
-  string subject_name_value;
-  string purpose("signing");
-  string nonce;
-  string revocation_address("https://revoke_me");
-  string issuer_name_type;
-  string issuer_name_value;
+    string version("1.0");
+    string subject_name_type("common");
+    string purpose("signing");
+    string nonce;
+    string revocation_address("https://revoke_me");
+    string issuer_name_type("common");
 
-  int hash_size;
-  int block_size;
-  const char* hash_alg;
+    int hash_size;
+    int block_size;
+    const char* hash_alg;
 
-  if (strcmp(FLAGS_algorithm.c_str(), "rsa-2048-sha-256-pkcs") == 0 ||
-    strcmp(FLAGS_algorithm.c_str(), "rsa-1024-sha-256-pkcs") == 0) {
-    hash_size = sha256::DIGESTBYTESIZE;
-    hash_alg = "sha-256";
-  } else {
-    printf("unsupported signing algorithm: %s\n", FLAGS_algorithm.c_str());
-    ret = 1;
-    goto done;
-  }
+    if (strcmp(FLAGS_algorithm.c_str(), "rsa-2048-sha-256-pkcs") == 0 ||
+      strcmp(FLAGS_algorithm.c_str(), "rsa-1024-sha-256-pkcs") == 0) {
+      hash_size = sha256::DIGESTBYTESIZE;
+      hash_alg = "sha-256";
+    } else {
+      printf("unsupported signing algorithm: %s\n", FLAGS_algorithm.c_str());
+      ret = 1;
+      goto done;
+    }
 
-  // kind of a hack
-  rsa rk;
-  rk.rsa_key_ = new key_message;
-  if (!read_key(FLAGS_key_file.c_str(), rk.rsa_key_)) {
-    printf("Can't read signing key\n");
-    ret = 1;
-    goto done;
-  }
-  if (!rk.retrieve_parameters_from_key_message()) {
-    printf("Can't retreive signing key data\n");
-    ret = 1;
-    goto done;
-  }
-  block_size = rk.bit_size_modulus_ / NBITSINBYTE;
+    // kind of a hack
+    rsa rk;
+    rk.rsa_key_ = new key_message;
+    if (!read_key(FLAGS_key_file.c_str(), rk.rsa_key_)) {
+      printf("Can't read signing key\n");
+      ret = 1;
+      goto done;
+    }
 
-  // notbefore, notafter
-  time_point t1, t2;
-  string s1, s2;
-  t1.time_now();
-  if (!t1.encode_time(&s1)) {
-    ret = 1;
-    goto done;
-  }
-  t2.add_interval_to_time(t1, 5 * 365 * 86400.0);
-  if (!t2.encode_time(&s2)) {
-    ret = 1;
-    goto done;
-  }
+    // notbefore, notafter
+    time_point t1, t2;
+    string s1, s2;
+    t1.time_now();
+    if (!t1.encode_time(&s1)) {
+      ret = 1;
+      goto done;
+    }
+    t2.add_interval_to_time(t1, 5 * 365 * 86400.0);
+    if (!t2.encode_time(&s2)) {
+      ret = 1;
+      goto done;
+    }
 
-  certificate_body_message* cbm  = make_certificate_body(version, subject_name_type,
-      subject_name_value, *rk.rsa_key_, purpose, s1, s2,
+    certificate_body_message* cbm  = make_certificate_body(version, subject_name_type,
+        FLAGS_subject_name, *rk.rsa_key_, FLAGS_purpose, s1, s2,
       nonce, revocation_address, s1);
+    if (cbm == nullptr) {
+      printf("Can't allocate body\n");
+      ret = 1;
+      goto done;
+    }
 
-  string s_body;
-  cbm->SerializeToString(&s_body);
+    string s_body;
+    cbm->SerializeToString(&s_body);
 
     byte digest[hash_size];
     memset(digest, 0, hash_size);
     sha256 h;
 
     h.init();
-    h.add_to_hash((int) s_body.size(), (byte*)s_body.data());
+    h.add_to_hash((int)s_body.size(), (byte*)s_body.data());
     h.finalize();
+    h.get_digest(hash_size, digest);
+
+    rsa sk;
+    sk.rsa_key_ = new key_message;
+    if (!read_key(FLAGS_key2_file.c_str(), sk.rsa_key_)) {
+      printf("Can't issuer signing key\n");
+      ret = 1;
+      goto done;
+    }
+    if (!sk.retrieve_parameters_from_key_message()) {
+      printf("Can't retreive signing key data\n");
+      ret = 1;
+      goto done;
+    }
+    block_size = sk.bit_size_modulus_ / NBITSINBYTE;
+    print_key_message(*sk.rsa_key_);
 
     string s_signature; 
-    if (!pkcs_sign_rsa_hash(hash_alg, rk, digest, block_size, &s_signature)) {
+    if (!pkcs_sign_rsa_hash(hash_alg, sk, digest, block_size, &s_signature)) {
       printf("Can't sign body\n");
       ret = 1;
       goto done;
     }
 
-  rsa sk;
-  sk.rsa_key_ = new key_message;
-  if (!read_key(FLAGS_key2_file.c_str(), sk.rsa_key_)) {
-    printf("Can't issuer signing key\n");
-    ret = 1;
-    goto done;
-  }
-
-    certificate_message* cm = make_certificate(*cbm, issuer_name_type, issuer_name_value,
-            *sk.rsa_key_, FLAGS_algorithm, s_signature);
+    certificate_message* cm = make_certificate(*cbm, issuer_name_type, FLAGS_issuer_name,
+              *sk.rsa_key_, FLAGS_algorithm, s_signature);
     cm->set_signing_algorithm(FLAGS_algorithm.c_str());
+    print_certificate_message(*cm);
+
+    string s_cert;
+    cm->SerializeToString(&s_cert);
+
+    file_util out_file;
+    if (!out_file.write_file(FLAGS_output_file.c_str(), (int) s_cert.size(),
+            (byte*) s_cert.data())) {
+      printf("Can't write %s\n", FLAGS_output_file.c_str());
+      ret = 1;
+      goto done;
+    }
     goto done;
   } else if ("verify_certificate" == FLAGS_operation) {
     certificate_message cm;
@@ -1695,15 +1713,18 @@ int main(int an, char** av) {
     string s_cm;
     s_cm.assign((char*)in, (size_t)size_in);
     cm.ParseFromString(s_cm);
-
     print_certificate_message(cm);
 
     // hash serialized info and verify it
     certificate_body_message* cbm = cm.mutable_info();
     if (!cm.has_signing_algorithm()) {
+      printf("Signing algoritm missing\n");
+      ret = 1;
+      goto done;
     }
     string s_body;
     cbm->SerializeToString(&s_body);
+
     int hash_size;
     int block_size;
     const char* hash_alg;
@@ -1724,25 +1745,25 @@ int main(int an, char** av) {
     h.init();
     h.add_to_hash((int)s_body.size(), (byte*)s_body.data());
     h.finalize();
+    h.get_digest(hash_size, digest);
 
-    rsa rk;
-    
-    rk.rsa_key_ = new key_message;
-    if (!read_key(FLAGS_key_file.c_str(), rk.rsa_key_)) {
+    rsa sk;
+    sk.rsa_key_ = new key_message;
+    if (!read_key(FLAGS_key2_file.c_str(), sk.rsa_key_)) {
       printf("Can't read signing key\n");
       ret = 1;
       goto done;
     }
-    if (!rk.retrieve_parameters_from_key_message()) {
+    if (!sk.retrieve_parameters_from_key_message()) {
       printf("Can't retreive signing key data\n");
       ret = 1;
       goto done;
     }
-    block_size = rk.bit_size_modulus_ / NBITSINBYTE;
+    block_size = sk.bit_size_modulus_ / NBITSINBYTE;
     
     string s_signature;
     s_signature.assign((char*)cm.signature().data(), (size_t)cm.signature().size());
-    if (pkcs_verify_hash(hash_alg, rk, digest, block_size, s_signature)) {
+    if (pkcs_verify_hash(hash_alg, sk, digest, block_size, s_signature)) {
       printf("Certificate valid\n");
     } else {
       printf("Certificate invalid\n");

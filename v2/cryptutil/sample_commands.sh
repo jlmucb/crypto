@@ -31,3 +31,7 @@ $BIN/cryptutil.exe --operation=decrypt_with_key --key_file=rsa_enc.key --input_f
 
 $BIN/cryptutil.exe --operation=pkcs_sign_with_key --algorithm=rsa-1024-sha-256-pkcs --key_file=rsa_enc.key --key_size=1024 --key_name=rsa_test_key --signature_file=signature.file --input_file=test_plain  --signer_name=jlm
 $BIN/cryptutil.exe --operation=pkcs_verify_with_key --algorithm=rsa-1024-sha-256-pkcs --key_file=rsa_enc.key --key_size=1024 --key_name=rsa_test_key --signature_file=signature.file --input_file=test_plain
+
+$BIN/cryptutil.exe --operation=make_certificate_and_sign --algorithm=rsa-1024-sha-256-pkcs --key_file=rsa_enc.key --key_size=1024 --key_name=rsa_test_key --key2_file=rsa_enc.key --issuer_name=jlm --subject_name=jlm --output_file=cert.out
+$BIN/cryptutil.exe --operation=verify_certificate --algorithm=rsa-1024-sha-256-pkcs --key_file=rsa_enc.key --key_size=1024 --key_name=rsa_test_key --key2_file=rsa_enc.key  --input_file=cert.out
+

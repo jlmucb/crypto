@@ -1,4 +1,4 @@
-// Cepyright 2020 John Manferdelli, All Rights Reserved.
+// Copyright 2020 John Manferdelli, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -932,6 +932,9 @@ certificate_body_message* make_certificate_body(string& version, string& subject
       string& date_signed) {
 
   certificate_body_message* cbm = new(certificate_body_message);
+  if (cbm == nullptr) {
+    return nullptr;
+  }
   cbm->set_version(version.c_str());
   certificate_name_message* cnm = cbm->mutable_subject();
   cnm->set_name_type(subject_name_type.c_str());
@@ -947,7 +950,6 @@ certificate_body_message* make_certificate_body(string& version, string& subject
   cbm->set_nonce(nonce);
   cbm->set_revocation_address(revocation_address.c_str());
   cbm->set_date_signed(date_signed.c_str());
-
   return cbm;
 }
 
@@ -965,6 +967,7 @@ certificate_message* make_certificate(certificate_body_message& cbm,
   rsa_public_parameters_message* rpm = cam->mutable_rsa_params();
   rpm->set_modulus(issuer_key.rsa_pub().modulus());
   rpm->set_e(issuer_key.rsa_pub().e());
+printf("setting sig: "); print_bytes((int)signature.size(), (byte*)signature.data());
   cm->set_signature(signature);
   return cm;
 }
@@ -1153,14 +1156,16 @@ void print_crypto_signature_message(crypto_signature_message& m) {
 
 void print_certificate_name_message(certificate_name_message& m) {
   if (m.has_name_type()) 
-    printf("  Name type: %s, ", m.name_type().c_str());
+    printf("    type: %s, ", m.name_type().c_str());
   if (m.has_name_value()) 
-    printf("  name     : %s\n", m.name_value().c_str());
+    printf("    name     : %s\n", m.name_value().c_str());
 }
 
 void print_algorithm_message(certificate_algorithm_message& am) {
-  printf("  Algorithm name: %s\n", am.algorithm_name().c_str());
-  if (strcmp(am.algorithm_name().c_str(), "rsa") == 0) {
+  printf("    algorithm name: %s\n", am.algorithm_name().c_str());
+  if (strcmp(am.algorithm_name().c_str(), "rsa") == 0 ||
+      strcmp(am.algorithm_name().c_str(), "rsa-1024-sha-256-pkcs") == 0 ||
+      strcmp(am.algorithm_name().c_str(), "rsa-2048-sha-256-pkcs") == 0) {
     rsa_public_parameters_message* rm = am.mutable_rsa_params();
     print_rsa_public_parameters_message(*rm);
   } else if (strcmp(am.algorithm_name().c_str(), "ecc") == 0) {
