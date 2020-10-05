@@ -927,16 +927,42 @@ scheme_message* make_scheme(const char* alg, const char* id_name,
 }
 
 certificate_body_message* make_certificate_body(string& version, string& subject_name_type,
-      string& subject_name, key_message& subject_key, string& purpose,
-      string& not_before, string& note_after, string& nonce, string& revocation_address,
+      string& subject_name_value, key_message& subject_key, string& purpose,
+      string& not_before, string& not_after, string& nonce, string& revocation_address,
       string& date_signed) {
-  return nullptr;
+
+  certificate_body_message* cbm = new(certificate_body_message);
+  cbm->set_version(version.c_str());
+  certificate_name_message* cnm = cbm->mutable_subject();
+  cnm->set_name_type(subject_name_type.c_str());
+  cnm->set_name_value(subject_name_value.c_str());
+  certificate_algorithm_message* cam = cbm->mutable_subject_key();
+  cam->set_algorithm_name(subject_key.algorithm_type().c_str());
+  rsa_public_parameters_message* rpm = cam->mutable_rsa_params();
+  rpm->set_modulus(subject_key.rsa_pub().modulus());
+  rpm->set_e(subject_key.rsa_pub().e());
+  cbm->set_purpose(purpose.c_str());
+  cbm->set_not_before(not_before.c_str());
+  cbm->set_not_after(not_after.c_str());
+  cbm->set_nonce(nonce);
+  cbm->set_revocation_address(revocation_address.c_str());
+  cbm->set_date_signed(date_signed.c_str());
+
+  return cbm;
 }
 
 certificate_message* make_certificate(certificate_body_message& cbm,
-      string& issuer_name_type, string& issuer_name, key_message& issuer_key,
+      string& issuer_name_type, string& issuer_name_value, key_message& issuer_key,
       string& signing_algorithm, string& signature) {
-  return nullptr;
+  certificate_message* cm = new(certificate_message);
+  cm->set_allocated_info(&cbm);
+  certificate_name_message* cnm = cm->mutable_issuer();
+  cnm->set_name_type(issuer_name_type.c_str());
+  cnm->set_name_value(issuer_name_value.c_str());
+  cm->set_signing_algorithm(signing_algorithm);
+  // set signing_key
+  cm->set_signature(signature);
+  return cm;
 }
 
 void print_binary_blob(binary_blob_message& m) {

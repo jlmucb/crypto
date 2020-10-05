@@ -129,22 +129,23 @@ DEFINE_string(hash_file, "", "file to hash");
 DEFINE_string(hash_alg, "sha-256", "hash alg");
 DEFINE_string(signature_file, "sig", "signature file");
 DEFINE_string(signer_name, "jlm", "signer name");
+DEFINE_string(key2_file, "", "Key file name");
 
 DEFINE_bool(print_all, false, "printall flag");
 
 const int size_of_64_bit_unsigned = 7;
 const int max_hash = 256;
 
-bool read_key(key_message* km) {
+bool read_key(const char* file, key_message* km) {
   file_util in_file;
-    if (!in_file.open(FLAGS_key_file.c_str())) {
-      printf("Can't open %s\n", FLAGS_key_file.c_str());
+    if (!in_file.open(file)) {
+      printf("Can't open %s\n", file);
       return false;
     }
     int size_in = in_file.bytes_in_file();
     in_file.close();
     byte in[size_in];
-    if (!in_file.read_file(FLAGS_key_file.c_str(), size_in, in)) {
+    if (!in_file.read_file(file, size_in, in)) {
       printf("Can't read %s\n", FLAGS_key_file.c_str());
       return false;
     }
@@ -202,7 +203,7 @@ bool encrypt_aes(int size_in, byte* in,
                  int size_out, byte* out) {
   key_message km;
 
-  if (!read_key(&km)) {
+  if (!read_key(FLAGS_key_file.c_str(), &km)) {
     printf("Can't read key\n");
     return false;
   }
@@ -230,7 +231,7 @@ bool decrypt_aes(int size_in, byte* in,
                  int size_out, byte* out) {
   key_message km;
 
-  if (!read_key(&km)) {
+  if (!read_key(FLAGS_key_file.c_str(), &km)) {
     printf("Can't read key\n");
     return false;
   }
@@ -260,7 +261,7 @@ bool encrypt_rsa(int size_in, byte* in,
   rsa rk;
   rk.rsa_key_ = new key_message;
 
-  if (!read_key(rk.rsa_key_)) {
+  if (!read_key(FLAGS_key_file.c_str(), rk.rsa_key_)) {
     printf("Can't read %s\n", FLAGS_key_file.c_str());
     return false;
   }
@@ -287,7 +288,7 @@ bool decrypt_rsa(int size_in, byte* in,
   rsa rk;
   rk.rsa_key_ = new key_message;
 
-  if (!read_key(rk.rsa_key_)) {
+  if (!read_key(FLAGS_key_file.c_str(), rk.rsa_key_)) {
     printf("Can't read %s\n", FLAGS_key_file.c_str());
     return false;
   }
@@ -634,7 +635,7 @@ int main(int an, char** av) {
     in_file.close();
 
     key_message km;
-    if (!read_key(&km)) {
+    if (!read_key(FLAGS_key_file.c_str(), &km)) {
       printf("Can't read key\n");
       ret = 1;
       goto done;
@@ -660,7 +661,7 @@ int main(int an, char** av) {
     } else if (strcmp(alg, "rsa") == 0) {
       key_message km;
     
-      if (!read_key(&km)) {
+      if (!read_key(FLAGS_key_file.c_str(), &km)) {
         printf("Can't read ecc key\n");
         ret = 1;
         goto done;
@@ -1334,7 +1335,7 @@ int main(int an, char** av) {
     goto done;
   } else if ("read_key" == FLAGS_operation) {
     key_message km;
-    if (!read_key(&km)) {
+    if (!read_key(FLAGS_key_file.c_str(), &km)) {
       printf("Can't read key message\n");
       ret = 1;
       goto done;
@@ -1437,7 +1438,7 @@ int main(int an, char** av) {
     rsa rk;
     
     rk.rsa_key_ = new key_message;
-    if (!read_key(rk.rsa_key_)) {
+    if (!read_key(FLAGS_key_file.c_str(), rk.rsa_key_)) {
       printf("Can't read signing key\n");
       ret = 1;
       goto done;
@@ -1516,7 +1517,7 @@ int main(int an, char** av) {
     rsa rk;
     
     rk.rsa_key_ = new key_message;
-    if (!read_key(rk.rsa_key_)) {
+    if (!read_key(FLAGS_key_file.c_str(), rk.rsa_key_)) {
       printf("Can't read signing key\n");
       ret = 1;
       goto done;
@@ -1592,14 +1593,39 @@ int main(int an, char** av) {
   string subject_name_type("common");
   string subject_name_value;
   string purpose("signing");
-  string not_before;
-  string not_after;
   string nonce;
   string revocation_address("https://revoke_me");
-  key_message subject_key;
-  key_message signing_key;
   string issuer_name_type;
   string issuer_name_value;
+
+  int hash_size;
+  int block_size;
+  const char* hash_alg;
+
+  if (strcmp(FLAGS_algorithm.c_str(), "rsa-2048-sha-256-pkcs") == 0 ||
+    strcmp(FLAGS_algorithm.c_str(), "rsa-1024-sha-256-pkcs") == 0) {
+    hash_size = sha256::DIGESTBYTESIZE;
+    hash_alg = "sha-256";
+  } else {
+    printf("unsupported signing algorithm: %s\n", FLAGS_algorithm.c_str());
+    ret = 1;
+    goto done;
+  }
+
+  // kind of a hack
+  rsa rk;
+  rk.rsa_key_ = new key_message;
+  if (!read_key(FLAGS_key_file.c_str(), rk.rsa_key_)) {
+    printf("Can't read signing key\n");
+    ret = 1;
+    goto done;
+  }
+  if (!rk.retrieve_parameters_from_key_message()) {
+    printf("Can't retreive signing key data\n");
+    ret = 1;
+    goto done;
+  }
+  block_size = rk.bit_size_modulus_ / NBITSINBYTE;
 
   // notbefore, notafter
   time_point t1, t2;
@@ -1616,38 +1642,11 @@ int main(int an, char** av) {
   }
 
   certificate_body_message* cbm  = make_certificate_body(version, subject_name_type,
-      subject_name_value, subject_key, purpose, s1, s2,
+      subject_name_value, *rk.rsa_key_, purpose, s1, s2,
       nonce, revocation_address, s1);
 
   string s_body;
   cbm->SerializeToString(&s_body);
-
-  int hash_size;
-  int block_size;
-  const char* hash_alg;
-  rsa rk;
-    
-  rk.rsa_key_ = new key_message;
-  if (!read_key(rk.rsa_key_)) {
-    printf("Can't read signing key\n");
-    ret = 1;
-    goto done;
-  }
-  if (!rk.retrieve_parameters_from_key_message()) {
-    printf("Can't retreive signing key data\n");
-    ret = 1;
-    goto done;
-  }
-  if (strcmp(FLAGS_algorithm.c_str(), "rsa-2048-sha-256-pkcs") == 0 ||
-      strcmp(FLAGS_algorithm.c_str(), "rsa-1024-sha-256-pkcs") == 0) {
-      hash_size = sha256::DIGESTBYTESIZE;
-      block_size = rk.bit_size_modulus_ / NBITSINBYTE;
-      hash_alg = "sha-256";
-    } else {
-      printf("unsupported signing algorithm: %s\n", FLAGS_algorithm.c_str());
-      ret = 1;
-      goto done;
-    }
 
     byte digest[hash_size];
     memset(digest, 0, hash_size);
@@ -1664,8 +1663,16 @@ int main(int an, char** av) {
       goto done;
     }
 
+  rsa sk;
+  sk.rsa_key_ = new key_message;
+  if (!read_key(FLAGS_key2_file.c_str(), sk.rsa_key_)) {
+    printf("Can't issuer signing key\n");
+    ret = 1;
+    goto done;
+  }
+
     certificate_message* cm = make_certificate(*cbm, issuer_name_type, issuer_name_value,
-            signing_key, FLAGS_algorithm, s_signature);
+            *sk.rsa_key_, FLAGS_algorithm, s_signature);
     cm->set_signing_algorithm(FLAGS_algorithm.c_str());
     goto done;
   } else if ("verify_certificate" == FLAGS_operation) {
@@ -1721,7 +1728,7 @@ int main(int an, char** av) {
     rsa rk;
     
     rk.rsa_key_ = new key_message;
-    if (!read_key(rk.rsa_key_)) {
+    if (!read_key(FLAGS_key_file.c_str(), rk.rsa_key_)) {
       printf("Can't read signing key\n");
       ret = 1;
       goto done;
