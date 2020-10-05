@@ -150,6 +150,7 @@ message certificate_body_message {
 message certificate_message {
   optional certificate_body_message info              = 1;
   optional certificate_name_message issuer            = 2;
-  optional certificate_algorithm_message signing_key  = 3;
-  optional bytes signature                            = 4;
+  optional string signing_algorithm                   = 3;
+  optional certificate_algorithm_message signing_key  = 4;
+  optional bytes signature                            = 5;
 }

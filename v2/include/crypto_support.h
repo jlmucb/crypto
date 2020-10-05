@@ -201,9 +201,9 @@ certificate_body_message* make_certificate_body(string& version, string& subject
       string& not_before, string& note_after, string& nonce, string& revocation_address,
       string& date_signed);
 
-certificate_message* make_certificate_body(certificate_body_message& cbm,
+certificate_message* make_certificate(certificate_body_message& cbm,
       string& issuer_name_type, string& issuer_name, key_message& issuer_key,
-      string& signature);
+      string& signing_algorithm, string& signature);
 
 void print_binary_blob(binary_blob_message& m);
 void print_encrypted_message(encrypted_message& m);

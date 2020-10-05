@@ -926,6 +926,19 @@ scheme_message* make_scheme(const char* alg, const char* id_name,
   return m;
 }
 
+certificate_body_message* make_certificate_body(string& version, string& subject_name_type,
+      string& subject_name, key_message& subject_key, string& purpose,
+      string& not_before, string& note_after, string& nonce, string& revocation_address,
+      string& date_signed) {
+  return nullptr;
+}
+
+certificate_message* make_certificate(certificate_body_message& cbm,
+      string& issuer_name_type, string& issuer_name, key_message& issuer_key,
+      string& signing_algorithm, string& signature) {
+  return nullptr;
+}
+
 void print_binary_blob(binary_blob_message& m) {
 }
 
@@ -1168,6 +1181,9 @@ void print_certificate_message(certificate_message& m) {
     certificate_name_message* in = m.mutable_issuer();
     printf("  Issuer        : \n");
     print_certificate_name_message(*in);
+  }
+  if (m.has_signing_algorithm()) {
+    printf("  Signing alg: %s\n", m.signing_algorithm().c_str());
   }
   if (m.has_signing_key()) {
     certificate_algorithm_message* ik = m.mutable_signing_key();
