@@ -1035,9 +1035,7 @@ bool ecc::generate_ecc_from_standard_template(const char* template_name, const c
   if (!t2.encode_time(&notafter))
     return false;
 
-  byte* byte_secret= new byte[nb];
-  if (byte_secret == nullptr)
-    return true;
+  byte byte_secret[nb];
   if (crypto_get_random_bytes(nb, byte_secret) < 0) {
     printf("Cant generate random bits for ecc key\n");
     return false;
@@ -1046,8 +1044,6 @@ bool ecc::generate_ecc_from_standard_template(const char* template_name, const c
   int n_u64 = (nb / sizeof(uint64_t));
   big_num big_num_secret(n_u64);
   memcpy((byte*)big_num_secret.value_ptr(), byte_secret, nb);
-  delete []byte_secret;
-  byte_secret = nullptr;
   big_num_secret.normalize();
   
   return generate_ecc_from_parameters(key_name, usage, (char*)notbefore.c_str(),
@@ -1063,12 +1059,120 @@ bool ecc::get_serialized_key_message(string* s) {
 }
 
 bool ecc::set_parameters_in_key_message() {
-  if (ecc_key_ == nullptr)
+  if (ecc_key_ == nullptr) {
+    ecc_key_ = new key_message;
+    if (ecc_key_ == nullptr) {
+      return false;
+    }
+  }
+  ecc_key_->set_family_type("public");
+  ecc_key_->set_algorithm_type("ecc");
+
+  ecc_key_->set_notbefore(not_before_);
+  ecc_key_->set_notafter(not_after_);
+
+  string s;
+
+  ecc_private_parameters_message* ecc_priv = ecc_key_->mutable_ecc_priv();
+ 
+  if (secret_ != nullptr) { 
+    s.clear();
+    if(!bignum_to_string_msg(*secret_, &s)) {
+      return false;
+    }
+    ecc_priv->set_private_multiplier(s);
+  }
+  ecc_public_parameters_message* ecc_pub = ecc_key_->mutable_ecc_pub();
+  curve_message* cm = ecc_pub->mutable_cm();
+  if (c_ == nullptr || c_->curve_p_ == nullptr ||
+      c_->curve_a_ == nullptr || c_->curve_b_ == nullptr)
     return false;
-  // bool bignum_to_string_msg(big_num& n, string* s);
+  ecc_key_->set_key_size(c_->prime_bit_size_);
+  cm->set_curve_name(c_->c_name_);
+
+  s.clear();
+  if(!bignum_to_string_msg(*c_->curve_p_, &s)) {
+    return false;
+  }
+  cm->set_curve_p(s);
+  s.clear();
+  if(!bignum_to_string_msg(*c_->curve_a_, &s)) {
+    return false;
+  }
+  cm->set_curve_a(s);
+  s.clear();
+  if(!bignum_to_string_msg(*c_->curve_b_, &s)) {
+    return false;
+  }
+  cm->set_curve_b(s);
+
+  point_message* pm = ecc_pub->mutable_base_point();
+  if (base_point_ != nullptr) {
+    if (base_point_->x_ != nullptr) {
+      s.clear();
+      if(!bignum_to_string_msg(*base_point_->x_, &s)) {
+        return false;
+      }
+      pm->set_x(s);
+    }
+    if (base_point_->y_ != nullptr) {
+      s.clear();
+      if(!bignum_to_string_msg(*base_point_->y_, &s)) {
+        return false;
+      }
+      pm->set_y(s);
+    }
+  }
+
+  pm = ecc_pub->mutable_public_point();
+  if (public_point_ != nullptr) {
+    if (public_point_->x_ != nullptr) {
+      s.clear();
+      if(!bignum_to_string_msg(*public_point_->x_, &s)) {
+        return false;
+      }
+      pm->set_x(s);
+    }
+    if (public_point_->y_ != nullptr) {
+      s.clear();
+      if(!bignum_to_string_msg(*public_point_->y_, &s)) {
+        return false;
+      }
+      pm->set_y(s);
+    }
+  }
+
+  if (order_of_base_point_ != nullptr) { 
+    s.clear();
+    if(!bignum_to_string_msg(*order_of_base_point_, &s)) {
+      return false;
+    }
+    ecc_pub->set_order_of_base_point(s);
+  }
+
   return true;
 }
 
+/*
+  optional string family_type
+  optional string algorithm_type
+  optional string key_name
+  optional int32 key_size
+  optional string purpose
+  optional string notBefore
+  optional string notAfter
+  optional ecc_public_parameters_message ecc_pub
+      optional curve_message cm
+          optional string curve_name
+          optional bytes curve_p
+          optional bytes curve_a
+          optional bytes curve_b
+      optional point_message base_point
+      optional point_message public_point
+      optional bytes order_of_base_point
+  optional ecc_private_parameters_message ecc_priv
+    optional bytes private_multiplier
+ */
 bool ecc::retrieve_parameters_from_key_message() {
   if (ecc_key_ == nullptr)
     return false;

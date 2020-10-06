@@ -329,6 +329,67 @@ bool decrypt_rsa(int size_in, byte* in,
   return rk.decrypt(size_in, in, &size_out, out, 0);
 }
 
+// Todo
+bool encrypt_ecc(int size_in, byte* in,
+                 int size_out, byte* out) {
+
+  ecc ek;
+  ek.ecc_key_ = new key_message;
+
+  if (!read_key(FLAGS_key_file.c_str(), ek.ecc_key_)) {
+    printf("Can't read %s\n", FLAGS_key_file.c_str());
+    return false;
+  }
+  print_key_message(*ek.ecc_key_);
+
+  if (!ek.ecc_key_->has_key_size() || !ek.ecc_key_->has_algorithm_type()) {
+    printf("Can't get keys (1)\n");
+    return false;
+  }
+  const char* alg = ek.ecc_key_->algorithm_type().c_str();
+  if (strcmp(alg, "ecc") != 0) {
+    printf("Not an ecc key\n");
+    return false;
+    }
+  if (!ek.retrieve_parameters_from_key_message()) {
+    printf("Can't retrieve parameters\n");
+    return false;
+  }
+
+  // bool encrypt(int size, byte* plain, big_num& k, curve_point& pt1, curve_point& pt2);
+  return true;
+}
+
+bool decrypt_ecc(int size_in, byte* in,
+                 int size_out, byte* out) {
+
+  ecc ek;
+  ek.ecc_key_ = new key_message;
+
+  if (!read_key(FLAGS_key_file.c_str(), ek.ecc_key_)) {
+    printf("Can't read %s\n", FLAGS_key_file.c_str());
+    return false;
+  }
+  print_key_message(*ek.ecc_key_);
+
+  if (!ek.ecc_key_->has_key_size() || !ek.ecc_key_->has_algorithm_type()) {
+    printf("Can't get keys (1)\n");
+    return false;
+  }
+  const char* alg = ek.ecc_key_->algorithm_type().c_str();
+  if (strcmp(alg, "ecc") != 0) {
+    printf("Not an ecc key\n");
+    return false;
+    }
+  if (!ek.retrieve_parameters_from_key_message()) {
+    printf("Can't retrieve parameters\n");
+    return false;
+  }
+
+  // bool decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain);
+  return true;
+}
+
 bool pkcs_sign_rsa_hash(const char* hash_alg, rsa& rk, byte* digest, int block_size,
                    string* s_signature) {
 
@@ -743,20 +804,30 @@ int main(int an, char** av) {
     } else if (strcmp(alg,  "rsa") == 0) {
       if ("encrypt_with_key" == FLAGS_operation) {
         if (!encrypt_rsa(in_out_size, in, in_out_size, out)) {
-          printf("Can't encrypt_aes\n");
+          printf("Can't encrypt rsa\n");
           ret = 1;
           goto done;
         }
       } else {
         if (!decrypt_rsa(in_out_size, in, in_out_size, out)) {
-          printf("Can't encrypt_aes\n");
+          printf("Can't encrypt rsa\n");
           ret = 1;
           goto done;
         }
       }
     } else if (strcmp(alg, "ecc") == 0) {
       if ("encrypt_with_key" == FLAGS_operation) {
+        if (!encrypt_ecc(in_out_size, in, in_out_size, out)) {
+          printf("Can't encrypt ecc\n");
+          ret = 1;
+          goto done;
+        }
       } else {
+        if (!decrypt_ecc(in_out_size, in, in_out_size, out)) {
+          printf("Can't encrypt ecc\n");
+          ret = 1;
+          goto done;
+        }
       }
     } else {
       printf("unsupported algorithm %s\n", alg);
@@ -1397,7 +1468,7 @@ int main(int an, char** av) {
       delete km;
       goto done;
     } else if (strcmp(FLAGS_algorithm.c_str(), "ecc") == 0) {
-      ecc key;
+      ecc ek;
 
       // notbefore, notafter
       time_point t1, t2;
@@ -1413,50 +1484,38 @@ int main(int an, char** av) {
         goto done;
       }
 
-#if 0
       if (!init_ecc_curves()) {
         printf("Can't init ecc curves\n");
         ret = 1;
         goto done;
       }
-      if (!key.generate_ecc_from_standard_template("FLAGS_curve_name", "test_key-20",
-              "anything", seconds_in_common_year)) {
+      if (!ek.generate_ecc_from_standard_template(FLAGS_ecc_curve_name.c_str(), FLAGS_key_name.c_str(),
+        FLAGS_purpose.c_str(), 5 * 365 * 86400.0)) {
         printf("Can't generate ecc from template\n");
         ret = 1;
         goto done;
       }
-      key.print();
-      string curve_p;
-      string curve_a;
-      string curve_b;
-      string curve_base_x;
-      string curve_base_y;
-      string order_base_point;
-      string secret;
-      string curve_public_point_x;
-      string curve_public_point_y;
 
-      key_message* km = make_ecckey(FLAGS_key_name, FLAGS_key_size, "",
-                         s1.c_str(), s2.c_str()l FLAGS_curve_name, curve_p,
-                         curve_a, curve_b, curve_base_x, curve_base_y,
-                         order_base_point, secret,
-                         curve_public_point_x, curve_public_point_y);
-      if (km == nullptr) {
-        printf("Can't make ecc key\");
+      if (!ek.set_parameters_in_key_message()) {
+        printf("Can't set parameters in ecc message\n");
         ret = 1;
         goto done;
       }
-#endif
+      ek.print();
+
       string s;
-      km->SerializeToString(&s);
+      if (!ek.get_serialized_key_message(&s)) {
+        printf("Can't serialize ecc message\n");
+        ret = 1;
+        goto done;
+      }
       file_util out_file;
       if (!out_file.write_file(FLAGS_key_file.c_str(), (int) s.size(), (byte*) s.data())) {
         printf("Can't write %s\n", FLAGS_key_file.c_str());
         ret = 1;
         goto done;
       }
-      print_key_message(*km);
-      delete km;
+      print_key_message(*ek.ecc_key_);
       goto done;
     } else {
       printf("Unknown key type\n");
