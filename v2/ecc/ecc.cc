@@ -200,6 +200,7 @@ void ecc_curve::print_curve() {
 
 bool ecc_curve::copy_from(ecc_curve& c) {
   prime_bit_size_ = c.prime_bit_size_;
+  c_name_.assign(c.c_name_);
   curve_p_->copy_from(*c.curve_p_);
   curve_a_->copy_from(*c.curve_a_);
   curve_b_->copy_from(*c.curve_b_);
@@ -892,12 +893,38 @@ bool ecc::copy_key_parameters_from(ecc& copy_key) {
     base_point_->copy_from(*copy_key.base_point_); // curve_point
   }
 
+  if (c_ == nullptr) {
+    c_ = new ecc_curve;
+    if (c_ == nullptr) {
+      return false;
+    }
+  }
+  c_->prime_bit_size_ = copy_key.c_->prime_bit_size_;
+  c_->c_name_.assign(copy_key.c_->c_name_);
+  if (c_->curve_p_ == nullptr) {
+    c_->curve_p_= new big_num(nw);
+  }
+  if (c_->curve_a_ == nullptr) {
+    c_->curve_a_= new big_num(nw);
+  }
+  if (c_->curve_b_ == nullptr) {
+    c_->curve_b_= new big_num(nw);
+  }
+  c_->curve_p_->copy_from(*copy_key.c_->curve_p_);
+  c_->curve_a_->copy_from(*copy_key.c_->curve_a_);
+  c_->curve_b_->copy_from(*copy_key.c_->curve_b_);
+
   if (copy_key.order_of_base_point_ != nullptr) {
     if (order_of_base_point_ != nullptr)
       order_of_base_point_->copy_from(*copy_key.order_of_base_point_);
     if (base_point_ != nullptr)
       base_point_->copy_from(*copy_key.base_point_);  // base_point = base_point * secret
   }
+
+  if (order_of_base_point_ == nullptr) {
+    order_of_base_point_ = new big_num(nw);
+  }
+  order_of_base_point_->copy_from(*copy_key.order_of_base_point_);  // base_point = base_point * secret
 
   if (copy_key.secret_ != nullptr) {
     if (secret_ == nullptr) {
@@ -1088,21 +1115,27 @@ bool ecc::set_parameters_in_key_message() {
   ecc_key_->set_key_size(c_->prime_bit_size_);
   cm->set_curve_name(c_->c_name_);
 
-  s.clear();
-  if(!bignum_to_string_msg(*c_->curve_p_, &s)) {
-    return false;
+  if (c_->curve_p_ != nullptr) {
+    s.clear();
+    if(!bignum_to_string_msg(*c_->curve_p_, &s)) {
+      return false;
+    }
+    cm->set_curve_p(s);
   }
-  cm->set_curve_p(s);
-  s.clear();
-  if(!bignum_to_string_msg(*c_->curve_a_, &s)) {
-    return false;
+  if (c_->curve_a_ != nullptr) {
+    s.clear();
+    if(!bignum_to_string_msg(*c_->curve_a_, &s)) {
+      return false;
+    }
+    cm->set_curve_a(s);
   }
-  cm->set_curve_a(s);
-  s.clear();
-  if(!bignum_to_string_msg(*c_->curve_b_, &s)) {
-    return false;
+  if (c_->curve_b_ != nullptr) {
+    s.clear();
+    if(!bignum_to_string_msg(*c_->curve_b_, &s)) {
+      return false;
+    }
+    cm->set_curve_b(s);
   }
-  cm->set_curve_b(s);
 
   point_message* pm = ecc_pub->mutable_base_point();
   if (base_point_ != nullptr) {

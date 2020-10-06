@@ -68,3 +68,6 @@ $BIN/cryptutil.exe --operation=encrypt_file_with_password --algorithm="aes-hmac-
 $BIN/cryptutil.exe --operation=decrypt_file_with_password --algorithm="aes-hmac-sha256-cbc" --encrypt_key_size=128 --mac_key_size=256 \
 --pass="my voice is my password" --input_file=test_cipher --output_file=test_decrypted
 
+
+$BIN/cryptutil.exe --operation=generate_key --key_file=ecc_key --algorithm="ecc" \
+-- key_name=ecc_test_key --ecc_curve_name="P-256"

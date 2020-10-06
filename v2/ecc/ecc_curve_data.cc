@@ -126,7 +126,7 @@ bool init_ecc_curves() {
       return false;
 
     p256_key.c_->prime_bit_size_ = 256;
-    p256_key.c_->c_name_.assign("P256");
+    p256_key.c_->c_name_.assign("P-256");
 
     p256_key.c_->curve_p_->value_[3] = 0xffffffff00000001ULL;
     p256_key.c_->curve_p_->value_[2] = 0ULL;
@@ -186,7 +186,7 @@ bool init_ecc_curves() {
       return false;
 
     p384_key.c_->prime_bit_size_ = 384;
-    p384_key.c_->c_name_.assign("P384");
+    p384_key.c_->c_name_.assign("P-384");
 
     // p = 2^384 – 2^128 – 2^96 + 2^32 –1
     p384_key.c_->curve_p_->value_[5] = 0xffffffffffffffffULL;
@@ -257,7 +257,7 @@ bool init_ecc_curves() {
     if (p521_key.c_ == nullptr)
       return false;
     p521_key.c_->prime_bit_size_ = 521;
-    p521_key.c_->c_name_.assign("P521");
+    p521_key.c_->c_name_.assign("P-521");
 
     p521_key.c_->prime_bit_size_ = 521;
     p521_key.c_->curve_p_->value_[8] = 0x1ffULL;

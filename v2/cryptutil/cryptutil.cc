@@ -136,7 +136,7 @@ DEFINE_int32(encrypt_key_size, 128, "encrypt-key-size-in-bits");
 DEFINE_int32(mac_key_size, 128, "mac-key-size-in-bits");
 DEFINE_int32(key_size, 128, "key-size-in-bits");
 DEFINE_string(algorithm, "sha256", "hash algorithm");
-DEFINE_string(ecc_curve_name, "p-256", "ecc curve name");
+DEFINE_string(ecc_curve_name, "P-256", "ecc curve name");
 DEFINE_string(duration, "1Y", "duration");
 DEFINE_string(pass, "password", "password");
 DEFINE_string(purpose, "channel-encryption", "purpose");
@@ -329,7 +329,6 @@ bool decrypt_rsa(int size_in, byte* in,
   return rk.decrypt(size_in, in, &size_out, out, 0);
 }
 
-// Todo
 bool encrypt_ecc(int size_in, byte* in,
                  int size_out, byte* out) {
 
@@ -1484,11 +1483,6 @@ int main(int an, char** av) {
         goto done;
       }
 
-      if (!init_ecc_curves()) {
-        printf("Can't init ecc curves\n");
-        ret = 1;
-        goto done;
-      }
       if (!ek.generate_ecc_from_standard_template(FLAGS_ecc_curve_name.c_str(), FLAGS_key_name.c_str(),
         FLAGS_purpose.c_str(), 5 * 365 * 86400.0)) {
         printf("Can't generate ecc from template\n");
@@ -1496,13 +1490,14 @@ int main(int an, char** av) {
         goto done;
       }
 
+      ek.print();
       if (!ek.set_parameters_in_key_message()) {
         printf("Can't set parameters in ecc message\n");
         ret = 1;
         goto done;
       }
-      ek.print();
 
+      ek.ecc_key_->set_key_name(FLAGS_key_name);
       string s;
       if (!ek.get_serialized_key_message(&s)) {
         printf("Can't serialize ecc message\n");
