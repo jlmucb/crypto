@@ -1,6 +1,4 @@
-//
-// Copyright 2014 John Manferdelli, All Rights Reserved.
-//
+// Copyright 2014-2020, John Manferdelli, All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -1178,7 +1176,7 @@ bool ecc::retrieve_parameters_from_key_message() {
     return false;
 
   if (!ecc_key_->has_key_size()) {
-    return false;
+    prime_bit_size_ = ecc_key_->key_size();
   }
   prime_bit_size_ = ecc_key_->key_size();
   if(ecc_key_->has_notafter()) {
