@@ -1,4 +1,4 @@
-1. Put the ecc stuff back in cryptutil
+1. Put the ecc stuff back in cryptutil (almost done)
 2. Put lwe and ntru in cryptoutil with real parameters (like NIST Frodo and NIST ntru)
 3. Put assembly version of speedups for ARM64 in arm_digit_arith.cc
 4. Maybe more automated testing
