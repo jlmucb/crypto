@@ -129,6 +129,7 @@ DEFINE_string(key_name, "", "Key name");
 DEFINE_string(input_file, "", "Input file name");
 DEFINE_string(input2_file, "", "Second input file name");
 DEFINE_string(output_file, "", "Output file name");
+DEFINE_string(output2_file, "", "Output file name");
 DEFINE_string(direction, "left-right",
               "string value direction left-right or right-left");
 DEFINE_int32(random_size, 128, "random-size-in-bits");
@@ -768,11 +769,74 @@ int main(int an, char** av) {
     byte out[in_out_size];
     memset(in, 0, in_out_size);
     memset(out, 0, in_out_size);
+    curve_point pt1(8);
+    curve_point pt2(8);
+
     if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in) < size_in) {
       printf("Can't read %s\n", FLAGS_input_file.c_str());
       ret = 1;
       goto done;
     }
+
+    if (strcmp(alg, "ecc") == 0 && strcmp(alg, "decrypt_with_key") == 0) {
+      // read and deserialise into point
+      string s_point;
+      point_message cpm;
+      curve_point cp(8);
+
+      s_point.assign((char*)in, (size_t)size_in);
+      cpm.ParseFromString(s_point);
+
+      string s;
+      s.clear();
+      s.assign((char*)cpm.x().data(), cpm.x().size());
+      if (!string_msg_to_bignum(s, *pt1.x_)) {
+        printf("Can't get message points\n");
+        ret = 1;
+        goto done;
+      }
+      s.clear();
+      s.assign((char*)cpm.y().data(), cpm.y().size());
+      if (!string_msg_to_bignum(s, *pt1.y_)) {
+        printf("Can't get message points\n");
+        ret = 1;
+        goto done;
+      }
+    
+      int size_in2;
+      if (!in_file.open(FLAGS_input2_file.c_str())) {
+        printf("Can't open %s\n", FLAGS_input_file.c_str());
+        ret = 1;
+        goto done;
+      }
+      size_in2 = in_file.bytes_in_file();
+      in_file.close();
+
+      byte in2[size_in2];
+      if (in_file.read_file(FLAGS_input2_file.c_str(), size_in2, in2) < size_in2) {
+        printf("Can't open %s\n", FLAGS_input2_file.c_str());
+        ret = 1;
+        goto done;
+      }
+
+      s_point.assign((char*)in2, (size_t)size_in2);
+      cpm.ParseFromString(s_point);
+
+      s.clear();
+      s.assign((char*)cpm.x().data(), cpm.x().size());
+      if (!string_msg_to_bignum(s, *pt2.x_)) {
+        printf("Can't get message points\n");
+        ret = 1;
+        goto done;
+      }
+      s.clear();
+      s.assign((char*)cpm.y().data(), cpm.y().size());
+      if (!string_msg_to_bignum(s, *pt2.y_)) {
+        printf("Can't get message points\n");
+        ret = 1;
+        goto done;
+      }
+    } 
 
     if (strcmp(alg, "aes") == 0) {
       if ("encrypt_with_key" == FLAGS_operation) {
@@ -827,16 +891,12 @@ int main(int an, char** av) {
           ret = 1;
           goto done;
         }
-      printf("in       : "); print_bytes(in_out_size, in);
-      printf("out      : "); pt1.print(); printf(", ");pt2.print();printf("\n");
       } else {
         if (!decrypt_ecc(pt1, pt2, in_out_size, out)) {
           printf("Can't encrypt ecc\n");
           ret = 1;
           goto done;
         }
-      printf("in       : "); pt1.print(); printf(", ");pt2.print();printf("\n");
-      printf("out      : "); print_bytes(in_out_size, in);
       }
     } else {
       printf("unsupported algorithm %s\n", alg);
@@ -845,7 +905,53 @@ int main(int an, char** av) {
     }
 
     file_util out_file;
-    out_file.write_file(FLAGS_output_file.c_str(), in_out_size, out);
+    if (strcmp(alg, "ecc") == 0 && strcmp(alg, "encrypt_with_key") == 0) {
+      string serialized_pt1;
+      string serialized_pt2;
+
+      point_message cpm1;
+      point_message cpm2;
+
+      string s;
+      s.clear();
+      if (!bignum_to_string_msg(*pt1.x_, &s)) {
+        return false;
+      }
+      cpm1.set_x(s);
+      s.clear();
+      if (!bignum_to_string_msg(*pt1.y_, &s)) {
+        return false;
+      }
+      cpm1.set_y(s);
+      s.clear();
+      if (!bignum_to_string_msg(*pt2.x_, &s)) {
+        return false;
+      }
+      cpm2.set_x(s);
+      s.clear();
+      if (!bignum_to_string_msg(*pt2.y_, &s)) {
+        return false;
+      }
+      cpm2.set_y(s);
+
+      cpm1.SerializeToString(&serialized_pt1);
+      cpm2.SerializeToString(&serialized_pt2);
+
+      out_file.write_file(FLAGS_output_file.c_str(), (int)serialized_pt1.size(),
+                          (byte*)serialized_pt1.data());
+      out_file.write_file(FLAGS_output2_file.c_str(), (int)serialized_pt2.size(),
+                          (byte*)serialized_pt2.data());
+      printf("in       : "); print_bytes(in_out_size, in);
+      printf("out      : "); pt1.print(); printf(", "); pt2.print(); printf("\n");
+    } else if (strcmp(alg, "ecc") == 0 && strcmp(alg, "decrypt_with_key") == 0) {
+      out_file.write_file(FLAGS_output_file.c_str(), in_out_size, out);
+      printf("in       : "); pt1.print(); printf(", "); pt2.print(); printf("\n");
+      printf("out      : "); print_bytes(in_out_size, out);
+    } else {
+      out_file.write_file(FLAGS_output_file.c_str(), in_out_size, out);
+      printf("in       : "); print_bytes(in_out_size, in);
+      printf("out      : "); print_bytes(in_out_size, out);
+    }
     goto done;
 
   } else if ("generate_scheme" == FLAGS_operation) {
