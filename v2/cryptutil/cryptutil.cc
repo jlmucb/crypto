@@ -896,11 +896,6 @@ int main(int an, char** av) {
       ret = 1;
       goto done;
     }
-    if (!scheme.recover_encryption_scheme_from_message()) {
-      printf("Can't recover encryption scheme\n");
-      ret = 1;
-      goto done;
-    }
     if (!scheme.init()) {
       printf("Can't init encryption scheme\n");
       ret = 1;
@@ -1080,11 +1075,6 @@ int main(int an, char** av) {
       ret = 1;
       goto done;
     }
-    if (!scheme.recover_encryption_scheme_from_message()) {
-      printf("Can't recover encryption scheme\n");
-      ret = 1;
-      goto done;
-    }
     if (!scheme.init()) {
       printf("Can't init encryption scheme\n");
       ret = 1;
@@ -1096,12 +1086,18 @@ int main(int an, char** av) {
         printf("Can't file encrypt\n");
         ret = 1;
         goto done;
+      } else {
+        printf("scheme_encrypt_file: %d bytes in, %d bytes out\n", scheme.get_message_size(),
+           scheme.get_total_bytes_output());
       }
     } else {
       if (!scheme.decrypt_file(FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
         printf("Can't file decrypt\n");
         ret = 1;
         goto done;
+      } else {
+        printf("scheme_decrypt_file: %d bytes in, %d bytes out\n", scheme.get_message_size(),
+           scheme.get_bytes_encrypted());
       }
     }
   goto done;
@@ -1168,12 +1164,18 @@ int main(int an, char** av) {
         printf("Can't file encrypt\n");
         ret = 1;
         goto done;
+      } else {
+        printf("encrypt_file_with_password: %d bytes in, %d bytes out\n", scheme.get_message_size(),
+           scheme.get_total_bytes_output());
       }
     } else {
       if (!scheme.decrypt_file(FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
         printf("Can't file decrypt\n");
         ret = 1;
         goto done;
+      } else {
+        printf("decrypt_file_with_password: %d bytes in, %d bytes out\n", scheme.get_message_size(),
+           scheme.get_bytes_encrypted());
       }
     }
     goto done;

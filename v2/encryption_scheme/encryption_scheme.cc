@@ -61,7 +61,7 @@ void encryption_scheme::ctr_encrypt_step(byte* in, byte* out) {
   int_obj_.add_to_inner_hash(block_size_, out);
 #if 0
   printf("ctr encrypt in : "); print_bytes(block_size_, in);
-  printf("ctr nonce      : "); print_bytes(block_size_, (byte*)running_nonce_.data());
+  printf("running nonce  : "); print_bytes(block_size_, (byte*)running_nonce_.data());
   printf("ctr encrypt out: "); print_bytes(block_size_, out);
 #endif
   update_nonce(block_size_, out);
@@ -73,7 +73,7 @@ void encryption_scheme::ctr_decrypt_step(byte* in, byte* out) {
   xor_into(out, in, block_size_);
 #if 0
   printf("ctr decrypt in : "); print_bytes(block_size_, in);
-  printf("ctr nonce      : "); print_bytes(block_size_, (byte*)running_nonce_.data());
+  printf("running nonce  : "); print_bytes(block_size_, (byte*)running_nonce_.data());
   printf("ctr decrypt out: "); print_bytes(block_size_, out);
 #endif
   update_nonce(block_size_, in);
@@ -224,19 +224,18 @@ printf("init_nonce: ");print_bytes(size, value);
   if (size_nonce_bytes_ > block_size_)
       size_nonce_bytes_ = block_size_;
 
+  if (size < block_size_) {
+    initial_nonce_.assign((char*)value, size);
+    initial_nonce_.append(block_size_ -  size, 0);
+  } else {
+    initial_nonce_.assign((char*)value, block_size_);
+  }
   if (mode_ == CTR) {
     counter_nonce_->zero_num();
     memcpy(counter_nonce_->value_ptr(), value, size);
     counter_nonce_->normalize();
-    fill_big_num_to_block(block_size_, *counter_nonce_, &initial_nonce_);
-  } else {
-    if (size < block_size_) {
-      initial_nonce_.assign((char*)value, size);
-      initial_nonce_.append(block_size_ -  size, 0);
-    } else {
-      initial_nonce_.assign((char*)value, block_size_);
-    }
-  }
+    // fill_big_num_to_block(block_size_, *counter_nonce_, &initial_nonce_);
+  } 
   running_nonce_.assign(initial_nonce_.data(), block_size_);
   nonce_data_valid_ = true;
   return true;
@@ -339,7 +338,7 @@ bool encryption_scheme::finalize_encrypt(int size_final, byte* final_in,
   // pad final block
   byte final_block[128];
   int n = size_final;
-  if (size_final > 0) {
+  if (n > 0) {
     memcpy(final_block, final_in, n);
   }
 
@@ -423,14 +422,14 @@ bool encryption_scheme::encrypt_message(int size_in, byte* in, int size_out, byt
   int bytes_left = size_in;
 
   string nonce(block_size, 0);
-  if (crypto_get_random_bytes(block_size_, (byte*)nonce.data()) < block_size)
+  if (crypto_get_random_bytes(block_size, (byte*)nonce.data()) < block_size)
     return false;
   if (!init_nonce((int)nonce.size(), (byte*)nonce.data()))
     return false;
-  // first, output nonce
-  memcpy(cur_out, (byte*)initial_nonce_.data(), block_size);
+  memcpy(cur_out, (byte*)running_nonce_.data(), block_size);
+
 #if 0
-printf("First hash: "); print_bytes(block_size_, cur_out);
+printf("First nonce: "); print_bytes(block_size, cur_out);
 #endif
   int_obj_.add_to_inner_hash(block_size_, cur_out);
   cur_out += block_size;
@@ -473,22 +472,15 @@ bool encryption_scheme::decrypt_message(int size_in, byte* in, int size_out, byt
   int bytes_left = size_in;
 
   // first, get nonce and transform it
-  if (!init_nonce(block_size_, in))
+  if (!init_nonce(block_size, in))
     return false;
-#if 0
-printf("First hash: "); print_bytes(block_size, in);
-#endif
   int_obj_.add_to_inner_hash(block_size, in);
-  initial_nonce_.assign((char*)in, block_size);
-  running_nonce_.assign((char*)in, block_size);
   cur_in += block_size;
   bytes_left -= block_size;
-  if (mode_ == CTR) {
-    // big--> little endian
-    reverse_bytes(block_size_, in, (byte*)counter_nonce_->value_ptr());
-    counter_nonce_->normalize();
-  }
 
+#if 0
+printf("First nonce: "); print_bytes(block_size, in);
+#endif
   while (bytes_left > (block_size + mac_size)) {
     if (mode_ == CTR) {
         ctr_decrypt_step(cur_in, cur_out);
@@ -566,7 +558,7 @@ bool encryption_scheme::encrypt_file(const char* infile, const char* outfile) {
     printf("Can't open %s\n", infile);
     return false;
   }
-  if (out_file.create(outfile)) {
+  if (!out_file.create(outfile)) {
     printf("Can't creat %s\n", outfile);
     return false;
   }
@@ -584,13 +576,14 @@ bool encryption_scheme::encrypt_file(const char* infile, const char* outfile) {
   int bytes_in_output_buffer= 0;
 
   string nonce(block_size, 0);
-  if (crypto_get_random_bytes(block_size_, (byte*)nonce.data()) < block_size)
+  if (crypto_get_random_bytes(block_size, (byte*)nonce.data()) < block_size)
     return false;
+
   if (!init_nonce((int)nonce.size(), (byte*)nonce.data()))
     return false;
 
   // process nonce block
-  int_obj_.add_to_inner_hash(block_size_, (byte*)nonce.data());
+  int_obj_.add_to_inner_hash(block_size, (byte*)nonce.data());
   out_file.write_a_block(block_size, (byte*)nonce.data());
   total_bytes_output_ += block_size;
 
@@ -626,6 +619,7 @@ bool encryption_scheme::encrypt_file(const char* infile, const char* outfile) {
         if (!finalize_encrypt(bytes_left_in_buffer, cur_in, &additional_bytes, cur_out)) {
           return false;
         }
+        out_file.write_a_block(additional_bytes, cur_out);
         total_bytes_output_ += additional_bytes;
         encrypted_bytes_output_ += additional_bytes - get_mac_size();
         message_valid_ = true;
@@ -644,6 +638,7 @@ bool encryption_scheme::encrypt_file(const char* infile, const char* outfile) {
       total_bytes_output_ += block_size;
       cur_in += block_size;
       cur_out += block_size;
+      bytes_left_in_buffer -= block_size;
       bytes_left_in_file -= block_size;
       bytes_in_output_buffer += block_size;
     }
@@ -660,14 +655,15 @@ bool encryption_scheme::decrypt_file(const char* infile, const char* outfile) {
     printf("Can't open %s\n", infile);
     return false;
   }
-  if (out_file.create(outfile)) {
+  if (!out_file.create(outfile)) {
     printf("Can't creat %s\n", outfile);
     return false;
   }
 
   byte in_buf[file_buffer_size];
   byte out_buf[file_buffer_size];
-    return false;
+  memset(in_buf, 0, file_buffer_size);
+  memset(out_buf, 0, file_buffer_size);
 
   int mac_size = get_mac_size();
   int block_size = get_block_size();
@@ -677,21 +673,18 @@ bool encryption_scheme::decrypt_file(const char* infile, const char* outfile) {
   int bytes_in_output_buffer= 0;
 
   if (!message_info(in_file.bytes_in_file(), encryption_scheme::DECRYPT))
+    return false;
 
   // read nonce and process it
-  if (in_file.read_a_block(block_size, in_buf) < block_size)
+  if (in_file.read_a_block(block_size, in_buf) < block_size) {
     return false;
-  if (!init_nonce(block_size, in_buf))
-    return false;
-  int_obj_.add_to_inner_hash(block_size, in_buf);
-  initial_nonce_.assign((char*)in_buf, block_size);
-  running_nonce_.assign((char*)in_buf, block_size);
-  bytes_left_in_file -= block_size;
-  if (mode_ == CTR) {
-    // big--> little endian
-    reverse_bytes(block_size, in_buf, (byte*)counter_nonce_->value_ptr());
-    counter_nonce_->normalize();
   }
+  if (!init_nonce(block_size, in_buf)) {
+    return false;
+  }
+
+  int_obj_.add_to_inner_hash(block_size, in_buf);
+  bytes_left_in_file -= block_size;
 
   byte* cur_in;
   byte* cur_out;
@@ -731,37 +724,42 @@ bool encryption_scheme::decrypt_file(const char* infile, const char* outfile) {
         if (!finalize_decrypt(bytes_left_in_buffer, cur_in, &additional_bytes, cur_out, computed_mac)) {
           in_file.close();
           out_file.close();
+          printf("finalize_decrypt failed\n");
           return false;
         }
-        total_bytes_output_ += additional_bytes;
-        encrypted_bytes_output_ += additional_bytes;
-        cur_out += additional_bytes;
         cur_in += additional_bytes;
+        cur_out += additional_bytes;
         bytes_left_in_file -= additional_bytes;
         bytes_left_in_buffer -= additional_bytes;
+        total_bytes_output_ += additional_bytes;
+        encrypted_bytes_output_ += additional_bytes;
 
         // now fix message size
         byte* pb = cur_out - 1;
         int i;
-        for (i = 0; i < block_size_; i++) {
+        for (i = 0; i < block_size; i++) {
           if (*pb != 0) {
             if (*pb != 0x80) {
               message_valid_= false;
               in_file.close();
               out_file.close();
+              printf("bad pad 1\n");
               return false;
             }
-            encrypted_bytes_output_ -= (i + 1);
+            encrypted_bytes_output_ -=  (i + 1);
+            additional_bytes -=  (i + 1);
             break;
           }
           pb--;
         }
-        if (i >= block_size_) {
+        if (i >= block_size) {
           message_valid_= false;
           in_file.close();
           out_file.close();
+          printf("bad pad 2\n");
           return false;
         }
+        out_file.write_a_block(additional_bytes, cur_out);
         message_valid_ = (memcmp(cur_in, computed_mac, hmac_digest_size_) == 0);
 #if 0
 if (message_valid_)printf("message valid\n"); else printf("message not valid\n");
@@ -773,7 +771,7 @@ print_bytes(hmac_digest_size_, cur_in);
         return (message_valid_);
       }
 
-    if (mode_ == CTR) {
+      if (mode_ == CTR) {
         ctr_decrypt_step(cur_in, cur_out);
       } else if (mode_ == CBC) {
         cbc_decrypt_step(cur_in, cur_out);
@@ -788,6 +786,7 @@ print_bytes(hmac_digest_size_, cur_in);
       cur_in += block_size;
       cur_out += block_size;
       bytes_left_in_file -= block_size;
+      bytes_left_in_buffer -= block_size;
       bytes_in_output_buffer += block_size;
     }
   }

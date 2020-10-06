@@ -86,9 +86,6 @@ bool test_aes_sha256_ctr_test1() {
   for (int i = 0; i < 32; i++)
     x[i] = i+32;
   hmac_key.assign((char*)x, 32);
-  for (int i = 0; i < 32; i++)
-    x[i] = i+64;
-  nonce.assign((char*)x, 16);
 
   time_point t1, t2;
   t1.time_now();
