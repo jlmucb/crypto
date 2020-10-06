@@ -330,7 +330,7 @@ bool decrypt_rsa(int size_in, byte* in,
 }
 
 bool encrypt_ecc(int size_in, byte* in,
-                 int size_out, byte* out) {
+                 curve_point* pt1, curve_point* pt2) {
 
   ecc ek;
   ek.ecc_key_ = new key_message;
@@ -354,12 +354,17 @@ bool encrypt_ecc(int size_in, byte* in,
     printf("Can't retrieve parameters\n");
     return false;
   }
-
-  // bool encrypt(int size, byte* plain, big_num& k, curve_point& pt1, curve_point& pt2);
-  return true;
+  int byte_size = ek.prime_bit_size_ / (NBITSINBYTE * sizeof(uint64_t));
+  big_num k(8);
+  if (crypto_get_random_bytes(byte_size, (byte*)k.value_ptr()) < byte_size) {
+    printf("Can't get random bytes\n");
+    return false;
+  }
+  k.normalize();
+  return ek.encrypt(size_in, in, k, *pt1, *pt2);
 }
 
-bool decrypt_ecc(int size_in, byte* in,
+bool decrypt_ecc(curve_point& pt1, curve_point& pt2,
                  int size_out, byte* out) {
 
   ecc ek;
@@ -385,8 +390,7 @@ bool decrypt_ecc(int size_in, byte* in,
     return false;
   }
 
-  // bool decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain);
-  return true;
+  return ek.decrypt(pt1, pt2, &size_out, out);
 }
 
 bool pkcs_sign_rsa_hash(const char* hash_alg, rsa& rk, byte* digest, int block_size,
@@ -815,27 +819,30 @@ int main(int an, char** av) {
         }
       }
     } else if (strcmp(alg, "ecc") == 0) {
+      curve_point pt1(8);
+      curve_point pt2(8);
       if ("encrypt_with_key" == FLAGS_operation) {
-        if (!encrypt_ecc(in_out_size, in, in_out_size, out)) {
+        if (!encrypt_ecc(in_out_size, in, &pt1, &pt2)) {
           printf("Can't encrypt ecc\n");
           ret = 1;
           goto done;
         }
+      printf("in       : "); print_bytes(in_out_size, in);
+      printf("out      : "); pt1.print(); printf(", ");pt2.print();printf("\n");
       } else {
-        if (!decrypt_ecc(in_out_size, in, in_out_size, out)) {
+        if (!decrypt_ecc(pt1, pt2, in_out_size, out)) {
           printf("Can't encrypt ecc\n");
           ret = 1;
           goto done;
         }
+      printf("in       : "); pt1.print(); printf(", ");pt2.print();printf("\n");
+      printf("out      : "); print_bytes(in_out_size, in);
       }
     } else {
       printf("unsupported algorithm %s\n", alg);
       ret = 1;
       goto done;
     }
-
-    printf("in       : "); print_bytes(in_out_size, in);
-    printf("out      : "); print_bytes(in_out_size, out);
 
     file_util out_file;
     out_file.write_file(FLAGS_output_file.c_str(), in_out_size, out);
