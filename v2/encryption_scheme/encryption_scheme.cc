@@ -514,9 +514,6 @@ printf("First nonce: "); print_bytes(block_size, in);
   cur_in += additional_bytes;
   bytes_left -= additional_bytes;
 
-printf("cur_in: "); print_bytes(bytes_left, cur_in);
-printf("cur_out: "); print_bytes(bytes_left, cur_out);
-
   // now fix message size
   byte* pb = cur_out - 1;
   int i;
