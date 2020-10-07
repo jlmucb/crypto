@@ -72,6 +72,8 @@ $BIN/cryptutil.exe --operation=decrypt_file_with_password --algorithm="aes-hmac-
 $BIN/cryptutil.exe --operation=generate_key --key_file=ecc_key --algorithm="ecc" \
 -- key_name=ecc_test_key --ecc_curve_name="P-256"
 $BIN/cryptutil.exe --operation=read_key --key_file=ecc_key
-#$BIN/cryptutil.exe --operation=encrypt_with_key --key_file=ecc_key --input_file=ecc_plain --output_file=ecc_encrypt_out
-#$BIN/cryptutil.exe --operation=decrypt_with_key --key_file=ecc_key --input_file=ecc_encrypt_out --output_file=ecc_decrypted
+$BIN/cryptutil.exe --operation=encrypt_with_key --key_file=ecc_key --input_file=ecc_plain \
+--output_file=pt1.out --output2_file=pt2.out
+$BIN/cryptutil.exe --operation=decrypt_with_key --key_file=ecc_key --input_file=pt1.out \
+input2_file=pt2.out --output_file=ecc_decrypted
 
