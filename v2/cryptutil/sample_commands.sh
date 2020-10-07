@@ -75,5 +75,5 @@ $BIN/cryptutil.exe --operation=read_key --key_file=ecc_key
 $BIN/cryptutil.exe --operation=encrypt_with_key --key_file=ecc_key --input_file=ecc_plain \
 --output_file=pt1.out --output2_file=pt2.out
 $BIN/cryptutil.exe --operation=decrypt_with_key --key_file=ecc_key --input_file=pt1.out \
-input2_file=pt2.out --output_file=ecc_decrypted
+--input2_file=pt2.out --output_file=ecc_decrypted
 

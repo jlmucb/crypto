@@ -1424,8 +1424,8 @@ bool ecc::decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain) {
     return false;
 
   big_num m(c_->curve_p_->capacity_);
-  curve_point p_pt(c_->curve_p_->capacity_);
-  curve_point r_pt(c_->curve_p_->capacity_);
+  curve_point p_pt(2 * c_->curve_p_->capacity_);
+  curve_point r_pt(2 * c_->curve_p_->capacity_);
 
 #ifdef FASTECCMULT
   if (!faster_ecc_mult(*c_, pt1, *(secret_), r_pt)) {
