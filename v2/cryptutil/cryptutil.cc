@@ -393,9 +393,9 @@ bool decrypt_ecc(curve_point& pt1, curve_point& pt2,
   }
 #if 0
 printf("decrypt_ecc\n");
-printf("pt1: ");pt1.print();printf("\n");
-printf("pt2: ");pt2.print();printf("\n");
-printf("p  : ");ek.c_->curve_p_->print();printf("\n");
+printf("pt1            : ");pt1.print();printf("\n");
+printf("pt2            : ");pt2.print();printf("\n");
+printf("p              : ");ek.c_->curve_p_->print();printf("\n");
 #endif
   return ek.decrypt(pt1, pt2, &size_out, out);
 }
@@ -647,8 +647,8 @@ int main(int an, char** av) {
     }
     if (sign)
       n->toggle_sign();
-    printf("number :"); n->print(); printf("\n");
-    printf("bytes  :"); print_bytes((int) bytes.size(), (byte*)bytes.data());
+    printf("number          :"); n->print(); printf("\n");
+    printf("bytes           :"); print_bytes((int) bytes.size(), (byte*)bytes.data());
     delete n;
     goto done;
 
@@ -951,16 +951,16 @@ int main(int an, char** av) {
                           (byte*)serialized_pt1.data());
       out_file.write_file(FLAGS_output2_file.c_str(), (int)serialized_pt2.size(),
                           (byte*)serialized_pt2.data());
-      printf("in       : "); print_bytes(in_out_size, in);
-      printf("out      : "); pt1.print(); printf(", "); pt2.print(); printf("\n");
+      printf("in               : "); print_bytes(in_out_size, in);
+      printf("out              : "); pt1.print(); printf(", "); pt2.print(); printf("\n");
     } else if (strcmp(alg, "ecc") == 0 && strcmp(FLAGS_operation.c_str(), "decrypt_with_key") == 0) {
       out_file.write_file(FLAGS_output_file.c_str(), in_out_size, out);
-      printf("in       : "); pt1.print(); printf(", "); pt2.print(); printf("\n");
-      printf("out      : "); print_bytes(in_out_size, out);
+      printf("in               : "); pt1.print(); printf(", "); pt2.print(); printf("\n");
+      printf("out              : "); print_bytes(in_out_size, out);
     } else {
       out_file.write_file(FLAGS_output_file.c_str(), in_out_size, out);
-      printf("in       : "); print_bytes(in_out_size, in);
-      printf("out      : "); print_bytes(in_out_size, out);
+      printf("in               : "); print_bytes(in_out_size, in);
+      printf("out              : "); print_bytes(in_out_size, out);
     }
     goto done;
 
@@ -1112,7 +1112,8 @@ int main(int an, char** av) {
     if ("scheme_encrypt" == FLAGS_operation) {
       int size_out = size_in + 3 * scheme.get_block_size() + scheme.get_mac_size();
       byte out[size_out];
-      printf("\nPlain (%d): ", size_in);
+      printf("\n");
+      printf("Plain (%d)      : ", size_in);
       print_bytes(size_in, in);
       printf("\n");
       if (!scheme.encrypt_message(size_in, in, size_out, out)) {
@@ -1122,13 +1123,14 @@ int main(int an, char** av) {
       }
       file_util out_file;
       out_file.write_file(FLAGS_output_file.c_str(), scheme.get_total_bytes_output(), out);
-      printf("Encrypted (%d): ", scheme.get_total_bytes_output());
+      printf("Encrypted (%d)    : ", scheme.get_total_bytes_output());
       print_bytes(scheme.get_total_bytes_output(), out);
       printf("\n");
     } else {
       int size_out = size_in;
       byte out[size_out];
-      printf("\nCipher (%d): ", size_in);
+      printf("\n");
+      printf("Cipher (%d)       : ", size_in);
       print_bytes(size_in, in);
       printf("\n");
       if (!scheme.decrypt_message(size_in, in, size_out, out)) {
@@ -1138,7 +1140,7 @@ int main(int an, char** av) {
       }
       file_util out_file;
       out_file.write_file(FLAGS_output_file.c_str(), scheme.get_bytes_encrypted(), out);
-      printf("Decrypted (%d): ", scheme.get_bytes_encrypted());
+      printf("Decrypted (%d)  : ", scheme.get_bytes_encrypted());
       print_bytes(scheme.get_bytes_encrypted(), out);
       printf("\n");
     }
@@ -1219,7 +1221,8 @@ int main(int an, char** av) {
     if ("encrypt_with_password" == FLAGS_operation) {
       int size_out = size_in + 3 * scheme.get_block_size() + scheme.get_mac_size();
       byte out[size_out];
-      printf("\nPlain (%d): ", size_in);
+      printf("\n");
+      printf("Plain (%d)      : ", size_in);
       print_bytes(size_in, in);
       printf("\n");
       if (!scheme.encrypt_message(size_in, in, size_out, out)) {
@@ -1229,13 +1232,13 @@ int main(int an, char** av) {
       }
       file_util out_file;
       out_file.write_file(FLAGS_output_file.c_str(), scheme.get_total_bytes_output(), out);
-      printf("Encrypted (%d): ", scheme.get_total_bytes_output());
+      printf("Encrypted (%d)   : ", scheme.get_total_bytes_output());
       print_bytes(scheme.get_total_bytes_output(), out);
       printf("\n");
     } else {
       int size_out = size_in;
       byte out[size_out];
-      printf("\nCipher (%d): ", size_in);
+      printf("\nCipher (%d)    : ", size_in);
       print_bytes(size_in, in);
       printf("\n");
       if (!scheme.decrypt_message(size_in, in, size_out, out)) {
@@ -1245,7 +1248,7 @@ int main(int an, char** av) {
       }
       file_util out_file;
       out_file.write_file(FLAGS_output_file.c_str(), scheme.get_bytes_encrypted(), out);
-      printf("Decrypted (%d): ", scheme.get_bytes_encrypted());
+      printf("Decrypted (%d)   : ", scheme.get_bytes_encrypted());
       print_bytes(scheme.get_bytes_encrypted(), out);
       printf("\n");
     }
@@ -1420,8 +1423,8 @@ int main(int an, char** av) {
       printf("%s: unsupported algorithm\n", FLAGS_algorithm.c_str());
     }
 
-    printf("to hash : "); print_bytes(size_in, in);
-    printf("hash    : "); print_bytes(hash_size_bytes, hash);
+    printf("to hash       : "); print_bytes(size_in, in);
+    printf("hash          : "); print_bytes(hash_size_bytes, hash);
     goto done;
   } else if ("generate_key" == FLAGS_operation) {
 
@@ -1714,9 +1717,9 @@ int main(int an, char** av) {
       ret = 1;
       goto done;
     }
-    printf("hmac key (%d): ", FLAGS_key_size); print_bytes(byte_size, hmac_key);
-    printf("input (%d)   : ", size_in); print_bytes(size_in, in);
-    printf("computed hmac: "); print_bytes(mac_size, hmac);
+    printf("hmac key (%d)   : ", FLAGS_key_size); print_bytes(byte_size, hmac_key);
+    printf("input (%d)      : ", size_in); print_bytes(size_in, in);
+    printf("computed hmac   : "); print_bytes(mac_size, hmac);
 
     if ("generate_mac" == FLAGS_operation) {
 
