@@ -44,15 +44,36 @@ void print_compare_val(int k) {
 }
 
 bool test_add_step() {
-  uint64_t a, b, carry_in, carry, result;
+  uint64_t a, b, carry_in, carry_out, carry, result;
+
+  carry_in = 0ULL;
+  carry = carry_in << 29;
+
+  a = 0xffffffffffffffffULL;
+  b = 1;
+  u64_add_step(a, b, &result, &carry);
+  carry_out = (carry != 0);
+  printf("u64_add_step: ");
+  printf("%lx + %lx  + %lx = %lx, carry_out: %lx\n", a, b, carry_in, result, carry_out);
+  result = 0;
+
+  a = 0xffffffffffffffffULL;
+  b = 2;
+  u64_add_step(a, b, &result, &carry);
+  carry_out = (carry != 0);
+  printf("u64_add_step: ");
+  printf("%lx + %lx  + %lx = %lx, carry_out: %lx\n", a, b, carry_in, result, carry_out);
+
   carry_in = 1;
-  carry = carry_in;
+  carry = carry_in << 29ULL;
+  printf("Carry: %llx\n", carry);
   result = 0;
   a = 0xffffffffffffffffULL;
   b = 2;
   u64_add_step(a, b, &result, &carry);
-  printf("\nu64_add_step: ");
-  printf("%lx + %lx  + %lx = %lx, carry_out: %lx\n", a, b, carry_in, result, carry);
+  carry_out = (carry != 0);
+  printf("u64_add_step: ");
+  printf("%lx + %lx  + %lx = %lx, carry_out: %lx\n", a, b, carry_in, result, carry_out);
 
   return true;
 }

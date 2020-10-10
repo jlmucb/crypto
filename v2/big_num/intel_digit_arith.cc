@@ -161,16 +161,16 @@ void u64_add_step(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry) {
 
 //  carry:result= a*b
 //  mulq   op:    rdx:rax= %rax*op
-void u64_mult_step(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry) {
+void u64_mult_step(uint64_t a, uint64_t b, uint64_t* lo_digit, uint64_t* hi_digit) {
   asm volatile(
-      "\tmovq   %[result], %%rcx\n"
-      "\tmovq   %[carry], %%rbx\n"
+      "\tmovq   %[lo_digit], %%rcx\n"
+      "\tmovq   %[hi_digit], %%rbx\n"
       "\tmovq   %[a], %%rax\n"
       "\tmulq   %[b]\n"
       "\tmovq   %%rax, (%%rcx)\n"
       "\tmovq   %%rdx,(%%rbx)\n"
-      "1:\n" ::[result] "g"(result),
-      [carry] "g"(carry), [a] "g"(a), [b] "g"(b)
+      "1:\n" ::[lo_digit] "g"(lo_digit),
+      [hi_digit] "g"(hi_digit), [a] "g"(a), [b] "g"(b)
       : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx");
 }
 
@@ -240,10 +240,10 @@ void u64_sub_with_borrow_step(uint64_t a, uint64_t b, uint64_t borrow_in,
 
 //  carry_out:result= a*b+carry1+carry2
 void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
-      uint64_t carry2, uint64_t* result, uint64_t* carry_out) {
+      uint64_t carry2, uint64_t* lo_digit, uint64_t* hi_digit) {
   asm volatile(
-      "\tmovq   %[result], %%rcx\n"
-      "\tmovq   %[carry_out], %%rbx\n"
+      "\tmovq   %[lo_digit], %%rcx\n"
+      "\tmovq   %[hi_digit], %%rbx\n"
       "\tmovq   %[a], %%rax\n"
       "\tmulq   %[b]\n"
       "\taddq   %[carry1], %%rax\n"
@@ -257,7 +257,7 @@ void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
       "\tmovq   %%rax,(%%rcx)\n"
       "\tmovq   %%rdx,(%%rbx)\n"
       ::[a] "g"(a), [b] "g"(b), [carry1] "g"(carry1), [carry2] "g"(carry2),
-      [result] "g"(result), [carry_out] "g"(carry_out)
+      [lo_digit] "g"(lo_digit), [hi_digit] "g"(hi_digit)
       : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx");
 }
 

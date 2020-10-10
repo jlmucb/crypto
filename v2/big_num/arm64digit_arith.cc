@@ -145,50 +145,52 @@ int shift_to_top_bit(uint64_t a) {
 }
 
 // Remove this later
+// Don't forget its op  dst, src1, src2
 void instruction_test(uint64_t a, uint64_t b, uint64_t* c, uint64_t* d) {
   *d = 0ULL;
 
   asm volatile (
-    "mov    x9, %[c2]\n\t"    // address of output
-    "mov    x10, %[a1]\n\t"   // a
+    "mov    x9, %[d]\n\t"    // address of output
+    "mov    x10, %[a]\n\t"   // a
     "mov    x11, 0\n\t"       // holds result
     ".1:\n\t"
     "add    x11, x11, x10\n\t"
     "subs   x10, x10, 1\n\t"
     "bne    .1\n\t"
     "str    x11, [X9]\n\t"
-    :: [a1] "r" (a), [a2] "r" (b), [c1] "r" (c), [c2] "r" (d) : );
+    :: [a] "r" (a), [b] "r" (b), [c] "r" (c), [d] "r" (d) : );
 }
 
 
-//  carry:result= a+b
-void u64_add_step(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry) {
+// Don't forget its op  dst, src1, src2
+// carry:result= a+b+carry_in
+void u64_add_step(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry_in_out) {
   asm volatile (
-    "mov    x10, %[a1]\n\t"   // a
-    "mov    x11, %[a2]\n\t"   // b
-    "mov    x8, %[c1]\n\t"    // &result
-    "mov    X9, %[c2]\n\t"    // &carry
-    "mrs    x13, NZCV\n\t"
-    "mov    x14, 0xffffffff0fffffff\n\t"
-    "and    x13, x13, x14\n\t"
-    "ldr    x12, [x9]\n\t"
-    "orr    x13, x13, x12\n\t"
-    "msr    NZCV, x13\n\t"
-    "adcs   x12, x10, x11\n\t"
-    "mov    x13, 0\n\t"
-    "cset   x13, CS\n\t"
-    "str    x12, [x8]\n\t"
-    "str    x13, [x9]\n\t"
-    :: [c1] "r" (result), [c2] "r" (carry), [a1] "r" (a), [a2] "r" (b) : );
+    "mov    x10, %[a]\n\t"                    // a
+    "mov    x11, %[b]\n\t"                    // b
+    "mov    x8, %[result]\n\t"                // &result
+    "mov    X9, %[carry_in_out]\n\t"          // &carry_in_out
+    "mrs    x13, NZCV\n\t"                    // get msr including NZCV conditions
+    "mov    x14, 0xffffffff0fffffff\n\t"      // template for NZCV clear
+    "and    x13, x13, x14\n\t"                // clear carry condition
+    "ldr    x12, [x9]\n\t"                    // put new NZCV in x12
+    "orr    x13, x13, x12\n\t"                // or in new carry condition
+    "msr    NZCV, x13\n\t"                    // set NZCV
+    "adcs   x12, x10, x11\n\t"                // add a, b
+    "cset   x13, CS\n\t"                      // get carry flag
+    "str    x12, [x8]\n\t"                    // store result in result
+    "str    x13, [x9]\n\t"                    // store carry in carry
+    :: [result] "r" (result), [carry_in_out] "r" (carry_in_out), [a] "r" (a), [b] "r" (b) : );
 }
 
-// r1 is the high order digit, r2 is low order
+//  r1 is the high order digit, r2 is low order
+//  r1:r2 = a * b
 void u64_mult_step(uint64_t a, uint64_t b, uint64_t* r1, uint64_t* r2) {
   asm volatile (
-    "mov    x10, %[a1]\n\t"   // a
-    "mov    x11, %[a2]\n\t"   // b
-    "mov    x8, %[r1]\n\t"    // &r1
-    "mov    x9, %[r2]\n\t"    // &r2
+    "mov    x10, %[a1]\n\t"       // a
+    "mov    x11, %[a2]\n\t"       // b
+    "mov    x8, %[r1]\n\t"        // &r1 (low order word)
+    "mov    x9, %[r2]\n\t"        // &r2 (high order word)
     "mul    x13, x10, x11\n\t"
     "umulh  x12, x10, x11\n\t"
     "str    x12, [x8]\n\t"
@@ -197,33 +199,16 @@ void u64_mult_step(uint64_t a, uint64_t b, uint64_t* r1, uint64_t* r2) {
 }
 
 //  q= a:b/c remainder, r
-// divq:  op1: rdx:rax
-//         rdx:rem
-//         rax: result
-void u64_div_step(uint64_t a, uint64_t b, uint64_t c, uint64_t* result,
-       uint64_t* carry) {
+void u64_div_step(uint64_t a, uint64_t b, uint64_t c, uint64_t* q,
+       uint64_t* rem) {
+  // udiv rd, m, rm   // rd = m / rm
 }
 
 //  carry_out:result= a+b+carry_in
 void u64_add_with_carry_step(uint64_t a, uint64_t b, uint64_t carry_in,
         uint64_t* result, uint64_t* carry_out) {
-  asm volatile (
-    "mov    x8, %[r]\n\t"       // &result
-    "mov    X9, %[c_out]\n\t"   // &carry_out
-    "mov    x10, %[a1]\n\t"     // a
-    "mov    x11, %[a2]\n\t"     // b
-    "mrs    x13, NZCV\n\t"
-    "mov    x14, 0xffffffff0fffffff\n\t"
-    "and    x13, x13, x14\n\t"
-    "ldr    x12, [x9]\n\t"
-    "orr    x13, x13, x12\n\t"
-    "msr    NZCV, x13\n\t"
-    "adcs   x12, x10, x11\n\t"
-    "mov    x13, 0\n\t"
-    "cset   x13, CS\n\t"
-    "str    x12, [x8]\n\t"
-    "str    x13, [x9]\n\t"
-    :: [r] "r" (result), [c_in] "r" (carry_in), [c_out] "r" (carry_out), [a1] "r" (a), [a2] "r" (b) : );
+  uint64_t carry = carry_in << 29;
+  u64_add_step(a, b, result, &carry);
 }
 
 //  carry_out:result= a-b-borrow_in if a>b+borrow_in, borrow_out=0
@@ -233,7 +218,16 @@ void u64_sub_with_borrow_step(uint64_t a, uint64_t b, uint64_t borrow_in,
 
 //  carry_out:result= a*b+carry1+carry2
 void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
-      uint64_t carry2, uint64_t* result, uint64_t* carry_out) {
+      uint64_t carry2, uint64_t* lo_digit, uint64_t* hi_digit) {
+  uint64_t add_carry1= 0ULL;
+  uint64_t add_carry2= 0ULL;
+
+  u64_mult_step(a, b, lo_digit, hi_digit);
+  u64_add_with_carry_step(*lo_digit, carry1, 0ULL, lo_digit, &add_carry1);
+  u64_add_with_carry_step(*lo_digit, carry2, 0ULL, lo_digit, &add_carry2);
+  if ((add_carry1 | add_carry2) !=0 ) {
+    u64_add_with_carry_step(*hi_digit, 1ULL, 0ULL, hi_digit, &add_carry1);
+  } 
 }
 
 // result = a+b.  returns size of result.  Error if <0
