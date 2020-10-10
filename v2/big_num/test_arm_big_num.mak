@@ -2,14 +2,14 @@
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
 #    You may obtain a copy of the License at
-#        http://www.apache.org/licenses/LICENSE-2.0
+#	http://www.apache.org/licenses/LICENSE-2.0
 #    or in the the file LICENSE-2.0.txt in the top level sourcedirectory
 #    Unless required by applicable law or agreed to in writing, software
 #    distributed under the License is distributed on an "AS IS" BASIS,
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License
-#    File: arm64_test.mak
+#    File: test_arm_big_num.mak
 
 SRC_DIR=$(HOME)/src/github.com/jlmucb/crypto/v2
 ifndef SRC_DIR
@@ -33,13 +33,14 @@ endif
 
 S= $(SRC_DIR)/big_num
 O= $(OBJ_DIR)/big_num
-INCLUDE= -I$(S) -I$(SRC_DIR)/include -I/usr/local/include -I$(GOOGLE_INCLUDE)
+S_SUPPORT= $(SRC_DIR)/crypto_support
+INCLUDE= -I$(S) -I$(SRC_DIR)/include -I$(S_SUPPORT) -I/usr/local/include -I$(GOOGLE_INCLUDE)
 
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
 CFLAGS1=$(INCLUDE) -O3 -g -Wall -std=c++11
 
+# Simulator commands
 # readelf: readelf –a running_arm_entropy.exe
-
 # 32 bit arm
 # Compiler: arm-linux-gnueabi-g++ --static
 # Compiler: arm-linux-gnueabi-gcc --static
@@ -55,31 +56,66 @@ CFLAGS1=$(INCLUDE) -O3 -g -Wall -std=c++11
 
 SIMTARGET=1
 ifdef SIMTARGET
-        CC=aarch64-linux-gnu-g++ -static
-        LINK=aarch64-linux-gnu-g++ -static
-        AR=ar
-        LDFLAGS= # $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
+	CC=aarch64-linux-gnu-g++ -static
+	LINK=aarch64-linux-gnu-g++ -static
+	AR=ar
+	LDFLAGS= # $(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
 else
-        CC=g++
-        LINK=g++
-        AR=ar
-        export LD_LIBRARY_PATH=/usr/local/lib
-        LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
+	CC=g++
+	LINK=g++
+	AR=ar
+	export LD_LIBRARY_PATH=/usr/local/lib
+	LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 endif
 
-dobj=   $(O)/arm64_bignum_test.o $(O)/bignum.cc.o $(O)/arith.o $(O)/algs.o $(O)/util.o $(O)/smallprimes.o
+dobj=   $(O)/test_arm_big_num.o $(O)/arm64digit_arith.o  $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
+        $(O)/globals.o $(O)/big_num.o $(O)/basic_arith.o $(O)/number_theory.o
 
 all:    test_arm_big_num.exe
+
 clean:
-        @echo "removing object files"
-        rm $(O)/*.o
-        @echo "removing executable file"
-        rm $(EXE_DIR)/arm64_bignum_test.exe
+	@echo "removing object files"
+	rm $(O)/*.o
+	@echo "removing executable file"
+	rm $(EXE_DIR)/arm64_bignum_test.exe
 
-arm64_bignum_test.exe: $(dobj)
-        @echo "linking executable files"
-        $(LINK) -o $(EXE_DIR)/arm64_bignum_test.exe $(dobj) $(LDFLAGS)
+test_arm_big_num.exe: $(dobj)
+	@echo "linking executable files"
+	$(LINK) -o $(EXE_DIR)/test_arm_big_num.exe $(dobj) $(LDFLAGS)
 
-$(O)/arm64_bignum_test.o: $(S)/arm64_bignum_test.cc
-        @echo "compiling arm64_bignum_test.cc"
-        $(CC) $(CFLAGS) -c -o $(O)/arm64_bignum_test.o $(S)/arm64_bignum_test.cc
+$(O)/test_arm_big_num.o: $(S)/test_arm_big_num.cc
+	@echo "compiling test_arm_big_num.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/test_arm_big_num.o $(S)/test_arm_big_num.cc
+
+$(O)/arm64digit_arith.o: $(S)/arm64digit_arith.cc
+	@echo "compiling arm64digit_arith.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/arm64digit_arith.o $(S)/arm64digit_arith.cc
+
+$(O)/support.pb.o: $(S_SUPPORT)/support.pb.cc
+	@echo "compiling support.pb.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/support.pb.o $(S_SUPPORT)/support.pb.cc
+	@echo "compiling arm64digit_arith.cc"
+
+$(O)/crypto_support.o: $(S_SUPPORT)/crypto_support.cc
+	@echo "compiling crypto_support.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/crypto_support.o $(S_SUPPORT)/crypto_support.cc
+
+$(O)/crypto_names.o: $(S_SUPPORT)/crypto_names.cc
+	@echo "compiling crypto_names.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/crypto_names.o $(S_SUPPORT)/crypto_names.cc
+
+$(O)/globals.o: $(S)/globals.cc
+	@echo "compiling globals.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/globals.o $(S)/globals.cc
+
+$(O)/big_num.o: $(S)/big_num.cc
+	@echo "compiling big_num.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/big_num.o $(S)/big_num.cc
+
+$(O)/basic_arith.o: $(S)/basic_arith.cc
+	@echo "compiling basic_arith.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/basic_arith.o $(S)/basic_arith.cc
+
+$(O)/number_theory.o: $(S)/number_theory.cc
+	@echo "compiling number_theory.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/number_theory.o $(S)/number_theory.cc

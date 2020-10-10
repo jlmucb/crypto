@@ -12,7 +12,9 @@
 // File: test_arm_big_num.cc
 
 #include <crypto_support.h>
+#include <arm64_digit_arith.h>
 #include <big_num.h>
+#include <big_num_functions.h>
 
 void print_compare_val(int k) {
   switch(k) {
@@ -72,7 +74,7 @@ int main(int an, char** av) {
   int k = big_compare(A, B);
   A.print();
   print_compare_val(k);
-  B.print;
+  B.print();
   printf("\n");
   k = big_compare(A, A);
   A.print();
@@ -107,7 +109,7 @@ int main(int an, char** av) {
     C.print();
     printf("\n");
   } else {
-    printf(" --- Sub failed\n");
+    printf(" --- sub failed\n");
   }
 
   printf("\nbig_num mult\n");
@@ -136,7 +138,7 @@ int main(int an, char** av) {
   printf(" / ");
   B1.print();
   printf(" = ");
-  if (big_div(A1, B1, Q, R)) {
+  if (big_unsigned_euclid(A1, B1, Q, R)) {
     Q.print();
     printf(" rem ");
     R.print();
@@ -154,7 +156,7 @@ int main(int an, char** av) {
   A.normalize();
 
   printf("\nbig_num shift\n");
-  if (big_shift(2, A, C)) {
+  if (big_shift(A, 2, C)) {
     A.print();
     printf(" << 2w = ");
     C.print();
@@ -162,7 +164,7 @@ int main(int an, char** av) {
   } else {
     printf("big_shift error\n");
   }
-  if (big_shift(-2, A, C)) {
+  if (big_shift(A, -2, C)) {
     A.print();
     printf(" >> 2w = ");
     C.print();
@@ -170,7 +172,7 @@ int main(int an, char** av) {
   } else {
     printf("big_shift error\n");
   }
-  if (big_shift(6, A, C)) {
+  if (big_shift(A, 6, C)) {
     A.print();
     printf(" << 6b = ");
     C.print();
@@ -178,7 +180,7 @@ int main(int an, char** av) {
   } else {
     printf("big_shift error\n");
   }
-  if (big_shift(-6, A, C)) {
+  if (big_shift(A, -6, C)) {
     A.print();
     printf(" >> 6b = ");
     C.print();
@@ -186,7 +188,7 @@ int main(int an, char** av) {
   } else {
     printf("big_shift error\n");
   }
-  if (big_shift(67, A, C)) {
+  if (big_shift(A, 67, C)) {
     A.print();
     printf(" << 67b = ");
     C.print();
@@ -194,7 +196,7 @@ int main(int an, char** av) {
   } else {
     printf("big_shift error\n");
   }
-  if (big_shift(-67, A, C)) {
+  if (big_shift(A, -67, C)) {
     A.print();
     printf(" >> 67b = ");
     C.print();
@@ -240,7 +242,7 @@ int main(int an, char** av) {
   } 
 
   r.zero_num();
-  if (big_modSub(a1, b1, m, r)) {
+  if (big_mod_sub(a1, b1, m, r)) {
     a1.print();
     printf(" - ");
     b1.print();
@@ -250,11 +252,11 @@ int main(int an, char** av) {
     r.print();
     printf("\n");
   } else {
-    printf("big_modSub error\n");
+    printf("big_mod_sub error\n");
   } 
 
   r.zero_num();
-  if (BigSquare(a1, r)) {
+  if (big_square(a1, r)) {
     a1.print();
     printf(" * ");
     a1.print();
@@ -262,7 +264,7 @@ int main(int an, char** av) {
     r.print();
     printf("\n");
   } else {
-    printf("BigSquare error\n");
+    printf("big_square error\n");
   } 
 
   r.zero_num();
@@ -423,7 +425,8 @@ int main(int an, char** av) {
 
   printf("\ndigit_array_short_division_algorithm test\n");
   m2.zero_num();
-  if (!digit_array_short_division_algorithm(m1.size(), m1.value_ptr(), b, m2.size(), m2.value_ptr(), &d)) {
+  int size_out = m2.size();
+  if (!digit_array_short_division_algorithm(m1.size(), m1.value_ptr(), b, &size_out, m2.value_ptr(), &d)) {
     m1.print();
     printf(" / %ld remainder %ld, quotient is ", b, d);
     m2.normalize();

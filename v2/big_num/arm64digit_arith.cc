@@ -12,6 +12,7 @@
 // File: arm64_digit_arith.cc
 
 #include "crypto_support.h"
+#include <arm64_digit_arith.h>
 
 
 // digit_array_real_size --> digit_array_real_size
@@ -185,7 +186,7 @@ void u64_add_step(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry) {
 }
 
 // r1 is the high order digit, r2 is low order
-void u64_mult_step(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry) {
+void u64_mult_step(uint64_t a, uint64_t b, uint64_t* r1, uint64_t* r2) {
   asm volatile (
     "mov    x10, %[a1]\n\t"   // a
     "mov    x11, %[a2]\n\t"   // b
@@ -209,138 +210,16 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c, uint64_t* result,
 //  carry_out:result= a+b+carry_in
 void u64_add_with_carry_step(uint64_t a, uint64_t b, uint64_t carry_in,
        uint64_t* result, uint64_t* carry_out) {
-  asm volatile (
-    // clear carry
-    "mrs    x9, NZCV\n\t"
-    "mov    x10, 0xffffffff0fffffff\n\t"
-    "and    x9, x9, x10\n\t"
-    "msr    NZCV, x9\n\t"
-
-    // load parameters
-    "mov    x8, 0\n\t"       // indexing
-    "mov    x9, %[c]\n\t"    // address of output
-    "mov    x10, %[a]\n\t"   // address of input 1
-    "mov    x11, %[b]\n\t"   // address of input 2
-    "mov    x12, %[sa]\n\t"  // size of first array
-    "mov    x13, %[sb]\n\t"  // size of second array
-
-    // do carry addition
-    "1:\n\t"
-
-    // load first operand
-    "ldr    x15, [x10, x8, lsl 3]\n\t"
-
-    // load second operand or 0 depending on sb
-    "mov    x14, 0\n\t"
-    "cbz    x13, 2f\n\t"
-    "sub    x13, x13, 1\n\t"
-    "ldr    x14, [x11, x8, lsl 3]\n\t"
-
-    "2:\n\t"
-    "adcs   x16, x15, x14\n\t"
-    "str    x16, [x9, x8, lsl 3]\n\t"
-    "add    x8, x8, 1\n\t"
-    "sub    x12, x12, 1\n\t"
-    "cbnz   x12, 1b\n\t"
-
-    // propagate carry
-    "mov    x15, 0\n\t"
-    "adc    x16, x15, x15\n\t"
-    "str    x16, [x9, x8, lsl 3]\n\t"
-    :: [sa] "r" (size_a), [a] "r" (a), [sb] "r" (size_b), [b] "r" (b),
-       [sc] "r" (size_c), [c] "r" (c));
-
 }
 
 //  carry_out:result= a-b-borrow_in if a>b+borrow_in, borrow_out=0
 void u64_sub_with_borrow_step(uint64_t a, uint64_t b, uint64_t borrow_in,
                              uint64_t* result, uint64_t* borrow_out) {
-   asm volatile (
-    // set carry for sbcs
-    "mrs    x9, NZCV\n\t"
-    "mov    x10, 0x20000000\n\t"
-    "orr    x9, x9, x10\n\t"
-    "msr    NZCV, x9\n\t"
-
-    // load parameters
-    "mov    x8, 0\n\t"       // indexing
-    "mov    x9, %[c]\n\t"    // address of output
-    "mov    x10, %[a]\n\t"   // address of input 1
-    "mov    x11, %[b]\n\t"   // address of input 2
-    "mov    x12, %[sa]\n\t"  // size of first array
-    "mov    x13, %[sb]\n\t"  // size of second array
-
-    // do borrow subtract
-    "1:\n\t"
-
-    // load first operand
-    "ldr    x15, [x10, x8, lsl 3]\n\t"
-
-    // load second operand or 0 depending on sb
-    "mov    x14, 0\n\t"
-    "cbz    x13, 2f\n\t"
-    "sub    x13, x13, 1\n\t"
-    "ldr    x14, [x11, x8, lsl 3]\n\t"
-
-    "2:\n\t"
-    "sbcs   x16, x15, x14\n\t"
-    "str    x16, [x9, x8, lsl 3]\n\t"
-    "add    x8, x8, 1\n\t"
-    "sub    x12, x12, 1\n\t"
-    "cbnz   x12, 1b\n\t"
-    :: [sa] "r" (size_a), [a] "r" (a), [sb] "r" (size_b), [b] "r" (b),
-       [sc] "r" (size_c), [c] "r" (c): );
 }
 
 //  carry_out:result= a*b+carry1+carry2
 void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
       uint64_t carry2, uint64_t* result, uint64_t* carry_out) {
-  int size_temp = size_a + size_b + 1;
-#ifdef TEST
-  if (size_temp > size_c)
-    printf("*************u_mult error\n");
-#endif
-  uint64_t* temp1= new uint64_t[size_temp];
-  uint64_t* temp2= new uint64_t[size_temp];
-  uint64_t* temp3= new uint64_t[size_temp];
-  uint64_t* temp4= new uint64_t[size_temp];
-  uint64_t t1 = 0ULL;
-  uint64_t s1 = 0ULL;
-  uint64_t t2 = 0ULL;
-  uint64_t s2 = 0ULL;
-
-  for (int i = 0; i < size_b; i++) {
-    digit_array_zero_num(size_temp, temp1);
-    digit_array_zero_num(size_temp, temp2);
-    s1 = b[i];
-    for (int j = 0; j < size_a; j++) {
-      s2 = a[j];
-      // ?replace by: Uint64MultStep(s1, s2, &t1, &t2);
-      asm volatile (
-        "mov    x10, %[s1]\n\t"   // first operand
-        "mov    x11, %[s2]\n\t"   // second operand
-        "mul    x8, x10, x11\n\t"
-        "umulh  x9, x10, x11\n\t"
-        "mov    %[t1], x8\n\t"    // first output
-        "mov    %[t2], x9\n\t"    // second output
-      : [t1] "=rm" (t1), [t2] "=rm" (t2)
-      : [s1] "r" (s1), [s2] "r" (s2)
-      : "x8", "x9", "x10", "x11");
-      temp1[i + j] = t1;
-      temp2[i + j + 1] = t2;
-    }
-    digit_array_zero_num(size_temp, temp3);
-    digit_array_zero_num(size_temp, temp4);
-    u_add(size_temp - 1, size_temp - 1, temp1, temp2, size_temp, temp3);
-    digit_array_copy(size_temp, c, size_temp, temp4);
-    digit_array_zero_num(size_c, c);
-    u_add(size_temp - 1, size_temp - 1, temp3, temp4, size_c, c);
-  }
-
-  delete []temp1;
-  delete []temp2;
-  delete []temp3;
-  delete []temp4;
 }
 
 
@@ -531,9 +410,11 @@ void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
     return;
   }
 
+/*
   asm volatile(
       ::[est] "g"(est), [n1] "g"(n1), [n2] "g"(n2), [d1] "g"(d1)
       : "cc", "memory", "%rax", "%rcx", "%rdx");
+ */
 }
 
 // q= a/b. r is remainder.
