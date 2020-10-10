@@ -144,12 +144,10 @@ int shift_to_top_bit(uint64_t a) {
   return NBITSINUINT64;
 }
 
-#if 1
+// Remove this later
 void instruction_test(uint64_t a, uint64_t b, uint64_t* c, uint64_t* d) {
-
   *d = 0ULL;
 
-  // a is top of look
   asm volatile (
     "mov    x9, %[c2]\n\t"    // address of output
     "mov    x10, %[a1]\n\t"   // a
@@ -161,7 +159,6 @@ void instruction_test(uint64_t a, uint64_t b, uint64_t* c, uint64_t* d) {
     "str    x11, [X9]\n\t"
     :: [a1] "r" (a), [a2] "r" (b), [c1] "r" (c), [c2] "r" (d) : );
 }
-#endif
 
 
 //  carry:result= a+b
@@ -209,7 +206,24 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c, uint64_t* result,
 
 //  carry_out:result= a+b+carry_in
 void u64_add_with_carry_step(uint64_t a, uint64_t b, uint64_t carry_in,
-       uint64_t* result, uint64_t* carry_out) {
+        uint64_t* result, uint64_t* carry_out) {
+  asm volatile (
+    "mov    x8, %[r]\n\t"       // &result
+    "mov    X9, %[c_out]\n\t"   // &carry_out
+    "mov    x10, %[a1]\n\t"     // a
+    "mov    x11, %[a2]\n\t"     // b
+    "mrs    x13, NZCV\n\t"
+    "mov    x14, 0xffffffff0fffffff\n\t"
+    "and    x13, x13, x14\n\t"
+    "ldr    x12, [x9]\n\t"
+    "orr    x13, x13, x12\n\t"
+    "msr    NZCV, x13\n\t"
+    "adcs   x12, x10, x11\n\t"
+    "mov    x13, 0\n\t"
+    "cset   x13, CS\n\t"
+    "str    x12, [x8]\n\t"
+    "str    x13, [x9]\n\t"
+    :: [r] "r" (result), [c_in] "r" (carry_in), [c_out] "r" (carry_out), [a1] "r" (a), [a2] "r" (b) : );
 }
 
 //  carry_out:result= a-b-borrow_in if a>b+borrow_in, borrow_out=0
@@ -221,7 +235,6 @@ void u64_sub_with_borrow_step(uint64_t a, uint64_t b, uint64_t borrow_in,
 void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
       uint64_t carry2, uint64_t* result, uint64_t* carry_out) {
 }
-
 
 // result = a+b.  returns size of result.  Error if <0
 int digit_array_add(int size_a, uint64_t* a, int size_b, uint64_t* b,
@@ -315,20 +328,11 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
   }
   digit_array_zero_num(size_result, result);
 
-#define FASTMULT
 #ifdef FASTMULT
   uint64_t carry = 0;
   uint64_t real_size_A = (uint64_t) real_size_a;
   uint64_t real_size_B = (uint64_t) real_size_b;
 
-  //  Caller ensures result area is large enough
-  //    r8 : current op1 location
-  //    r9 : current op2 location
-  //    r11: in1 index
-  //    r12: in2 index
-  //    r13: current output index
-  //    r14: carry
-  //    r15: current out location
 #else
   int i, j;
   uint64_t carry_in = 0;
@@ -348,7 +352,6 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
   return digit_array_real_size(size_result, result);
 }
 
-#define FASTSQUARE
 // result = a*a.  returns size of result.  Error if <0
 int digit_array_square(int size_a, uint64_t* a, int size_result,
                      uint64_t* result) {
@@ -369,6 +372,7 @@ int digit_array_square(int size_a, uint64_t* a, int size_result,
 
 // a*= x.  a must have size_a+1 positions available
 int digit_array_mult_by(int capacity_a, int size_a, uint64_t* a, uint64_t x) {
+  // Todo
 
   return digit_array_real_size(size_a, a);
 }
@@ -380,6 +384,7 @@ bool digit_array_short_division_algorithm(int size_a, uint64_t* a, uint64_t b,
   uint64_t* a_high = &a[real_size_a - 1];
   uint64_t* q_high = &q[real_size_a - 1];
 
+  // Todo
 
   *size_q = digit_array_real_size(*size_q, q);
   return true;
@@ -411,6 +416,7 @@ void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
   }
 
 /*
+  Todo
   asm volatile(
       ::[est] "g"(est), [n1] "g"(n1), [n2] "g"(n2), [d1] "g"(d1)
       : "cc", "memory", "%rax", "%rcx", "%rdx");

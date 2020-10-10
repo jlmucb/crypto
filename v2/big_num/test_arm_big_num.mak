@@ -68,8 +68,8 @@ else
 	LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 endif
 
-dobj=   $(O)/test_arm_big_num.o $(O)/arm64digit_arith.o  $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
-        $(O)/globals.o $(O)/big_num.o $(O)/basic_arith.o $(O)/number_theory.o
+dobj=   $(O)/test_arm_big_num.o $(O)/arm64digit_arith.o  #$(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
+        #$(O)/globals.o $(O)/big_num.o $(O)/basic_arith.o $(O)/number_theory.o
 
 all:    test_arm_big_num.exe
 
@@ -91,31 +91,30 @@ $(O)/arm64digit_arith.o: $(S)/arm64digit_arith.cc
 	@echo "compiling arm64digit_arith.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/arm64digit_arith.o $(S)/arm64digit_arith.cc
 
-$(O)/support.pb.o: $(S_SUPPORT)/support.pb.cc
-	@echo "compiling support.pb.cc"
-	$(CC) $(CFLAGS) -c -o $(O)/support.pb.o $(S_SUPPORT)/support.pb.cc
-	@echo "compiling arm64digit_arith.cc"
+#$(O)/support.pb.o: $(S_SUPPORT)/support.pb.cc
+#	@echo "compiling support.pb.cc"
+#	$(CC) $(CFLAGS) -c -o $(O)/support.pb.o $(S_SUPPORT)/support.pb.cc
 
-$(O)/crypto_support.o: $(S_SUPPORT)/crypto_support.cc
-	@echo "compiling crypto_support.cc"
-	$(CC) $(CFLAGS) -c -o $(O)/crypto_support.o $(S_SUPPORT)/crypto_support.cc
-
-$(O)/crypto_names.o: $(S_SUPPORT)/crypto_names.cc
-	@echo "compiling crypto_names.cc"
-	$(CC) $(CFLAGS) -c -o $(O)/crypto_names.o $(S_SUPPORT)/crypto_names.cc
-
-$(O)/globals.o: $(S)/globals.cc
-	@echo "compiling globals.cc"
-	$(CC) $(CFLAGS) -c -o $(O)/globals.o $(S)/globals.cc
-
-$(O)/big_num.o: $(S)/big_num.cc
-	@echo "compiling big_num.cc"
-	$(CC) $(CFLAGS) -c -o $(O)/big_num.o $(S)/big_num.cc
-
-$(O)/basic_arith.o: $(S)/basic_arith.cc
-	@echo "compiling basic_arith.cc"
-	$(CC) $(CFLAGS) -c -o $(O)/basic_arith.o $(S)/basic_arith.cc
-
-$(O)/number_theory.o: $(S)/number_theory.cc
-	@echo "compiling number_theory.cc"
-	$(CC) $(CFLAGS) -c -o $(O)/number_theory.o $(S)/number_theory.cc
+#$(O)/crypto_support.o: $(S_SUPPORT)/crypto_support.cc
+#	@echo "compiling crypto_support.cc"
+#	$(CC) $(CFLAGS) -c -o $(O)/crypto_support.o $(S_SUPPORT)/crypto_support.cc
+#
+#$(O)/crypto_names.o: $(S_SUPPORT)/crypto_names.cc
+#	@echo "compiling crypto_names.cc"
+#	$(CC) $(CFLAGS) -c -o $(O)/crypto_names.o $(S_SUPPORT)/crypto_names.cc
+#
+#$(O)/globals.o: $(S)/globals.cc
+#	@echo "compiling globals.cc"
+#	$(CC) $(CFLAGS) -c -o $(O)/globals.o $(S)/globals.cc
+#
+#$(O)/big_num.o: $(S)/big_num.cc
+#	@echo "compiling big_num.cc"
+#	$(CC) $(CFLAGS) -c -o $(O)/big_num.o $(S)/big_num.cc
+#
+#$(O)/basic_arith.o: $(S)/basic_arith.cc
+#	@echo "compiling basic_arith.cc"
+#	$(CC) $(CFLAGS) -c -o $(O)/basic_arith.o $(S)/basic_arith.cc
+#
+#$(O)/number_theory.o: $(S)/number_theory.cc
+#	@echo "compiling number_theory.cc"
+#	$(CC) $(CFLAGS) -c -o $(O)/number_theory.o $(S)/number_theory.cc
