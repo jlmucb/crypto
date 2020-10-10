@@ -16,6 +16,19 @@
 #include <big_num.h>
 #include <big_num_functions.h>
 
+#if 1
+// remove this when we compile cryptsupport
+void reverse_bytes_in_place(int size, byte* b) {
+  byte t;
+
+  for (int i = 0; i < (size / 2); i++) {
+    t = b[size - 1 - i];
+    b[size - 1 - i] = b[i];
+    b[i] = t;
+  }
+}
+#endif
+
 void print_compare_val(int k) {
   switch(k) {
   case 1:
@@ -46,6 +59,7 @@ bool test_add_step() {
 
 bool test_mult_step() {
 
+  uint64_t a, b;
   uint64_t r1, r2;
   a = 0xffffffffffffffffULL;
   b = 0x100;
@@ -57,17 +71,17 @@ bool test_mult_step() {
   return true;
 }
 
-bool test_u64_add_with_carry_step() {
+bool test_add_with_carry_step() {
   // u64_add_with_carry_step(a, b, carry_in, result, carry_out)
   return true;
 }
 
-bool test_u64_sub_with_borrow_step() {
+bool test_sub_with_borrow_step() {
   // u64_sub_with_borrow_step(a, b, borrow_in, result, borrow_out)
   return true;
 }
 
-bool test_u64_mult_with_carry_step() {
+bool test_mult_with_carry_step() {
   // u64_mult_with_carry_step(a, b, carry1, carry2, result, carry_out)
   return true;
 }
