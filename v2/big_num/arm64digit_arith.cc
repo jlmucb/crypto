@@ -9,7 +9,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// File: intel_digit_arith.cc
+// File: arm64_digit_arith.cc
 
 #include "crypto_support.h"
 
@@ -143,35 +143,59 @@ int shift_to_top_bit(uint64_t a) {
   return NBITSINUINT64;
 }
 
+#if 1
+void instruction_test(uint64_t a, uint64_t b, uint64_t* c, uint64_t* d) {
+
+  *d = 0ULL;
+
+  // a is top of look
+  asm volatile (
+    "mov    x9, %[c2]\n\t"    // address of output
+    "mov    x10, %[a1]\n\t"   // a
+    "mov    x11, 0\n\t"       // holds result
+    ".1:\n\t"
+    "add    x11, x11, x10\n\t"
+    "subs   x10, x10, 1\n\t"
+    "bne    .1\n\t"
+    "str    x11, [X9]\n\t"
+    :: [a1] "r" (a), [a2] "r" (b), [c1] "r" (c), [c2] "r" (d) : );
+}
+#endif
+
+
 //  carry:result= a+b
 void u64_add_step(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry) {
-  asm volatile(
-      "\tmovq   %[result], %%rcx\n"
-      "\tmovq   %[carry], %%rdx\n"
-      "\tmovq   $0,(%%rdx)\n"
-      "\tmovq   %[a], %%rax\n"
-      "\taddq   %[b], %%rax\n"
-      "\tmovq   %%rax, (%%rcx)\n"
-      "\tjnc    1f\n"
-      "\tmovq   $1,(%%rdx)\n"
-      "1:\n"
-      ::[result] "g"(result), [carry] "g"(carry), [a] "g"(a), [b] "g"(b)
-      : "cc", "memory", "%rax", "%rcx", "%rdx");
+  asm volatile (
+    "mov    x10, %[a1]\n\t"   // a
+    "mov    x11, %[a2]\n\t"   // b
+    "mov    x8, %[c1]\n\t"    // &result
+    "mov    X9, %[c2]\n\t"    // &carry
+    "mrs    x13, NZCV\n\t"
+    "mov    x14, 0xffffffff0fffffff\n\t"
+    "and    x13, x13, x14\n\t"
+    "ldr    x12, [x9]\n\t"
+    "orr    x13, x13, x12\n\t"
+    "msr    NZCV, x13\n\t"
+    "adcs   x12, x10, x11\n\t"
+    "mov    x13, 0\n\t"
+    "cset   x13, CS\n\t"
+    "str    x12, [x8]\n\t"
+    "str    x13, [x9]\n\t"
+    :: [c1] "r" (result), [c2] "r" (carry), [a1] "r" (a), [a2] "r" (b) : );
 }
 
-//  carry:result= a*b
-//  mulq   op:    rdx:rax= %rax*op
+// r1 is the high order digit, r2 is low order
 void u64_mult_step(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry) {
-  asm volatile(
-      "\tmovq   %[result], %%rcx\n"
-      "\tmovq   %[carry], %%rbx\n"
-      "\tmovq   %[a], %%rax\n"
-      "\tmulq   %[b]\n"
-      "\tmovq   %%rax, (%%rcx)\n"
-      "\tmovq   %%rdx,(%%rbx)\n"
-      "1:\n" ::[result] "g"(result),
-      [carry] "g"(carry), [a] "g"(a), [b] "g"(b)
-      : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx");
+  asm volatile (
+    "mov    x10, %[a1]\n\t"   // a
+    "mov    x11, %[a2]\n\t"   // b
+    "mov    x8, %[r1]\n\t"    // &r1
+    "mov    x9, %[r2]\n\t"    // &r2
+    "mul    x13, x10, x11\n\t"
+    "umulh  x12, x10, x11\n\t"
+    "str    x12, [x8]\n\t"
+    "str    x13, [x9]\n\t"
+    :: [r1] "r" (r1), [r2] "r" (r2), [a1] "r" (a), [a2] "r" (b) : );
 }
 
 //  q= a:b/c remainder, r
@@ -180,85 +204,143 @@ void u64_mult_step(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry) {
 //         rax: result
 void u64_div_step(uint64_t a, uint64_t b, uint64_t c, uint64_t* result,
        uint64_t* carry) {
-  asm volatile(
-      "\tmovq   %[result], %%rcx\n"
-      "\tmovq   %[carry], %%rbx\n"
-      "\tmovq   %[a], %%rdx\n"
-      "\tmovq   %[b], %%rax\n"
-      "\tdivq   %[c]\n"
-      "\tmovq   %%rax, (%%rcx)\n"
-      "\tmovq   %%rdx,(%%rbx)\n"
-      "1:\n"
-      ::[result] "m"(result), [carry] "m"(carry),
-        [a] "m"(a), [b] "m"(b), [c] "m"(c)
-      : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx");
 }
 
 //  carry_out:result= a+b+carry_in
 void u64_add_with_carry_step(uint64_t a, uint64_t b, uint64_t carry_in,
        uint64_t* result, uint64_t* carry_out) {
-  asm volatile(
-      "\tmovq   %[result], %%rcx\n"
-      "\tmovq   %[carry_out], %%rbx\n"
-      "\tmovq   $0,(%%rbx)\n"
-      "\tmovq   %[a], %%rax\n"
-      "\taddq   %[b], %%rax\n"
-      "\tjnc    1f\n"
-      "\tmovq   $1,(%%rbx)\n"
-      "1:\n"
-      "\taddq    %[carry_in], %%rax\n"
-      "\tjnc    2f\n"
-      "\tmovq   $1,(%%rbx)\n"
-      "2:\n"
-      "\tmovq   %%rax, (%%rcx)\n"
-      ::[result] "g"(result), [carry_out] "g"(carry_out), [a] "g"(a),
-      [b] "g"(b), [carry_in] "g"(carry_in)
-      : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx");
+  asm volatile (
+    // clear carry
+    "mrs    x9, NZCV\n\t"
+    "mov    x10, 0xffffffff0fffffff\n\t"
+    "and    x9, x9, x10\n\t"
+    "msr    NZCV, x9\n\t"
+
+    // load parameters
+    "mov    x8, 0\n\t"       // indexing
+    "mov    x9, %[c]\n\t"    // address of output
+    "mov    x10, %[a]\n\t"   // address of input 1
+    "mov    x11, %[b]\n\t"   // address of input 2
+    "mov    x12, %[sa]\n\t"  // size of first array
+    "mov    x13, %[sb]\n\t"  // size of second array
+
+    // do carry addition
+    "1:\n\t"
+
+    // load first operand
+    "ldr    x15, [x10, x8, lsl 3]\n\t"
+
+    // load second operand or 0 depending on sb
+    "mov    x14, 0\n\t"
+    "cbz    x13, 2f\n\t"
+    "sub    x13, x13, 1\n\t"
+    "ldr    x14, [x11, x8, lsl 3]\n\t"
+
+    "2:\n\t"
+    "adcs   x16, x15, x14\n\t"
+    "str    x16, [x9, x8, lsl 3]\n\t"
+    "add    x8, x8, 1\n\t"
+    "sub    x12, x12, 1\n\t"
+    "cbnz   x12, 1b\n\t"
+
+    // propagate carry
+    "mov    x15, 0\n\t"
+    "adc    x16, x15, x15\n\t"
+    "str    x16, [x9, x8, lsl 3]\n\t"
+    :: [sa] "r" (size_a), [a] "r" (a), [sb] "r" (size_b), [b] "r" (b),
+       [sc] "r" (size_c), [c] "r" (c));
+
 }
 
 //  carry_out:result= a-b-borrow_in if a>b+borrow_in, borrow_out=0
 void u64_sub_with_borrow_step(uint64_t a, uint64_t b, uint64_t borrow_in,
                              uint64_t* result, uint64_t* borrow_out) {
-  asm volatile(
-      "\tmovq   %[result], %%rcx\n"
-      "\tmovq   %[borrow_out], %%rbx\n"
-      "\tmovq   $0, (%%rbx)\n"
-      "\tmovq   %[a], %%rax\n"
-      "\tsubq   %[b],%%rax\n"
-      "\tjnc    1f\n"
-      "\tmovq   $1,(%%rbx)\n"
-      "1:\n"
-      "\tsubq   %[borrow_in],%%rax\n"
-      "\tjnc    2f\n"
-      "\tmovq   $1,(%%rbx)\n"
-      "2:\n"
-      "\tmovq   %%rax,(%%rcx)\n"
-      ::[result] "g"(result), [borrow_out] "g"(borrow_out), [a] "g"(a),
-      [b] "g"(b), [borrow_in] "g"(borrow_in)
-      : "cc", "memory", "%rax", "%rbx", "%rcx");
+   asm volatile (
+    // set carry for sbcs
+    "mrs    x9, NZCV\n\t"
+    "mov    x10, 0x20000000\n\t"
+    "orr    x9, x9, x10\n\t"
+    "msr    NZCV, x9\n\t"
+
+    // load parameters
+    "mov    x8, 0\n\t"       // indexing
+    "mov    x9, %[c]\n\t"    // address of output
+    "mov    x10, %[a]\n\t"   // address of input 1
+    "mov    x11, %[b]\n\t"   // address of input 2
+    "mov    x12, %[sa]\n\t"  // size of first array
+    "mov    x13, %[sb]\n\t"  // size of second array
+
+    // do borrow subtract
+    "1:\n\t"
+
+    // load first operand
+    "ldr    x15, [x10, x8, lsl 3]\n\t"
+
+    // load second operand or 0 depending on sb
+    "mov    x14, 0\n\t"
+    "cbz    x13, 2f\n\t"
+    "sub    x13, x13, 1\n\t"
+    "ldr    x14, [x11, x8, lsl 3]\n\t"
+
+    "2:\n\t"
+    "sbcs   x16, x15, x14\n\t"
+    "str    x16, [x9, x8, lsl 3]\n\t"
+    "add    x8, x8, 1\n\t"
+    "sub    x12, x12, 1\n\t"
+    "cbnz   x12, 1b\n\t"
+    :: [sa] "r" (size_a), [a] "r" (a), [sb] "r" (size_b), [b] "r" (b),
+       [sc] "r" (size_c), [c] "r" (c): );
 }
 
 //  carry_out:result= a*b+carry1+carry2
 void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
       uint64_t carry2, uint64_t* result, uint64_t* carry_out) {
-  asm volatile(
-      "\tmovq   %[result], %%rcx\n"
-      "\tmovq   %[carry_out], %%rbx\n"
-      "\tmovq   %[a], %%rax\n"
-      "\tmulq   %[b]\n"
-      "\taddq   %[carry1], %%rax\n"
-      "\tjnc    1f\n"
-      "\taddq   $1,%%rdx\n"
-      "1:\n"
-      "\taddq   %[carry2],%%rax\n"
-      "\tjnc    2f\n"
-      "\taddq   $1,%%rdx\n"
-      "2:\n"
-      "\tmovq   %%rax,(%%rcx)\n"
-      "\tmovq   %%rdx,(%%rbx)\n"
-      ::[a] "g"(a), [b] "g"(b), [carry1] "g"(carry1), [carry2] "g"(carry2),
-      [result] "g"(result), [carry_out] "g"(carry_out)
-      : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx");
+  int size_temp = size_a + size_b + 1;
+#ifdef TEST
+  if (size_temp > size_c)
+    printf("*************u_mult error\n");
+#endif
+  uint64_t* temp1= new uint64_t[size_temp];
+  uint64_t* temp2= new uint64_t[size_temp];
+  uint64_t* temp3= new uint64_t[size_temp];
+  uint64_t* temp4= new uint64_t[size_temp];
+  uint64_t t1 = 0ULL;
+  uint64_t s1 = 0ULL;
+  uint64_t t2 = 0ULL;
+  uint64_t s2 = 0ULL;
+
+  for (int i = 0; i < size_b; i++) {
+    digit_array_zero_num(size_temp, temp1);
+    digit_array_zero_num(size_temp, temp2);
+    s1 = b[i];
+    for (int j = 0; j < size_a; j++) {
+      s2 = a[j];
+      // ?replace by: Uint64MultStep(s1, s2, &t1, &t2);
+      asm volatile (
+        "mov    x10, %[s1]\n\t"   // first operand
+        "mov    x11, %[s2]\n\t"   // second operand
+        "mul    x8, x10, x11\n\t"
+        "umulh  x9, x10, x11\n\t"
+        "mov    %[t1], x8\n\t"    // first output
+        "mov    %[t2], x9\n\t"    // second output
+      : [t1] "=rm" (t1), [t2] "=rm" (t2)
+      : [s1] "r" (s1), [s2] "r" (s2)
+      : "x8", "x9", "x10", "x11");
+      temp1[i + j] = t1;
+      temp2[i + j + 1] = t2;
+    }
+    digit_array_zero_num(size_temp, temp3);
+    digit_array_zero_num(size_temp, temp4);
+    u_add(size_temp - 1, size_temp - 1, temp1, temp2, size_temp, temp3);
+    digit_array_copy(size_temp, c, size_temp, temp4);
+    digit_array_zero_num(size_c, c);
+    u_add(size_temp - 1, size_temp - 1, temp3, temp4, size_c, c);
+  }
+
+  delete []temp1;
+  delete []temp2;
+  delete []temp3;
+  delete []temp4;
 }
 
 
@@ -327,48 +409,6 @@ int digit_array_add_to(int capacity_a, int size_a, uint64_t* a, int size_b,
   int64_t len_a = (int64_t)size_a;
   int64_t len_b = (int64_t)size_b;
 
-  asm volatile(
-      "\tmovq   %[len_b],%%r9\n"  // ctr
-      "\txorq   %%r12, %%r12\n"   // old carry
-      "\tmovq   %[b], %%rbx\n"    // b
-      "\tmovq   %[a], %%rcx\n"    // a
-      "1:\n"
-      "\txorq   %%r8, %%r8\n"  // new carry
-      "\tmovq   (%%rbx),%%rax\n"
-      "\taddq   %%rax,(%%rcx)\n"
-      "\tjnc    2f\n"
-      "\tmovq   $1,%%r8\n"
-      "2:\n"
-      "\taddq   %%r12,(%%rcx)\n"
-      "\tjnc    3f\n"
-      "\tmovq   $1,%%r8\n"
-      "3:\n"
-      "\tmovq   %%r8,%%r12\n"
-      "\taddq   $8,%%rbx\n"
-      "\taddq   $8,%%rcx\n"
-      "\tsubq   $1,%%r9\n"
-      "\tcmpq   $0,%%r9\n"
-      "\tjg     1b\n"
-      "\tmovq   %[len_a], %%r9\n"
-      "\tsubq   %[len_b],%%r9\n"
-      "\t3:\n"
-      "\txorq   %%r8, %%r8\n"  // new carry
-      "\tmovq   (%%rbx),%%rax\n"
-      "\taddq   %%r12,(%%rcx)\n"
-      "\tjnc    5f\n"
-      "\tmovq   $1,%%r8\n"
-      "5:\n"
-      "\tmovq   %%r8,%%r12\n"
-      "\taddq   $8,%%rbx\n"
-      "\taddq   $8,%%rcx\n"
-      "\tsubq   $1,%%r9\n"
-      "\tcmpq   $0,%%r9\n"
-      "\tjg     3b\n"
-      "7:\n"
-      "\tmovq   %%r8,(%%rcx)\n"
-      ::[a] "g"(a), [b] "g"(b), [len_a] "g"(len_a), [len_b] "g"(len_b)
-      : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9", "%r12");
-
   return digit_array_real_size(capacity_a, a);
 }
 
@@ -381,43 +421,6 @@ int digit_array_sub_from(int capacity_a, int size_a, uint64_t* a, int size_b,
   int64_t len_a = (int64_t)size_a;
   int64_t len_b = (int64_t)size_b;
 
-  asm volatile(
-      "\tmovq   %[len_b],%%r9\n"  // ctr
-      "\txorq   %%r12, %%r12\n"   // old borrow
-      "\tmovq   %[b], %%rbx\n"    // b
-      "\tmovq   %[a], %%rcx\n"    // a
-      "1:\n"
-      "\txorq   %%r8, %%r8\n"  // new borrow
-      "\tmovq   (%%rbx),%%rax\n"
-      "\tsubq   %%rax,(%%rcx)\n"
-      "\tjnc    2f\n"
-      "\tmovq   $1,%%r8\n"
-      "2:\n"
-      "\tsubq   %%r12,(%%rcx)\n"
-      "\tjnc    5f\n"
-      "\tmovq   $1,%%r8\n"
-      "5:\n"
-      "\tmovq   %%r8,%%r12\n"
-      "\taddq   $8,%%rbx\n"
-      "\taddq   $8,%%rcx\n"
-      "\tsubq   $1,%%r9\n"
-      "\tcmpq   $0,%%r9\n"
-      "\tjg     1b\n"
-      "\tmovq   %[len_a], %%r9\n"
-      "\tsubq   %[len_b],%%r9\n"
-      "\t3:\n"
-      "\tsubq   %%r12,(%%rcx)\n"
-      "\tjnc    6f\n"
-      "\tmovq   $1,%%r8\n"
-      "6:\n"
-      "\tmovq   %%r8,%%r12\n"
-      "\taddq   $8,%%rbx\n"
-      "\taddq   $8,%%rcx\n"
-      "\tsubq   $1,%%r9\n"
-      "\tcmpq   $0,%%r9\n"
-      "\tjg     3b\n"
-      ::[a] "g"(a), [b] "g"(b), [len_a] "g"(len_a), [len_b] "g"(len_b)
-      : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9", "%r12");
 
   return digit_array_real_size(capacity_a, a);
 }
@@ -447,42 +450,6 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
   //    r13: current output index
   //    r14: carry
   //    r15: current out location
-  asm volatile (
-      "\tmovq   %[in1], %%r8\n"
-      "\tmovq   %[in2], %%r9\n"
-      "\tmovq   %[result], %%r15\n"
-      "\txorq   %%r11, %%r11\n"
-      "\txorq   %%r14, %%r14\n"
-
-      // outer mult loop
-      "1:\n"
-      "\txorq   %%r12, %%r12\n"
-      "\tmovq   %%r11, %%r13\n"
-
-      // inner mult loop
-      "2:\n"
-      "\tmovq   (%%r8, %%r11, 8), %%rax\n"
-      "\tmulq   (%%r9, %%r12, 8)\n"
-      "\taddq   %%r14, %%rax\n"
-      "\tadcq   $0, %%rdx\n"
-      "\taddq   (%%r15, %%r13, 8), %%rax\n"
-      "\tadcq   $0, %%rdx\n"
-      "\tmovq   %%rax, (%%r15, %%r13, 8)\n"
-      "\tmovq   %%rdx, %%r14\n"
-      "\taddq   $1, %%r12\n"
-      "\taddq   $1, %%r13\n"
-      "\tcmpq   %[real_size_B], %%r12\n"
-      "\tjl     2b\n"
-
-      "\tmovq   %%r14, (%%r15, %%r13, 8)\n"
-      "\txorq   %%r14, %%r14\n"
-      "\naddq   $1, %%r11\n"
-      "\tcmpq   %[real_size_A], %%r11\n"
-      "\tjl     1b\n"
-      ::[carry] "g"(carry), [in1] "g"(a), [in2] "g"(b), [real_size_A] "g"(real_size_A),
-        [real_size_B] "g"(real_size_B), [result] "g"(result)
-      : "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r11", "%r12", "%r13",
-        "%r14", "%r15");
 #else
   int i, j;
   uint64_t carry_in = 0;
@@ -515,97 +482,6 @@ int digit_array_square(int size_a, uint64_t* a, int size_result,
   uint64_t cur_in = 0ULL;
   uint64_t cur_out = 0ULL;
 
-  asm volatile(
-      "\tmovq   %[result], %%r15\n"  // %%r15 <-- address of output place
-      "\tmovq   %[a], %%r8\n"        // %%r8 <-- address of low input digit
-      "\txorq   %%rax,%%rax\n"
-      "\tmovl   %[real_size_a], %%eax\n"  // number of output words
-      "\tmovq   %%rax, %%r12\n"      // number of output words
-      "\tshlq   $3, %%r12\n"
-      "\taddq   %%r8, %%r12\n"  // %%r12>address of last input digit
-
-      // a[i]*a[i]
-      "1:\n"
-      "\tmovq   (%%r8), %%rax\n"
-      "\tmulq   (%%r8)\n"  // a[i]**2 result in rdx:rax
-      "\tmovq   %%rax, (%%r15)\n"
-      "\tmovq   %%rdx, 8(%%r15)\n"
-      "\taddq   $16, %%r15\n"
-      "\taddq   $8, %%r8\n"
-      "\tcmpq   %%r8, %%r12\n"
-      "\tjg     1b\n"
-
-      "\tmovq   %[a], %%r9\n"       // input
-      "\tmovq   %%r9, %[cur_in]\n"  // input
-      "\tsubq   $8, %[cur_in]\n"
-      "\tmovq   %[result], %%r9\n"
-      "\tmovq   %%r9, %[cur_out]\n"
-      "\tsubq   $8, %[cur_out]\n"
-
-      "\t.balign 16\n"
-      "2:\n"
-      "\tmovq   %[cur_in], %%r8\n"
-      "\taddq   $8, %%r8\n"
-      "\tmovq   %%r8, %[cur_in]\n"
-      "\tmovq   %[cur_out], %%r15\n"
-      "\taddq   $16, %%r15\n"
-      "\tmovq   %%r15, %[cur_out]\n"
-      "\tmovq   %%r8, %%r9\n"
-      "\taddq   $8, %%r9\n"
-      "\tcmpq   %%r9, %%r12\n"
-      "\tjle    11f\n"
-
-      // loop on %%r9
-      "3:\n"
-      "\tmovq   (%%r8), %%rax\n"
-      "\tmulq   (%%r9)\n"
-      "\tmovq   %%r15, %%r11\n"
-
-      // shift by 1, top bit in %%r14
-      "\txorq   %%r14, %%r14\n"
-      "\tshlq   $1, %%rax\n"
-      "\tjnc    4f\n"
-      "\tmovq   $1, %%r14\n"
-
-      "4:\n"
-      "\tshlq   $1,%%rdx\n"
-      "\tjnc    8f\n"
-      "\torq    %%r14, %%rdx\n"
-      "\txorq   %%r14,%%r14\n"
-      "\taddq   $24, %%r11\n"
-      "\taddq   %%rax, (%%r15)\n"
-      "\tadcq   %%rdx, 8(%%r15)\n"
-      "\tadcq   $1, 16(%%r15)\n"
-      "\tjnc    10f\n"
-      "\tjmp    9f\n"
-
-      "8:\n"
-      "\torq    %%r14, %%rdx\n"
-      "\txorq   %%r14,%%r14\n"
-      "\taddq   $16, %%r11\n"
-      "\taddq   %%rax, (%%r15)\n"
-      "\tadcq   %%rdx, 8(%%r15)\n"
-      "\tjnc    10f\n"
-
-      "9:\n"
-      "\taddq   $1, (%%r11)\n"
-      "\tjnc    10f\n"
-      "\taddq   $8, %%r11\n"
-      "\tjmp    9b\n"
-
-      "10:\n"
-      "\taddq   $8, %%r9\n"
-      "\taddq   $8, %%r15\n"
-      "\tcmpq   %%r9, %%r12\n"
-      "\tjg     3b\n"
-      "\tjmp    2b\n"
-      "\t.balign 16\n"
-      "11:\n"
-      : [cur_in] "=m"(cur_in), [cur_out] "=m"(cur_out)
-      : [a] "m"(a), [result] "m"(result), [real_size_a] "m"(real_size_a),
-        [size_result] "m"(size_result)
-      : "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r12", "%r11", "%r14",
-        "%r15");
   return digit_array_real_size(size_result, result);
 #else
   return digit_array_mult(size_a, a, size_a, a, size_result, result);
@@ -614,32 +490,6 @@ int digit_array_square(int size_a, uint64_t* a, int size_result,
 
 // a*= x.  a must have size_a+1 positions available
 int digit_array_mult_by(int capacity_a, int size_a, uint64_t* a, uint64_t x) {
-  asm volatile(
-      "\txorq   %%r8, %%r8\n"  // carry
-      "\txorq   %%rdx, %%rdx\n"
-      "\txorq   %%rbx, %%rbx\n"     // clear ctr
-      "\tmovl   %[size_a],%%ebx\n"  // ctr
-      "\tmovq   %[a], %%rcx\n"
-      "\t.balign  16\n"
-      "1:\n"
-      "\tmovq   (%%rcx), %%rax\n"
-      "\tmovq   %[x], %%r9\n"
-      "\tmulq   %%r9\n"
-      "\taddq   %%r8,%%rax\n"
-      "\tmovq   $0, %%r8\n"
-      "\tjnc    2f\n"
-      "\tmovq   $1,%%r8\n"
-      "\t.balign  16\n"
-      "\t2:\n"
-      "\taddq   %%rdx,%%r8\n"
-      "\tmovq   %%rax,(%%rcx)\n"
-      "\taddq   $8,%%rcx\n"
-      "\tsubq   $1,%%rbx\n"
-      "\tcmpq   $0,%%rbx\n"
-      "\tjg     1b\n"
-      "\tmovq   %%r8,(%%rcx)\n"
-      ::[a] "g"(a), [x] "g"(x), [size_a] "g"(size_a)
-      : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9");
 
   return digit_array_real_size(size_a, a);
 }
@@ -651,32 +501,6 @@ bool digit_array_short_division_algorithm(int size_a, uint64_t* a, uint64_t b,
   uint64_t* a_high = &a[real_size_a - 1];
   uint64_t* q_high = &q[real_size_a - 1];
 
-  // r8: len_a
-  // a_high: rbx
-  // q_high: rcx
-  // remainder: rdx
-  asm volatile (
-      "\txorq   %%r8, %%r8\n"
-      "\txorq   %%rdx, %%rdx\n"
-      "\txorq   %%rax, %%rax\n"
-      "\txorq   %%rcx, %%rcx\n"
-      "\tmovq   %[len_a], %%r8\n"
-      "\tmovq   %[a_high], %%rbx\n"
-      "\tmovq   %[q_high], %%rcx\n"
-      "\t1:\n"
-      "\tmovq   (%%rbx), %%rax\n"
-      "\tdivq   %[b]\n"
-      "\tmovq   %%rax, (%%rcx)\n"
-      "\tsubq   $8, %%rbx\n"
-      "\tsubq   $8, %%rcx\n"
-      "\tsubq   $1, %%r8\n"
-      "\tcmpq   $0, %%r8\n"
-      "\tjg     1b\n"
-      "\tmovq   %[r],%%rbx\n"
-      "\tmovq   %%rdx, (%%rbx)\n"
-      ::[r] "g"(r), [len_a] "g"(len_a), [a_high] "g"(a_high), [b] "g"(b),
-        [q_high] "g"(q_high)
-      : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx", "%r8");
 
   *size_q = digit_array_real_size(*size_q, q);
   return true;
@@ -708,11 +532,6 @@ void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
   }
 
   asm volatile(
-      "\tmovq   %[est], %%rcx\n"
-      "\tmovq   %[n1], %%rdx\n"
-      "\tmovq   %[n2], %%rax\n"
-      "\tdivq   %[d1]\n"
-      "\tmovq   %%rax, (%%rcx)\n" 
       ::[est] "g"(est), [n1] "g"(n1), [n2] "g"(n2), [d1] "g"(d1)
       : "cc", "memory", "%rax", "%rcx", "%rdx");
 }
