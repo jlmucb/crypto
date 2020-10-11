@@ -22,6 +22,7 @@
 
 #include <string>
 #include <memory>
+#include <cstdint>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -38,6 +39,7 @@
 typedef unsigned char byte;
 #endif
 
+#if defined(X64)
 #ifndef int32_t
 typedef int int32_t;
 #endif
@@ -59,6 +61,7 @@ typedef unsigned uint32_t;
 typedef long unsigned uint64_t;
 #else
 typedef long long unsigned uint64_t;
+#endif
 #endif
 #endif
 

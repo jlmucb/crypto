@@ -454,7 +454,9 @@ bool random_source::start_random_source() {
   return initialized_;
 }
 
+#if defined(X64)
 #define HAVE_RD_RAND
+#endif
 int random_source::get_random_bytes(int n, byte* b) {
   if (!initialized_)
     return -1;
@@ -541,6 +543,7 @@ bool have_intel_rd_rand() {
   uint32_t arg = 1;
   uint32_t rd_rand_enabled;
 
+#if defined(X64)
   asm volatile(
       "\tmovl    %[arg], %%eax\n"
       "\tcpuid\n"
@@ -551,6 +554,7 @@ bool have_intel_rd_rand() {
   if (((rd_rand_enabled >> 30) & 1) != 0) {
     return true;
   }
+#endif
   return false;
 }
 
@@ -558,6 +562,7 @@ bool have_intel_aes_ni() {
   uint32_t arg = 1;
   uint32_t rd_aesni_enabled;
 
+#if defined(X64)
   asm volatile(
       "\tmovl    %[arg], %%eax\n"
       "\tcpuid\n"
@@ -568,6 +573,7 @@ bool have_intel_aes_ni() {
   if (((rd_aesni_enabled >> 25) & 1) != 0) {
     return true;
   }
+#endif
   return false;
 }
 
@@ -596,6 +602,7 @@ uint64_t read_rdtsc() {
   uint64_t out;
   uint64_t* ptr_out = &out;
 
+#if defined(X64)
   asm volatile(
       "\tmovq   %[ptr_out], %%rcx\n"
       "\trdtsc\n"
@@ -604,6 +611,9 @@ uint64_t read_rdtsc() {
       :
       : [ptr_out] "m"(ptr_out)
       : "memory", "cc", "%eax", "%edx", "%rcx");
+#else
+  out = 0;
+#endif
   return out;
 }
 

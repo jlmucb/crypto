@@ -28,9 +28,8 @@ ifndef LOCAL_LIB
 LOCAL_LIB=/usr/local/lib
 endif
 ifndef TARGET_MACHINE_TYPE
-TARGET_MACHINE_TYPE= x64
+TARGET_MACHINE_TYPE= ARM64
 endif
-
 
 S= $(SRC_DIR)/crypto_support
 O= $(OBJ_DIR)/crypto_support
