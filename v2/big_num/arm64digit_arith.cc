@@ -201,6 +201,59 @@ void u64_mult_step(uint64_t a, uint64_t b, uint64_t* lo_digit, uint64_t* hi_digi
       "memory", "x8", "x9", "x10", "x11", "x12", "x13");
 }
 
+//  carry_out:result= a+b+carry_in
+void u64_add_with_carry_step(uint64_t a, uint64_t b, uint64_t carry_in,
+        uint64_t* result, uint64_t* carry_out) {
+  *carry_out = carry_in << 29;
+  u64_add_step(a, b, result, carry_out);
+  if (*carry_out != 0ULL)
+    *carry_out = 1ULL;
+}
+
+//  carry_out:result= a-b-borrow_in if a>b+borrow_in, borrow_out=0
+void u64_sub_with_borrow_step(uint64_t a, uint64_t b, uint64_t borrow_in,
+                             uint64_t* result, uint64_t* borrow_out) {
+
+  *borrow_out = borrow_in << 29;
+  asm __volatile__ (
+    "mov    x10, %[a]\n\t"                    // a
+    "mov    x11, %[b]\n\t"                    // b
+    "mov    x8, %[result]\n\t"                // &result
+    "mov    x9, %[borrow_out]\n\t"            // &borrow_out
+    "mrs    x13, NZCV\n\t"                    // get msr including NZCV conditions
+    "mov    x14, 0xffffffff0fffffff\n\t"      // template for NZCV clear
+    "and    x13, x13, x14\n\t"                // clear carry condition
+    "ldr    x12, [x9]\n\t"                    // put new NZCV in x12
+    "orr    x13, x13, x12\n\t"                // or in new carry condition
+    "msr    NZCV, x13\n\t"                    // set NZCV
+    "sbc    x12, x10, x11\n\t"                // x12 = x10 - x11 - !C
+    "cset   x13, CS\n\t"                      // get carry flag
+    "str    x12, [x8]\n\t"                    // store result
+    "str    x13, [x9]\n\t"                    // carry flag to borrow_out
+    :: [result] "r" (result), [borrow_out] "r" (borrow_out), [a] "r" (a), [b] "r" (b) :
+      "memory", "x8", "x9", "x10", "x11", "x12", "x13", "x14");
+    if (*borrow_out != 0ULL)
+      *borrow_out = 1ULL;
+}
+
+//  carry_out:result= a*b+carry1+carry2
+void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
+      uint64_t carry2, uint64_t* lo_digit, uint64_t* hi_digit) {
+  uint64_t add_carry1= 0ULL;
+  uint64_t add_carry2= 0ULL;
+  uint64_t add_carry= 0ULL;
+  uint64_t t1, t2, t3;
+
+  u64_mult_step(a, b, &t1, &t2);
+  u64_add_with_carry_step(t1, carry1, 0ULL, &t3, &add_carry1);
+  u64_add_with_carry_step(t3, carry2, add_carry1, lo_digit, &add_carry2);
+  if (add_carry2 != 0 ) {
+    u64_add_with_carry_step(t2, add_carry2, 0ULL, hi_digit, &add_carry);
+  }  else {
+    *hi_digit = t2;
+  }
+}
+
 bool correct_q(uint64_t a, uint64_t b, uint64_t c, uint64_t q) {
   uint64_t lo_digit;
   uint64_t hi_digit;
@@ -237,9 +290,9 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
     "str    x10, [x8]\n\t"        // store q
     "str    x12, [x9]\n\t"        // store rem
     :: [b1] "r" (b1), [c1] "r" (c1), [q] "r" (q), [rem] "r" (rem):
-      "memory", "cc", "x8", "x9", "x10", "x11", "x12", "x13", "x14");
+      "memory", "cc", "x8", "x9", "x10", "x11", "x12", "x13");
 
-    // now correct estimate (it's an overestimate)
+  // now correct estimate (it's an overestimate)
   if (*q == 0ULL) {
     *rem = b;
     return;
@@ -257,38 +310,6 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   u64_mult_step(c, *q, &lo_digit, &hi_digit);
   u64_sub_with_borrow_step(a, hi_digit, 0ULL, &r, &borrow);
   u64_sub_with_borrow_step(b, lo_digit, 0ULL, rem, &borrow);
-}
-
-//  carry_out:result= a+b+carry_in
-void u64_add_with_carry_step(uint64_t a, uint64_t b, uint64_t carry_in,
-        uint64_t* result, uint64_t* carry_out) {
-  *carry_out = carry_in << 29;
-  u64_add_step(a, b, result, carry_out);
-  if (*carry_out != 0ULL)
-    *carry_out = 1ULL;
-}
-
-//  carry_out:result= a-b-borrow_in if a>b+borrow_in, borrow_out=0
-void u64_sub_with_borrow_step(uint64_t a, uint64_t b, uint64_t borrow_in,
-                             uint64_t* result, uint64_t* borrow_out) {
-}
-
-//  carry_out:result= a*b+carry1+carry2
-void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
-      uint64_t carry2, uint64_t* lo_digit, uint64_t* hi_digit) {
-  uint64_t add_carry1= 0ULL;
-  uint64_t add_carry2= 0ULL;
-  uint64_t add_carry= 0ULL;
-  uint64_t t1, t2, t3;
-
-  u64_mult_step(a, b, &t1, &t2);
-  u64_add_with_carry_step(t1, carry1, 0ULL, &t3, &add_carry1);
-  u64_add_with_carry_step(t3, carry2, add_carry1, lo_digit, &add_carry2);
-  if (add_carry2 != 0 ) {
-    u64_add_with_carry_step(t2, add_carry2, 0ULL, hi_digit, &add_carry);
-  }  else {
-    *hi_digit = t2;
-  }
 }
 
 // result = a+b.  returns size of result.  Error if <0

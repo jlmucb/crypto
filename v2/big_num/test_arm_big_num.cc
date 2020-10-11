@@ -107,7 +107,23 @@ bool test_add_with_carry_step() {
 }
 
 bool test_sub_with_borrow_step() {
-  // u64_sub_with_borrow_step(a, b, borrow_in, result, borrow_out)
+  uint64_t a = 5ULL;
+  uint64_t b = 3ULL;
+  uint64_t borrow_in = 1ULL;
+  uint64_t borrow_out;
+  uint64_t result = 0ULL;
+  u64_sub_with_borrow_step(a, b, borrow_in, &result, &borrow_out);
+  printf("%016llx -  %016llx borrow: %016llx=  %016lx, borrow_out: %016lx\n",
+         a, b, borrow_in, result, borrow_out);
+
+  a = 0ULL;
+  b = 6ULL;
+  borrow_in = 1ULL;
+  borrow_out = 0ULL;
+  result = 0ULL;
+  u64_sub_with_borrow_step(a, b, borrow_in, &result, &borrow_out);
+  printf("%016llx -  %016llx borrow: %016llx=  %016lx, borrow_out: %016lx\n",
+         a, b, borrow_in, result, borrow_out);
   return true;
 }
 
@@ -131,7 +147,13 @@ bool test_estimate_quotient() {
 }
 
 bool test_div_step() {
-  // u64_div_step(uint64_t a, uint64_t b, uint64_t c, uint64_t* result, uint64_t* carry)
+  uint64_t a = 0xffff;
+  uint64_t b = 0xffffffffffffffffULL;
+  uint64_t c = 0ULL;
+  uint64_t q = 0ULL;
+  uint64_t r = 0ULL;
+  // u64_div_step(a, b, c, &q, &r);
+  printf("%016llx : %016llx / %016llx 016llx = %016llx, rem %016llx\n", a, b, c, q, r);
   return true;
 }
 
@@ -187,6 +209,11 @@ int main(int an, char** av) {
     printf("test_estimate_quotient fails\n");
   }
 
+  if (test_div_step()) {
+    printf("test_div_step succeeds\n");
+  } else {
+    printf("test_div_step fails\n");
+  }
 #endif
 
   printf("done\n");
