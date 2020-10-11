@@ -201,10 +201,62 @@ void u64_mult_step(uint64_t a, uint64_t b, uint64_t* lo_digit, uint64_t* hi_digi
       "memory", "x8", "x9", "x10", "x11", "x12", "x13");
 }
 
+bool correct_q(uint64_t a, uint64_t b, uint64_t c, uint64_t q) {
+  uint64_t lo_digit;
+  uint64_t hi_digit;
+  u64_mult_step(q, c, &lo_digit, &hi_digit);
+  if (hi_digit > a || (hi_digit == a && lo_digit >=b)) {
+    return false;
+  }
+  return true;
+}
+
 //  q= a:b/c remainder, r
-void u64_div_step(uint64_t a, uint64_t b, uint64_t c, uint64_t* q,
-       uint64_t* rem) {
-  // udiv rd, m, rm   // rd = m / rm
+void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
+                  uint64_t* q, uint64_t* rem) {
+
+  int i;
+
+  // we have to estimate and correct since there are no two digit quotients
+  uint64_t b1, c1;
+  if (a > 0 ) {
+    i = high_bit_in_digit(a);
+    b1 = (b >> i) | (a << (NBITSINUINT64 - i));
+    c1 = c >> i;
+  } else {
+    b1 = b;
+    c1 = c;
+  }
+
+  asm __volatile__ (
+    "mov    x11, %[b1]\n\t"       // b1
+    "mov    x12, %[c1]\n\t"       // c1
+    "mov    x8, %[q]\n\t"         // q
+    "mov    x9, %[rem]\n\t"       // rem
+    "udiv   x10, x11, x12\n\t"    // x10= x11 / x12
+    "str    x10, [x8]\n\t"        // store q
+    "str    x12, [x9]\n\t"        // store rem
+    :: [b1] "r" (b1), [c1] "r" (c1), [q] "r" (q), [rem] "r" (rem):
+      "memory", "cc", "x8", "x9", "x10", "x11", "x12", "x13", "x14");
+
+    // now correct estimate (it's an overestimate)
+  if (*q == 0ULL) {
+    *rem = b;
+    return;
+  }
+
+  // Is *q * c > a:b
+  while (correct_q(a, b, c, *q)) {
+    (*q)--;
+  }
+
+  uint64_t lo_digit;
+  uint64_t hi_digit;
+  uint64_t borrow;
+  uint64_t r;
+  u64_mult_step(c, *q, &lo_digit, &hi_digit);
+  u64_sub_with_borrow_step(a, hi_digit, 0ULL, &r, &borrow);
+  u64_sub_with_borrow_step(b, lo_digit, 0ULL, rem, &borrow);
 }
 
 //  carry_out:result= a+b+carry_in
@@ -418,12 +470,8 @@ void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
     return;
   }
 
-/*
-  Todo
-  asm volatile(
-      ::[est] "g"(est), [n1] "g"(n1), [n2] "g"(n2), [d1] "g"(d1)
-      : "cc", "memory", "%rax", "%rcx", "%rdx");
- */
+  uint64_t r;
+  u64_div_step(a1, a2, b2, est, &r);
 }
 
 // q= a/b. r is remainder.
