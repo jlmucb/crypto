@@ -158,7 +158,8 @@ void instruction_test(uint64_t a, uint64_t b, uint64_t* c, uint64_t* d) {
     "subs   x10, x10, 1\n\t"
     "bne    .1\n\t"
     "str    x11, [X9]\n\t"
-    :: [a] "r" (a), [b] "r" (b), [c] "r" (c), [d] "r" (d) : );
+    :: [a] "r" (a), [b] "r" (b), [c] "r" (c), [d] "r" (d) :
+      "memory", "x9", "x10", "x11");
 }
 
 
@@ -180,8 +181,8 @@ void u64_add_step(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry_in_o
     "cset   x13, CS\n\t"                      // get carry flag
     "str    x12, [x8]\n\t"                    // store result in result
     "str    x13, [x9]\n\t"                    // store carry in carry
-    :: [result] "r" (result), [carry_in_out] "r" (carry_in_out), [a] "r" (a), [b] "r" (b) : );
-printf("carry_in_out: %lld\n", *carry_in_out);
+    :: [result] "r" (result), [carry_in_out] "r" (carry_in_out), [a] "r" (a), [b] "r" (b) : 
+      "memory", "cc", "x8", "x9", "x10", "x11", "x12", "x13", "x14");
 }
 
 //  r1 is the high order digit, r2 is low order
@@ -196,7 +197,8 @@ void u64_mult_step(uint64_t a, uint64_t b, uint64_t* lo_digit, uint64_t* hi_digi
     "umulh  x12, x10, x11\n\t"
     "str    x13, [x8]\n\t"
     "str    x12, [x9]\n\t"
-    :: [lo_digit] "r" (lo_digit), [hi_digit] "r" (hi_digit), [a] "r" (a), [b] "r" (b) : );
+    :: [lo_digit] "r" (lo_digit), [hi_digit] "r" (hi_digit), [a] "r" (a), [b] "r" (b) :
+      "memory", "x9", "x10", "x11", "x12", "x13");
 }
 
 //  q= a:b/c remainder, r
@@ -211,7 +213,7 @@ void u64_add_with_carry_step(uint64_t a, uint64_t b, uint64_t carry_in,
   *carry_out = carry_in << 29;
   u64_add_step(a, b, result, carry_out);
   *carry_out = (*carry_out != 0ULL);
-printf("a: %016llx, b: %016llx, result: %016llx, carry_out: %lld\n", a, b, *result, *carry_out);
+ printf("carry_out: %lld\n", *carry_out);
 }
 
 //  carry_out:result= a-b-borrow_in if a>b+borrow_in, borrow_out=0
@@ -229,18 +231,12 @@ void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
 
   u64_mult_step(a, b, &t1, &t2);
   u64_add_with_carry_step(t1, carry1, 0ULL, &t3, &add_carry1);
-printf("add_carry1: %lld\n", add_carry1);
   u64_add_with_carry_step(t3, carry2, add_carry1, lo_digit, &add_carry2);
-printf("add_carry2: %lld\n", add_carry2);
   if (add_carry2 != 0 ) {
     u64_add_with_carry_step(t2, add_carry2, 0ULL, hi_digit, &add_carry);
   }  else {
     *hi_digit = t2;
   }
-printf("carry1: %d\n", carry1);
-printf("carry2: %d\n", carry2);
-printf("t1: %016llx, t2: %016llx, t3: %016llx\n", t1, t2, t3);
-printf("lo_digit: %016llx, hi_digit: %016llx\n", *lo_digit, *hi_digit);
 }
 
 // result = a+b.  returns size of result.  Error if <0

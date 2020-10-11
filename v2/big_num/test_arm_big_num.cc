@@ -68,7 +68,6 @@ bool test_add_step() {
   carry_in = 1;
   result = 0;
   carry = carry_in << 29ULL;
-  printf("Carry: %llx\n", carry);
   result = 0;
   a = 0xffffffffffffffffULL;
   b = 2;
@@ -164,6 +163,12 @@ int main(int an, char** av) {
     printf("test_mult_step fails\n");
   }
 
+  if (test_mult_with_carry_step()) {
+    printf("test_mult_with_carry_step succeeds\n");
+  } else {
+    printf("test_mult_with_carry_step fails\n");
+  }
+
   if (test_add_with_carry_step()) {
     printf("test_add_with_carry_step succeeds\n");
   } else {
@@ -174,12 +179,6 @@ int main(int an, char** av) {
     printf("test_sub_with_borrow_step succeeds\n");
   } else {
     printf("test_sub_with_borrow_step fails\n");
-  }
-
-  if (test_mult_with_carry_step()) {
-    printf("test_mult_with_carry_step succeeds\n");
-  } else {
-    printf("test_mult_with_carry_step fails\n");
   }
 
   if (test_estimate_quotient()) {
