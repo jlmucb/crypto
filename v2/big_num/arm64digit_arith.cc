@@ -166,7 +166,7 @@ void instruction_test(uint64_t a, uint64_t b, uint64_t* c, uint64_t* d) {
 // Don't forget its op  dst, src1, src2
 // carry:result= a+b+carry_in
 void u64_add_step(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry_in_out) {
-  asm volatile (
+  asm __volatile__ (
     "mov    x10, %[a]\n\t"                    // a
     "mov    x11, %[b]\n\t"                    // b
     "mov    x8, %[result]\n\t"                // &result
@@ -188,7 +188,7 @@ void u64_add_step(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry_in_o
 //  r1 is the high order digit, r2 is low order
 //  r1:r2 = a * b
 void u64_mult_step(uint64_t a, uint64_t b, uint64_t* lo_digit, uint64_t* hi_digit) {
-  asm volatile (
+  asm __volatile__ (
     "mov    x10, %[a]\n\t"        // a
     "mov    x11, %[b]\n\t"        // b
     "mov    x8, %[lo_digit]\n\t"  // &lo_digit
@@ -198,7 +198,7 @@ void u64_mult_step(uint64_t a, uint64_t b, uint64_t* lo_digit, uint64_t* hi_digi
     "str    x13, [x8]\n\t"
     "str    x12, [x9]\n\t"
     :: [lo_digit] "r" (lo_digit), [hi_digit] "r" (hi_digit), [a] "r" (a), [b] "r" (b) :
-      "memory", "x9", "x10", "x11", "x12", "x13");
+      "memory", "x8", "x9", "x10", "x11", "x12", "x13");
 }
 
 //  q= a:b/c remainder, r
@@ -212,8 +212,8 @@ void u64_add_with_carry_step(uint64_t a, uint64_t b, uint64_t carry_in,
         uint64_t* result, uint64_t* carry_out) {
   *carry_out = carry_in << 29;
   u64_add_step(a, b, result, carry_out);
-  *carry_out = (*carry_out != 0ULL);
- printf("carry_out: %lld\n", *carry_out);
+  if (*carry_out != 0ULL)
+    *carry_out = 1ULL;
 }
 
 //  carry_out:result= a-b-borrow_in if a>b+borrow_in, borrow_out=0
