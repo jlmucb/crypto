@@ -181,21 +181,22 @@ void u64_add_step(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry_in_o
     "str    x12, [x8]\n\t"                    // store result in result
     "str    x13, [x9]\n\t"                    // store carry in carry
     :: [result] "r" (result), [carry_in_out] "r" (carry_in_out), [a] "r" (a), [b] "r" (b) : );
+printf("carry_in_out: %lld\n", *carry_in_out);
 }
 
 //  r1 is the high order digit, r2 is low order
 //  r1:r2 = a * b
-void u64_mult_step(uint64_t a, uint64_t b, uint64_t* r1, uint64_t* r2) {
+void u64_mult_step(uint64_t a, uint64_t b, uint64_t* lo_digit, uint64_t* hi_digit) {
   asm volatile (
-    "mov    x10, %[a1]\n\t"       // a
-    "mov    x11, %[a2]\n\t"       // b
-    "mov    x8, %[r1]\n\t"        // &r1 (low order word)
-    "mov    x9, %[r2]\n\t"        // &r2 (high order word)
+    "mov    x10, %[a]\n\t"        // a
+    "mov    x11, %[b]\n\t"        // b
+    "mov    x8, %[lo_digit]\n\t"  // &lo_digit
+    "mov    x9, %[hi_digit]\n\t"  // &hi_digit
     "mul    x13, x10, x11\n\t"
     "umulh  x12, x10, x11\n\t"
-    "str    x12, [x8]\n\t"
-    "str    x13, [x9]\n\t"
-    :: [r1] "r" (r1), [r2] "r" (r2), [a1] "r" (a), [a2] "r" (b) : );
+    "str    x13, [x8]\n\t"
+    "str    x12, [x9]\n\t"
+    :: [lo_digit] "r" (lo_digit), [hi_digit] "r" (hi_digit), [a] "r" (a), [b] "r" (b) : );
 }
 
 //  q= a:b/c remainder, r
@@ -207,8 +208,10 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c, uint64_t* q,
 //  carry_out:result= a+b+carry_in
 void u64_add_with_carry_step(uint64_t a, uint64_t b, uint64_t carry_in,
         uint64_t* result, uint64_t* carry_out) {
-  uint64_t carry = carry_in << 29;
-  u64_add_step(a, b, result, &carry);
+  *carry_out = carry_in << 29;
+  u64_add_step(a, b, result, carry_out);
+  *carry_out = (*carry_out != 0ULL);
+printf("a: %016llx, b: %016llx, result: %016llx, carry_out: %lld\n", a, b, *result, *carry_out);
 }
 
 //  carry_out:result= a-b-borrow_in if a>b+borrow_in, borrow_out=0
@@ -221,13 +224,23 @@ void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
       uint64_t carry2, uint64_t* lo_digit, uint64_t* hi_digit) {
   uint64_t add_carry1= 0ULL;
   uint64_t add_carry2= 0ULL;
+  uint64_t add_carry= 0ULL;
+  uint64_t t1, t2, t3;
 
-  u64_mult_step(a, b, lo_digit, hi_digit);
-  u64_add_with_carry_step(*lo_digit, carry1, 0ULL, lo_digit, &add_carry1);
-  u64_add_with_carry_step(*lo_digit, carry2, 0ULL, lo_digit, &add_carry2);
-  if ((add_carry1 | add_carry2) !=0 ) {
-    u64_add_with_carry_step(*hi_digit, 1ULL, 0ULL, hi_digit, &add_carry1);
-  } 
+  u64_mult_step(a, b, &t1, &t2);
+  u64_add_with_carry_step(t1, carry1, 0ULL, &t3, &add_carry1);
+printf("add_carry1: %lld\n", add_carry1);
+  u64_add_with_carry_step(t3, carry2, add_carry1, lo_digit, &add_carry2);
+printf("add_carry2: %lld\n", add_carry2);
+  if (add_carry2 != 0 ) {
+    u64_add_with_carry_step(t2, add_carry2, 0ULL, hi_digit, &add_carry);
+  }  else {
+    *hi_digit = t2;
+  }
+printf("carry1: %d\n", carry1);
+printf("carry2: %d\n", carry2);
+printf("t1: %016llx, t2: %016llx, t3: %016llx\n", t1, t2, t3);
+printf("lo_digit: %016llx, hi_digit: %016llx\n", *lo_digit, *hi_digit);
 }
 
 // result = a+b.  returns size of result.  Error if <0

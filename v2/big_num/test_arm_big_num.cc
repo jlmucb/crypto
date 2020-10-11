@@ -49,14 +49,15 @@ bool test_add_step() {
   carry_in = 0ULL;
   carry = carry_in << 29;
 
+  result = 0;
   a = 0xffffffffffffffffULL;
   b = 1;
   u64_add_step(a, b, &result, &carry);
   carry_out = (carry != 0);
   printf("u64_add_step: ");
   printf("%lx + %lx  + %lx = %lx, carry_out: %lx\n", a, b, carry_in, result, carry_out);
-  result = 0;
 
+  result = 0;
   a = 0xffffffffffffffffULL;
   b = 2;
   u64_add_step(a, b, &result, &carry);
@@ -65,11 +66,20 @@ bool test_add_step() {
   printf("%lx + %lx  + %lx = %lx, carry_out: %lx\n", a, b, carry_in, result, carry_out);
 
   carry_in = 1;
+  result = 0;
   carry = carry_in << 29ULL;
   printf("Carry: %llx\n", carry);
   result = 0;
   a = 0xffffffffffffffffULL;
   b = 2;
+  u64_add_step(a, b, &result, &carry);
+  carry_out = (carry != 0);
+  printf("u64_add_step: ");
+  printf("%lx + %lx  + %lx = %lx, carry_out: %lx\n", a, b, carry_in, result, carry_out);
+
+  result = 0;
+  a = 0xffffffffffffffffULL;
+  b =  0xffULL;
   u64_add_step(a, b, &result, &carry);
   carry_out = (carry != 0);
   printf("u64_add_step: ");
@@ -81,14 +91,14 @@ bool test_add_step() {
 bool test_mult_step() {
 
   uint64_t a, b;
-  uint64_t r1, r2;
+  uint64_t hi_digit = 0ULL;
+  uint64_t lo_digit = 0ULL;
+
   a = 0xffffffffffffffffULL;
   b = 0x100;
-  r1 = 0;
-  r2 = 0;
-  printf("\nu64_mult_step: ");
-  u64_mult_step(a, b, &r1, &r2);
-  printf("%lx *  %lx =  %016lx %016lx\n", a, b, r1, r2);
+  printf("u64_mult_step: ");
+  u64_mult_step(a, b, &lo_digit, &hi_digit);
+  printf("%016llx *  %016llx =  %016lx:%016lx\n", a, b, hi_digit, lo_digit);
   return true;
 }
 
@@ -103,7 +113,16 @@ bool test_sub_with_borrow_step() {
 }
 
 bool test_mult_with_carry_step() {
-  // u64_mult_with_carry_step(a, b, carry1, carry2, result, carry_out)
+  uint64_t a = 0xffffffffffffffffULL;
+  uint64_t b = 0x100ULL;
+  uint64_t carry1= 0xffULL;
+  uint64_t carry2= 0xffULL;
+  uint64_t lo_digit = 0ULL;
+  uint64_t hi_digit = 0ULL;
+
+  u64_mult_with_carry_step(a, b, carry1, carry2, &lo_digit, &hi_digit);
+  printf("%016llx * %016llx + %016llx + %016llx = %016llx::%016llx\n", a, b, carry1, carry2,
+          hi_digit, lo_digit);
   return true;
 }
 
