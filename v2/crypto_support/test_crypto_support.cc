@@ -574,6 +574,7 @@ int main(int an, char** av) {
   an = 1;
   ::testing::InitGoogleTest(&an, av);
 
+#if defined(X64)
   uint64_t cycles_per_second = calibrate_rdtsc();
   printf("This computer runs at %llu cycles per second\n", cycles_per_second);
   if (have_intel_rd_rand())
@@ -584,6 +585,7 @@ int main(int an, char** av) {
     printf("aes ni present\n");
   else
     printf("aes ni not present\n");
+#endif
 
   if (!init_crypto()) {
     printf("init_crypto failed\n");
