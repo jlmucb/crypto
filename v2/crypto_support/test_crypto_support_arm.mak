@@ -35,8 +35,8 @@ S= $(SRC_DIR)/crypto_support
 O= $(OBJ_DIR)/crypto_support
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include
 
-CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable
-CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable -D ARM64
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable -D ARM64
 CC=g++
 LINK=g++
 PROTO=protoc
