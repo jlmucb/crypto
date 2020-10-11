@@ -210,7 +210,7 @@ void u64_add_with_carry_step(uint64_t a, uint64_t b, uint64_t carry_in,
     *carry_out = 1ULL;
 }
 
-//  carry_out:result= a-b-borrow_in if a>b+borrow_in, borrow_out=0
+//  carry_out:result= a-b-!borrow_in if a>b+borrow_in, borrow_out=1
 void u64_sub_with_borrow_step(uint64_t a, uint64_t b, uint64_t borrow_in,
                              uint64_t* result, uint64_t* borrow_out) {
 
@@ -226,8 +226,9 @@ void u64_sub_with_borrow_step(uint64_t a, uint64_t b, uint64_t borrow_in,
     "ldr    x12, [x9]\n\t"                    // put new NZCV in x12
     "orr    x13, x13, x12\n\t"                // or in new carry condition
     "msr    NZCV, x13\n\t"                    // set NZCV
-    "sbc    x12, x10, x11\n\t"                // x12 = x10 - x11 - !C
-    "cset   x13, CS\n\t"                      // get carry flag
+    "sbcs   x12, x10, x11\n\t"                // x12 = x10 - x11 - !C
+    "mov    x13, 0\n\t"
+    "cset   x13, CS\n\t"                      // get borrow flag
     "str    x12, [x8]\n\t"                    // store result
     "str    x13, [x9]\n\t"                    // carry flag to borrow_out
     :: [result] "r" (result), [borrow_out] "r" (borrow_out), [a] "r" (a), [b] "r" (b) :

@@ -117,7 +117,7 @@ bool test_sub_with_borrow_step() {
          a, b, borrow_in, result, borrow_out);
 
   a = 0ULL;
-  b = 6ULL;
+  b = 1ULL;
   borrow_in = 1ULL;
   borrow_out = 0ULL;
   result = 0ULL;
