@@ -309,8 +309,8 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   uint64_t borrow;
   uint64_t r;
   u64_mult_step(c, *q, &lo_digit, &hi_digit);
-  u64_sub_with_borrow_step(a, hi_digit, 0ULL, &r, &borrow);
-  u64_sub_with_borrow_step(b, lo_digit, 0ULL, rem, &borrow);
+  u64_sub_with_borrow_step(b, lo_digit, 1ULL, rem, &borrow);
+  u64_sub_with_borrow_step(a, hi_digit, borrow, &r, &borrow);
 }
 
 // result = a+b.  returns size of result.  Error if <0
