@@ -264,6 +264,7 @@ bool test_simon_test1() {
   return true;
 }
 
+#if defined(X64)
 bool test_aesni_test1() {
   aesni aes_obj;
   byte test_cipher_out[16];
@@ -315,6 +316,7 @@ bool test_aesni_test2() {
   if (memcmp(aes256_test1_plain, test_plain_out, 16) != 0) return false;
   return true;
 }
+#endif
 
 
 TEST (aes, test_aes_test1) {
@@ -335,12 +337,14 @@ TEST (twofish, test_aes_test1) {
 TEST (simon, test_aes_test1) {
   EXPECT_TRUE(test_simon_test1());
 }
+#if defined(X64)
 TEST (aesni, test_aesni_test1) {
   EXPECT_TRUE(test_aesni_test1());
 }
 TEST (aesni, test_aesni_test2) {
   EXPECT_TRUE(test_aesni_test2());
 }
+#endif
 
 
 int main(int an, char** av) {

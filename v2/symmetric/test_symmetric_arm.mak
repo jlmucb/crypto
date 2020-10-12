@@ -28,7 +28,7 @@ ifndef LOCAL_LIB
 LOCAL_LIB=/usr/local/lib
 endif
 ifndef TARGET_MACHINE_TYPE
-TARGET_MACHINE_TYPE= x64
+TARGET_MACHINE_TYPE= ARM64
 endif
 
 S= $(SRC_DIR)/symmetric
@@ -36,8 +36,8 @@ O= $(OBJ_DIR)/symmetric
 S_SUPPORT=$(SRC_DIR)/crypto_support
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(S_SUPPORT) -I/usr/local/include
 
-CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable -D X64
-CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable -D X64
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable -D ARM64
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable -D ARM64
 CC=g++
 LINK=g++
 PROTO=protoc
@@ -46,7 +46,7 @@ LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=   $(O)/test_symmetric.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
 	$(O)/symmetric_cipher.o $(O)/aes.o $(O)/tea.o $(O)/rc4.o $(O)/twofish.o \
-	$(O)/simonspeck.o $(O)/aesni.o
+	$(O)/simonspeck.o
 
 all:    test_symmetric.exe
 clean:
@@ -101,7 +101,3 @@ $(O)/twofish.o: $(S)/twofish.cc
 $(O)/simonspeck.o: $(S)/simonspeck.cc
 	@echo "compiling simonspeck.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/simonspeck.o $(S)/simonspeck.cc
-
-$(O)/aesni.o: $(S)/aesni.cc
-	@echo "compiling aesni.cc"
-	$(CC) $(CFLAGS) -c $(I) -o $(O)/aesni.o $(S)/aesni.cc
