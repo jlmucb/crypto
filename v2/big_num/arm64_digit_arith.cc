@@ -159,7 +159,7 @@ void instruction_test(uint64_t a, uint64_t b, uint64_t* c, uint64_t* d) {
     "bne    .1\n\t"
     "str    x11, [x9]\n\t"
     :: [a] "r" (a), [b] "r" (b), [c] "r" (c), [d] "r" (d) :
-      "memory", "%9", "%10", "%11");
+      "memory", "x9", "x10", "x11");
 }
 
 
@@ -182,7 +182,7 @@ void u64_add_step(uint64_t a, uint64_t b, uint64_t* result, uint64_t* carry_in_o
     "str    x12, [x8]\n\t"                    // store result in result
     "str    x13, [x9]\n\t"                    // store carry in carry
     :: [result] "r" (result), [carry_in_out] "r" (carry_in_out), [a] "r" (a), [b] "r" (b) : 
-      "memory", "cc", "%8", "%9", "%10", "%11", "%12", "%13", "%14");
+      "memory", "cc", "x8", "x9", "x10", "x11", "x12", "x13", "x14");
 }
 
 //  r1 is the high order digit, r2 is low order
@@ -198,7 +198,7 @@ void u64_mult_step(uint64_t a, uint64_t b, uint64_t* lo_digit, uint64_t* hi_digi
     "str    x13, [x8]\n\t"
     "str    x12, [x9]\n\t"
     :: [lo_digit] "r" (lo_digit), [hi_digit] "r" (hi_digit), [a] "r" (a), [b] "r" (b) :
-      "memory", "%8", "%9", "%10", "%11", "%12", "%13");
+      "memory", "x8", "x9", "x10", "x11", "x12", "x13");
 }
 
 //  carry_out:result= a+b+carry_in
@@ -232,7 +232,7 @@ void u64_sub_with_borrow_step(uint64_t a, uint64_t b, uint64_t borrow_in,
     "str    x12, [x8]\n\t"                    // store result
     "str    x13, [x9]\n\t"                    // carry flag to borrow_out
     :: [result] "r" (result), [borrow_out] "r" (borrow_out), [a] "r" (a), [b] "r" (b) :
-      "memory", "%8", "%9", "%10", "%11", "%12", "%13", "%14");
+      "memory", "x8", "x9", "x10", "x11", "x12", "x13", "x14");
     if (*borrow_out != 0ULL)
       *borrow_out = 1ULL;
 }
@@ -291,7 +291,7 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
     "str    x10, [x8]\n\t"        // store q
     "str    x12, [x9]\n\t"        // store rem
     :: [b1] "r" (b1), [c1] "r" (c1), [q] "r" (q), [rem] "r" (rem):
-      "memory", "cc", "%8", "%9", "%10", "%11", "%12", "%13");
+      "memory", "cc", "x8", "x9", "x10", "x11", "x12", "x13");
 
   // now correct estimate (it's an overestimate)
   if (*q == 0ULL) {

@@ -51,7 +51,7 @@ CFLAGS1=$(INCLUDE) -O3 -g -Wall -std=c++11
 # compile: aarch64-linux-gnu-g++ -static
 # compile: aarch64-linux-gnu-gcc -static
 # objdump: aarch64-linux-gnu-objdump --disassemble-all test1_arm.o
-# to run: qemu-aarch64-static arm_test.exe
+# to run: qemu-aarch64-static ~/cryptobin/test_arm_big_num.exe
 
 
 SIMTARGET=1
