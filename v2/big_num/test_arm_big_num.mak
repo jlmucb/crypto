@@ -68,7 +68,7 @@ else
 	LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 endif
 
-dobj=   $(O)/test_arm_big_num.o $(O)/arm64digit_arith.o  #$(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
+dobj=   $(O)/test_arm_big_num.o $(O)/arm64_digit_arith.o  #$(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
         #$(O)/globals.o $(O)/big_num.o $(O)/basic_arith.o $(O)/number_theory.o
 
 all:    test_arm_big_num.exe
@@ -87,9 +87,9 @@ $(O)/test_arm_big_num.o: $(S)/test_arm_big_num.cc
 	@echo "compiling test_arm_big_num.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/test_arm_big_num.o $(S)/test_arm_big_num.cc
 
-$(O)/arm64digit_arith.o: $(S)/arm64digit_arith.cc
-	@echo "compiling arm64digit_arith.cc"
-	$(CC) $(CFLAGS) -c -o $(O)/arm64digit_arith.o $(S)/arm64digit_arith.cc
+$(O)/arm64_digit_arith.o: $(S)/arm64_digit_arith.cc
+	@echo "compiling arm64_digit_arith.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/arm64_digit_arith.o $(S)/arm64_digit_arith.cc
 
 #$(O)/support.pb.o: $(S_SUPPORT)/support.pb.cc
 #	@echo "compiling support.pb.cc"

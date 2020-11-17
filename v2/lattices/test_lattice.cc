@@ -19,6 +19,11 @@
 #include "support.pb.h"
 #include "lattice.h"
 
+// NIST parameters
+//  Frodo
+//    n=1344, q=2^16, |s| = 6
+//  NTRU
+//    n=701, p=4096, q=3
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
