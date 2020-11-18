@@ -141,82 +141,121 @@ bool test_mult_with_carry_step() {
   return true;
 }
 
-bool test_estimate_quotient() {
-  // estimate_quotient(a1, a2, a3, b1, b2, est)
+bool check_div(uint64_t a, uint64_t b, uint64_t c, uint64_t q, uint64_t r) {
+  uint64_t lo = 0ULL;
+  uint64_t hi = 0ULL;
+
+  u64_mult_step(c, q, &lo, &hi);
+  uint64_t c_in = 0ULL;
+  uint64_t c_out = 0ULL;
+  uint64_t a1= 0ULL;
+  uint64_t a2= 0ULL;
+  u64_add_with_carry_step(lo, r, c_in, &a2, &c_out);
+  c_in = c_out; c_out = 0ULL;
+  u64_add_with_carry_step(hi, 0ULL, c_in, &a1, &c_out);
+  if (a1 != a || a2 != b)
+    return false;
   return true;
 }
 
 bool test_div_step() {
   uint64_t a = 0xffff;
   uint64_t b = 0xffffffffffffffffULL;
-  uint64_t c = 0ULL;
+  uint64_t c = 0xfffffULL;
   uint64_t q = 0ULL;
   uint64_t r = 0ULL;
-  // u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx 016llx = %016llx, rem %016llx\n", a, b, c, q, r);
+  u64_div_step(a, b, c, &q, &r);
+  printf("%016llx : %016llx / %016llx 016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  if (!check_div(a, b, c, q, r))
+    return false;
+
+  a = 0x2;
+  b = 0ULL;
+  c = 0xffffffffffffffffULL;
+  q = 0ULL;
+  r = 0ULL;
+  u64_div_step(a, b, c, &q, &r);
+  printf("%016llx : %016llx / %016llx 016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  if (!check_div(a, b, c, q, r))
+    return false;
+
+  a = 0ULL;
+  b = 0xffffffffffffffffULL;
+  c = 0xffffffffffffffULL;
+  q = 0ULL;
+  r = 0ULL;
+  u64_div_step(a, b, c, &q, &r);
+  printf("%016llx : %016llx / %016llx 016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  if (!check_div(a, b, c, q, r))
+    return false;
+
+  a = 1ULL;
+  b = 0xffffffffffffffffULL;
+  c = 0xfULL;
+  q = 0ULL;
+  r = 0ULL;
+  u64_div_step(a, b, c, &q, &r);
+  printf("%016llx : %016llx / %016llx 016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  if (!check_div(a, b, c, q, r))
+    return false;
+
   return true;
 }
 
 
 int main(int an, char** av) {
 
-#if 0
-  extern void instruction_test(uint64_t a, uint64_t b, uint64_t* c, uint64_t* d);
-  uint64_t a, b, c, d;
-
-  a = 10;
-  b = 0;
-  c = 0;
-  d = 0;
-
-  instruction_test(a, b, &c, &d);
-  printf("%lu --> %lu\n", a, d);
-#else
-
+  printf("\ntest_add_step\n");
   if (test_add_step()) {
     printf("test_add_step succeeds\n");
   } else {
     printf("test_add_step fails\n");
   }
 
+  printf("\ntest_mult_step\n");
   if (test_mult_step()) {
     printf("test_mult_step succeeds\n");
   } else {
     printf("test_mult_step fails\n");
   }
 
+  printf("\ntest_mult_with_carry_step\n");
   if (test_mult_with_carry_step()) {
     printf("test_mult_with_carry_step succeeds\n");
   } else {
     printf("test_mult_with_carry_step fails\n");
   }
 
+  printf("\ntest_add_with_carry_step\n");
   if (test_add_with_carry_step()) {
     printf("test_add_with_carry_step succeeds\n");
   } else {
     printf("test_add_with_carry_step fails\n");
   }
 
+  printf("\ntest_sub_with_borrow_step\n");
   if (test_sub_with_borrow_step()) {
     printf("test_sub_with_borrow_step succeeds\n");
   } else {
     printf("test_sub_with_borrow_step fails\n");
   }
 
+#if 0
   if (test_estimate_quotient()) {
     printf("test_estimate_quotient succeeds\n");
   } else {
     printf("test_estimate_quotient fails\n");
   }
+#endif
 
+  printf("\ntest_div_step\n");
   if (test_div_step()) {
     printf("test_div_step succeeds\n");
   } else {
     printf("test_div_step fails\n");
   }
-#endif
 
-  printf("done\n");
+  printf("\ndone\n");
   return 0;
 }
 
