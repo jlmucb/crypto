@@ -256,13 +256,15 @@ void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
 }
 
 bool correct_q(uint64_t a, uint64_t b, uint64_t c, uint64_t q) {
-// printf("correct %llx:%llx, %llx, %llx\n", a, b, c, q);
+//printf("correct %llx:%llx, %llx, %llx\n", a, b, c, q);
   uint64_t lo_digit;
   uint64_t hi_digit;
   u64_mult_step(q, c, &lo_digit, &hi_digit);
-  if (hi_digit > a || (hi_digit == a && lo_digit >=b)) {
+  if (hi_digit > a || (hi_digit == a && lo_digit > b)) {
+//printf("correct returns true\n");
     return true;
   }
+//printf("correct returns false\n");
   return false;
 }
 
@@ -270,11 +272,10 @@ bool correct_q(uint64_t a, uint64_t b, uint64_t c, uint64_t q) {
 //  a < c.  a may be 0.
 void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
                   uint64_t* q, uint64_t* rem) {
-// printf("div_step:  %llx:%llx / %llx\n", a, b, c);
   if (c == 0ULL)
     return;
 
-// printf("div:  %llx:%llx / %llx = %llx\n", a, b, c, q);
+//printf("div:  %llx:%llx / %llx\n", a, b, c);
   if (a == 0ULL) {
     *q = b / c;
     *rem = b - (*q * c);
@@ -283,25 +284,22 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
 
   uint64_t num1 = 0ULL;
   int high_bit_hi_digit = high_bit_in_digit(a);
-  int lo_digit_shift = NBITSINUINT64 - high_bit_in_digit(c);
-// printf("high_bit_hi_digit: %d, lo_digit_shift: %d\n", high_bit_hi_digit, lo_digit_shift);
   uint64_t num = (b >> high_bit_hi_digit) | (a << (NBITSINUINT64 - high_bit_hi_digit));
-  uint64_t den = (c << lo_digit_shift);
-// printf("num: %llx, den: %llx\n", num, den);
-  if (den > num) {
+  int shift_lo = 0;
+  uint64_t den = c;
+  if (c > num) {
+    shift_lo = 1;
     den >>= 1;
-    lo_digit_shift--;
   }
-
   *q = num / den;
-  uint64_t shift = lo_digit_shift + high_bit_hi_digit;
-// printf("est0: %llx, shift: %llx\n", *q, shift);
-  *q <<= shift;
+  *q <<= high_bit_hi_digit;
   if (*q == 0ULL) {
     *rem = b;
     return;
   }
-// printf("est1: %llx\n", *q);
+  while(correct_q(a, b, c, *q)) {
+    (*q)--;
+  }
 
   uint64_t lo = 0ULL;
   uint64_t hi = 0ULL;
@@ -315,7 +313,6 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
     return;
   }
   *q += *rem / c;
-// printf("est2: %llx\n", *q);
 
   // Is *q * c > a:b
   while (correct_q(a, b, c, *q)) {
@@ -325,10 +322,6 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   u64_mult_step(c, *q, &lo, &hi);
   u64_sub_with_borrow_step(b, lo, 1ULL, rem, &borrow);
   u64_sub_with_borrow_step(a, hi, borrow, &r, &borrow);
-  if (r != 0ULL) {
-    printf("ERROR 2\n");
-    return;
-  }
   return;
 }
 
@@ -476,11 +469,17 @@ int digit_array_mult_by(int capacity_a, int size_a, uint64_t* a, uint64_t x) {
 bool digit_array_short_division_algorithm(int size_a, uint64_t* a, uint64_t b,
          int* size_q, uint64_t* q, uint64_t* r) {
   int real_size_a = digit_array_real_size(size_a, a);
-  uint64_t len_a = (uint64_t)real_size_a;
   uint64_t* a_high = &a[real_size_a - 1];
   uint64_t* q_high = &q[real_size_a - 1];
 
-  // Todo
+  uint64_t rem = 0ULL;
+  for (int i = 0; i < real_size_a; i++) {
+    *r = 0ULL;
+    u64_div_step(rem, *a_high, b, q_high, r);
+    rem = *r;
+    a_high--;
+    q_high--;
+  }
 
   *size_q = digit_array_real_size(*size_q, q);
   return true;

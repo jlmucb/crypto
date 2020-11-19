@@ -164,6 +164,7 @@ bool test_div_step() {
   uint64_t c = 0xfffffULL;
   uint64_t q = 0ULL;
   uint64_t r = 0ULL;
+
   u64_div_step(a, b, c, &q, &r);
   printf("%016llx : %016llx / %016llx 016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
@@ -289,6 +290,15 @@ bool test_short_div() {
   printf(" / %0llx = ", op1);
   digit_array_print(size_q, opq);
   printf(", rem: %llx\n", r);
+
+  uint64_t result[3];
+  digit_array_zero_num(3, result);
+  int i = digit_array_mult(1, &op1, size_q, opq, 3, result);
+  digit_array_print(size_q, opq);
+  printf(" * %llx = ", op1);
+  digit_array_print(i, result);
+  printf("\n");
+
   return true;
 }
 
