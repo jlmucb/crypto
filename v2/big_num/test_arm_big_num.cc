@@ -202,6 +202,81 @@ bool test_div_step() {
   return true;
 }
 
+bool test_multi_add() {
+  int size_op1 = 3;
+  uint64_t op1[3] = {
+    0xfffffffffffffffdULL,
+    0xffffffffffffffffULL,
+    0x0ULL
+  };
+  int size_op2 = 2;
+  uint64_t op2[2] = {
+    0x06ULL,
+    0x0101010101010101
+  };
+  uint64_t result[4];
+  int i = digit_array_add(size_op1, op1, size_op2, op2, 4, result);
+  digit_array_print(size_op1, op1);
+  printf(" + ");
+  digit_array_print(size_op2, op2);
+  printf(" = ");
+  digit_array_print(i, result);
+
+  return true;
+}
+
+bool test_multi_sub() {
+  int size_op1 = 3;
+  uint64_t op1[3] = {
+  };
+  int size_op2 = 2;
+  uint64_t op2[2] = {
+  };
+  uint64_t result[4];
+  return true;
+}
+
+bool test_multi_mult() {
+  int size_op1 = 3;
+  uint64_t op1[3] = {
+  };
+  int size_op2 = 2;
+  uint64_t op2[2] = {
+  };
+  uint64_t result[4];
+  return true;
+}
+
+bool test_short_div() {
+  uint64_t op1 = 0x7777;
+  int size_op2 = 2;
+  uint64_t op2[2] = {
+  };
+  uint64_t result[4];
+  return true;
+}
+
+bool test_estimate_quotient() {
+  uint64_t a1 =0x2ULL;;
+  uint64_t a2= 0x0101010102020202;
+  uint64_t a3= 0x0ULL;
+  uint64_t b1= 0x00ffffffffffffff;
+  uint64_t b2= 0ULL;
+  uint64_t est;
+  // estimate_quotient(a1, a2, a3, b1, b2, &est);
+  return true;
+}
+
+bool test_multi_euclid() {
+  int size_op1 = 3;
+  uint64_t op1[3] = {
+  };
+  int size_op2 = 2;
+  uint64_t op2[2] = {
+  };
+  uint64_t result[4];
+  return true;
+}
 
 int main(int an, char** av) {
 
@@ -240,19 +315,53 @@ int main(int an, char** av) {
     printf("test_sub_with_borrow_step fails\n");
   }
 
-#if 0
-  if (test_estimate_quotient()) {
-    printf("test_estimate_quotient succeeds\n");
-  } else {
-    printf("test_estimate_quotient fails\n");
-  }
-#endif
-
   printf("\ntest_div_step\n");
   if (test_div_step()) {
     printf("test_div_step succeeds\n");
   } else {
     printf("test_div_step fails\n");
+  }
+
+  printf("\ntest_multi_add\n");
+  if (test_multi_add()) {
+    printf("test_multi_add succeeds\n");
+  } else {
+    printf("test_multi_add fails\n");
+  }
+
+  printf("\ntest_multi_sub\n");
+  if (test_multi_sub()) {
+    printf("test_multi_sub succeeds\n");
+  } else {
+    printf("test_multi_sub fails\n");
+  }
+
+  printf("\ntest_multi_mult\n");
+  if (test_multi_mult()) {
+    printf("test_multi_mult succeeds\n");
+  } else {
+    printf("test_multi_mult fails\n");
+  }
+
+  printf("\ntest_short_div\n");
+  if (test_short_div()) {
+    printf("test_short_div succeeds\n");
+  } else {
+    printf("test_short_div fails\n");
+  }
+
+  printf("\ntest_estimate_quotient\n");
+  if (test_estimate_quotient()) {
+    printf("test_estimate_quotient succeeds\n");
+  } else {
+    printf("test_estimate_quotient fails\n");
+  }
+
+  printf("\ntest_multi_euclid\n");
+  if (test_multi_euclid()) {
+    printf("test_multi_euclid succeeds\n");
+  } else {
+    printf("test_multi_euclid fails\n");
   }
 
   printf("\ndone\n");
