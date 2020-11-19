@@ -221,6 +221,7 @@ bool test_multi_add() {
   digit_array_print(size_op2, op2);
   printf(" = ");
   digit_array_print(i, result);
+  printf("\n");
 
   return true;
 }
@@ -228,22 +229,46 @@ bool test_multi_add() {
 bool test_multi_sub() {
   int size_op1 = 3;
   uint64_t op1[3] = {
+    0xfffffffffffffff0ULL,
+    0xffffffffffffffffULL,
+    0x0ULL
   };
   int size_op2 = 2;
   uint64_t op2[2] = {
+    0x06ULL,
+    0x0101010101010101
   };
   uint64_t result[4];
+  int i = digit_array_sub(size_op1, op1, size_op2, op2, 4, result);
+  digit_array_print(size_op1, op1);
+  printf(" - ");
+  digit_array_print(size_op2, op2);
+  printf(" = ");
+  digit_array_print(i, result);
+  printf("\n");
   return true;
 }
 
 bool test_multi_mult() {
   int size_op1 = 3;
   uint64_t op1[3] = {
+    0xfffffffffffffffdULL,
+    0xffffffffffffffffULL,
+    0x0ULL
   };
   int size_op2 = 2;
   uint64_t op2[2] = {
+    0x06ULL,
+    0x0101010101010101
   };
-  uint64_t result[4];
+  uint64_t result[8];
+  int i = digit_array_mult(size_op1, op1, size_op2, op2, 4, result);
+  digit_array_print(size_op1, op1);
+  printf(" * ");
+  digit_array_print(size_op2, op2);
+  printf(" = ");
+  digit_array_print(i, result);
+  printf("\n");
   return true;
 }
 
@@ -251,8 +276,19 @@ bool test_short_div() {
   uint64_t op1 = 0x7777;
   int size_op2 = 2;
   uint64_t op2[2] = {
+    0x77777ULL,
+    0x7771ULL,
   };
-  uint64_t result[4];
+  uint64_t opq[4];
+  uint64_t r = 0ULL;
+  digit_array_zero_num(4, opq);
+  int size_q = 4;
+  if (!digit_array_short_division_algorithm(size_op2, op2, op1, &size_q, opq, &r))
+    return false;
+  digit_array_print(size_op2, op2);
+  printf(" / %0llx = ", op1);
+  digit_array_print(size_q, opq);
+  printf(", rem: %llx\n", r);
   return true;
 }
 
