@@ -56,6 +56,8 @@ bool test_add_step() {
   carry_out = (carry != 0);
   printf("u64_add_step: ");
   printf("%lx + %lx  + %lx = %lx, carry_out: %lx\n", a, b, carry_in, result, carry_out);
+  if (result != 0ULL || carry_out != 1)
+    return false;
 
   result = 0;
   a = 0xffffffffffffffffULL;
@@ -64,6 +66,8 @@ bool test_add_step() {
   carry_out = (carry != 0);
   printf("u64_add_step: ");
   printf("%lx + %lx  + %lx = %lx, carry_out: %lx\n", a, b, carry_in, result, carry_out);
+  if (result != 1ULL || carry_out != 1)
+    return false;
 
   carry_in = 1;
   result = 0;
@@ -75,6 +79,8 @@ bool test_add_step() {
   carry_out = (carry != 0);
   printf("u64_add_step: ");
   printf("%lx + %lx  + %lx = %lx, carry_out: %lx\n", a, b, carry_in, result, carry_out);
+  if (result != 2ULL || carry_out != 1)
+    return false;
 
   result = 0;
   a = 0xffffffffffffffffULL;
@@ -83,6 +89,8 @@ bool test_add_step() {
   carry_out = (carry != 0);
   printf("u64_add_step: ");
   printf("%lx + %lx  + %lx = %lx, carry_out: %lx\n", a, b, carry_in, result, carry_out);
+  if (result != 0xfeULL || carry_out != 1)
+    return false;
 
   return true;
 }
@@ -98,6 +106,8 @@ bool test_mult_step() {
   printf("u64_mult_step: ");
   u64_mult_step(a, b, &lo_digit, &hi_digit);
   printf("%016llx *  %016llx =  %016lx:%016lx\n", a, b, hi_digit, lo_digit);
+  if (hi_digit != 0xffULL || lo_digit != 0xffffffffffffff00)
+    return false;
   return true;
 }
 
@@ -115,6 +125,8 @@ bool test_sub_with_borrow_step() {
   u64_sub_with_borrow_step(a, b, borrow_in, &result, &borrow_out);
   printf("%016llx -  %016llx borrow: %016llx=  %016lx, borrow_out: %016lx\n",
          a, b, borrow_in, result, borrow_out);
+  if (result != 0x2ULL || borrow_out != 1)
+    return false;
 
   a = 0ULL;
   b = 1ULL;
@@ -124,6 +136,8 @@ bool test_sub_with_borrow_step() {
   u64_sub_with_borrow_step(a, b, borrow_in, &result, &borrow_out);
   printf("%016llx -  %016llx borrow: %016llx=  %016lx, borrow_out: %016lx\n",
          a, b, borrow_in, result, borrow_out);
+  if (result != 0xffffffffffffffffULL || borrow_out != 0)
+    return false;
   return true;
 }
 
@@ -216,6 +230,13 @@ bool test_multi_add() {
     0x0101010101010101
   };
   uint64_t result[4];
+
+  uint64_t ans1[3] = {
+    0x0000000000000003ULL,
+    0x0101010101010101ULL,
+    0x0000000000000001ULL,
+  };
+    
   int i = digit_array_add(size_op1, op1, size_op2, op2, 4, result);
   digit_array_print(size_op1, op1);
   printf(" + ");
@@ -223,6 +244,8 @@ bool test_multi_add() {
   printf(" = ");
   digit_array_print(i, result);
   printf("\n");
+  if (digit_array_compare(i, result, 3, ans1) != 0)
+    return false;
 
   return true;
 }
@@ -240,6 +263,16 @@ bool test_multi_sub() {
     0x0101010101010101
   };
   uint64_t result[4];
+  uint64_t ans1[2] = {
+    0xffffffffffffffe9ULL,
+    0xfefefefefefefefeULL,
+  };
+  uint64_t ans2[1] = {
+    0xffffffffffff0002ULL
+  };
+
+
+  digit_array_zero_num(4, result);
   int i = digit_array_sub(size_op1, op1, size_op2, op2, 4, result);
   digit_array_print(size_op1, op1);
   printf(" - ");
@@ -247,18 +280,26 @@ bool test_multi_sub() {
   printf(" = ");
   digit_array_print(i, result);
   printf("\n");
+  digit_array_print(2, ans1);
+  printf("\n");
+  if (digit_array_compare(i, result, 2, ans1) != 0)
+    return false;
 
   op1[0] = 0x2ULL;
   op1[1] = 0x2ULL;
   op1[2] = 0x0ULL;
   op2[1]= 1ULL;
   op2[0]= 0xffffULL;
+  digit_array_zero_num(4, result);
   i = digit_array_sub(size_op1, op1, size_op2, op2, 4, result);
   digit_array_print(size_op1, op1);
   printf(" - ");
   digit_array_print(size_op2, op2);
   printf(" = ");
   digit_array_print(i, result);
+  printf("\n");
+  if (digit_array_compare(i, result, 1, ans2) != 0)
+    return false;
   return true;
 }
 
@@ -340,6 +381,8 @@ bool test_estimate_quotient() {
   uint64_t lo = 0ULL;
   u64_mult_step(b1, est, &lo, &hi);
   printf("%llx * %llx = %llx:%llx\n", b1, est, hi, lo);
+  if (est != 0x201)
+    return false;
   
   return true;
 }
@@ -394,6 +437,8 @@ bool test_multi_euclid() {
   printf(" = ");
   digit_array_print(size_r3, result3);
   printf("\n");
+  if (digit_array_compare(size_op1, op1, size_r3, result3) != 0)
+    return false;
 
   return true;
 }
