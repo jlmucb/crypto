@@ -347,11 +347,54 @@ bool test_estimate_quotient() {
 bool test_multi_euclid() {
   int size_op1 = 3;
   uint64_t op1[3] = {
+    0x0ULL,
+    0x22ULL,
+    0x7777ULL,
   };
   int size_op2 = 2;
   uint64_t op2[2] = {
+    0x877777,
+    0x0ULL,
   };
-  uint64_t result[4];
+  int size_q = 6;
+  int size_r = 3;
+  uint64_t result[6];
+  uint64_t rem[4];
+
+  digit_array_zero_num(6, result);
+  digit_array_zero_num(4, rem);
+  if (!digit_array_division_algorithm(size_op1, op1, size_op2, op2,
+        &size_q, result, &size_r, rem))
+    return false;
+  digit_array_print(size_op1, op1);
+  printf(" / ");
+  digit_array_print(size_op2, op2);
+  printf(" = ");
+  digit_array_print(size_q, result);
+  printf(", rem: ");
+  digit_array_print(size_r, rem);
+  printf("\n");
+
+  int size_r2 = 6;
+  uint64_t result2[6];
+  int size_r3 = 6;
+  uint64_t result3[6];
+  digit_array_zero_num(size_r2, result2);
+  digit_array_zero_num(size_r3, result3);
+  
+  size_r2 = digit_array_mult(size_q, result, size_op2, op2, size_r2, result2);
+  size_r3 = digit_array_add(size_r2, result2, size_r, rem,
+      size_r3, result3);
+
+  digit_array_print(size_op2, op2);
+  printf(" * ");
+  digit_array_print(size_q, result);
+  printf(" + ");
+  digit_array_print(size_r, rem);
+  printf(" = ");
+  digit_array_print(size_r3, result3);
+  printf("\n");
+
   return true;
 }
 
