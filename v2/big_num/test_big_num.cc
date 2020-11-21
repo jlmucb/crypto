@@ -1141,8 +1141,10 @@ TEST(big_num, montgomery) {
 
 int main(int an, char** av) {
 
+#if defined(X64)
   uint64_t cycles_per_second = calibrate_rdtsc();
   printf("This computer has %llu cycles per second\n", cycles_per_second);
+#endif
 
   gflags::ParseCommandLineFlags(&an, &av, true);
   an = 1;

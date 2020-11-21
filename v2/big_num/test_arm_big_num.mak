@@ -36,8 +36,8 @@ O= $(OBJ_DIR)/big_num
 S_SUPPORT= $(SRC_DIR)/crypto_support
 INCLUDE= -I$(S) -I$(SRC_DIR)/include -I$(S_SUPPORT) -I/usr/local/include -I$(GOOGLE_INCLUDE)
 
-CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
-CFLAGS1=$(INCLUDE) -O3 -g -Wall -std=c++11
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -D ARM64
+CFLAGS1=$(INCLUDE) -O3 -g -Wall -std=c++11 -D ARM64
 
 # Simulator commands
 # readelf: readelf –a running_arm_entropy.exe
