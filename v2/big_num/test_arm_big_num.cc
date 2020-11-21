@@ -247,6 +247,18 @@ bool test_multi_sub() {
   printf(" = ");
   digit_array_print(i, result);
   printf("\n");
+
+  op1[0] = 0x2ULL;
+  op1[1] = 0x2ULL;
+  op1[2] = 0x0ULL;
+  op2[1]= 1ULL;
+  op2[0]= 0xffffULL;
+  i = digit_array_sub(size_op1, op1, size_op2, op2, 4, result);
+  digit_array_print(size_op1, op1);
+  printf(" - ");
+  digit_array_print(size_op2, op2);
+  printf(" = ");
+  digit_array_print(i, result);
   return true;
 }
 
@@ -299,6 +311,19 @@ bool test_short_div() {
   digit_array_print(i, result);
   printf("\n");
 
+  op2[1]= 1ULL;
+  op2[0]= 0ULL;
+  op1 = 10ULL;
+  digit_array_zero_num(4, opq);
+  r = 0ULL;
+  size_q = 4;
+  if (!digit_array_short_division_algorithm(size_op2, op2, op1, &size_q, opq, &r))
+    return false;
+  digit_array_print(size_op2, op2);
+  printf(" / %0lld = ", op1);
+  digit_array_print(size_q, opq);
+  printf(", rem: %llx\n", r);
+
   return true;
 }
 
@@ -308,8 +333,14 @@ bool test_estimate_quotient() {
   uint64_t a3= 0x0ULL;
   uint64_t b1= 0x00ffffffffffffff;
   uint64_t b2= 0ULL;
-  uint64_t est;
-  // estimate_quotient(a1, a2, a3, b1, b2, &est);
+  uint64_t est = 0ULL;
+  estimate_quotient(a1, a2, a3, b1, b2, &est);
+  printf("%llx:%llx:%llx/:%llx:%llx est is %llx\n", a1, a2, a3, b1, b2, est);
+  uint64_t hi = 0ULL;
+  uint64_t lo = 0ULL;
+  u64_mult_step(b1, est, &lo, &hi);
+  printf("%llx * %llx = %llx:%llx\n", b1, est, hi, lo);
+  
   return true;
 }
 

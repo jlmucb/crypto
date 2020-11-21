@@ -298,7 +298,8 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
     return;
   }
   while(correct_q(a, b, c, *q)) {
-    (*q)--;
+    //(*q)--;  // FIX ?
+    (*q) -= 1 << shift_lo;
   }
 
   uint64_t lo = 0ULL;
@@ -511,7 +512,7 @@ void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
   }
 
   uint64_t r;
-  u64_div_step(a1, a2, b2, est, &r);
+  u64_div_step(a1, a2, b1, est, &r);
 }
 
 // q= a/b. r is remainder.
