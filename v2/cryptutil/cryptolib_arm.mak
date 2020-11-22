@@ -58,7 +58,7 @@ dobj=  $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o $(O)/globals.
        $(O)/sha1.o $(O)/sha256.o $(O)/hmac_sha256.o $(O)/pkcs.o $(O)/pbkdf2.o $(O)/sha3.o \
        $(O)/encryption_scheme.o $(O)/rsa.o  $(O)/ecc.o $(O)/ecc_curve_data.o $(O)/lll.o \
        $(O)/lwe.o $(O)/ntru.o $(O)/symmetric_cipher.o $(O)/aes.o $(O)/tea.o \
-       $(O)/rc4.o $(O)/twofish.o $(O)/simonspeck.o $(O)/aesni.o
+       $(O)/rc4.o $(O)/twofish.o $(O)/simonspeck.o
 
 
 
@@ -143,10 +143,6 @@ $(O)/aes.o: $(S_SYMMETRIC)/aes.cc
 $(O)/twofish.o: $(S_SYMMETRIC)/twofish.cc
 	@echo "compiling twofish.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/twofish.o $(S_SYMMETRIC)/twofish.cc
-
-$(O)/aesni.o: $(S_SYMMETRIC)/aesni.cc
-	@echo "compiling aesni.cc"
-	$(CC) $(CFLAGS) -c $(I) -o $(O)/aesni.o $(S_SYMMETRIC)/aesni.cc
 
 $(O)/encryption_scheme.o: $(S_ENCRYPTION_SCHEME)/encryption_scheme.cc
 	@echo "compiling encryption_scheme.cc"
