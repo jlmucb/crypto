@@ -53,7 +53,7 @@ LINK=g++
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=  $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o $(O)/globals.o \
-       $(O)/intel_digit_arith.o $(O)/big_num.o $(O)/basic_arith.o $(O)/number_theory.o \
+       $(O)/arm64_digit_arith.o $(O)/big_num.o $(O)/basic_arith.o $(O)/number_theory.o \
        $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o $(O)/hash.o \
        $(O)/sha1.o $(O)/sha256.o $(O)/hmac_sha256.o $(O)/pkcs.o $(O)/pbkdf2.o $(O)/sha3.o \
        $(O)/encryption_scheme.o $(O)/rsa.o  $(O)/ecc.o $(O)/ecc_curve_data.o $(O)/lll.o \
@@ -104,9 +104,9 @@ $(O)/globals.o: $(S_BIGNUM)/globals.cc
 	@echo "compiling globals.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/globals.o $(S_BIGNUM)/globals.cc
 
-$(O)/intel_digit_arith.o: $(S_BIGNUM)/intel_digit_arith.cc
-	@echo "compiling intel_digit_arith.cc"
-	$(CC) $(CFLAGS) -c $(I) -o $(O)/intel_digit_arith.o $(S_BIGNUM)/intel_digit_arith.cc
+$(O)/arm64_digit_arith.o: $(S_BIGNUM)/arm64_digit_arith.cc
+	@echo "compiling arm64_digit_arith.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/arm64_digit_arith.o $(S_BIGNUM)/arm64_digit_arith.cc
 
 $(O)/basic_arith.o: $(S_BIGNUM)/basic_arith.cc
 	@echo "compiling basic_arith.cc"
