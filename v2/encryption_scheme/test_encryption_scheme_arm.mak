@@ -50,7 +50,7 @@ LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=   $(O)/test_encryption_scheme.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
 	$(O)/symmetric_cipher.o $(O)/aes.o $(O)/twofish.o $(O)/hash.o $(O)/sha256.o \
-	$(O)/hmac_sha256.o $(O)/encryption_scheme.o $(O)/globals.o $(O)/arm64digit_arith.o \
+	$(O)/hmac_sha256.o $(O)/encryption_scheme.o $(O)/globals.o $(O)/arm64_digit_arith.o \
  	$(O)/big_num.o $(O)/basic_arith.o $(O)/number_theory.o
 
 all:    test_encryption_scheme.exe
@@ -115,9 +115,9 @@ $(O)/globals.o: $(S_BIGNUM)/globals.cc
 	@echo "compiling globals.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/globals.o $(S_BIGNUM)/globals.cc
 
-$(O)/arm64digit_arith.o: $(S_BIGNUM)/arm64digit_arith.cc
-	@echo "compiling arm64digit_arith.cc"
-	$(CC) $(CFLAGS) -c $(I) -o $(O)/arm64digit_arith.o $(S_BIGNUM)/arm64digit_arith.cc
+$(O)/arm64_digit_arith.o: $(S_BIGNUM)/arm64_digit_arith.cc
+	@echo "compiling arm64_digit_arith.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/arm64_digit_arith.o $(S_BIGNUM)/arm64_digit_arith.cc
 
 $(O)/basic_arith.o: $(S_BIGNUM)/basic_arith.cc
 	@echo "compiling basic_arith.cc"
