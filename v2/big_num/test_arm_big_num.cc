@@ -395,7 +395,7 @@ bool test_estimate_quotient() {
   uint64_t lo = 0ULL;
   u64_mult_step(b1, est, &lo, &hi);
   printf("%llx * %llx = %llx:%llx\n", b1, est, hi, lo);
-  if (est != 0x201)
+  if (est != 0x200)
     return false;
   
   return true;
