@@ -361,7 +361,7 @@ int digit_array_add(int size_a, uint64_t* a, int size_b, uint64_t* b,
 // constraint: a>b
 int digit_array_sub(int size_a, uint64_t* a, int size_b, uint64_t* b,
                     int size_result, uint64_t* result) {
-  uint64_t borrow_in = 0;
+  uint64_t borrow_in = 1;
   uint64_t borrow_out = 0;
 
   int real_size_a = digit_array_real_size(size_a, a);

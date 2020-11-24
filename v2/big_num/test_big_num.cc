@@ -133,12 +133,16 @@ bool basic_digit_test2() {
     printf("*****ERROR 2***\n");
     return false;
   }
+
   digit_array_zero_num(10, n3);
   if (digit_array_sub(10, n1, 10, n2, 10, n3) < 0) {
     printf("*****ERROR 3***\n");
     return false;
   }
   if (!digit_array_is_zero(10, n3)) {
+    digit_array_print(10, n1); printf(" - ");
+    digit_array_print(10, n2); printf(" = ");
+    digit_array_print(10, n3); printf("\n");
     printf("*****ERROR 4***\n");
     return false;
   }

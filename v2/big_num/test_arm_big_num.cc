@@ -264,11 +264,11 @@ bool test_multi_sub() {
   };
   uint64_t result[4];
   uint64_t ans1[2] = {
-    0xffffffffffffffe9ULL,
+    0xffffffffffffffeaULL,
     0xfefefefefefefefeULL,
   };
   uint64_t ans2[1] = {
-    0xffffffffffff0002ULL
+    0xffffffffffff0003ULL
   };
 
 
