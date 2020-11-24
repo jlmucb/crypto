@@ -313,6 +313,9 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   u64_sub_with_borrow_step(b, lo, 1ULL, rem, &borrow);
   u64_sub_with_borrow_step(a, hi, borrow, &r, &borrow);
   if (r != 0ULL) {
+    printf("div:  %llx:%llx / %llx\n", a, b, c);
+    printf("%llx:%llx - %llx:%llx = %llx, q= %llx\n",
+      a,b,hi,lo,r,*q);
     printf("r != 0 in div_step\n");
     return;
   }
@@ -391,23 +394,42 @@ int digit_array_sub(int size_a, uint64_t* a, int size_b, uint64_t* b,
 // a+= b
 int digit_array_add_to(int capacity_a, int size_a, uint64_t* a, int size_b,
                     uint64_t* b) {
-  int64_t len_a = (int64_t)size_a;
-  int64_t len_b = (int64_t)size_b;
+  int real_size_a = digit_array_real_size(size_a, a);
+  int real_size_b = digit_array_real_size(size_b, b);
 
-  return digit_array_real_size(capacity_a, a);
+  uint64_t c[capacity_a];
+  digit_array_zero_num(capacity_a, c);
+  int i = digit_array_add(real_size_a, a, real_size_b, b,
+      capacity_a, c);
+  if (i < 0)
+    return -1;
+
+  if (!digit_array_copy(i, c, capacity_a, a))
+    return -1;
+  return i;
 }
 
 // a-= b
 int digit_array_sub_from(int capacity_a, int size_a, uint64_t* a, int size_b,
                       uint64_t* b) {
-  if (size_a < size_b)
+  int real_size_a = digit_array_real_size(size_a, a);
+  int real_size_b = digit_array_real_size(size_b, b);
+  if (real_size_a < real_size_b)
     return -1;
 
-  int64_t len_a = (int64_t)size_a;
-  int64_t len_b = (int64_t)size_b;
-
-
-  return digit_array_real_size(capacity_a, a);
+  uint64_t c[capacity_a];
+  digit_array_zero_num(capacity_a, c);
+  int i = digit_array_sub(real_size_a, a, real_size_b, b,
+      capacity_a, c);
+  //printf("subfrom "); digit_array_print(real_size_a, a); printf(" - ");
+  //digit_array_print(real_size_a, a); printf(" = ");
+  //digit_array_print(i, c); printf("\n");
+  if (i < 0)
+    return -1;
+  digit_array_zero_num(real_size_a, a);
+  if (!digit_array_copy(i, c, capacity_a, a))
+    return -1;
+  return i;
 }
 
 // result = a*b.  returns size of result.  Error if < 0
@@ -515,7 +537,7 @@ void estimate_quotient(uint64_t a1, uint64_t a2, uint64_t a3, uint64_t b1,
   }
 
   uint64_t r;
-  u64_div_step(a1, a2, b1, est, &r);
+  u64_div_step(n1, n2, d1, est, &r);
 }
 
 // q= a/b. r is remainder.
