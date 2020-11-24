@@ -47,16 +47,16 @@ LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 dobj=   $(O)/test_big_num.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
 	$(O)/globals.o $(O)/arm64_digit_arith.o $(O)/big_num.o $(O)/basic_arith.o $(O)/number_theory.o
 
-all:    test_big_num.exe
+all:    test_full_arm_big_num.exe
 clean:
 	@echo "removing object files"
 	rm $(O)/*.o
 	@echo "removing executable file"
-	rm $(EXE_DIR)/test_big_num.exe
+	rm $(EXE_DIR)/test_full_arm_big_num.exe
 
-test_big_num.exe: $(dobj) 
+test_full_arm_big_num.exe: $(dobj) 
 	@echo "linking executable files"
-	$(LINK) -o $(EXE_DIR)/test_big_num.exe $(dobj) $(LDFLAGS)
+	$(LINK) -o $(EXE_DIR)/test_full_arm_big_num.exe $(dobj) $(LDFLAGS)
 
 $(S_SUPPORT)/support.pb.cc $(S_SUPPORT)/support.pb.h: $(S_SUPPORT)/support.proto
 	$(PROTO) -I=$(S) --cpp_out=$(S_SUPPORT) $(S_SUPPORT)/support.proto
