@@ -276,6 +276,9 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
     return;
 
 //printf("div:  %llx:%llx / %llx\n", a, b, c);
+  if (a > c) {
+    printf("two digit answer in div step\n");
+  }
   if (a == 0ULL) {
     *q = b / c;
     *rem = b - (*q * c);
@@ -310,7 +313,7 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   u64_sub_with_borrow_step(b, lo, 1ULL, rem, &borrow);
   u64_sub_with_borrow_step(a, hi, borrow, &r, &borrow);
   if (r != 0ULL) {
-    printf("ERROR 1\n");
+    printf("r != 0 in div_step\n");
     return;
   }
   *q += *rem / c;

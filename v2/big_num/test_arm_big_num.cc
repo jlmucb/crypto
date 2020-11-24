@@ -214,6 +214,20 @@ bool test_div_step() {
   if (!check_div(a, b, c, q, r))
     return false;
 
+#if 0
+  //overflow
+  // fffffffffffe:c0000000000f423 / ffffffffffff07
+  a = 0xc0000000000f423ULL;
+  b = 0xfffffffffffeULL;
+  c = 0xffffffffffff07ULL;
+  q = 0ULL;
+  r = 0ULL;
+  u64_div_step(a, b, c, &q, &r);
+  printf("%016llx : %016llx / %016llx 016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  if (!check_div(a, b, c, q, r))
+    return false;
+#endif
+
   return true;
 }
 
