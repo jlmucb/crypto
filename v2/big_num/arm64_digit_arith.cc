@@ -340,7 +340,7 @@ int digit_array_add(int size_a, uint64_t* a, int size_b, uint64_t* b,
   int i;
 
   digit_array_zero_num(size_result, result);
-  for (i = 0; i < size_b; i++) {
+  for (i = 0; i < real_size_b; i++) {
     u64_add_with_carry_step(a[i], b[i], carry_in, &result[i], &carry_out);
     carry_in = carry_out;
   }
@@ -391,13 +391,12 @@ int digit_array_add_to(int capacity_a, int size_a, uint64_t* a, int size_b,
   int real_size_b = digit_array_real_size(size_b, b);
 
   uint64_t c[capacity_a];
+
   digit_array_zero_num(capacity_a, c);
-  int i = digit_array_add(real_size_a, a, real_size_b, b,
-      capacity_a, c);
+  int i = digit_array_add(size_a, a, real_size_b, b, capacity_a, c);
   if (i < 0)
     return -1;
-
-  if (!digit_array_copy(i, c, capacity_a, a))
+  if (!digit_array_copy(capacity_a, c, capacity_a, a))
     return -1;
   return i;
 }
@@ -484,7 +483,7 @@ int digit_array_mult_by(int capacity_a, int size_a, uint64_t* a, uint64_t x) {
   uint64_t lo= 0ULL;
   uint64_t carry= 0ULL;
   int real_size_a = digit_array_real_size(size_a, a);
-  if (capacity_a <=real_size_a)
+  if (capacity_a <= real_size_a)
     return -1;
 
   int i;
@@ -495,7 +494,7 @@ int digit_array_mult_by(int capacity_a, int size_a, uint64_t* a, uint64_t x) {
   }
   a[i]= carry;
 
-  return digit_array_real_size(size_a, a);
+  return digit_array_real_size(capacity_a, a);
 }
 
 bool digit_array_short_division_algorithm(int size_a, uint64_t* a, uint64_t b,

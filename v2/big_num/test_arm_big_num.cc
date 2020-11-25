@@ -454,6 +454,141 @@ bool test_multi_euclid() {
   return true;
 }
 
+bool test_add_to() {
+  int size_op1 = 6;
+  uint64_t op1[6] = {
+    0xffffffffffffffffULL,
+  };
+  int size_op2 = 2;
+  uint64_t op2[2] = {
+    0xffffffffffffffffULL,
+  };
+
+  int real_size_op1 = digit_array_real_size(size_op1, op1);
+  int real_size_op2 = digit_array_real_size(size_op2, op2);
+
+  printf("op1: "); digit_array_print(real_size_op1, op1); printf("\n");
+  printf("op2: "); digit_array_print(real_size_op2, op2); printf("\n");
+
+  int i = digit_array_add_to(size_op1, real_size_op1, op1, real_size_op2, op2);
+  if (i < 0)
+      return false;
+  printf("add to (%d): ", i); digit_array_print(size_op1, op1); printf("\n");
+  if (op1[0] != 0xfffffffffffffffeULL || op1[1] != 1ULL)
+    return false;
+
+  real_size_op1 = digit_array_real_size(size_op1, op1);
+  i = digit_array_add_to(size_op1, real_size_op1, op1, real_size_op2, op2);
+  if (i < 0)
+      return false;
+  printf("add to: "); digit_array_print(i, op1); printf("\n");
+  if (op1[0] != 0xfffffffffffffffdULL || op1[1] != 2ULL)
+    return false;
+
+  real_size_op1 = digit_array_real_size(size_op1, op1);
+  i = digit_array_add_to(size_op1, real_size_op1, op1, real_size_op2, op2);
+  if (i < 0)
+      return false;
+  printf("add to: "); digit_array_print(i, op1); printf("\n");
+  if (op1[0] != 0xfffffffffffffffcULL || op1[1] != 3ULL)
+    return false;
+
+  return true;
+}
+
+bool test_sub_from() {
+  int size_op1 = 4;
+  uint64_t op1[4] = {
+    0xfffffffffffffffcULL,
+    0x3ULL,
+    0x0ULL,
+    0x0ULL,
+  };
+  int size_op2 = 2;
+  uint64_t op2[2] = {
+    0xffffffffffffffffULL,
+    0x0ULL,
+  };
+
+  int real_size_op1 = digit_array_real_size(size_op1, op1);
+  int real_size_op2 = digit_array_real_size(size_op2, op2);
+
+  printf("op1: "); digit_array_print(real_size_op1, op1); printf("\n");
+  printf("op2: "); digit_array_print(real_size_op2, op2); printf("\n");
+
+  int i = digit_array_sub_from(size_op1, real_size_op1, op1, real_size_op2, op2);
+  if (i < 0)
+      return false;
+  printf("sub from (%d): ", i); digit_array_print(i, op1); printf("\n");
+  if (op1[0] != 0xfffffffffffffffdULL || op1[1] != 2ULL)
+     return false;
+
+  real_size_op1 = digit_array_real_size(size_op1, op1);
+  i = digit_array_sub_from(size_op1, real_size_op1, op1, real_size_op2, op2);
+  if (i < 0)
+      return false;
+  printf("sub from (%d): ", i); digit_array_print(i, op1); printf("\n");
+  if (op1[0] != 0xfffffffffffffffeULL || op1[1] != 1ULL)
+     return false;
+
+  real_size_op1 = digit_array_real_size(size_op1, op1);
+  i = digit_array_sub_from(size_op1, real_size_op1, op1, real_size_op2, op2);
+  if (i < 0)
+      return false;
+  printf("sub from (%d): ", i); digit_array_print(i, op1); printf("\n");
+  if (op1[0] != 0xffffffffffffffffULL || op1[1] != 0ULL)
+     return false;
+  return true;
+}
+
+bool test_mult_by() {
+  int size_op1 = 4;
+  uint64_t op1[4] = {
+    0xfffffffffffffffULL,
+    0,
+    0,
+    0,
+  };
+  uint64_t op2 = 0x10;
+
+  int real_size_op1 = digit_array_real_size(size_op1, op1);
+  printf("op1: "); digit_array_print(real_size_op1, op1); printf("\n");
+  printf("op2: %llx\n", op2);
+
+  int i = digit_array_mult_by(size_op1, real_size_op1, op1, op2);
+  if (i < 0)
+      return false;
+  printf("mult_by (%d): ", i); digit_array_print(i, op1); printf("\n");
+  if (op1[0] != 0xfffffffffffffff0ULL || op1[1] != 0ULL)
+      return false;
+
+  real_size_op1 = digit_array_real_size(size_op1, op1);
+  i = digit_array_mult_by(size_op1, real_size_op1, op1, op2);
+  if (i < 0)
+      return false;
+  printf("mult_by (%d): ", i); digit_array_print(i, op1); printf("\n");
+  if (op1[0] != 0xffffffffffffff00ULL || op1[1] != 0xfULL)
+      return false;
+
+  real_size_op1 = digit_array_real_size(size_op1, op1);
+  i = digit_array_mult_by(size_op1, real_size_op1, op1, op2);
+  if (i < 0)
+      return false;
+  printf("mult_by (%d): ", i); digit_array_print(i, op1); printf("\n");
+  if (op1[0] != 0xfffffffffffff000ULL || op1[1] != 0xffULL)
+      return false;
+
+  return true;
+}
+
+bool test_convert_decimal() {
+  // digit_convert_from_decimal(string& s, int size_n, uint64_t* n) 
+  // digit_convert_to_decimal(int size_n, uint64_t* n, string* s)
+  // digit_array_print(size_op1, op1); printf("\n");
+  // int real_size_a = digit_array_real_size(size_a, a);
+  return true;
+}
+
 int main(int an, char** av) {
 
   printf("\ntest_add_step\n");
@@ -538,6 +673,34 @@ int main(int an, char** av) {
     printf("test_multi_euclid succeeds\n");
   } else {
     printf("test_multi_euclid fails\n");
+  }
+
+  printf("\ntest_add_to\n");
+  if (test_add_to()) {
+    printf("test_add_to succeeds\n");
+  } else {
+    printf("test_add_to fails\n");
+  }
+
+  printf("\ntest_sub_from\n");
+  if (test_sub_from()) {
+    printf("test_sub_from succeeds\n");
+  } else {
+    printf("test_sub_from fails\n");
+  }
+
+  printf("\ntest_mult_by\n");
+  if (test_mult_by()) {
+    printf("test_mult_by succeeds\n");
+  } else {
+    printf("test_mult_by fails\n");
+  }
+
+  printf("\ntest_convert_decimal\n");
+  if (test_convert_decimal()) {
+    printf("test_convert_decimal succeeds\n");
+  } else {
+    printf("test_convert_decimal fails\n");
   }
 
   printf("\ndone\n");
