@@ -380,27 +380,55 @@ bool decimal_convert_test1() {
   n[1]= 1;
   string s;
   uint64_t m[3];
+  s.clear();
 
   digit_array_zero_num(3, m);
-  if (!digit_convert_to_decimal(1, n, &s))
+  if (!digit_convert_to_decimal(1, n, &s)) {
+    printf("error 1\n");
     return false;
-  if (!digit_convert_from_decimal(s, 2, m))
+  }
+  if (FLAGS_print_all)  {
+    printf("n: %lld %lld, %s\n", n[1], n[0], s.c_str());
+  }
+  if (!digit_convert_from_decimal(s, 2, m)) {
+    printf("error 2\n");
     return false;
-  if (digit_array_compare(1, n, 2, m) != 0)
+  }
+  if (FLAGS_print_all)  {
+    printf("m: "); digit_array_print(2, m); printf("\n");
+    printf("n: "); digit_array_print(1, n); printf("\n");
+  }
+  if (digit_array_compare(1, n, 2, m) != 0) {
+    printf("error 3\n");
     return false;
+  }
   if (FLAGS_print_all)
     printf("n: %lld, %s\n", n[0], s.c_str());
 
   digit_array_zero_num(3, m);
-  if (!digit_convert_to_decimal(2, n, &s))
+  if (!digit_convert_to_decimal(2, n, &s)) {
+    printf("error 4\n");
     return false;
-  if (!digit_convert_from_decimal(s, 3, m))
+  }
+  if (FLAGS_print_all)  {
+    printf("n: %lld %lld, %s\n", n[1], n[0], s.c_str());
+  }
+  if (!digit_convert_from_decimal(s, 3, m)) {
+    printf("error 5\n");
     return false;
-  if (digit_array_compare(2, n, 3, m) != 0)
+  }
+  if (FLAGS_print_all)  {
+    printf("m: "); digit_array_print(2, m); printf("\n");
+    printf("n: "); digit_array_print(2, n); printf("\n");
+  }
+  if (digit_array_compare(2, n, 3, m) != 0) {
+    printf("error 6\n");
     return false;
+  }
 
   if (FLAGS_print_all) 
     printf("n: %lld %lld, %s\n", n[1], n[0], s.c_str());
+
   return true;
 
 }

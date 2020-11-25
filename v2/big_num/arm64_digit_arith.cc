@@ -480,7 +480,20 @@ int digit_array_square(int size_a, uint64_t* a, int size_result,
 
 // a*= x.  a must have size_a+1 positions available
 int digit_array_mult_by(int capacity_a, int size_a, uint64_t* a, uint64_t x) {
-  // Todo
+  uint64_t hi= 0ULL;
+  uint64_t lo= 0ULL;
+  uint64_t carry= 0ULL;
+  int real_size_a = digit_array_real_size(size_a, a);
+  if (capacity_a <=real_size_a)
+    return -1;
+
+  int i;
+  for (i = 0; i < real_size_a; i++) {
+    u64_mult_step(a[i], x, &lo, &hi);
+    u64_add_with_carry_step(lo, carry, 0ULL, &a[i], &carry);
+    carry += hi;
+  }
+  a[i]= carry;
 
   return digit_array_real_size(size_a, a);
 }
@@ -611,7 +624,7 @@ bool digit_array_division_algorithm(int size_a, uint64_t* a, int size_b,
 bool digit_convert_to_decimal(int size_n, uint64_t* n, string* s) {
   s->clear();
 
-  int  ns = digit_array_real_size(size_n, n);
+  int ns = digit_array_real_size(size_n, n);
   uint64_t* t = new uint64_t[ns];
   if (t == nullptr)
     return false;
@@ -641,8 +654,8 @@ bool digit_convert_to_decimal(int size_n, uint64_t* n, string* s) {
         u64_div_step(r, t[j], 10, &q, &r) ;
         t[j] = q;
       }
-    }
     s->append(1, '0' + r);
+    }
   }
 
   reverse_bytes_in_place(s->size(), (byte*) s->data());
