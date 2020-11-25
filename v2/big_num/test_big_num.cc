@@ -262,6 +262,8 @@ bool basic_digit_test2() {
   }
   if (digit_array_compare(4, mult_cmp, 10, n3) != 0) {
     printf("*****ERROR 24***\n");
+    printf("Should be: ");
+    digit_array_print(4, mult_cmp); printf("\n");
     return false;
   }
 
@@ -343,6 +345,8 @@ bool basic_digit_test2() {
   }
   if (digit_array_compare(3, multc_cmp, 10, n3) != 0) {
     printf("*****ERROR 32***\n");
+    printf("Should be: ");
+    digit_array_print(3, multc_cmp); printf("\n");
     return false;
   }
 

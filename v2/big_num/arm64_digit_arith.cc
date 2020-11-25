@@ -237,6 +237,7 @@ void u64_sub_with_borrow_step(uint64_t a, uint64_t b, uint64_t borrow_in,
       *borrow_out = 1ULL;
 }
 
+
 //  carry_out:result= a*b+carry1+carry2
 void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
       uint64_t carry2, uint64_t* lo_digit, uint64_t* hi_digit) {
@@ -246,13 +247,30 @@ void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
   uint64_t t1, t2, t3;
 
   u64_mult_step(a, b, &t1, &t2);
+  printf("a: %llx, b: %llx, t1: %llx, t2: %llx, carry1: %llx, carry2: %llx, ",
+    a, b, t1, t2, carry1, carry2);
   u64_add_with_carry_step(t1, carry1, 0ULL, &t3, &add_carry1);
   u64_add_with_carry_step(t3, carry2, add_carry1, lo_digit, &add_carry2);
+  printf("t3: %llx, add_carry1: %llx, add_carry2: %llx\n", t3, add_carry1, add_carry2);
   if (add_carry2 != 0 ) {
     u64_add_with_carry_step(t2, add_carry2, 0ULL, hi_digit, &add_carry);
   }  else {
     *hi_digit = t2;
   }
+  printf("hi_digit: %llx, add_carry: %llx\n", *hi_digit, add_carry);
+}
+
+void u64_product_step(uint64_t a, uint64_t b, uint64_t mult_carry,
+      uint64_t add_to, uint64_t* lo_digit, uint64_t* hi_digit) {
+  uint64_t lo= 0ULL;
+  uint64_t hi= 0ULL;
+  uint64_t t= 0ULL;
+  uint64_t carry1 = 0ULL;
+  uint64_t carry2 = 0ULL;
+  u64_mult_step(a, b, &lo, &hi);
+  u64_add_with_carry_step(lo, mult_carry, 0ULL, &t, &carry1);
+  u64_add_with_carry_step(t, add_to, 0ULL, lo_digit, &carry2);
+  *hi_digit = hi + carry2 + carry2;  // no further carry
 }
 
 bool correct_q(uint64_t a, uint64_t b, uint64_t c, uint64_t q) {
@@ -443,27 +461,33 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
   }
   digit_array_zero_num(size_result, result);
 
-#ifdef FASTMULT
-  uint64_t carry = 0;
-  uint64_t real_size_A = (uint64_t) real_size_a;
-  uint64_t real_size_B = (uint64_t) real_size_b;
-
-#else
-  int i, j;
-  uint64_t carry_in = 0;
-  uint64_t carry_out = 0;
+  int i, j, k;
+  uint64_t mult_carry= 0ULL;
+  uint64_t carry_out = 0ULL;
 
   for (i = 0; i < real_size_a; i++) {
-    carry_in = 0;
+    mult_carry = 0ULL;
     for (j = 0; j < real_size_b; j++) {
-      carry_out = 0;
-     u64_mult_with_carry_step(a[i], b[j], carry_in, result[i + j],
-                              &result[i + j], &carry_out);
-      carry_in = carry_out;
+  //printf("a[%d]: %016llx, b[%d]: %016llx, mult_carry: %016llx, result[%d](in): %016llx\n", 
+          //i, a[i], j, b[j], mult_carry, i+j, result[i+j]);
+      u64_product_step(a[i], b[j], mult_carry, result[i+j], &result[i+j], &carry_out);
+  //printf("result[%d](out): %016llx, new carry: %016llx\n", i+j, result[i+j], carry_out);
+      mult_carry= carry_out;
     }
-    result[i + j] = carry_out;
+
+  k= i + j;
+  //printf("end arg k: %d size_result: %d carry: %016llx\n", k, size_result, mult_carry);
+    for(; (k < size_result) && (mult_carry != 0ULL); k++) {
+  //printf("result[%d](in): %016llx, mult_carry_: %016llx, ", k, result[k], mult_carry);
+      u64_add_with_carry_step(result[k], mult_carry, 0ULL,
+        &result[k], &carry_out);
+  //printf("result[%d](out): %016llx, mult_carry_: %016llx\n", k, result[k], carry_out);
+      mult_carry = carry_out;
+    }
   }
-#endif
+  digit_array_print(digit_array_real_size(size_result, result), result);
+  printf("\n\n");
+
   return digit_array_real_size(size_result, result);
 }
 
