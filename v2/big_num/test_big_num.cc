@@ -100,7 +100,7 @@ void u64_add_with_carry_step(uint64_t a, uint64_t b, uint64_t carry_in,
                             uint64_t* result, uint64_t* carry_out);
 void u64_sub_with_borrow_step(uint64_t a, uint64_t b, uint64_t borrow_in,
                              uint64_t* result, uint64_t* borrow_out);
-void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
+void u64_u64_product_step(uint64_t a, uint64_t b, uint64_t carry1,
                              uint64_t carry2, uint64_t* result, uint64_t* carry_out);
  */
 /*
@@ -1131,16 +1131,13 @@ TEST(digit_tests, set2) {
 TEST(decimal, convert) {
   EXPECT_TRUE(decimal_convert_test1());
 }
+TEST(big_num, basic_num_test1) {
+  EXPECT_TRUE(basic_big_num_test1());
+}
 TEST(big_num, basic_arith_test1) {
-  EXPECT_TRUE(basic_big_num_test1());
-}
-TEST(big_num, basic_test1) {
-  EXPECT_TRUE(basic_big_num_test1());
-}
-TEST(big_num, basic_arith_test) {
   EXPECT_TRUE(basic_arith_test1());
 }
-TEST(big_num, basic_number_theory_test) {
+TEST(big_num, basic_number_theory_test1) {
   EXPECT_TRUE(basic_number_theory_test1());
 }
 TEST(big_num, montgomery) {

@@ -149,7 +149,7 @@ bool test_mult_with_carry_step() {
   uint64_t lo_digit = 0ULL;
   uint64_t hi_digit = 0ULL;
 
-  u64_mult_with_carry_step(a, b, carry1, carry2, &lo_digit, &hi_digit);
+  u64_product_step(a, b, carry1, carry2, &lo_digit, &hi_digit);
   printf("%016llx * %016llx + %016llx + %016llx = %016llx::%016llx\n", a, b, carry1, carry2,
           hi_digit, lo_digit);
   return true;
@@ -438,11 +438,8 @@ bool test_multi_euclid() {
   uint64_t result3[6];
   digit_array_zero_num(size_r2, result2);
   digit_array_zero_num(size_r3, result3);
-  
   size_r2 = digit_array_mult(size_q, result, size_op2, op2, size_r2, result2);
-  size_r3 = digit_array_add(size_r2, result2, size_r, rem,
-      size_r3, result3);
-
+  size_r3 = digit_array_add(size_r2, result2, size_r, rem, size_r3, result3);
   digit_array_print(size_op2, op2);
   printf(" * ");
   digit_array_print(size_q, result);

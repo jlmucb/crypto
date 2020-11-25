@@ -414,9 +414,6 @@ int digit_array_sub_from(int capacity_a, int size_a, uint64_t* a, int size_b,
   digit_array_zero_num(capacity_a, c);
   int i = digit_array_sub(real_size_a, a, real_size_b, b,
       capacity_a, c);
-  //printf("subfrom "); digit_array_print(real_size_a, a); printf(" - ");
-  //digit_array_print(real_size_a, a); printf(" = ");
-  //digit_array_print(i, c); printf("\n");
   if (i < 0)
     return -1;
   digit_array_zero_num(real_size_a, a);
@@ -450,7 +447,7 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
       mult_carry= carry_out;
     }
 
-  k= i + j;
+    k= i + j;
   //printf("end arg k: %d size_result: %d carry: %016llx\n", k, size_result, mult_carry);
     for(; (k < size_result) && (mult_carry != 0ULL); k++) {
   //printf("result[%d](in): %016llx, mult_carry_: %016llx, ", k, result[k], mult_carry);
@@ -460,9 +457,6 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
       mult_carry = carry_out;
     }
   }
-  digit_array_print(digit_array_real_size(size_result, result), result);
-  printf("\n\n");
-
   return digit_array_real_size(size_result, result);
 }
 
