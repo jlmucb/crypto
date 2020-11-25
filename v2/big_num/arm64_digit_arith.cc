@@ -622,46 +622,32 @@ bool digit_array_division_algorithm(int size_a, uint64_t* a, int size_b,
 
 bool digit_convert_to_decimal(int size_n, uint64_t* n, string* s) {
   s->clear();
-
   int ns = digit_array_real_size(size_n, n);
-  uint64_t* t = new uint64_t[ns];
-  if (t == nullptr)
+  uint64_t a[ns];
+  uint64_t q[ns];
+  uint64_t r = 0;
+
+  if (!digit_array_copy(ns, n, ns, a))
     return false;
-  for (int j = 0; j < ns; j++)
-    t[j] = n[j];
+  int size_q;
 
-  if (ns == 1 && t[0] == 0ULL) {
-    s->append(1, '0');
-    goto done;
-  }
+  for(;;) {
+    size_q = ns;
+    digit_array_zero_num(ns, q);
 
-  uint64_t q, r;
-  while (ns > 0) {
+    if (!digit_array_short_division_algorithm(digit_array_real_size(ns, a), a,
+            10ULL, &size_q, q, &r))
+      return false;
+    s->append(1, (char)r + '0');
 
-    if (t[ns - 1] == 0ULL) {
-      ns--;
-      continue;
-    }
-   
-    r = 0ULL;
-    for (int j = (ns - 1); j >= 0; j--) {
-      if (r == 0ULL) {
-        q = t[j] / 10;
-        r = t[j] - q * 10;
-        t[j] = q;
-      } else {
-        u64_div_step(r, t[j], 10, &q, &r) ;
-        t[j] = q;
-      }
-    s->append(1, '0' + r);
-    }
+    if (size_q == 1 && q[0] == 0ULL)
+      break;
+    if (!digit_array_copy(ns, q, ns, a))
+      return false;
   }
 
   reverse_bytes_in_place(s->size(), (byte*) s->data());
   s->append(1, '\0');
-
-done:
-  delete []t;
   return true;
 }
 

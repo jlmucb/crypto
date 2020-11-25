@@ -582,10 +582,49 @@ bool test_mult_by() {
 }
 
 bool test_convert_decimal() {
-  // digit_convert_from_decimal(string& s, int size_n, uint64_t* n) 
-  // digit_convert_to_decimal(int size_n, uint64_t* n, string* s)
-  // digit_array_print(size_op1, op1); printf("\n");
-  // int real_size_a = digit_array_real_size(size_a, a);
+  string s1;
+  string s2;
+  int size_op1 = 4;
+  uint64_t op1[4];
+  digit_array_zero_num(size_op1, op1);
+
+  s1 = "2048";
+  if (!digit_convert_from_decimal(s1, size_op1, op1)) {
+    printf ("Cannot convert %s from decimal\n", s1.c_str());
+    return false;
+  }
+  printf("%s in binary: ", s1.c_str());
+  digit_array_print(size_op1, op1); printf("\n");
+  int real_size_op1 = digit_array_real_size(size_op1, op1);
+  if (!digit_convert_to_decimal(real_size_op1, op1, &s2)) {
+    printf ("Cannot convert to decimal\n");
+    return false;
+  }
+  printf("Back to string: %s\n", s2.c_str());
+  if (strcmp(s1.c_str(), s2.c_str()) != 0) {
+    return false;
+  }
+
+  s1.clear();
+  s2.clear();
+  s1= "18446744073709551616";
+  digit_array_zero_num(size_op1, op1);
+  if (!digit_convert_from_decimal(s1, size_op1, op1)) {
+    printf ("Cannot convert %s from decimal\n", s1.c_str());
+    return false;
+  }
+  printf("%s in binary: ", s1.c_str());
+  digit_array_print(size_op1, op1); printf("\n");
+  real_size_op1 = digit_array_real_size(size_op1, op1);
+  if (!digit_convert_to_decimal(real_size_op1, op1, &s2)) {
+    printf ("Cannot convert to decimal\n");
+    return false;
+  }
+  printf("Back to string: %s\n", s2.c_str());
+  if (strcmp(s1.c_str(), s2.c_str()) != 0) {
+    return false;
+  }
+
   return true;
 }
 
