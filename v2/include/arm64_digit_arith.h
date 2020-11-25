@@ -34,7 +34,7 @@ void u64_add_with_carry_step(uint64_t a, uint64_t b, uint64_t carry_in,
                             uint64_t* result, uint64_t* carry_out);
 void u64_sub_with_borrow_step(uint64_t a, uint64_t b, uint64_t borrow_in,
                              uint64_t* result, uint64_t* borrow_out);
-void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
+void u64_product_step(uint64_t a, uint64_t b, uint64_t carry1,
                              uint64_t carry2, uint64_t* result, uint64_t* carry_out);
 int digit_array_add(int size_a, uint64_t* a, int size_b, uint64_t* b,
                   int size_result, uint64_t* result);

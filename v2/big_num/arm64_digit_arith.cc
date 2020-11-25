@@ -237,29 +237,7 @@ void u64_sub_with_borrow_step(uint64_t a, uint64_t b, uint64_t borrow_in,
       *borrow_out = 1ULL;
 }
 
-
 //  carry_out:result= a*b+carry1+carry2
-void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
-      uint64_t carry2, uint64_t* lo_digit, uint64_t* hi_digit) {
-  uint64_t add_carry1= 0ULL;
-  uint64_t add_carry2= 0ULL;
-  uint64_t add_carry= 0ULL;
-  uint64_t t1, t2, t3;
-
-  u64_mult_step(a, b, &t1, &t2);
-  printf("a: %llx, b: %llx, t1: %llx, t2: %llx, carry1: %llx, carry2: %llx, ",
-    a, b, t1, t2, carry1, carry2);
-  u64_add_with_carry_step(t1, carry1, 0ULL, &t3, &add_carry1);
-  u64_add_with_carry_step(t3, carry2, add_carry1, lo_digit, &add_carry2);
-  printf("t3: %llx, add_carry1: %llx, add_carry2: %llx\n", t3, add_carry1, add_carry2);
-  if (add_carry2 != 0 ) {
-    u64_add_with_carry_step(t2, add_carry2, 0ULL, hi_digit, &add_carry);
-  }  else {
-    *hi_digit = t2;
-  }
-  printf("hi_digit: %llx, add_carry: %llx\n", *hi_digit, add_carry);
-}
-
 void u64_product_step(uint64_t a, uint64_t b, uint64_t mult_carry,
       uint64_t add_to, uint64_t* lo_digit, uint64_t* hi_digit) {
   uint64_t lo= 0ULL;
@@ -270,7 +248,7 @@ void u64_product_step(uint64_t a, uint64_t b, uint64_t mult_carry,
   u64_mult_step(a, b, &lo, &hi);
   u64_add_with_carry_step(lo, mult_carry, 0ULL, &t, &carry1);
   u64_add_with_carry_step(t, add_to, 0ULL, lo_digit, &carry2);
-  *hi_digit = hi + carry2 + carry2;  // no further carry
+  *hi_digit = hi + carry1 + carry2;  // no further carry
 }
 
 bool correct_q(uint64_t a, uint64_t b, uint64_t c, uint64_t q) {
@@ -331,9 +309,6 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   u64_sub_with_borrow_step(b, lo, 1ULL, rem, &borrow);
   u64_sub_with_borrow_step(a, hi, borrow, &r, &borrow);
   if (r != 0ULL) {
-    printf("div:  %llx:%llx / %llx\n", a, b, c);
-    printf("%llx:%llx - %llx:%llx = %llx, q= %llx\n",
-      a,b,hi,lo,r,*q);
     printf("r != 0 in div_step\n");
     return;
   }
