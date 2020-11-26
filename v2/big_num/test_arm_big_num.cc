@@ -182,7 +182,7 @@ bool test_div_step() {
   uint64_t r = 0ULL;
 
   u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx, rem: %016llx\n", a, b, c, q, r);
+  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
 
@@ -216,7 +216,6 @@ bool test_div_step() {
   if (!check_div(a, b, c, q, r))
     return false;
 
-#if 0
   a = 0x1fULL;
   b = 0xffffffffffffffffULL;
   c = 0xbfffffffffffffffULL;
@@ -226,7 +225,6 @@ bool test_div_step() {
   printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
-#endif
 
   return true;
 }

@@ -251,21 +251,21 @@ void u64_product_step(uint64_t a, uint64_t b, uint64_t mult_carry,
   *hi_digit = hi + carry1 + carry2;  // no further carry
 }
 
-bool correct_q(uint64_t a, uint64_t b, uint64_t c, uint64_t q) {
-//printf("correct %llx:%llx, %llx, %llx\n", a, b, c, q);
-  uint64_t lo_digit;
-  uint64_t hi_digit;
+#if 0
+bool too_small(uint64_t a, uint64_t b, uint64_t c, uint64_t q) {
+  uint64_t lo= 0ULL;
+  uint64_t hi= 0ULL;
 
-  u64_mult_step(q, c, &lo_digit, &hi_digit);
-  if (hi_digit > a || (hi_digit == a && lo_digit > b)) {
-    //printf("correct returns true\n");
+  u64_mult_step(q, c, &lo, &hi);
+printf("too small %016llx: %016llx > %016llx:%016llx\n", a, b, hi, lo);
+  if (hi < a) {
+    printf("too_small returns true\n");
     return true;
   }
-  //printf("correct returns false\n");
+  printf("too_small returns false\n");
   return false;
 }
 
-#if 0
 //  q= a:b/c remainder, r
 //  a < c.  a may be 0.
 void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
@@ -294,7 +294,7 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   }
   *q = num / den;
   *q <<= hi_bit_hi_digit;
-  while(correct_q(a, b, c, *q)) {
+  while(too_big_q(a, b, c, *q)) {
     (*q) -= 1 << shift_lo;
   }
 
@@ -313,7 +313,7 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   *q += *rem / c;
 
   // Is *q * c > a:b
-  while (correct_q(a, b, c, *q)) {
+  while (too_big_q(a, b, c, *q)) {
     (*q)--;
   }
 
@@ -324,15 +324,30 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
 }
 #else
 
+bool too_big(uint64_t a, uint64_t b, uint64_t c, uint64_t q) {
+  uint64_t lo= 0ULL;
+  uint64_t hi= 0ULL;
 
-void reduce(uint64_t a, uint64_t b, uint64_t c, uint64_t q, uint64_t new_a, uint64_t* *new_b) {
+  u64_mult_step(q, c, &lo, &hi);
+  printf("too_big: %016llx * %016llx = %016llx:%016llx\n", q, c, hi, lo);
+  if (hi > a || (hi == a && lo > b)) {
+    printf("too_big returns true\n");
+    return true;
+  }
+  printf("too_big returns false\n");
+  return false;
+}
+
+void reduce(uint64_t a, uint64_t b, uint64_t c, uint64_t q, uint64_t* new_a, uint64_t* new_b) {
   uint64_t hi = 0ULL;
   uint64_t lo = 0ULL;
   u64_mult_step(q, c, &lo, &hi);
   uint64_t borrow = 0ULL;
   u64_mult_step(c, q, &lo, &hi);
-  u64_sub_with_borrow_step(b, lo, 1ULL, &new_b, &borrow);
-  u64_sub_with_borrow_step(a, hi, borrow, &new_a, &borrow);
+  u64_sub_with_borrow_step(b, lo, 1ULL, new_b, &borrow);
+  u64_sub_with_borrow_step(a, hi, borrow, new_a, &borrow);
+printf("reduce %016llx:%016llx - %016llx * %016llx = %016llx:%016llx\n",
+                a,b,c,q,*new_a, *new_b);
 }
 
 //  q= a:b/c remainder, r
@@ -352,30 +367,39 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   uint64_t b_t= b;
   *q = 0ULL;
 
+  printf("%016llx: %016llx / %016llx\n", a, b, c);
   if (a != 0ULL) {
-    int hi_bit_hi_digit = high_bit_in_digit(a);
     int hi_bit_lo_digit = high_bit_in_digit(c);
     uint64_t two_exp_32 = 1ULL << 32;
-    uint64_t num = (b >> hi_bit_hi_digit) | (a << (NBITSINUINT64 - hi_bit_hi_digit));
+    while (a_t != 0ULL) {
+      uint64_t q1 = 0ULL;
+      int hi_bit_hi_digit = high_bit_in_digit(a_t);
+      uint64_t num = (b_t >> hi_bit_hi_digit) | (a_t << (NBITSINUINT64 - hi_bit_hi_digit));
 
-    if (b < two_exp_32) {
-      *q = (num / c) << hi_bit_hi_digit;
-      reduce(a, b, c, *q, &a_t, &b_t);
-    } else {
-      uint64_t d = c >> hi_bit_hi_digit;
-      *q = (num / d);
-      while(correct_q(a, b, c, *q))
-        (*q) -= 1;
+      if (c < two_exp_32) {
+  printf("%016llx < %016llx\n", c, two_exp_32);
+        q1= (num / c) << hi_bit_hi_digit;
+        *q += q1;
+  printf("%016llx / %016llx = %016llx, %016llx\n", num, c, q1, *q);
+      } else {
+  printf("%016llx  >= %016llx\n", c, two_exp_32);
+        uint64_t d = (c >> hi_bit_hi_digit);
+        q1= (num / d);
+        *q += q1;
+	while (too_big(a, b, c, *q))
+	  (*q)-= 1ULL << hi_bit_hi_digit;
+  printf("%016llx / %016llx = %016llx, q: %016llx\n", num, d, q1, *q);
+      }
+     reduce(a, b, c, *q, &a_t, &b_t);
+  printf("a_t: %016llx b_t: %016llx\n", a_t, b_t);
     }
+    printf("hi digit q = %016llx\n", *q);
   }
 
-  // a_t should be 0 now
-  if (a_t != 0ULL) {
-    printf("unexpected non_zero a: %llx\n", a_t);
-    return;
-  }
-  *q += new_b / c;
+  *q += b_t / c;
+  *rem = 0ULL;
   reduce(a, b, c, *q, &a_t, rem);
+  printf("\n\n");
   return;
 }
 #endif
@@ -457,7 +481,7 @@ int digit_array_add_to(int capacity_a, int size_a, uint64_t* a, int size_b,
   int i = digit_array_add(real_size_a, a, real_size_b, b, capacity_a, c);
   if (i < 0) {
     printf("digit_array_add fails in add_to; cap_a: %d, real_siaze_a: %d, real_size_b: %d\n",
-	     capacity_a, real_size_a, real_size_b);
+             capacity_a, real_size_a, real_size_b);
     return -1;
   }
   if (!digit_array_copy(capacity_a, c, capacity_a, a))
