@@ -255,15 +255,17 @@ bool correct_q(uint64_t a, uint64_t b, uint64_t c, uint64_t q) {
 //printf("correct %llx:%llx, %llx, %llx\n", a, b, c, q);
   uint64_t lo_digit;
   uint64_t hi_digit;
+
   u64_mult_step(q, c, &lo_digit, &hi_digit);
   if (hi_digit > a || (hi_digit == a && lo_digit > b)) {
-//printf("correct returns true\n");
+    //printf("correct returns true\n");
     return true;
   }
-//printf("correct returns false\n");
+  //printf("correct returns false\n");
   return false;
 }
 
+#if 0
 //  q= a:b/c remainder, r
 //  a < c.  a may be 0.
 void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
@@ -320,6 +322,63 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   u64_sub_with_borrow_step(a, hi, borrow, &r, &borrow);
   return;
 }
+#else
+
+
+void reduce(uint64_t a, uint64_t b, uint64_t c, uint64_t q, uint64_t new_a, uint64_t* *new_b) {
+  uint64_t hi = 0ULL;
+  uint64_t lo = 0ULL;
+  u64_mult_step(q, c, &lo, &hi);
+  uint64_t borrow = 0ULL;
+  u64_mult_step(c, q, &lo, &hi);
+  u64_sub_with_borrow_step(b, lo, 1ULL, &new_b, &borrow);
+  u64_sub_with_borrow_step(a, hi, borrow, &new_a, &borrow);
+}
+
+//  q= a:b/c remainder, r
+//  a < c.  a may be 0.
+void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
+                  uint64_t* q, uint64_t* rem) {
+  if (c == 0ULL) {
+    printf("divide by 0\n");
+    return;
+  }
+  if (a > c) {
+    printf("two digit answer in div step\n");
+    return;
+  }
+
+  uint64_t a_t= a;
+  uint64_t b_t= b;
+  *q = 0ULL;
+
+  if (a != 0ULL) {
+    int hi_bit_hi_digit = high_bit_in_digit(a);
+    int hi_bit_lo_digit = high_bit_in_digit(c);
+    uint64_t two_exp_32 = 1ULL << 32;
+    uint64_t num = (b >> hi_bit_hi_digit) | (a << (NBITSINUINT64 - hi_bit_hi_digit));
+
+    if (b < two_exp_32) {
+      *q = (num / c) << hi_bit_hi_digit;
+      reduce(a, b, c, *q, &a_t, &b_t);
+    } else {
+      uint64_t d = c >> hi_bit_hi_digit;
+      *q = (num / d);
+      while(correct_q(a, b, c, *q))
+        (*q) -= 1;
+    }
+  }
+
+  // a_t should be 0 now
+  if (a_t != 0ULL) {
+    printf("unexpected non_zero a: %llx\n", a_t);
+    return;
+  }
+  *q += new_b / c;
+  reduce(a, b, c, *q, &a_t, rem);
+  return;
+}
+#endif
 
 // result = a+b.  returns size of result.  Error if <0
 int digit_array_add(int size_a, uint64_t* a, int size_b, uint64_t* b,
