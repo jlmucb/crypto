@@ -175,7 +175,7 @@ bool big_unsigned_sub_from(big_num& a, big_num& b) {
 
 bool big_unsigned_inc(big_num& a) {
   uint64_t one = 1ULL;
-  int k = digit_array_add_to(a.size_, a.size_, a.value_, 1, &one);
+  int k = digit_array_add_to(a.capacity_, a.size_, a.value_, 1, &one);
   if (k < 0)
     return false;
   return true;
@@ -183,7 +183,7 @@ bool big_unsigned_inc(big_num& a) {
 
 bool big_unsigned_dec(big_num& a) {
   uint64_t one = 1ULL;
-  int k = digit_array_sub_from(a.size_, a.size_, a.value_, 1, &one);
+  int k = digit_array_sub_from(a.capacity_, a.size_, a.value_, 1, &one);
   if (k < 0)
     return false;
   return true;
