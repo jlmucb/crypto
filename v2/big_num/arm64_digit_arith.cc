@@ -271,7 +271,6 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   if (c == 0ULL)
     return;
 
-//printf("div:  %llx:%llx / %llx\n", a, b, c);
   if (a > c) {
     printf("two digit answer in div step\n");
   }
@@ -281,23 +280,19 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
     return;
   }
 
-  uint64_t num1 = 0ULL;
-  int high_bit_hi_digit = high_bit_in_digit(a);
-  uint64_t num = (b >> high_bit_hi_digit) | (a << (NBITSINUINT64 - high_bit_hi_digit));
+  int hi_bit_hi_digit = high_bit_in_digit(a);
+  int hi_bit_lo_digit = high_bit_in_digit(c);
+
+  uint64_t num = (b >> hi_bit_hi_digit) | (a << (NBITSINUINT64 - hi_bit_hi_digit));
   int shift_lo = 0;
   uint64_t den = c;
   if (c > num) {
     shift_lo = 1;
-    den >>= 1;
+    den >>= shift_lo;
   }
   *q = num / den;
-  *q <<= high_bit_hi_digit;
-  if (*q == 0ULL) {
-    *rem = b;
-    return;
-  }
+  *q <<= hi_bit_hi_digit;
   while(correct_q(a, b, c, *q)) {
-    //(*q)--;  // FIX ?
     (*q) -= 1 << shift_lo;
   }
 
@@ -310,6 +305,7 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   u64_sub_with_borrow_step(a, hi, borrow, &r, &borrow);
   if (r != 0ULL) {
     printf("r != 0 in div_step\n");
+    printf("%llx:%llx - %llx * %llx\n", a, b, c, *q);
     return;
   }
   *q += *rem / c;
@@ -330,10 +326,14 @@ int digit_array_add(int size_a, uint64_t* a, int size_b, uint64_t* b,
       int size_result, uint64_t* result) {
   int real_size_a = digit_array_real_size(size_a, a);
   int real_size_b = digit_array_real_size(size_b, b);
-  if (real_size_b > real_size_a)
+  if (real_size_b > real_size_a) {
+    printf("Swapping args\n");
     return digit_array_add(real_size_b, b, real_size_a, a, size_result, result);
-  if (size_result <= real_size_a)
+  }
+  if (size_result <= real_size_a) {
+    printf("digit_array_add %d <= %d\n", size_result, real_size_a);
     return -1;
+  }
 
   uint64_t carry_in = 0ULL;
   uint64_t carry_out = 0ULL;
@@ -349,8 +349,10 @@ int digit_array_add(int size_a, uint64_t* a, int size_b, uint64_t* b,
     carry_in = carry_out;
   }
   if (carry_out != 0) {
-    if (i >= size_result)
+    if (i > size_result) {
+      printf("digit_array_add %d >= %d\n", i, size_result);
       return -1;
+    }
     result[i] = carry_out;
   }
   return digit_array_real_size(size_result, result);
@@ -393,9 +395,12 @@ int digit_array_add_to(int capacity_a, int size_a, uint64_t* a, int size_b,
   uint64_t c[capacity_a];
 
   digit_array_zero_num(capacity_a, c);
-  int i = digit_array_add(size_a, a, real_size_b, b, capacity_a, c);
-  if (i < 0)
+  int i = digit_array_add(real_size_a, a, real_size_b, b, capacity_a, c);
+  if (i < 0) {
+    printf("digit_array_add fails in add_to; cap_a: %d, real_siaze_a: %d, real_size_b: %d\n",
+	     capacity_a, real_size_a, real_size_b);
     return -1;
+  }
   if (!digit_array_copy(capacity_a, c, capacity_a, a))
     return -1;
   return i;
@@ -406,16 +411,20 @@ int digit_array_sub_from(int capacity_a, int size_a, uint64_t* a, int size_b,
                       uint64_t* b) {
   int real_size_a = digit_array_real_size(size_a, a);
   int real_size_b = digit_array_real_size(size_b, b);
-  if (real_size_a < real_size_b)
+  if (real_size_a < real_size_b) {
+    printf("digit_array_sub fails %d <  %d\n", real_size_a, real_size_b);
     return -1;
+  }
 
   uint64_t c[capacity_a];
   digit_array_zero_num(capacity_a, c);
-  int i = digit_array_sub(real_size_a, a, real_size_b, b,
+  int i = digit_array_sub(capacity_a, a, real_size_b, b,
       capacity_a, c);
-  if (i < 0)
+  if (i < 0) {
+    printf("digit_array_sub fails cap_a: %d, real_size_b: %d\n", capacity_a, real_size_b);
     return -1;
-  digit_array_zero_num(real_size_a, a);
+  }
+  digit_array_zero_num(capacity_a, a);
   if (!digit_array_copy(i, c, capacity_a, a))
     return -1;
   return i;

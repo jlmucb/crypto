@@ -167,8 +167,10 @@ bool check_div(uint64_t a, uint64_t b, uint64_t c, uint64_t q, uint64_t r) {
   u64_add_with_carry_step(lo, r, c_in, &a2, &c_out);
   c_in = c_out; c_out = 0ULL;
   u64_add_with_carry_step(hi, 0ULL, c_in, &a1, &c_out);
-  if (a1 != a || a2 != b)
+  if (a1 != a || a2 != b) {
+    printf("%016llx:%016llx = %016llx * %016llx + %016llx (%016llx:%016llx)\n", a,b,c,q,r,a1,a2);
     return false;
+  }
   return true;
 }
 
@@ -180,7 +182,7 @@ bool test_div_step() {
   uint64_t r = 0ULL;
 
   u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx 016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx, rem: %016llx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
 
@@ -200,7 +202,7 @@ bool test_div_step() {
   q = 0ULL;
   r = 0ULL;
   u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx 016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
 
@@ -210,20 +212,18 @@ bool test_div_step() {
   q = 0ULL;
   r = 0ULL;
   u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx 016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
 
 #if 0
-  //overflow
-  // fffffffffffe:c0000000000f423 / ffffffffffff07
-  a = 0xc0000000000f423ULL;
-  b = 0xfffffffffffeULL;
-  c = 0xffffffffffff07ULL;
+  a = 0x1fULL;
+  b = 0xffffffffffffffffULL;
+  c = 0xbfffffffffffffffULL;
   q = 0ULL;
   r = 0ULL;
   u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx 016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
 #endif
