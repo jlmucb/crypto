@@ -261,6 +261,19 @@ void u64_mult_with_carry_step(uint64_t a, uint64_t b, uint64_t carry1,
       : "cc", "memory", "%rax", "%rbx", "%rcx", "%rdx");
 }
 
+//  carry_out:result= a*b+carry1+carry2
+void u64_product_step(uint64_t a, uint64_t b, uint64_t mult_carry,
+      uint64_t add_to, uint64_t* lo_digit, uint64_t* hi_digit) {
+  uint64_t lo= 0ULL;
+  uint64_t hi= 0ULL;
+  uint64_t t= 0ULL;
+  uint64_t carry1 = 0ULL;
+  uint64_t carry2 = 0ULL;
+  u64_mult_step(a, b, &lo, &hi);
+  u64_add_with_carry_step(lo, mult_carry, 0ULL, &t, &carry1);
+  u64_add_with_carry_step(t, add_to, 0ULL, lo_digit, &carry2);
+  *hi_digit = hi + carry1 + carry2;  // no further carry
+}
 
 // result = a+b.  returns size of result.  Error if <0
 int digit_array_add(int size_a, uint64_t* a, int size_b, uint64_t* b,
@@ -484,19 +497,23 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
       : "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r11", "%r12", "%r13",
         "%r14", "%r15");
 #else
-  int i, j;
-  uint64_t carry_in = 0;
-  uint64_t carry_out = 0;
+  int i, j, k;
+  uint64_t mult_carry= 0ULL;
+  uint64_t carry_out = 0ULL;
 
   for (i = 0; i < real_size_a; i++) {
-    carry_in = 0;
+    mult_carry = 0ULL;
     for (j = 0; j < real_size_b; j++) {
-      carry_out = 0;
-     u64_mult_with_carry_step(a[i], b[j], carry_in, result[i + j],
-                              &result[i + j], &carry_out);
-      carry_in = carry_out;
+      u64_product_step(a[i], b[j], mult_carry, result[i+j], &result[i+j], &carry_out);
+      mult_carry= carry_out;
     }
-    result[i + j] = carry_out;
+
+    k= i + j;
+    for(; (k < size_result) && (mult_carry != 0ULL); k++) {
+      u64_add_with_carry_step(result[k], mult_carry, 0ULL,
+        &result[k], &carry_out);
+      mult_carry = carry_out;
+    }
   }
 #endif
   return digit_array_real_size(size_result, result);
@@ -795,6 +812,7 @@ bool digit_array_division_algorithm(int size_a, uint64_t* a, int size_b,
 bool digit_convert_to_decimal(int size_n, uint64_t* n, string* s) {
   s->clear();
 
+#if 1
   int  ns = digit_array_real_size(size_n, n);
   uint64_t* t = new uint64_t[ns];
   if (t == nullptr)
@@ -835,9 +853,39 @@ bool digit_convert_to_decimal(int size_n, uint64_t* n, string* s) {
 done:
   delete []t;
   return true;
+#else
+  int ns = digit_array_real_size(size_n, n);
+  uint64_t a[ns];
+  uint64_t q[ns];
+  uint64_t r = 0;
+
+  if (!digit_array_copy(ns, n, ns, a))
+    return false;
+  int size_q;
+
+  for(;;) {
+    size_q = ns;
+    digit_array_zero_num(ns, q);
+
+    if (!digit_array_short_division_algorithm(digit_array_real_size(ns, a), a,
+            10ULL, &size_q, q, &r))
+      return false;
+    s->append(1, (char)r + '0');
+
+    if (size_q == 1 && q[0] == 0ULL)
+      break;
+    if (!digit_array_copy(ns, q, ns, a))
+      return false;
+  }
+
+  reverse_bytes_in_place(s->size(), (byte*) s->data());
+  s->append(1, '\0');
+  return true;
+#endif
 }
 
 bool digit_convert_from_decimal(string& s, int size_n, uint64_t* n) {
+#if 0
   digit_array_zero_num(size_n, n);
   uint64_t digit;
 
@@ -858,5 +906,27 @@ bool digit_convert_from_decimal(string& s, int size_n, uint64_t* n) {
       return false;
     p++;
   }
+#else
+  digit_array_zero_num(size_n, n);
+  uint64_t digit;
+
+  int sn = strlen(s.c_str());
+  sn = (sn + 2) / 3;  // number of 10 bit number slots needed
+  sn *= 10;
+  sn = (sn + NBITSINBYTE - 1) / NBITSINBYTE;
+  int m = (sn + sizeof(uint64_t) - 1) / sizeof(uint64_t);
+  if (m > (size_n - 1))
+    return false;
+
+  const char *p = s.c_str();
+  while (*p != '\0') {
+    if (digit_array_mult_by(size_n, digit_array_real_size(size_n, n), n, 10ULL) < 0)
+      return false;
+    digit = (uint64_t)(*p - '0');
+    if (digit_array_add_to(size_n, digit_array_real_size(size_n, n), n, 1, &digit) < 0)
+      return false;
+    p++;
+  }
+#endif
   return true;
 }

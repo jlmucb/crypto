@@ -1215,14 +1215,12 @@ TEST(big_num, basic_num_test1) {
 TEST(big_num, basic_arith_test1) {
   EXPECT_TRUE(basic_arith_test1());
 }
-/*
 TEST(big_num, basic_number_theory_test1) {
   EXPECT_TRUE(basic_number_theory_test1());
 }
 TEST(big_num, montgomery) {
   EXPECT_TRUE(big_mont_test1());
 }
-*/
 
 int main(int an, char** av) {
 

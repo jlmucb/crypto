@@ -28,7 +28,7 @@ ifndef LOCAL_LIB
 LOCAL_LIB=/usr/local/lib
 endif
 ifndef TARGET_MACHINE_TYPE
-TARGET_MACHINE_TYPE= x64
+TARGET_MACHINE_TYPE=X64
 endif
 
 S= $(SRC_DIR)/big_num
@@ -38,7 +38,7 @@ INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(S_SUPPORT) -I/usr/local/include
 
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable -D X64
 CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable -D X64
-CC=g++
+#C=g++
 LINK=g++
 PROTO=protoc
 AR=ar
