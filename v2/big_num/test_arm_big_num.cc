@@ -230,6 +230,19 @@ printf("\n\n");
     return false;
 printf("\n\n");
 
+  // 0x00fffffffffffe0c: 0x0000000000f42301 / 0xffffffffffff0700
+  a = 0x00fffffffffffe0cULL;
+  b = 0x0000000000f42301ULL;
+  c = 0xffffffffffff0700ULL;
+  q = 0ULL;
+  r = 0ULL;
+  u64_div_step(a, b, c, &q, &r);
+  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  if (!check_div(a, b, c, q, r))
+    return false;
+printf("\n\n");
+
+
   return true;
 }
 
@@ -392,12 +405,11 @@ bool test_estimate_quotient() {
   uint64_t b2= 0ULL;
   uint64_t est = 0ULL;
   estimate_quotient(a1, a2, a3, b1, b2, &est);
-  printf("%llx:%llx:%llx/:%llx:%llx est is %llx\n", a1, a2, a3, b1, b2, est);
+  printf("%llx:%llx:%llx/:%llx:%llx, est is %llx\n", a1, a2, a3, b1, b2, est);
   uint64_t hi = 0ULL;
   uint64_t lo = 0ULL;
   u64_mult_step(b1, est, &lo, &hi);
-  printf("%llx * %llx = %llx:%llx\n", b1, est, hi, lo);
-  if (est != 0x200)
+  if (est != 0x201)
     return false;
   
   return true;
