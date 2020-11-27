@@ -409,6 +409,8 @@ bool test_estimate_quotient() {
   return true;
 }
 
+// 2cccebb86e0def74 d4d2435551cd0b7c d92ade46207ebdf8 70387d127a032f22 b8d5b1119b64b5c2 c89de54fe3a13eca 1ffd1a5bd36cd015 30edd460c607afe4
+// ffffffff00000001 0000000000000000 00000000ffffffff ffffffffffffffff
 bool test_multi_euclid() {
   int size_op1 = 3;
   uint64_t op1[3] = {
@@ -458,6 +460,74 @@ bool test_multi_euclid() {
   printf("\n");
   if (digit_array_compare(size_op1, op1, size_r3, result3) != 0)
     return false;
+
+  int size_op3 =10;
+  uint64_t op3[size_op3] = {
+    0x30edd460c607afe4ULL,
+    0x1ffd1a5bd36cd015ULL,
+    0xc89de54fe3a13ecaULL,
+    0xb8d5b1119b64b5c2ULL,
+    0x70387d127a032f22ULL,
+    0xd92ade46207ebdf8ULL,
+    0xd4d2435551cd0b7cULL,
+    0x2cccebb86e0def74ULL,
+    0x0ULL,
+    0x0ULL,
+  };
+  int size_op4 = 5;
+  uint64_t op4[size_op4] = {
+    0xffffffffffffffffULL,
+    0x00000000ffffffffULL,
+    0x0ULL,
+    0xffffffff00000001ULL,
+    0x0ULL,
+  };
+  int size_op5 = 10;
+  uint64_t op5[size_op5];
+  int size_op6 = 10;
+  uint64_t op6[size_op6];
+  int size_op7 = 10;
+  uint64_t op7[size_op7];
+  int size_op8 = 10;
+  uint64_t op8[size_op8];
+
+  digit_array_zero_num(size_op5, op5);
+  digit_array_zero_num(size_op6, op6);
+  digit_array_zero_num(size_op7, op7);
+  digit_array_zero_num(size_op8, op8);
+
+  digit_array_print(size_op3, op3);
+  printf(" / ");
+  digit_array_print(size_op4, op4);
+  printf("\n");
+  return true;
+  size_q = size_op5;
+  size_r = size_op6;
+  if (!digit_array_division_algorithm(size_op3, op3, size_op4, op4,
+        &size_q, op5, &size_r, op6))
+    return false;
+  digit_array_print(size_op3, op3);
+  printf(" / ");
+  digit_array_print(size_op4, op4);
+  printf(" = ");
+  digit_array_print(size_q, op5);
+  printf(", rem: ");
+  digit_array_print(size_r, op6);
+  printf("\n");
+
+  int size_s = digit_array_mult(size_q, op5, size_op4, op4, size_op7, op7);
+  int size_u = digit_array_add(size_s, op7, size_r, op6, size_op8, op8);
+  digit_array_print(size_q, op5);
+  printf(" * ");
+  digit_array_print(size_op4, op4);
+  printf(" + ");
+  digit_array_print(size_r, op6);
+  printf(" = ");
+  digit_array_print(size_u, op8);
+  printf("\n");
+  if (digit_array_compare(size_op1, op1, size_op8, op8) != 0)
+    return false;
+
 
   return true;
 }
