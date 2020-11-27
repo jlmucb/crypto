@@ -313,11 +313,9 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   *q = 0ULL;
   *rem = 0;
 
-//printf("div_step: %016llx: %016llx / %016llx\n", a, b, c);
   if (a != 0ULL) {
-    int hi_bit_lo_digit = high_bit_in_digit(c);
     uint64_t two_exp_32 = 1ULL << 32;
-    while(too_small(a, b, c, *q, *rem)) {
+    for(;;) {
       uint64_t q1 = 0ULL;
       int hi_bit_hi_digit = high_bit_in_digit(a_t);
       uint64_t num = (b_t >> hi_bit_hi_digit) | (a_t << (NBITSINUINT64 - hi_bit_hi_digit));
@@ -326,7 +324,6 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
         q1= (num / c) << hi_bit_hi_digit;
         *q += q1;
         reduce(a, b, c, *q, &a_t, &b_t);
-//printf("< 2^32 %016llx / %016llx = %016llx, %016llx\n", num, c, q1, *q);
   	*q += b_t / c;
         reduce(a, b, c, *q, &a_t, &b_t);
       } else {
@@ -334,18 +331,12 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
         q1= (num / d);
         *q += q1;
         reduce(a, b, c, *q, &a_t, &b_t);
-//printf(">= 2^32, %016llx / %016llx = %016llx, q: %016llx\n", num, d, q1, *q);
-        /*
-	if (too_big(a, b, c, *q, b_t)) {
-	  compute_diff(a, b, c, *q, b_t);
-	  (*q) /= 16ULL;
-	}
-	*/
   	*q += b_t / c;
         reduce(a, b, c, *q, &a_t, &b_t);
       }
     *rem= b_t;
-//printf("a_t: %016llx b_t: %016llx, q: %016llx\n", a_t, b_t, *q);
+    if(!too_small(a, b, c, *q, *rem))
+      break;
     }
   } else {
     *q += b / c;
