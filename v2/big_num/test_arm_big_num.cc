@@ -236,6 +236,15 @@ bool test_div_step() {
   if (!check_div(a, b, c, q, r))
     return false;
 
+  a = 0x901d0e94f9df6f26ULL;
+  b = 0xd55da1e53722fc58ULL;
+  c = 0xffffffff00000001ULL;
+  q = 0ULL;
+  r = 0ULL;
+  u64_div_step(a, b, c, &q, &r);
+  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  if (!check_div(a, b, c, q, r))
+    return false;
 
   return true;
 }
@@ -460,6 +469,7 @@ bool test_multi_euclid() {
   printf("\n");
   if (digit_array_compare(size_op1, op1, size_r3, result3) != 0)
     return false;
+  return true;
 
   int size_op3 =10;
   uint64_t op3[size_op3] = {
@@ -500,7 +510,6 @@ bool test_multi_euclid() {
   printf(" / ");
   digit_array_print(size_op4, op4);
   printf("\n");
-  return true;
   size_q = size_op5;
   size_r = size_op6;
   if (!digit_array_division_algorithm(size_op3, op3, size_op4, op4,

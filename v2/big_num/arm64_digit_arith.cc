@@ -291,8 +291,6 @@ void reduce(uint64_t a, uint64_t b, uint64_t c, uint64_t q, uint64_t* new_a, uin
   u64_mult_step(c, q, &lo, &hi);
   u64_sub_with_borrow_step(b, lo, 1ULL, new_b, &borrow);
   u64_sub_with_borrow_step(a, hi, borrow, new_a, &borrow);
-  // printf("reduce %016llx:%016llx - %016llx * %016llx = %016llx:%016llx\n",
-  //               a,b,c,q,*new_a, *new_b);
 }
 
 //  q= a:b/c remainder, r
@@ -312,6 +310,7 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   uint64_t b_t= b;
   *q = 0ULL;
   *rem = 0;
+printf("div step, a: %016llx, b: %016llx, c: %016llx\n", a, b, c);
 
   if (a != 0ULL) {
     uint64_t two_exp_32 = 1ULL << 32;
@@ -341,8 +340,10 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   } else {
     *q += b / c;
     *rem = b - ((*q) * c); 
+printf("div step returning\n");
     return;
   }
+printf("div step returning\n");
   return;
 }
 
