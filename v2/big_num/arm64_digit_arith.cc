@@ -252,19 +252,6 @@ void u64_product_step(uint64_t a, uint64_t b, uint64_t mult_carry,
 }
 
 #if 0
-bool too_small(uint64_t a, uint64_t b, uint64_t c, uint64_t q) {
-  uint64_t lo= 0ULL;
-  uint64_t hi= 0ULL;
-
-  u64_mult_step(q, c, &lo, &hi);
-printf("too small %016llx: %016llx > %016llx:%016llx\n", a, b, hi, lo);
-  if (hi < a) {
-    printf("too_small returns true\n");
-    return true;
-  }
-  printf("too_small returns false\n");
-  return false;
-}
 
 //  q= a:b/c remainder, r
 //  a < c.  a may be 0.
@@ -323,6 +310,23 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   return;
 }
 #else
+bool too_small(uint64_t a, uint64_t b, uint64_t c, uint64_t q) {
+  uint64_t lo= 0ULL;
+  uint64_t hi= 0ULL;
+  uint64_t carry = 0ULL;
+  uint64_t t1= 0ULL;
+  uint64_t t2= 0ULL;
+
+  u64_mult_step(q, c, &lo, &hi);
+  u64_add_with_carry_step(lo, c, 0ULL, &t1, &carry);
+  u64_add_with_carry_step(hi, 0ULL, carry, &t2, &carry);
+  if (t2 < a || (t2 == a && t1 < b )) {
+    printf("too_small returns true\n");
+    return true;
+  }
+  printf("too_small returns false\n");
+  return false;
+}
 
 bool too_big(uint64_t a, uint64_t b, uint64_t c, uint64_t q) {
   uint64_t lo= 0ULL;
@@ -371,35 +375,38 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   if (a != 0ULL) {
     int hi_bit_lo_digit = high_bit_in_digit(c);
     uint64_t two_exp_32 = 1ULL << 32;
-    while (a_t != 0ULL) {
+    while(too_small(a, b, c, *q)) {
       uint64_t q1 = 0ULL;
       int hi_bit_hi_digit = high_bit_in_digit(a_t);
       uint64_t num = (b_t >> hi_bit_hi_digit) | (a_t << (NBITSINUINT64 - hi_bit_hi_digit));
 
       if (c < two_exp_32) {
-  printf("%016llx < %016llx\n", c, two_exp_32);
         q1= (num / c) << hi_bit_hi_digit;
         *q += q1;
-  printf("%016llx / %016llx = %016llx, %016llx\n", num, c, q1, *q);
+        reduce(a, b, c, *q, &a_t, &b_t);
+  printf("< 2^32 %016llx / %016llx = %016llx, %016llx\n", num, c, q1, *q);
+  	*q += b_t / c;
+        reduce(a, b, c, *q, &a_t, &b_t);
       } else {
-  printf("%016llx  >= %016llx\n", c, two_exp_32);
         uint64_t d = (c >> hi_bit_hi_digit);
         q1= (num / d);
         *q += q1;
-	while (too_big(a, b, c, *q))
-	  (*q)-= 1ULL << hi_bit_hi_digit;
-  printf("%016llx / %016llx = %016llx, q: %016llx\n", num, d, q1, *q);
+        reduce(a, b, c, *q, &a_t, &b_t);
+  	*q += b_t / c;
+  printf(">= 2^32, %016llx / %016llx = %016llx, q: %016llx\n", num, d, q1, *q);
+	while (too_big(a, b, c, *q)) {
+	  (*q)--;
+        reduce(a, b, c, *q, &a_t, &b_t);
+	}
       }
-     reduce(a, b, c, *q, &a_t, &b_t);
-  printf("a_t: %016llx b_t: %016llx\n", a_t, b_t);
+    *rem= b_t;
+  printf("a_t: %016llx b_t, q: %016llx: %016llx\n", a_t, b_t, *q);
     }
-    printf("hi digit q = %016llx\n", *q);
+  } else {
+    *q += b / c;
+    *rem = b - ((*q) * c); 
+    return;
   }
-
-  *q += b_t / c;
-  *rem = 0ULL;
-  reduce(a, b, c, *q, &a_t, rem);
-  printf("\n\n");
   return;
 }
 #endif

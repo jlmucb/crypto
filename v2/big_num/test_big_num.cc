@@ -520,8 +520,10 @@ bool basic_arith_test1() {
   d = nullptr;
 
   string hex_str;
-  if (!big_convert_to_hex(b, &hex_str))
+  if (!big_convert_to_hex(b, &hex_str)) {
+    printf("big_convert_to_hex fails\n");
     return false;
+  }
   if (FLAGS_print_all)  {
     b.print(); printf(" as hex is %s\n", hex_str.c_str());
   }
@@ -539,13 +541,17 @@ bool basic_arith_test1() {
   if (FLAGS_print_all)  {
     a.print();
   }
-  if (!big_unsigned_inc(a))
+  if (!big_unsigned_inc(a)) {
+    printf("big_unsigned_inc fails\n");
     return false;
+  }
   if (FLAGS_print_all)  {
     printf(" incremented: "); a.print();
   }
-  if (!big_unsigned_dec(a))
+  if (!big_unsigned_dec(a)) {
+    printf("big_unsigned_dec fails\n");
     return false;
+  }
   if (FLAGS_print_all)  {
     printf(" incremented: "); a.print();
   }
@@ -561,8 +567,10 @@ bool basic_arith_test1() {
   n2.value_ptr()[1] = 0x05;
   n1.normalize();
   n2.normalize();
-  if (!big_unsigned_add(n1, n2, r))
+  if (!big_unsigned_add(n1, n2, r)) {
+    printf("big_unsigned_add fails\n");
     return false;
+  }
   if (FLAGS_print_all)  {
     n1.print(); printf(" + ");
     n2.print(); printf(" = ");
@@ -572,11 +580,15 @@ bool basic_arith_test1() {
   add_cmp.value_ptr()[0] = 0xfffffffffffffffe;
   add_cmp.value_ptr()[1] = 0x0000000000000105;
   add_cmp.normalize();
-  if (big_compare(add_cmp, r) != 0)
+  if (big_compare(add_cmp, r) != 0) {
+    printf("bad compare 1\n");
     return false;
+  }
   r.zero_num();
-  if (!big_unsigned_sub(n1, n2, r))
+  if (!big_unsigned_sub(n1, n2, r)) {
+    printf("big_unsigned_sub fails\n");
     return false;
+  }
   if (FLAGS_print_all)  {
     n1.print(); printf(" - ");
     n2.print(); printf(" = ");
@@ -586,11 +598,15 @@ bool basic_arith_test1() {
   sub_cmp.value_ptr()[0] = 0x0;
   sub_cmp.value_ptr()[1] = 0xfa;
   sub_cmp.normalize();
-  if (big_compare(sub_cmp, r) != 0)
+  if (big_compare(sub_cmp, r) != 0) {
+    printf("bad compare 2\n");
     return false;
+  }
   r.zero_num();
-  if (!big_unsigned_mult(n1, n2, r))
+  if (!big_unsigned_mult(n1, n2, r)) {
+    printf("big_unsigned_mult fails\n");
     return false;
+  }
   if (FLAGS_print_all)  {
     n1.print(); printf(" * ");
     n2.print(); printf(" = ");
@@ -601,13 +617,17 @@ bool basic_arith_test1() {
   mult_cmp.value_ptr()[1] = 0xfffffffffffffefaULL;
   mult_cmp.value_ptr()[2] = 0x00000000000005ffULL;
   mult_cmp.normalize();
-  if (big_compare(mult_cmp, r) != 0)
+  if (big_compare(mult_cmp, r) != 0) {
+    printf("bad compare 3\n");
     return false;
+  }
 
   r.zero_num();
   q.zero_num();
-  if (!big_unsigned_euclid(n1, n2, q, r))
+  if (!big_unsigned_euclid(n1, n2, q, r)) {
+    printf("big_unsigned_euclid fails\n");
     return false;
+  }
   if (FLAGS_print_all)  {
     n1.print(); printf(" = ");
     n2.print(); printf(" * ");
@@ -618,11 +638,15 @@ bool basic_arith_test1() {
   rem_cmp.value_ptr()[0] = 0x0000000000000029ULL;
   rem_cmp.value_ptr()[1] = 0x0000000000000004;
   rem_cmp.normalize();
-  if (big_compare(rem_cmp, r) != 0 || q.value_ptr()[0] != 0x2aULL)
-     return false;
-  q.zero_num();
-  if (!big_unsigned_div(n1, n2, q))
+  if (big_compare(rem_cmp, r) != 0 || q.value_ptr()[0] != 0x2aULL) {
+    printf("bad compare 4\n");
     return false;
+  }
+  q.zero_num();
+  if (!big_unsigned_div(n1, n2, q)) {
+    printf("big_unsigned_div fails\n");
+    return false;
+  }
   if (FLAGS_print_all)  {
     n1.print(); printf(" = ");
     n2.print(); printf(" * ");
@@ -637,24 +661,32 @@ bool basic_arith_test1() {
   n3.copy_from(n1);
   n3.normalize();
   
-  if (!big_unsigned_add_to(n3, big_five))
+  if (!big_unsigned_add_to(n3, big_five)) {
+    printf("big_unsigned_add_to fails\n");
     return false;
+  }
   if (FLAGS_print_all)  {
     n1.print(); printf(" +=  5 is ");
     n3.print(); printf("\n");
   }
-  if (!big_unsigned_sub_from(n3, big_five))
+  if (!big_unsigned_sub_from(n3, big_five)) {
+    printf("big_unsigned_sub_from fails\n");
     return false;
+  }
   if (FLAGS_print_all)  {
     printf(" -=  5 is ");
     n3.print(); printf("\n");
   }
-  if (big_compare(n1, n3) != 0)
-      return false;
+  if (big_compare(n1, n3) != 0) {
+    printf("bad compare 5\n");
+    return false;
+  }
 
   r.zero_num();
-  if (!big_unsigned_square(n1, r))
+  if (!big_unsigned_square(n1, r)) {
+    printf("big_unsigned_square fails\n");
     return false;
+  }
   if (FLAGS_print_all)  {
     n1.print(); printf("**2 = ");
     r.print(); printf("\n");
@@ -669,8 +701,10 @@ bool basic_arith_test1() {
   b_cmp_sq.normalize();
   r.zero_num();
   n1.toggle_sign();
-  if (!big_square(n1, r))
+  if (!big_square(n1, r)) {
+    printf("big_square fails\n");
     return false;
+  }
   if (big_compare(r, b_cmp_sq) != 0)
     return false;
 
@@ -700,48 +734,64 @@ bool basic_arith_test1() {
   s_div_cmp.normalize();
 
   r.zero_num();
-  if (!big_add(n1, n2, r))
+  if (!big_add(n1, n2, r)) {
+    printf("big_add fails\n");
     return false;
+  }
   if (FLAGS_print_all)  {
     n1.print(); printf(" + ");
     n2.print(); printf(" = ");
     r.print(); printf("\n");
   }
-  if (big_compare(r, s_add_cmp) != 0)
+  if (big_compare(r, s_add_cmp) != 0) {
+    printf("bad compare 6\n");
     return false;
+  }
 
   r.zero_num();
-  if (!big_sub(n1, n2, r))
+  if (!big_sub(n1, n2, r)) {
+    printf("big_sub fails\n");
     return false;
+  }
   if (FLAGS_print_all)  {
     n1.print(); printf(" - ");
     n2.print(); printf(" = ");
     r.print(); printf("\n");
   }
-  if (big_compare(r, s_sub_cmp) != 0)
+  if (big_compare(r, s_sub_cmp) != 0) {
+    printf("bad compare 7\n");
     return false;
+  }
 
   r.zero_num();
-  if (!big_mult(n1, n2, r))
+  if (!big_mult(n1, n2, r)) {
+    printf("big_mult fails\n");
     return false;
+  }
   if (FLAGS_print_all)  {
     n1.print(); printf(" * ");
     n2.print(); printf(" = ");
     r.print(); printf("\n");
   }
-  if (big_compare(r, s_mult_cmp) != 0)
+  if (big_compare(r, s_mult_cmp) != 0) {
+    printf("bad compare 8\n");
     return false;
+  }
 
   r.zero_num();
-  if (!big_div(n1, n2, r))
+  if (!big_div(n1, n2, r)) {
+    printf("big_div fails\n");
     return false;
+  }
   if (FLAGS_print_all)  {
     n1.print(); printf(" / ");
     n2.print(); printf(" = ");
     r.print(); printf("\n");
   }
-  if (big_compare(r, s_div_cmp) != 0)
+  if (big_compare(r, s_div_cmp) != 0) {
+    printf("bad compare 9\n");
     return false;
+  }
 
   return true;
 }
@@ -1165,12 +1215,14 @@ TEST(big_num, basic_num_test1) {
 TEST(big_num, basic_arith_test1) {
   EXPECT_TRUE(basic_arith_test1());
 }
+/*
 TEST(big_num, basic_number_theory_test1) {
   EXPECT_TRUE(basic_number_theory_test1());
 }
 TEST(big_num, montgomery) {
   EXPECT_TRUE(big_mont_test1());
 }
+*/
 
 int main(int an, char** av) {
 
