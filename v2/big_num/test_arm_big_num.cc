@@ -469,7 +469,6 @@ bool test_multi_euclid() {
   printf("\n");
   if (digit_array_compare(size_op1, op1, size_r3, result3) != 0)
     return false;
-  return true;
 
   int size_op3 =10;
   uint64_t op3[size_op3] = {
@@ -534,9 +533,8 @@ bool test_multi_euclid() {
   printf(" = ");
   digit_array_print(size_u, op8);
   printf("\n");
-  if (digit_array_compare(size_op1, op1, size_op8, op8) != 0)
+  if (digit_array_compare(size_op3, op3, size_op8, op8) != 0)
     return false;
-
 
   return true;
 }

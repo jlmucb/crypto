@@ -310,7 +310,6 @@ void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
   uint64_t b_t= b;
   *q = 0ULL;
   *rem = 0;
-printf("div step, a: %016llx, b: %016llx, c: %016llx\n", a, b, c);
 
   if (a != 0ULL) {
     uint64_t two_exp_32 = 1ULL << 32;
@@ -326,8 +325,13 @@ printf("div step, a: %016llx, b: %016llx, c: %016llx\n", a, b, c);
   	*q += b_t / c;
         reduce(a, b, c, *q, &a_t, &b_t);
       } else {
-        uint64_t d = (c >> hi_bit_hi_digit) + 1ULL;
-        q1= (num / d);
+	if (hi_bit_hi_digit == 64) {
+	  uint64_t d = c >> 62;
+          q1= (num / d) << 62;
+	} else {
+          uint64_t d = (c >> hi_bit_hi_digit) + 1ULL;
+          q1= (num / d);
+	}
         *q += q1;
         reduce(a, b, c, *q, &a_t, &b_t);
   	*q += b_t / c;
@@ -340,10 +344,8 @@ printf("div step, a: %016llx, b: %016llx, c: %016llx\n", a, b, c);
   } else {
     *q += b / c;
     *rem = b - ((*q) * c); 
-printf("div step returning\n");
     return;
   }
-printf("div step returning\n");
   return;
 }
 
