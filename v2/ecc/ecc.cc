@@ -238,6 +238,36 @@ bool discriminant(ecc_curve& c, big_num& r) {
   return true;
 }
 
+bool ecc_is_on_curve(ecc_curve& c, curve_point& pt) {
+  big_num t1(2 * c.curve_p_->capacity_);
+  big_num t2(2 * c.curve_p_->capacity_);
+  big_num t3(2 * c.curve_p_->capacity_);
+
+  if (!big_mod_mult(*pt.x_, *pt.x_, *c.curve_p_, t1)) {
+    return false;
+  }
+  if (!big_mod_mult(*pt.x_, t1, *c.curve_p_, t2)) {
+    return false;
+  }
+  t1.zero_num();
+  if (!big_mod_mult(*pt.x_, *c.curve_a_, *c.curve_p_, t1)) {
+    return false;
+  }
+  if (!big_mod_add(t1, t2, *c.curve_p_, t3)) {
+    return false;
+  }
+  t2.zero_num();
+  if (!big_mod_add(t3, *c.curve_b_, *c.curve_p_, t2)) {
+    return false;
+  }
+  t1.zero_num();
+  if (!big_mod_mult(*pt.y_, *pt.y_, *c.curve_p_, t1)) {
+    return false;
+  }
+  return (big_compare(t1, t2) == 0);
+}
+
+
 /*
  *  pick parameter k.
  *  x= m<<shift+j
@@ -323,12 +353,7 @@ bool ecc_extract(ecc_curve& c, curve_point& pt, big_num& m, int shift) {
     return false;
   }
   if (big_compare(t1, t2) != 0) {
-printf("compare, t1: ");
-t1.print();
-printf(", t2: ");
-t2.print();
-printf("\n");
-printf("ERR 7\n");
+    printf("ERR 7\n");
     return false;
   }
   if (!big_shift(*pt.x_, -shift, m)) {
@@ -1422,12 +1447,32 @@ bool ecc::encrypt(int size, byte* plain, big_num& k, curve_point& pt1,
   if (!ecc_add(*c_, r_pt, p_pt, pt2)) {
     return false;
   }
+#if 1
+  if(!ecc_is_on_curve(*c_, pt1)) {
+    pt1.print();
+    printf(" is not on curve (encrypt)\n");
+  }
+  if(!ecc_is_on_curve(*c_, pt2)) {
+    pt2.print();
+    printf(" is not on curve (encrypt)\n");
+  }
+#endif
   return true;
 }
 
 bool ecc::decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain) {
   if (c_ == nullptr)
     return false;
+#if 1
+  if(!ecc_is_on_curve(*c_, pt1)) {
+    pt1.print();
+    printf("not on curve (decrypt)\n");
+  }
+  if(!ecc_is_on_curve(*c_, pt2)) {
+    pt2.print();
+    printf("not on curve (decrypt)\n");
+  }
+#endif
 
   big_num m(c_->curve_p_->capacity_);
   curve_point p_pt(2 * c_->curve_p_->capacity_);

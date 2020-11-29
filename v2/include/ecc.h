@@ -131,6 +131,7 @@ class ecc {
   bool decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain);
 };
 
+bool ecc_is_on_curve(ecc_curve& c, curve_point& pt);
 bool ecc_embed(ecc_curve& c, big_num& m, curve_point& pt, int shift, int trys);
 bool ecc_extract(ecc_curve& c, curve_point& pt, big_num& m, int shift);
 bool ecc_normalize(ecc_curve& c, curve_point& pt);
