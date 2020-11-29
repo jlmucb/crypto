@@ -355,7 +355,7 @@ printf("div step: a: %016llx, b: %016llx, c: %016llx\n", a,b,c);
     divide128x64(a, b, c, q, rem);
     return;
   } else {
-    *q += b / c;
+    *q = b / c;
     *rem = b - ((*q) * c); 
     return;
   }
