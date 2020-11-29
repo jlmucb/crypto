@@ -246,6 +246,38 @@ bool test_div_step() {
   if (!check_div(a, b, c, q, r))
     return false;
 
+  // div step: a: 915827bab37e4902, b: 88aa2961e43416b5, c: ffffffff00000001
+
+  a = 0x915827bab37e4902ULL;
+  b = 0x88aa2961e43416b5ULL;
+  c = 0xffffffff00000001ULL;
+  q = 0ULL;
+  r = 0ULL;
+  u64_div_step(a, b, c, &q, &r);
+  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  if (!check_div(a, b, c, q, r))
+    return false;
+
+  a = 0x96f83925527638b1ULL;
+  b = 0xeebc1e519b105cb0ULL;
+  c = 0xffffffff00000001ULL;
+  q = 0ULL;
+  r = 0ULL;
+  u64_div_step(a, b, c, &q, &r);
+  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  if (!check_div(a, b, c, q, r))
+    return false;
+
+  a = 0xf9b8d7644fba7c42ULL;
+  b = 0x0667eedfe773a90dULL;
+  c = 0xffffffff00000001ULL;
+  q = 0ULL;
+  r = 0ULL;
+  u64_div_step(a, b, c, &q, &r);
+  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  if (!check_div(a, b, c, q, r))
+    return false;
+
   return true;
 }
 
@@ -418,8 +450,6 @@ bool test_estimate_quotient() {
   return true;
 }
 
-// 2cccebb86e0def74 d4d2435551cd0b7c d92ade46207ebdf8 70387d127a032f22 b8d5b1119b64b5c2 c89de54fe3a13eca 1ffd1a5bd36cd015 30edd460c607afe4
-// ffffffff00000001 0000000000000000 00000000ffffffff ffffffffffffffff
 bool test_multi_euclid() {
   int size_op1 = 3;
   uint64_t op1[3] = {
