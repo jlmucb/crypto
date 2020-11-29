@@ -17,7 +17,7 @@
 #include "ecc.h"
 #include "ecc_curve_data.h"
 
-#define FASTECCMULT
+//#define FASTECCMULT
 
 curve_point::curve_point() {
   x_ = nullptr;
@@ -323,6 +323,12 @@ bool ecc_extract(ecc_curve& c, curve_point& pt, big_num& m, int shift) {
     return false;
   }
   if (big_compare(t1, t2) != 0) {
+printf("compare, t1: ");
+t1.print();
+printf(", t2: ");
+t2.print();
+printf("\n");
+printf("ERR 7\n");
     return false;
   }
   if (!big_shift(*pt.x_, -shift, m)) {

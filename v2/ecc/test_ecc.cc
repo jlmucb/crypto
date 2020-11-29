@@ -71,10 +71,10 @@ bool test_ecc_affine_1() {
     return false;
   // (2472, 715)
   if (FLAGS_print_all) {
-    printf("  (%lld, %lld)", p2.x_->value_[0], p2.y_->value_[0]);
+    printf("  (%ld, %ld)", p2.x_->value_[0], p2.y_->value_[0]);
     printf(" + ");
-    printf("(%lld, %lld)", p3.x_->value_[0], p3.y_->value_[0]);
-    printf("= (%lld, %lld)\n", p4.x_->value_[0], p4.y_->value_[0]);
+    printf("(%ld, %ld)", p3.x_->value_[0], p3.y_->value_[0]);
+    printf("= (%ld, %ld)\n", p4.x_->value_[0], p4.y_->value_[0]);
   }
   if (p4.x_->value_[0] != 2472 || p4.y_->value_[0] !=715)
     return false;
@@ -83,7 +83,7 @@ bool test_ecc_affine_1() {
   if (!ecc_mult(c1, p1, big_two, p5))
     return false;
   if (FLAGS_print_all) {
-    printf("  2 * (%lld, %lld) = (%lld, %lld)\n", p1.x_->value_[0], p1.y_->value_[0],
+    printf("  2 * (%ld, %ld) = (%ld, %ld)\n", p1.x_->value_[0], p1.y_->value_[0],
         p5.x_->value_[0], p5.y_->value_[0]);
   }
   if (p5.x_->value_[0] != 1771 || p5.y_->value_[0] != 705)
@@ -101,10 +101,10 @@ bool test_ecc_affine_1() {
     return false;
   if (!p4.is_zero())
   if (FLAGS_print_all) {
-    printf("  (%lld, %lld)", p1.x_->value_[0], p1.y_->value_[0]);
+    printf("  (%ld, %ld)", p1.x_->value_[0], p1.y_->value_[0]);
     printf(" - ");
-    printf("(%lld, %lld)", p1.x_->value_[0], p1.y_->value_[0]);
-    printf("= (%lld, %lld, %lld)\n", p4.x_->value_[0], p4.y_->value_[0],
+    printf("(%ld, %ld)", p1.x_->value_[0], p1.y_->value_[0]);
+    printf("= (%ld, %ld, %ld)\n", p4.x_->value_[0], p4.y_->value_[0],
           p4.z_->value_[0]);
   }
   if (!p4.is_zero())
@@ -165,8 +165,8 @@ bool test_ecc_projective() {
   if (!projective_to_affine(c1, p5))
     return false;
   if (FLAGS_print_all) {
-    printf("  (%lld, %lld, %lld) = ", p2.x_->value_[0], p2.y_->value_[0], p2.z_->value_[0]);
-    printf("  (%lld, %lld, %lld)\n", p5.x_->value_[0], p5.y_->value_[0], p5.z_->value_[0]);
+    printf("  (%ld, %ld, %ld) = ", p2.x_->value_[0], p2.y_->value_[0], p2.z_->value_[0]);
+    printf("  (%ld, %ld, %ld)\n", p5.x_->value_[0], p5.y_->value_[0], p5.z_->value_[0]);
   }
 
   if (!p1.is_equal(p5))
@@ -183,10 +183,10 @@ bool test_ecc_projective() {
     return false;
   // (2472, 715)
   if (FLAGS_print_all) {
-    printf("  (%lld, %lld, %lld)", p2.x_->value_[0], p2.y_->value_[0], p2.z_->value_[0]);
+    printf("  (%ld, %ld, %ld)", p2.x_->value_[0], p2.y_->value_[0], p2.z_->value_[0]);
     printf(" + ");
-    printf("(%lld, %lld, %lld)", p3.x_->value_[0], p3.y_->value_[0], p3.z_->value_[0]);
-    printf("= (%lld, %lld, %lld)\n", p4.x_->value_[0], p4.y_->value_[0], p4.z_->value_[0]);
+    printf("(%ld, %ld, %ld)", p3.x_->value_[0], p3.y_->value_[0], p3.z_->value_[0]);
+    printf("= (%ld, %ld, %ld)\n", p4.x_->value_[0], p4.y_->value_[0], p4.z_->value_[0]);
   }
   if (!projective_to_affine(c1, p4))
     return false;
@@ -271,6 +271,9 @@ printf("ecc class :\n");
               "anything", seconds_in_common_year))
     return false;
   key.print();
+  if (FLAGS_print_all) {
+    printf("Key 1 generate done\n");
+  }
 
   string serialized_str;
   if (!key.get_serialized_key_message(&serialized_str))
@@ -283,10 +286,16 @@ printf("ecc class :\n");
   key1.print();
   printf("\nPrinting key_message\n");
   print_key_message(*key1.ecc_key_);
+  if (FLAGS_print_all) {
+    printf("Key 2 extracted message\n");
+  }
 
   if (!key1.retrieve_parameters_from_key_message())
     return false;
   key1.print();
+  if (FLAGS_print_all) {
+    printf("Key 2 retrieved params\n");
+  }
 
   // if (!set_parameters_in_key_message()) return false;
 
@@ -327,10 +336,14 @@ bool test_ecc_encrypt_decrypt() {
   curve_point pt1(10);
   curve_point pt2(10);
 
-  if (!key.encrypt(size_in, plain_in, nonce, pt1, pt2))
+  if (!key.encrypt(size_in, plain_in, nonce, pt1, pt2)) {
+    printf("ecc encrypt returns false\n");
     return false;
-  if (!key.decrypt(pt1, pt2, &size_out, recovered))
+  }
+  if (!key.decrypt(pt1, pt2, &size_out, recovered)) {
+    printf("ecc decrypt returns false\n");
     return false;
+  }
   printf("cipher    : ("); pt1.print(); printf(" , "); pt2.print(); printf(")\n");
   printf("recovered : "); print_bytes(size_out, recovered); printf("\n");
   if (memcmp(plain_in, recovered, size_in) != 0)
