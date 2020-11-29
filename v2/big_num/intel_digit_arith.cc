@@ -58,6 +58,8 @@ bool digit_array_copy(int size_a, uint64_t* a, int size_b, uint64_t* b) {
   for (i = 0; i < size_a; i++) {
     b[i] = a[i];
   }
+  for(;i < size_b; i++)
+    b[i] = 0ULL;
   return true;
 }
 
