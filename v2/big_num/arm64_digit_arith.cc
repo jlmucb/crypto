@@ -301,10 +301,10 @@ void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem
   int s= NBITSINUINT64 - l;
   c<<= s;
   uint64_t n_hi = (a<<s) | (b>>l);
-  uint64_t n_lo= b << s;
+  //uint64_t n_lo= b << s;
   uint64_t c_hi= c >> 32;
 
-  // Estimate and get to p 32 bits
+  // Estimate and get to hi 32 bits of quotient
   uint64_t q_est= n_hi / c_hi;
   uint64_t a_t, b_t;
 
@@ -313,6 +313,15 @@ void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem
   *q= q_est << 32;
   reduce(a, b, c, *q, &a_t, &b_t);
 
+  // Estimate and get to lo 32 bits of quotient
+  q_est = ((a_t << 32) | (b_t>>32)) / c_hi;
+  while(too_big(a, b, c, *q | q_est))
+    q_est--;
+  *q|= q_est;
+  reduce(a, b, c, *q, &a_t, &b_t);
+
+  // Unnormalize
+  *rem = b_t >> s;
 }
 
 //  q= a:b/c remainder, r
