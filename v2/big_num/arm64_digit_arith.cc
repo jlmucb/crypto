@@ -301,12 +301,15 @@ void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem
   int s= NBITSINUINT64 - l;
   c<<= s;
   uint64_t n_hi = (a<<s) | (b>>l);
-  //uint64_t n_lo= b << s;
+  uint64_t n_lo= b << s;
   uint64_t c_hi= c >> 32;
 
   // Estimate and get to hi 32 bits of quotient
   uint64_t q_est= n_hi / c_hi;
   uint64_t a_t, b_t;
+
+  printf("divide128x64 c_hi: %016lx, n_hi:n_lo = %016lx:%016lx\n", n_hi, n_lo);
+  printf("divide128x64, q_est: %016lx = %016lx / %016lx\n", c_hi, q_est, n_hi, c_hi);
 
   while(too_big(a, b, c, q_est))
     q_est--;
