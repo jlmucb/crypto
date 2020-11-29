@@ -105,7 +105,7 @@ bool test_mult_step() {
   b = 0x100;
   printf("u64_mult_step: ");
   u64_mult_step(a, b, &lo_digit, &hi_digit);
-  printf("%016llx *  %016llx =  %016lx:%016lx\n", a, b, hi_digit, lo_digit);
+  printf("%016lx *  %016lx =  %016lx:%016lx\n", a, b, hi_digit, lo_digit);
   if (hi_digit != 0xffULL || lo_digit != 0xffffffffffffff00)
     return false;
   return true;
@@ -123,7 +123,7 @@ bool test_sub_with_borrow_step() {
   uint64_t borrow_out;
   uint64_t result = 0ULL;
   u64_sub_with_borrow_step(a, b, borrow_in, &result, &borrow_out);
-  printf("%016llx -  %016llx borrow: %016llx=  %016lx, borrow_out: %016lx\n",
+  printf("%016lx -  %016lx borrow: %016lx=  %016lx, borrow_out: %016lx\n",
          a, b, borrow_in, result, borrow_out);
   if (result != 0x2ULL || borrow_out != 1)
     return false;
@@ -134,7 +134,7 @@ bool test_sub_with_borrow_step() {
   borrow_out = 0ULL;
   result = 0ULL;
   u64_sub_with_borrow_step(a, b, borrow_in, &result, &borrow_out);
-  printf("%016llx -  %016llx borrow: %016llx=  %016lx, borrow_out: %016lx\n",
+  printf("%016lx -  %016lx borrow: %016lx=  %016lx, borrow_out: %016lx\n",
          a, b, borrow_in, result, borrow_out);
   if (result != 0xffffffffffffffffULL || borrow_out != 0)
     return false;
@@ -150,7 +150,7 @@ bool test_mult_with_carry_step() {
   uint64_t hi_digit = 0ULL;
 
   u64_product_step(a, b, carry1, carry2, &lo_digit, &hi_digit);
-  printf("%016llx * %016llx + %016llx + %016llx = %016llx::%016llx\n", a, b, carry1, carry2,
+  printf("%016lx * %016lx + %016lx + %016lx = %016lx::%016lx\n", a, b, carry1, carry2,
           hi_digit, lo_digit);
   return true;
 }
@@ -168,7 +168,7 @@ bool check_div(uint64_t a, uint64_t b, uint64_t c, uint64_t q, uint64_t r) {
   c_in = c_out; c_out = 0ULL;
   u64_add_with_carry_step(hi, 0ULL, c_in, &a1, &c_out);
   if (a1 != a || a2 != b) {
-    printf("%016llx:%016llx = %016llx * %016llx + %016llx (%016llx:%016llx)\n", a,b,c,q,r,a1,a2);
+    printf("%016lx:%016lx = %016lx * %016lx + %016lx (%016lx:%016lx)\n", a,b,c,q,r,a1,a2);
     return false;
   }
   return true;
@@ -182,7 +182,7 @@ bool test_div_step() {
   uint64_t r = 0ULL;
 
   u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  printf("%016lx : %016lx / %016lx = %016lx, rem: %016lx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
 
@@ -192,7 +192,7 @@ bool test_div_step() {
   q = 0ULL;
   r = 0ULL;
   u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  printf("%016lx : %016lx / %016lx = %016lx, rem: %016lx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
 
@@ -202,7 +202,7 @@ bool test_div_step() {
   q = 0ULL;
   r = 0ULL;
   u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  printf("%016lx : %016lx / %016lx = %016lx, rem: %016lx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
 
@@ -212,7 +212,7 @@ bool test_div_step() {
   q = 0ULL;
   r = 0ULL;
   u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  printf("%016lx : %016lx / %016lx = %016lx, rem: %016lx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
 
@@ -222,7 +222,7 @@ bool test_div_step() {
   q = 0ULL;
   r = 0ULL;
   u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  printf("%016lx : %016lx / %016lx = %016lx, rem: %016lx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
 
@@ -232,7 +232,7 @@ bool test_div_step() {
   q = 0ULL;
   r = 0ULL;
   u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  printf("%016lx : %016lx / %016lx = %016lx, rem: %016lx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
 
@@ -242,7 +242,7 @@ bool test_div_step() {
   q = 0ULL;
   r = 0ULL;
   u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  printf("%016lx : %016lx / %016lx = %016lx, rem: %016lx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
 
@@ -254,7 +254,7 @@ bool test_div_step() {
   q = 0ULL;
   r = 0ULL;
   u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  printf("%016lx : %016lx / %016lx = %016lx, rem: %016lx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
 
@@ -264,7 +264,7 @@ bool test_div_step() {
   q = 0ULL;
   r = 0ULL;
   u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  printf("%016lx : %016lx / %016lx = %016lx, rem: %016lx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
 
@@ -274,7 +274,7 @@ bool test_div_step() {
   q = 0ULL;
   r = 0ULL;
   u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  printf("%016lx : %016lx / %016lx = %016lx, rem: %016lx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
 
@@ -284,7 +284,7 @@ bool test_div_step() {
   q = 0ULL;
   r = 0ULL;
   u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  printf("%016lx : %016lx / %016lx = %016lx, rem: %016lx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
 
@@ -294,7 +294,7 @@ bool test_div_step() {
   q = 0ULL;
   r = 0ULL;
   u64_div_step(a, b, c, &q, &r);
-  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  printf("%016lx : %016lx / %016lx = %016lx, rem: %016lx\n", a, b, c, q, r);
   if (!check_div(a, b, c, q, r))
     return false;
 
@@ -424,15 +424,15 @@ bool test_short_div() {
   if (!digit_array_short_division_algorithm(size_op2, op2, op1, &size_q, opq, &r))
     return false;
   digit_array_print(size_op2, op2);
-  printf(" / %0llx = ", op1);
+  printf(" / %0lx = ", op1);
   digit_array_print(size_q, opq);
-  printf(", rem: %llx\n", r);
+  printf(", rem: %lx\n", r);
 
   uint64_t result[3];
   digit_array_zero_num(3, result);
   int i = digit_array_mult(1, &op1, size_q, opq, 3, result);
   digit_array_print(size_q, opq);
-  printf(" * %llx = ", op1);
+  printf(" * %lx = ", op1);
   digit_array_print(i, result);
   printf("\n");
 
@@ -445,9 +445,9 @@ bool test_short_div() {
   if (!digit_array_short_division_algorithm(size_op2, op2, op1, &size_q, opq, &r))
     return false;
   digit_array_print(size_op2, op2);
-  printf(" / %0lld = ", op1);
+  printf(" / %0ld = ", op1);
   digit_array_print(size_q, opq);
-  printf(", rem: %llx\n", r);
+  printf(", rem: %lx\n", r);
 
   return true;
 }
@@ -460,7 +460,7 @@ bool test_estimate_quotient() {
   uint64_t b2= 0ULL;
   uint64_t est = 0ULL;
   estimate_quotient(a1, a2, a3, b1, b2, &est);
-  printf("%llx:%llx:%llx/:%llx:%llx, est is %llx\n", a1, a2, a3, b1, b2, est);
+  printf("%lx:%lx:%lx/:%lx:%lx, est is %lx\n", a1, a2, a3, b1, b2, est);
   uint64_t hi = 0ULL;
   uint64_t lo = 0ULL;
   u64_mult_step(b1, est, &lo, &hi);
@@ -688,7 +688,7 @@ bool test_mult_by() {
 
   int real_size_op1 = digit_array_real_size(size_op1, op1);
   printf("op1: "); digit_array_print(real_size_op1, op1); printf("\n");
-  printf("op2: %llx\n", op2);
+  printf("op2: %lx\n", op2);
 
   int i = digit_array_mult_by(size_op1, real_size_op1, op1, op2);
   if (i < 0)

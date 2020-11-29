@@ -363,11 +363,11 @@ bool basic_digit_test2() {
     return false;
   }
   if (FLAGS_print_all) {
-    digit_array_print(10, n1); printf(" /  %lld = ", 5ULL);
-    digit_array_print(size_q, n2); printf(", remainder %lld\n", rr);
+    digit_array_print(10, n1); printf(" /  %ld = ", 5ULL);
+    digit_array_print(size_q, n2); printf(", remainder %ld\n", rr);
   }
   if (rr != 1ULL) {
-    printf("*****ERROR 34***  %llx\n", rr);
+    printf("*****ERROR 34***  %lx\n", rr);
     return false;
   }
   
@@ -388,7 +388,7 @@ bool decimal_convert_test1() {
     return false;
   }
   if (FLAGS_print_all)  {
-    printf("n: %lld %lld, %s\n", n[1], n[0], s.c_str());
+    printf("n: %ld %ld, %s\n", n[1], n[0], s.c_str());
   }
   if (!digit_convert_from_decimal(s, 2, m)) {
     printf("error 2\n");
@@ -403,7 +403,7 @@ bool decimal_convert_test1() {
     return false;
   }
   if (FLAGS_print_all)
-    printf("n: %lld, %s\n", n[0], s.c_str());
+    printf("n: %ld, %s\n", n[0], s.c_str());
 
   digit_array_zero_num(3, m);
   if (!digit_convert_to_decimal(2, n, &s)) {
@@ -411,7 +411,7 @@ bool decimal_convert_test1() {
     return false;
   }
   if (FLAGS_print_all)  {
-    printf("n: %lld %lld, %s\n", n[1], n[0], s.c_str());
+    printf("n: %ld %ld, %s\n", n[1], n[0], s.c_str());
   }
   if (!digit_convert_from_decimal(s, 3, m)) {
     printf("error 5\n");
@@ -427,7 +427,7 @@ bool decimal_convert_test1() {
   }
 
   if (FLAGS_print_all) 
-    printf("n: %lld %lld, %s\n", n[1], n[0], s.c_str());
+    printf("n: %ld %ld, %s\n", n[1], n[0], s.c_str());
 
   return true;
 
@@ -1115,8 +1115,10 @@ bool basic_number_theory_test1() {
   }
 
   p.zero_num();
-  if (!big_gen_prime(p, num_bits, 250))
+  if (!big_gen_prime(p, num_bits, 250)) {
+    printf("big_gen_prime fails\n");
     return false;
+  }
   if (FLAGS_print_all)  {
     printf("proposed prime: (");
     p.print();
@@ -1124,8 +1126,10 @@ bool basic_number_theory_test1() {
   }
   if (!big_high_bit(p))
     return false;
-  if (!big_is_prime(p))
+  if (!big_is_prime(p)) {
+    printf("big_is_prime fails\n");
     return false;
+  }
 
   return true;
 }
@@ -1150,7 +1154,7 @@ bool big_mont_test1() {
   if (!big_make_mont(a, r, m, mont_a))
     return false;
   if (FLAGS_print_all) {
-    printf("r: %d, %lld %lld = %lld\n", r, a.value_[0], 
+    printf("r: %d, %ld %ld = %ld\n", r, a.value_[0], 
         (1ULL<<13), mont_a.value_[0]);
   }
   if (mont_a.value_[0] != 233)
@@ -1158,7 +1162,7 @@ bool big_mont_test1() {
   if (!big_make_mont(b, r, m, mont_b))
     return false;
   if (FLAGS_print_all) {
-    printf("r: %d, %lld %lld = %lld\n", r, b.value_[0], 
+    printf("r: %d, %ld %ld = %ld\n", r, b.value_[0], 
         (1ULL<<13), mont_b.value_[0]);
   }
   if (mont_b.value_[0] != 1736)
@@ -1168,7 +1172,7 @@ bool big_mont_test1() {
   if (!big_mont_params(m, r, m_prime))
     return false;
   if (FLAGS_print_all) {
-    printf("r: %d, m: %lld, m_prime: %lld\n", r, m.value_[0], m_prime.value_[0]);
+    printf("r: %d, m: %ld, m_prime: %ld\n", r, m.value_[0], m_prime.value_[0]);
   }
   if (m_prime.value_[0] != 387)
     return false;
@@ -1176,7 +1180,7 @@ bool big_mont_test1() {
   if (!big_mont_reduce(mont_a, r, m, m_prime, c))
     return false;
   if (FLAGS_print_all) {
-    printf("r: %d, m: %lld, a: %lld, reduced: %lld\n", r, m.value_[0],
+    printf("r: %d, m: %ld, a: %ld, reduced: %ld\n", r, m.value_[0],
       mont_a.value_[0], c.value_[0]);
   }
   if (c.value_[0] != a.value_[0])
@@ -1187,7 +1191,7 @@ bool big_mont_test1() {
   if (!big_mont_mult(mont_a, mont_b, m, r, m_prime, c))
     return false;
   if (FLAGS_print_all) {
-    printf("a: %lld, b: %lld, abR^(-1): %lld\n", mont_a.value_[0],
+    printf("a: %ld, b: %ld, abR^(-1): %ld\n", mont_a.value_[0],
         mont_b.value_[0], c.value_[0]);
   }
   if (c.value_[0] != 1444)

@@ -30,7 +30,7 @@ void digit_array_print(int size_a, uint64_t* a) {
   int n = digit_array_real_size(size_a, a);
 
   for (int j = (n - 1); j >= 0; j--)
-    printf("%016llx ", a[j]);
+    printf("%016lx ", a[j]);
 }
 
 bool digit_array_is_zero(int size_a, uint64_t* a) {
@@ -254,9 +254,6 @@ void u64_product_step(uint64_t a, uint64_t b, uint64_t mult_carry,
 bool too_big(uint64_t a, uint64_t b, uint64_t c, uint64_t q) {
   uint64_t lo= 0ULL;
   uint64_t hi= 0ULL;
-  uint64_t carry = 0ULL;
-  uint64_t t1= 0ULL;
-  uint64_t t2= 0ULL;
 
   u64_mult_step(q, c, &lo, &hi);
   if ((hi > a) || (hi >= a && lo > b)) {
@@ -321,7 +318,7 @@ void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem
 
   // Estimate and get to lo 32 bits of quotient
   q_est = ((a_t << 32) | (b_t>>32)) / c_hi;
-  //printf("lo est: %016llx = %016lx / %016lx\n", q_est, ((a_t << 32) | (b_t>>32)), c_hi);
+  //printf("lo est: %016lx = %016lx / %016lx\n", q_est, ((a_t << 32) | (b_t>>32)), c_hi);
   while(too_big(a, b, c, *q | q_est))
     q_est--;
   *q|= q_est;
@@ -335,7 +332,7 @@ void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem
 //  a < c.  a may be 0.
 void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
                   uint64_t* q, uint64_t* rem) {
-// printf("div step: a: %016llx, b: %016llx, c: %016llx\n", a,b,c);
+// printf("div step: a: %016lx, b: %016lx, c: %016lx\n", a,b,c);
   if (c == 0ULL) {
     printf("divide by 0\n");
     return;
@@ -486,20 +483,20 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
   for (i = 0; i < real_size_a; i++) {
     mult_carry = 0ULL;
     for (j = 0; j < real_size_b; j++) {
-  //printf("a[%d]: %016llx, b[%d]: %016llx, mult_carry: %016llx, result[%d](in): %016llx\n", 
+  //printf("a[%d]: %016lx, b[%d]: %016lx, mult_carry: %016lx, result[%d](in): %016lx\n", 
           //i, a[i], j, b[j], mult_carry, i+j, result[i+j]);
       u64_product_step(a[i], b[j], mult_carry, result[i+j], &result[i+j], &carry_out);
-  //printf("result[%d](out): %016llx, new carry: %016llx\n", i+j, result[i+j], carry_out);
+  //printf("result[%d](out): %016lx, new carry: %016lx\n", i+j, result[i+j], carry_out);
       mult_carry= carry_out;
     }
 
     k= i + j;
-  //printf("end arg k: %d size_result: %d carry: %016llx\n", k, size_result, mult_carry);
+  //printf("end arg k: %d size_result: %d carry: %016lx\n", k, size_result, mult_carry);
     for(; (k < size_result) && (mult_carry != 0ULL); k++) {
-  //printf("result[%d](in): %016llx, mult_carry_: %016llx, ", k, result[k], mult_carry);
+  //printf("result[%d](in): %016lx, mult_carry_: %016lx, ", k, result[k], mult_carry);
       u64_add_with_carry_step(result[k], mult_carry, 0ULL,
         &result[k], &carry_out);
-  //printf("result[%d](out): %016llx, mult_carry_: %016llx\n", k, result[k], carry_out);
+  //printf("result[%d](out): %016lx, mult_carry_: %016lx\n", k, result[k], carry_out);
       mult_carry = carry_out;
     }
   }
