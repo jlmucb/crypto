@@ -60,6 +60,7 @@ bool big_gen_prime(big_num& p, uint64_t num_bits, int prime_trys=2500);
 int big_high_bit(big_num& a);
 bool big_miller_rabin(big_num& n, big_num** random_a, int trys);
 bool big_is_prime(big_num& n);
+bool check_square_root(big_num& square_root, big_num& square, big_num& p);
 bool big_mod_is_square(big_num& n, big_num& p);
 bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& s);
 bool big_mod_square_root(big_num& n, big_num& p, big_num& r);

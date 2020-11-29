@@ -596,6 +596,15 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& s) {
   return true;
 }
 
+bool check_square_root(big_num& square_root, big_num& square, big_num& p) {
+  big_num r(2 * square_root.capacity_ + 1);
+
+  if (!big_mod_mult(square_root, square_root, p, r)) {
+    return false;
+  }
+  return (big_compare(square, r) == 0);
+}
+
 //  a>0, p!=2
 //  Find x: x^2=n (mod p)
 //  if(p==3 (mod 4)) x= a^((p+1)/4 (mod p)
