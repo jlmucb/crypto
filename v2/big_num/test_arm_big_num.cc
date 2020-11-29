@@ -278,6 +278,26 @@ bool test_div_step() {
   if (!check_div(a, b, c, q, r))
     return false;
 
+  a = 0x7c42ULL;
+  b = 0x0667eedfe773a90dULL;
+  c = 0xfffffULL;
+  q = 0ULL;
+  r = 0ULL;
+  u64_div_step(a, b, c, &q, &r);
+  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  if (!check_div(a, b, c, q, r))
+    return false;
+
+  a = 0ULL;
+  b = 0x2cccebb86e0def74ULL;
+  c = 0xffffffff00000001ULL;
+  q = 0ULL;
+  r = 0ULL;
+  u64_div_step(a, b, c, &q, &r);
+  printf("%016llx : %016llx / %016llx = %016llx, rem: %016llx\n", a, b, c, q, r);
+  if (!check_div(a, b, c, q, r))
+    return false;
+
   return true;
 }
 

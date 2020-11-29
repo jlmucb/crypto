@@ -260,10 +260,8 @@ bool too_big(uint64_t a, uint64_t b, uint64_t c, uint64_t q) {
 
   u64_mult_step(q, c, &lo, &hi);
   if ((hi > a) || (hi >= a && lo > b)) {
-printf("too big, true, q: %016llx, %016llx:%016llx > %016llx:%016llx\n", q, hi, lo, a, b);
     return true;
   }
-printf("too big, false, q: %016llx, %016llx:%016llx <= %016llx:%016llx\n", q, hi, lo, a, b);
   return false;
 }
 
@@ -299,7 +297,6 @@ void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem
   // Normalize
   int l =  high_bit_in_digit(c);
   int s= NBITSINUINT64 - l;
-  printf("c: %016llx, l: %d, s: %d\n", c,l,s);
   c<<= s;
   uint64_t n_hi;
   if (l==64)
@@ -313,8 +310,9 @@ void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem
   uint64_t q_est= n_hi / c_hi;
   uint64_t a_t, b_t;
 
-  printf("divide128x64 s: %d, l: %d, c_hi: %016lx, n_hi:n_lo = %016lx:%016lx\n", s, l, c_hi, n_hi, n_lo);
-  printf("divide128x64, q_est: %016lx = %016lx / %016lx\n", q_est, n_hi, c_hi);
+  //printf("divide128x64 s: %d, l: %d, c_hi: %016lx, n_hi:n_lo = %016lx:%016lx\n",
+  //        s, l, c_hi, n_hi, n_lo);
+  //printf("divide128x64, q_est: %016lx = %016lx / %016lx\n", q_est, n_hi, c_hi);
 
   while(too_big(a, b, c, q_est<<32))
     q_est--;
@@ -323,7 +321,7 @@ void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem
 
   // Estimate and get to lo 32 bits of quotient
   q_est = ((a_t << 32) | (b_t>>32)) / c_hi;
-  printf("lo est: %016llx = %016lx / %016lx\n", q_est, ((a_t << 32) | (b_t>>32)), c_hi);
+  //printf("lo est: %016llx = %016lx / %016lx\n", q_est, ((a_t << 32) | (b_t>>32)), c_hi);
   while(too_big(a, b, c, *q | q_est))
     q_est--;
   *q|= q_est;
@@ -337,7 +335,7 @@ void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem
 //  a < c.  a may be 0.
 void u64_div_step(uint64_t a, uint64_t b, uint64_t c,
                   uint64_t* q, uint64_t* rem) {
-printf("div step: a: %016llx, b: %016llx, c: %016llx\n", a,b,c);
+// printf("div step: a: %016llx, b: %016llx, c: %016llx\n", a,b,c);
   if (c == 0ULL) {
     printf("divide by 0\n");
     return;
