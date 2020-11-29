@@ -278,6 +278,22 @@ void reduce(uint64_t a, uint64_t b, uint64_t c, uint64_t q, uint64_t* new_a, uin
   u64_sub_with_borrow_step(a, hi, borrow, new_a, &borrow);
 }
 
+void divide128x32(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* r) {
+  uint64_t n_t = 0ULL;
+  uint64_t q_t = 0ULL;
+  uint64_t r_t = 0ULL;
+
+  n_t= (a&0xffffffff)<<32 | (b>>32);
+  q_t = n_t / c;
+  r_t = n_t - c * q_t;
+  *q= q_t<<32;
+  n_t= (r_t<<32) | (b&0xffffffff);
+  q_t = n_t / c;
+  r_t = n_t - c * q_t;
+  *q|= q_t;
+  *r= r_t;
+}
+
 void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem) {
 
   // Normalize
@@ -314,7 +330,12 @@ printf("div step: a: %016llx, b: %016llx, c: %016llx\n", a,b,c);
   }
 
   if (a != 0ULL) {
-    divide(a, b, c, q, rem);
+    if ((c>>32) == 0ULL) {
+      divide128x32(a, b, c, q, rem);
+      return;
+    }
+    divide128x64(a, b, c, q, rem);
+    return;
   } else {
     *q += b / c;
     *rem = b - ((*q) * c); 
