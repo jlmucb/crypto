@@ -602,7 +602,13 @@ bool check_square_root(big_num& square_root, big_num& square, big_num& p) {
   if (!big_mod_mult(square_root, square_root, p, r)) {
     return false;
   }
-  return (big_compare(square, r) == 0);
+  bool f= (big_compare(square, r) == 0);
+  if (!f) {
+    square.print(); printf(" != ");
+    r.print(); printf(" (mod ");
+    p.print(); printf("\n");
+  }
+  return f;
 }
 
 //  a>0, p!=2
