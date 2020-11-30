@@ -1131,6 +1131,64 @@ bool basic_number_theory_test1() {
     return false;
   }
 
+#if 0
+  uint64_t test_prime_digits[4] = {
+    0xffffffffffffffffULL,
+    0x00000000ffffffffULL,
+    0x0000000000000000ULL,
+    0xffffffff00000001ULL,
+  };
+  uint64_t test_square_digits[3] = {
+    0xffff00000000ffffULL,
+    0xcccULL,
+    0xaaaa00000000ffffULL,
+  };
+  big_num test_prime(4);
+  for (int i = 0; i < 4; i++)
+    test_prime.value_ptr()[i] = test_prime_digits[i];
+  test_prime.normalize();
+  big_num test_square(6);
+  for (int i = 0; i < 3; i++)
+    test_square.value_ptr()[i] = test_square_digits[i];
+  test_square.normalize();
+
+  big_num test_square_root(9);
+
+  if (!big_is_prime(test_prime)) {
+    printf("big_is_prime fails\n");
+    return false;
+  } else {
+    printf("test_prime is prime\n");
+  }
+
+  for (int i = 0; i < 10; i++) {
+    if(!big_mod_is_square(test_square, test_prime)) {
+      printf("Not square\n");
+      continue;
+    }
+    if (!big_mod_tonelli_shanks(test_square, test_prime, test_square_root)) {
+    //if (!big_mod_square_root(test_square, test_prime, test_square_root)) {
+      printf("big_mod_square_root fails\n");
+      return false;
+    }
+    if (FLAGS_print_all)  {
+      test_square_root.print();
+      printf("**2 = ");
+      test_square.print();
+      printf(" mod(");
+      test_prime.print();
+      printf(")\n");
+    }
+
+    if (!check_square_root(test_square_root, test_square, test_prime)) {
+      printf("check_square_root fails\n");
+      return false;
+    }
+    big_unsigned_add_to(test_square, big_four);
+    test_square_root.zero_num();
+  }
+#endif
+    
   return true;
 }
 
