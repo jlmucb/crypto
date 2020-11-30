@@ -1131,7 +1131,7 @@ bool basic_number_theory_test1() {
     return false;
   }
 
-#if 0
+#if 1
   uint64_t test_prime_digits[4] = {
     0xffffffffffffffffULL,
     0x00000000ffffffffULL,
@@ -1171,11 +1171,16 @@ bool basic_number_theory_test1() {
     if(!big_mod_is_square(test_square, test_prime)) {
       printf("Not square\n");
       continue;
+    } else {
+      printf("Is a square\n");
     }
     if (!big_mod_tonelli_shanks(test_square, test_prime, test_square_root)) {
     //if (!big_mod_square_root(test_square, test_prime, test_square_root)) {
-      printf("big_mod_square_root fails\n");
-      return false;
+      printf("Cant find square\n");
+      big_unsigned_add_to(test_square, big_four);
+      test_square.normalize();
+      continue;
+      //return false;
     }
     if (FLAGS_print_all)  {
       test_square_root.print();

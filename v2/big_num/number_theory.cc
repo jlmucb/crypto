@@ -515,6 +515,7 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& s) {
   big_num b(2 * p.size_ + 1);
   big_num t(2 * p.size_ + 1);
 
+  // printf("tonelli a: ");a.print();printf("\n");
   if (!big_unsigned_sub(p, big_one, p_minus)) {
     return false;
   }
@@ -545,7 +546,7 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& s) {
     return false;
   }
   t1.zero_num();
-  t2.zero_num();
+  //t2.zero_num();
   if (!big_mod_mult(x, x, p, t1)) {
     return false;
   }
@@ -556,8 +557,8 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& s) {
   if (!big_mod_mult(x, a, p, t1)) {
     return false;
   }
-  t1.copy_to(x);
-
+  if (!t1.copy_to(x))
+    return false;
   for (;;) {
     if (big_compare(big_one, b) == 0)
       break;
@@ -570,7 +571,7 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& s) {
     if (!big_shift(big_one, max_two_power - m - 1, e)) {
       return false;
     }
-    if (!big_mod_exp(y, t2, p, t)) {
+    if (!big_mod_exp(y, e, p, t)) {
       return false;
     }
     y.zero_num();
@@ -579,20 +580,26 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& s) {
     if (!big_mod_mult(t, t, p, y)) {
       return false;
     }
+
     // r= m; x=xt; b=by;
     max_two_power = m;
     t1.zero_num();
     if (!big_mod_mult(x, t, p, t1)) {
       return false;
     }
-    t1.copy_to(x);
+    if(!t1.copy_to(x))
+      return false;
     t1.zero_num();
     if (!big_mod_mult(y, b, p, t1)) {
       return false;
     }
-    t1.copy_to(y);
+    if(!t1.copy_to(b))
+      return false;
+    if ((big_compare(y, big_one) == 0) && (big_compare(t, big_one) == 0))
+      return false;
   }
-  s.copy_from(x);
+  if (!s.copy_from(x))
+    return false;
   return true;
 }
 
@@ -603,11 +610,13 @@ bool check_square_root(big_num& square_root, big_num& square, big_num& p) {
     return false;
   }
   bool f= (big_compare(square, r) == 0);
+#if 0
   if (!f) {
     square.print(); printf(" != ");
     r.print(); printf(" (mod ");
     p.print(); printf("\n");
   }
+#endif
   return f;
 }
 
