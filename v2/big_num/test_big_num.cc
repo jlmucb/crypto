@@ -1294,6 +1294,7 @@ bool basic_number_theory_test1() {
     printf("test square: "); test_square.print(); printf("\n");
 
     if(big_mod_is_square(test_square, test_prime)) {
+      // if (!big_mod_square_root(test_square, test_prime, nr, test_square_root)) {
       if (!big_mod_tonelli_shanks(test_square, test_prime, nr, test_square_root)) {
         printf("Cant find square root\n");
       } else {

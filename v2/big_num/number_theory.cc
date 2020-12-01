@@ -617,13 +617,6 @@ bool check_square_root(big_num& square_root, big_num& square, big_num& p) {
     return false;
   }
   bool f= (big_compare(square, r) == 0);
-#if 0
-  if (!f) {
-    square.print(); printf(" != ");
-    r.print(); printf(" (mod ");
-    p.print(); printf("\n");
-  }
-#endif
   return f;
 }
 
@@ -639,6 +632,7 @@ bool big_mod_square_root(big_num& n, big_num& p, big_num& nr, big_num& r) {
   uint64_t bot = p.value_[0] & 0x7;
   big_num p_temp(1 + 2 * p.size_);
 
+  n.normalize();
   if (bot == 1) {
     return big_mod_tonelli_shanks(n, p, nr, r);
   }
