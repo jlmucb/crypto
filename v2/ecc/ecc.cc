@@ -307,7 +307,7 @@ bool ecc_embed(ecc_curve& c, big_num& m, curve_point& pt, int shift, int trys) {
       return false;
     }
     if (big_mod_is_square(t1, *c.curve_p_)) {
-      if (!big_mod_square_root(t1, *c.curve_p_, *pt.y_)) {
+      if (!big_mod_square_root(t1, *c.curve_p_, big_zero, *pt.y_)) {
         return false;
       }
       pt.x_->copy_from(m_x);
