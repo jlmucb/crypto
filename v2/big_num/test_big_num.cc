@@ -1117,7 +1117,7 @@ bool basic_number_theory_test1() {
   p.zero_num();
   if (!big_gen_prime(p, num_bits, 250)) {
     printf("big_gen_prime fails\n");
-    return false;
+    //return false;
   }
   if (FLAGS_print_all)  {
     printf("proposed prime: (");
@@ -1141,9 +1141,6 @@ bool basic_number_theory_test1() {
     16ULL,
     0ULL,
     0ULL,
-    // 0xffff00000000ffffULL,
-    // 0xcccULL,
-    // 0xaaaa00000000ffffULL,
   };
   big_num test_prime(4);
   for (int i = 0; i < 4; i++)
@@ -1246,14 +1243,30 @@ bool basic_number_theory_test1() {
     }
     return false;
   }
+
+
+  big_num test_square_root(9);
+  test_square_root.zero_num();
   
-#if 0
-  big_num test_square(6);
+  if (!big_mod_tonelli_shanks(big_two, test_prime, nr, test_square_root)) {
+    printf("Cant find square root\n");
+    return false;
+  } else {
+    test_square_root.print(); printf(" is square root of ");
+    big_two.print(); printf(" (mod ");
+    test_prime.print(); printf(" \n");
+
+    if (!check_square_root(test_square_root, big_two, test_prime)) {
+      printf("check_square_root fails\n");
+      return false;
+    }
+  }
+  
+  big_num test_square(9);
   for (int i = 0; i < 3; i++)
     test_square.value_ptr()[i] = test_square_digits[i];
   test_square.normalize();
-
-  big_num test_square_root(9);
+  test_square_root.zero_num();
 
   if (!big_is_prime(test_prime)) {
     printf("test_prime is not prime\n");
@@ -1263,22 +1276,20 @@ bool basic_number_theory_test1() {
 
   for (int i = 0; i < 5; i++) {
 
+    test_square.normalize();
+    test_square_root.zero_num();
     printf("test square: ");
     test_square.print();
     printf("\n");
     if(!big_mod_is_square(test_square, test_prime)) {
-      printf("Not square\n");
+      printf("not square\n");
       continue;
     } else {
-      printf("Is a square\n");
+      printf("is square\n");
     }
-    if (!big_mod_tonelli_shanks(test_square, test_prime, big_zero, test_square_root)) {
-    //if (!big_mod_square_root(test_square, test_prime, big_zero, test_square_root)) {
+    if (!big_mod_tonelli_shanks(test_square, test_prime, nr, test_square_root)) {
       printf("Cant find square\n");
-      big_unsigned_add_to(test_square, big_four);
       test_square.normalize();
-      continue;
-      //return false;
     }
     if (FLAGS_print_all)  {
       test_square_root.print();
@@ -1291,13 +1302,10 @@ bool basic_number_theory_test1() {
 
     if (!check_square_root(test_square_root, test_square, test_prime)) {
       printf("check_square_root fails\n");
-      return false;
+      //return false;
     }
     big_unsigned_add_to(test_square, big_four);
-    test_square.normalize();
-    test_square_root.zero_num();
   }
-#endif
     
   return true;
 }
