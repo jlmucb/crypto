@@ -483,15 +483,16 @@ int smallest_unitary_exponent(big_num& b, big_num& p, int maxm) {
   int i;
 
   for (i = 1; i < maxm; i++) {
+    e.zero_num();
+    t.zero_num();
     if (!big_shift(big_one, i, e))
       return -1;
+    e.normalize();
     if (!big_mod_exp(b, e, p, t))
       return -1;
     if (big_compare(big_one, t) == 0) {
       break;
     }
-    e.zero_num();
-    t.zero_num();
   }
 
   return i;
@@ -546,7 +547,6 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& nr, big_num& s) {
 
   // y= z, r = e, x = a^((q-1)/2) (mod p), b = ax^2 (mod p), x= ax
   y.copy_from(z);
-  int r = e;
   if (!big_unsigned_sub(q, big_one, temp1))
     return false;
   if (!big_shift(temp1, -1, temp2))
@@ -554,6 +554,7 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& nr, big_num& s) {
   if (!big_mod_exp(a, temp2, p, x))
     return false;
 
+  int r = e;
   temp1.zero_num();
   temp2.zero_num();
   if (!big_mod_mult(x, x, p, temp1))
@@ -567,7 +568,10 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& nr, big_num& s) {
   x.zero_num();
   x.copy_from(temp1);
 
+//printf("b: "); b.print(); printf("\n");
+//printf("x: "); x.print(); printf("\n");
   for (;;) {
+//printf("compare : "); big_one.print(); printf(", "); b.print(); printf("\n");
     // Now: ab = x^2, y^(2^(r-1)) = -1, b^(2^(r-1))= 1
     if (big_compare(big_one, b) == 0) {
       if (!s.copy_from(x))

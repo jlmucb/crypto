@@ -1244,6 +1244,19 @@ bool basic_number_theory_test1() {
     return false;
   }
 
+  big_num w(1,0x18ULL);
+  if (big_mod_is_square(w, test_prime)) {
+    if (FLAGS_print_all) {
+      w.print(); printf(" is a residue mod ");
+      test_prime.print(); printf("\n");
+    }
+  } else {
+    if (FLAGS_print_all) {
+      w.print(); printf(" is a non-residue mod ");
+      test_prime.print(); printf("\n");
+    }
+    return false;
+  }
 
   big_num test_square_root(9);
   test_square_root.zero_num();
@@ -1278,33 +1291,29 @@ bool basic_number_theory_test1() {
 
     test_square.normalize();
     test_square_root.zero_num();
-    printf("test square: ");
-    test_square.print();
-    printf("\n");
-    if(!big_mod_is_square(test_square, test_prime)) {
-      printf("not square\n");
-      continue;
-    } else {
-      printf("is square\n");
-    }
-    if (!big_mod_tonelli_shanks(test_square, test_prime, nr, test_square_root)) {
-      printf("Cant find square\n");
-      test_square.normalize();
-    }
-    if (FLAGS_print_all)  {
-      test_square_root.print();
-      printf("**2 = ");
-      test_square.print();
-      printf(" mod(");
-      test_prime.print();
-      printf(")\n");
-    }
+    printf("test square: "); test_square.print(); printf("\n");
 
-    if (!check_square_root(test_square_root, test_square, test_prime)) {
-      printf("check_square_root fails\n");
-      //return false;
+    if(big_mod_is_square(test_square, test_prime)) {
+      if (!big_mod_tonelli_shanks(test_square, test_prime, nr, test_square_root)) {
+        printf("Cant find square root\n");
+      } else {
+        if (FLAGS_print_all)  {
+          test_square_root.print();
+          printf("**2 = ");
+          test_square.print();
+          printf(" mod(");
+          test_prime.print();
+          printf(")\n");
+        }
+
+        if (!check_square_root(test_square_root, test_square, test_prime)) {
+          printf("check_square_root fails\n");
+          return false;
+        }
+      }
     }
     big_unsigned_add_to(test_square, big_four);
+    test_square.normalize();
   }
     
   return true;
