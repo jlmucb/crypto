@@ -497,109 +497,103 @@ int smallest_unitary_exponent(big_num& b, big_num& p, int maxm) {
   return i;
 }
 
+// p is odd
 bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& s) {
   big_num t1(2 * p.size_ + 1);
   big_num t2(2 * p.size_ + 1);
 
-  big_num q(2 * p.size_ + 1);  // p-1= 2^max_two_power q
-  big_num p_minus(2 * p.size_ + 1);
-
-  int max_two_power;
+  big_num p_minus(p.size_);
+  big_num q(p.size_);
   int m;
 
-  big_num e(2 * p.size_ + 1);  // exponent
-  big_num n(2 * p.size_ + 1);  // non-residue
+  big_num n(p.size_);  // non-residue
   big_num x(2 * p.size_ + 1);
   big_num y(2 * p.size_ + 1);
   big_num z(2 * p.size_ + 1);
   big_num b(2 * p.size_ + 1);
   big_num t(2 * p.size_ + 1);
 
-  // printf("tonelli a: ");a.print();printf("\n");
-  if (!big_unsigned_sub(p, big_one, p_minus)) {
+  // Compute e, q: p-1 = (2^e)q, with q odd
+  if (!big_unsigned_sub(p, big_one, p_minus))
     return false;
-  }
-  max_two_power = big_max_power_of_two_dividing(p_minus);
-  if (!big_shift(p_minus, -max_two_power, q)) {
+  int e = big_max_power_of_two_dividing(p_minus);
+  if (!big_shift(p_minus, -e, q))
     return false;
-  }
+
+  // find quadratic non-residue, n
   n.value_[0] = 2ULL;
   n.normalize();
-  while (!big_mod_is_square(n, p)) {
-    if (!big_unsigned_add_to(n, big_one)) {
+  while (big_mod_is_square(n, p)) {
+    if (!big_unsigned_add_to(n, big_one))
       return false;
-    }
   }
-  if (!big_mod_exp(n, q, p, z)) {
+
+  // z= n^q (mod p)
+  if (!big_mod_exp(n, q, p, z))
     return false;
-  }
-  if (!z.copy_to(y)) {
+
+  big_num temp1(2 * p.size_ + 1);
+  big_num temp2(2 * p.size_ + 1);
+
+  // y= z, r = e, x = a^((q-1)/2) (mod p), b = ax^2 (mod p), x= ax
+  y.copy_from(z);
+  int r = e;
+  if (!big_unsigned_sub(q, big_one, temp1))
     return false;
-  }
-  if (!big_unsigned_sub(q, big_one, t1)) {
+  if (!big_shift(temp1, -1, temp2))
     return false;
-  }
-  if (!big_shift(t1, -1, t2)) {
+  if (!big_mod_exp(a, temp2, p, x))
     return false;
-  }
-  if (!big_mod_exp(a, t2, p, x)) {
+
+  temp1.zero_num();
+  temp2.zero_num();
+  if (!big_mod_mult(x, x, p, temp1))
     return false;
-  }
-  t1.zero_num();
-  //t2.zero_num();
-  if (!big_mod_mult(x, x, p, t1)) {
+  if (!big_mod_mult(a, temp1, p, b))
     return false;
-  }
-  if (!big_mod_mult(t1, a, p, b)) {
+
+  temp1.zero_num();
+  if (!big_mod_mult(a, x, p, temp1))
     return false;
-  }
-  t1.zero_num();
-  if (!big_mod_mult(x, a, p, t1)) {
-    return false;
-  }
-  if (!t1.copy_to(x))
-    return false;
+  x.zero_num();
+  x.copy_from(temp1);
+
   for (;;) {
-    if (big_compare(big_one, b) == 0)
-      break;
-    // at this point ab= x^2, y^(2^(r-1))= -1 (mod p), b^(2^(r-1)) =1
-
-    // find smallest m: b^(2^m)= 1 (mod p) --- note m<r
-    m = smallest_unitary_exponent(b, p, max_two_power);
-
-    // t=y^(2^(r-m-1)) (mod p)
-    if (!big_shift(big_one, max_two_power - m - 1, e)) {
-      return false;
+    // Now: ab = x^2, y^(2^(r-1)) = -1, b^(2^(r-1))= 1
+    if (big_compare(big_one, b) == 0) {
+      if (!s.copy_from(x))
+        return false;
+      return true;
     }
-    if (!big_mod_exp(y, e, p, t)) {
+
+    // find smallest m: b^(2^m)= 1 (mod p) --- if m==r, no sqrt
+    m = smallest_unitary_exponent(b, p, e);
+    if (m == r)
       return false;
-    }
+
+    // t= y^(2^(r-m-1)), y= t^2 (mod p), r=m
+    //   x= xt (mod p), b=by (mod p)
+    temp1.zero_num();
+    temp1.copy_from(big_one);
+    if (!big_shift(temp1, r - m - 1, temp2))
+      return false;
+    if (!big_mod_exp(y, temp2, p, t))
+      return false;
     y.zero_num();
-
-    // y= t^2
-    if (!big_mod_mult(t, t, p, y)) {
+    if (!big_mod_mult(t, t, p, y))
       return false;
-    }
-
-    // r= m; x=xt; b=by;
-    max_two_power = m;
-    t1.zero_num();
-    if (!big_mod_mult(x, t, p, t1)) {
+    r= m;
+    temp1.zero_num();
+    if (!big_mod_mult(x, t, p, temp1))
       return false;
-    }
-    if(!t1.copy_to(x))
+    x.zero_num();
+    x.copy_from(temp1);
+    temp1.zero_num();
+    if (!big_mod_mult(b, y, p, temp1))
       return false;
-    t1.zero_num();
-    if (!big_mod_mult(y, b, p, t1)) {
-      return false;
-    }
-    if(!t1.copy_to(b))
-      return false;
-    if ((big_compare(y, big_one) == 0) && (big_compare(t, big_one) == 0))
-      return false;
+    b.zero_num();
+    b.copy_from(temp1);
   }
-  if (!s.copy_from(x))
-    return false;
   return true;
 }
 

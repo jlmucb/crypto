@@ -1131,7 +1131,6 @@ bool basic_number_theory_test1() {
     return false;
   }
 
-#if 1
   uint64_t test_prime_digits[4] = {
     0xffffffffffffffffULL,
     0x00000000ffffffffULL,
@@ -1150,6 +1149,96 @@ bool basic_number_theory_test1() {
   for (int i = 0; i < 4; i++)
     test_prime.value_ptr()[i] = test_prime_digits[i];
   test_prime.normalize();
+
+  if (big_mod_is_square(big_two, test_prime)) {
+    if (FLAGS_print_all) {
+      big_two.print();
+      printf(" is a square (mod ");
+      test_prime.print();
+      printf(")\n");
+    }
+  } else {
+    if (FLAGS_print_all) {
+      big_two.print();
+      printf(" is NOT a square (mod ");
+      test_prime.print();
+      printf(") [WRONG]\n");
+    }
+    return false;
+  }
+
+  big_num test_power_of_2(1, 1ULL<<5);
+  int pow2 = big_max_power_of_two_dividing(test_power_of_2);
+  if (FLAGS_print_all) {
+    printf("%d is the biggest power of 2 dividing ", pow2);
+    test_power_of_2.print();
+    printf(" \n");
+  }
+  if (pow2 != 5)
+    return false;
+
+  big_num q(2);
+  if (!big_shift(test_power_of_2, -pow2, q)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    test_power_of_2.print() ;
+    printf(">> %d = ", pow2);
+    q.print();
+    printf(" \n");
+  }
+
+  n.zero_num();
+  n.value_[0] = 2ULL;
+  n.normalize();
+  big_num small_p(1, 7);
+  big_num small_n(1, 1);
+  for(int i = 0; i < 6; i++) {
+    if (big_mod_is_square(small_n, small_p)) {
+      small_n.print(); 
+      printf( "is a quadratic residue (mod ");
+      small_p.print(); 
+      printf(")\n");
+    } else {
+      small_n.print(); 
+      printf( "is not a quadratic residue (mod ");
+      small_p.print(); 
+      printf(")\n");
+    }
+    if (!big_unsigned_add_to(small_n, big_one))
+      return false;
+  }
+
+
+  // find quadratic non-residue, n
+  n.zero_num();
+  n.value_[0] = 2ULL;
+  n.normalize();
+
+  big_num large_a(10);
+  big_num large_t(10);
+  large_a.value_ptr()[2]= 0xffffff66ff22bb;
+  large_a.value_ptr()[1]= 0x026662;
+  large_a.value_ptr()[0]= 0xababefefefefffff;
+  large_a.normalize();
+
+  while (big_mod_is_square(n, test_prime)) {
+    if (!big_mod_add(n, large_a, test_prime, large_t))
+      return false;
+    n.print(); printf("\n");
+    n.copy_from(large_t);
+    large_t.zero_num();
+  }
+  if (FLAGS_print_all) {
+    n.print() ;
+    printf(" is quadratic non-residue (mod ");
+    test_prime.print() ;
+    printf(") \n");
+  }
+
+  // int m = smallest_unitary_exponent(b, p, e);
+
+#if 0
   big_num test_square(6);
   for (int i = 0; i < 3; i++)
     test_square.value_ptr()[i] = test_square_digits[i];
