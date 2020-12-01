@@ -1038,7 +1038,7 @@ bool basic_number_theory_test1() {
   r.zero_num();
   p.normalize();
   n.normalize();
-  if (!big_mod_square_root(n, p, r))
+  if (!big_mod_square_root(n, p, big_zero, r))
     return false;
   if (FLAGS_print_all)  {
     printf("sqrt (");
@@ -1053,7 +1053,7 @@ bool basic_number_theory_test1() {
     return false;
 
   s.zero_num();
-  if (!big_mod_tonelli_shanks(n, p, s))
+  if (!big_mod_tonelli_shanks(n, p, big_zero, s))
     return false;
   if (FLAGS_print_all)  {
     printf("tonelli-shanks sqrt (");
@@ -1069,7 +1069,7 @@ bool basic_number_theory_test1() {
 
   s.zero_num();
   n.value_ptr()[0]= 16;
-  if (!big_mod_tonelli_shanks(n, p, s))
+  if (!big_mod_tonelli_shanks(n, p, big_zero, s))
     return false;
   if (FLAGS_print_all)  {
     printf("tonelli-shanks sqrt (");
@@ -1209,35 +1209,44 @@ bool basic_number_theory_test1() {
       return false;
   }
 
+  // 0000000000000001 00ffff666621ddbb 000000000268c90e 579bdfdfdfefff01 is a nr
+  uint64_t p256_non_residue_digits[4] = {
+    0x579bdfdfdfefff01ULL,
+    0x000000000268c90eULL,
+    0x00ffff666621ddbbULL, 
+    0x0000000000000001ULL, 
+  };
+  big_num nr(4);  
+  for (int i = 0; i < 4; i++)
+    nr.value_[i]= p256_non_residue_digits[i];
+  nr.normalize();
 
-  // find quadratic non-residue, n
-  n.zero_num();
-  n.value_[0] = 2ULL;
-  n.normalize();
-
-  big_num large_a(10);
-  big_num large_t(10);
-  large_a.value_ptr()[2]= 0xffffff66ff22bb;
-  large_a.value_ptr()[1]= 0x026662;
-  large_a.value_ptr()[0]= 0xababefefefefffff;
-  large_a.normalize();
-
-  while (big_mod_is_square(n, test_prime)) {
-    if (!big_mod_add(n, large_a, test_prime, large_t))
-      return false;
-    n.print(); printf("\n");
-    n.copy_from(large_t);
-    large_t.zero_num();
-  }
-  if (FLAGS_print_all) {
-    n.print() ;
-    printf(" is quadratic non-residue (mod ");
-    test_prime.print() ;
-    printf(") \n");
+  if (!big_mod_is_square(nr, test_prime)) {
+    if (FLAGS_print_all) {
+      nr.print(); printf(" is a non-residue mod ");
+      test_prime.print(); printf("\n");
+    }
+  } else {
+    if (FLAGS_print_all) {
+      nr.print(); printf(" is a residue mod ");
+      test_prime.print(); printf("\n");
+    }
+    return false;
   }
 
-  // int m = smallest_unitary_exponent(b, p, e);
-
+  if (big_mod_is_square(big_two, test_prime)) {
+    if (FLAGS_print_all) {
+      big_two.print(); printf(" is a residue mod ");
+      test_prime.print(); printf("\n");
+    }
+  } else {
+    if (FLAGS_print_all) {
+      big_two.print(); printf(" is a non-residue mod ");
+      test_prime.print(); printf("\n");
+    }
+    return false;
+  }
+  
 #if 0
   big_num test_square(6);
   for (int i = 0; i < 3; i++)
@@ -1263,8 +1272,8 @@ bool basic_number_theory_test1() {
     } else {
       printf("Is a square\n");
     }
-    if (!big_mod_tonelli_shanks(test_square, test_prime, test_square_root)) {
-    //if (!big_mod_square_root(test_square, test_prime, test_square_root)) {
+    if (!big_mod_tonelli_shanks(test_square, test_prime, big_zero, test_square_root)) {
+    //if (!big_mod_square_root(test_square, test_prime, big_zero, test_square_root)) {
       printf("Cant find square\n");
       big_unsigned_add_to(test_square, big_four);
       test_square.normalize();

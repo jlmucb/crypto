@@ -498,7 +498,8 @@ int smallest_unitary_exponent(big_num& b, big_num& p, int maxm) {
 }
 
 // p is odd
-bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& s) {
+// if nr != 0, use it as the non residue
+bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& nr, big_num& s) {
   big_num t1(2 * p.size_ + 1);
   big_num t2(2 * p.size_ + 1);
 
@@ -521,11 +522,19 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& s) {
     return false;
 
   // find quadratic non-residue, n
-  n.value_[0] = 2ULL;
-  n.normalize();
-  while (big_mod_is_square(n, p)) {
-    if (!big_unsigned_add_to(n, big_one))
-      return false;
+  if (big_compare(nr, big_zero) != 0) {
+    n.copy_from(nr);
+  } else {
+    for(;;) {
+      int k = crypto_get_random_bytes(p.size_ * sizeof(uint64_t), (byte*)n.value_);
+      if (k < 0)
+        return false;
+      n.normalize();
+      if (!big_mod_normalize(n, p))
+        return false;
+      if (!big_mod_is_square(n, p))
+        break;
+    }
   }
 
   // z= n^q (mod p)
@@ -621,12 +630,13 @@ bool check_square_root(big_num& square_root, big_num& square, big_num& p) {
 //    if(b==1) x= a^((p+3)/8) (mod p)
 //    otherwise, x= (2a)(4a)^((p-5)/8)
 //  in all other cases, apply Tonneli-Shanks
-bool big_mod_square_root(big_num& n, big_num& p, big_num& r) {
+// if nr != 0, use it as the non residue
+bool big_mod_square_root(big_num& n, big_num& p, big_num& nr, big_num& r) {
   uint64_t bot = p.value_[0] & 0x7;
   big_num p_temp(1 + 2 * p.size_);
 
   if (bot == 1) {
-    return big_mod_tonelli_shanks(n, p, r);
+    return big_mod_tonelli_shanks(n, p, nr, r);
   }
 
   big_num t1(1 + 2 * p.size_);
