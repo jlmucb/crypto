@@ -435,8 +435,8 @@ bool big_is_prime(big_num& n) {
 }
 
 bool big_mod_is_square(big_num& n, big_num& p) {
-  big_num p_minus_1(n.size());
-  big_num e(n.size());
+  big_num p_minus_1(p.size());
+  big_num e(p.size());
   int m = (n.capacity() > p.capacity()) ? n.capacity() : p.capacity();
   big_num residue(4 * m + 1);
   uint64_t unused;
@@ -568,10 +568,7 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& nr, big_num& s) {
   x.zero_num();
   x.copy_from(temp1);
 
-//printf("b: "); b.print(); printf("\n");
-//printf("x: "); x.print(); printf("\n");
   for (;;) {
-//printf("compare : "); big_one.print(); printf(", "); b.print(); printf("\n");
     // Now: ab = x^2, y^(2^(r-1)) = -1, b^(2^(r-1))= 1
     if (big_compare(big_one, b) == 0) {
       if (!s.copy_from(x))

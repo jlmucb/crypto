@@ -1255,7 +1255,6 @@ bool basic_number_theory_test1() {
       w.print(); printf(" is a non-residue mod ");
       test_prime.print(); printf("\n");
     }
-    return false;
   }
 
   big_num test_square_root(9);
