@@ -429,15 +429,18 @@ int digit_array_add_to(int capacity_a, int size_a, uint64_t* a, int size_b,
   int real_size_a = digit_array_real_size(size_a, a);
   int real_size_b = digit_array_real_size(size_b, b);
 
-  uint64_t c[capacity_a];
+  int c_size = capacity_a + 1;
+  uint64_t c[c_size];
 
   digit_array_zero_num(capacity_a, c);
-  int i = digit_array_add(real_size_a, a, real_size_b, b, capacity_a, c);
+  int i = digit_array_add(real_size_a, a, real_size_b, b, c_size, c);
   if (i < 0) {
     printf("digit_array_add fails in add_to; cap_a: %d, real_siaze_a: %d, real_size_b: %d\n",
              capacity_a, real_size_a, real_size_b);
     return -1;
   }
+  if (i > capacity_a)
+    return -1;
   if (!digit_array_copy(capacity_a, c, capacity_a, a))
     return -1;
   return i;
