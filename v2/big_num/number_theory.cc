@@ -158,8 +158,12 @@ bool big_mod_normalize(big_num& a, big_num& m) {
   t1.zero_num();
   t2.zero_num();
   if (big_compare(a, m) >= 0) {
-    if (!big_unsigned_euclid(a, m, t1, t2))
+    if (!big_unsigned_euclid(a, m, t1, t2)) {
+      printf("big_unsigned_euclid fails\n");
+      printf("    a: ");a.print();printf("\n");
+      printf("    m: ");m.print();printf("\n");
       return false;
+    }
     t2.normalize();
     a.zero_num();
     a.copy_from(t2);
@@ -329,9 +333,6 @@ bool big_mod_exp(big_num& a, big_num& e, big_num& m, big_num& r) {
   if (ret) {
     r.copy_from(*accum[accum_current]);
     ret = big_mod_normalize(r, m);
-#if 0
-    check_big_mod_mult(*accum[accum_current], m, r);
-#endif
   }
 
 done:
@@ -501,18 +502,18 @@ int smallest_unitary_exponent(big_num& b, big_num& p, int maxm) {
 // p is odd
 // if nr != 0, use it as the non residue
 bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& nr, big_num& s) {
-  big_num t1(2 * p.size_ + 1);
-  big_num t2(2 * p.size_ + 1);
+  big_num t1(2 * p.size_ + 2);
+  big_num t2(2 * p.size_ + 2);
 
-  big_num p_minus(p.size_ + 1);
-  big_num q(p.size_ + 1);
+  big_num p_minus(p.size_ + 2);
+  big_num q(p.size_ + 2);
   int m;
-  big_num n(p.size_ + 1);  // non-residue
-  big_num x(2 * p.size_ + 1);
-  big_num y(2 * p.size_ + 1);
-  big_num z(2 * p.size_ + 1);
-  big_num b(2 * p.size_ + 1);
-  big_num t(2 * p.size_ + 1);
+  big_num n(p.size_ + 2);  // non-residue
+  big_num x(2 * p.size_ + 2);
+  big_num y(2 * p.size_ + 2);
+  big_num z(2 * p.size_ + 2);
+  big_num b(2 * p.size_ + 2);
+  big_num t(2 * p.size_ + 2);
 
   // Compute e, q: p-1 = (2^e)q, with q odd
   if (!big_unsigned_sub(p, big_one, p_minus))
@@ -539,8 +540,13 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& nr, big_num& s) {
   }
 
   // z= n^q (mod p)
-  if (!big_mod_exp(n, q, p, z))
+  if (!big_mod_exp(n, q, p, z)) {
+    printf("big_mod_exp fails\n");
+    printf("    n: "); n.print(); printf("\n");
+    printf("    e: "); q.print(); printf("\n");
+    printf("    p: "); p.print(); printf("\n");
     return false;
+  }
 
   big_num temp1(2 * p.size_ + 1);
   big_num temp2(2 * p.size_ + 1);
