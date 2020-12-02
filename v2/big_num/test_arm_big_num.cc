@@ -586,6 +586,55 @@ bool test_multi_euclid() {
   if (digit_array_compare(size_op3, op3, size_op8, op8) != 0)
     return false;
 
+  // big_unsigned_euclid fails
+  //  a: fffffffe00000000 fffffffffffffffe 0000000200000000 00000001fffffffe 
+  //     ffffffffffffffff fffffffe00000000 0000000000000001 
+  //  m: ffffffff00000001 0000000000000000 00000000ffffffff ffffffffffffffff 
+#if 0
+  int size_op5 = 10;
+  uint64_t op5[size_op5];
+  int size_op6 = 10;
+  uint64_t op6[size_op6];
+  int size_op7 = 10;
+  uint64_t op7[size_op7];
+  int size_op8 = 10;
+  uint64_t op8[size_op8];
+
+  digit_array_zero_num(size_op5, op5);
+  digit_array_zero_num(size_op6, op6);
+  digit_array_zero_num(size_op7, op7);
+  digit_array_zero_num(size_op8, op8);
+
+  digit_array_print(size_op3, op3);
+  printf(" / ");
+  digit_array_print(size_op4, op4);
+  printf("\n");
+  size_q = size_op5;
+  size_r = size_op6;
+  if (!digit_array_division_algorithm(size_op3, op3, size_op4, op4,
+        &size_q, op5, &size_r, op6))
+    return false;
+  digit_array_print(size_op3, op3);
+  printf(" / ");
+  digit_array_print(size_op4, op4);
+  printf(" = ");
+  digit_array_print(size_q, op5);
+  printf(", rem: ");
+  digit_array_print(size_r, op6);
+  printf("\n");
+
+  int size_s = digit_array_mult(size_q, op5, size_op4, op4, size_op7, op7);
+  int size_u = digit_array_add(size_s, op7, size_r, op6, size_op8, op8);
+  digit_array_print(size_q, op5);
+  printf(" * ");
+  digit_array_print(size_op4, op4);
+  printf(" + ");
+  digit_array_print(size_r, op6);
+  printf(" = ");
+  digit_array_print(size_u, op8);
+  printf("\n");
+#endif
+
   return true;
 }
 
