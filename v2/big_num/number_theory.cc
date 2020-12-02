@@ -134,7 +134,7 @@ bool big_mod_normalize(big_num& a, big_num& m) {
   if (!a.sign_ && big_compare(a, m) < 0)
     return true;
 
-  int n = a.capacity() > m.capacity() ? a.capacity() : m.capacity();
+  int n = a.size() > m.size() ? a.size() : m.size();
   big_num t1(1 + 2 * n);
   big_num t2(1 + 2 * n);
 
@@ -155,6 +155,8 @@ bool big_mod_normalize(big_num& a, big_num& m) {
   if (a.sign_)
     return false;
 
+  t1.zero_num();
+  t2.zero_num();
   if (big_compare(a, m) >= 0) {
     if (!big_unsigned_euclid(a, m, t1, t2))
       return false;
@@ -437,20 +439,18 @@ bool big_is_prime(big_num& n) {
 bool big_mod_is_square(big_num& n, big_num& p) {
   big_num p_minus_1(p.size());
   big_num e(p.size());
-  int m = (n.capacity() > p.capacity()) ? n.capacity() : p.capacity();
+  int m = (n.size() > p.size()) ? n.size() : p.size();
   big_num residue(4 * m + 1);
   uint64_t unused;
-  int size_e;
+  int size_e= e.capacity();
 
   big_sub(p, big_one, p_minus_1);
-  size_e = digit_array_real_size(p_minus_1.size_, p_minus_1.value_);
   int k = digit_array_short_division_algorithm(p_minus_1.size_, p_minus_1.value_,
                                            2ULL, &size_e, e.value_, &unused);
-  e.size_ = size_e;
   if (k < 0) {
     return false;
   }
-  e.size_ = digit_array_real_size(e.size_, e.value_);
+  e.normalize();
   if (!big_mod_exp(n, e, p, residue)) {
     return false;
   }
@@ -504,11 +504,10 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& nr, big_num& s) {
   big_num t1(2 * p.size_ + 1);
   big_num t2(2 * p.size_ + 1);
 
-  big_num p_minus(p.size_);
-  big_num q(p.size_);
+  big_num p_minus(p.size_ + 1);
+  big_num q(p.size_ + 1);
   int m;
-
-  big_num n(p.size_);  // non-residue
+  big_num n(p.size_ + 1);  // non-residue
   big_num x(2 * p.size_ + 1);
   big_num y(2 * p.size_ + 1);
   big_num z(2 * p.size_ + 1);
@@ -527,6 +526,7 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& nr, big_num& s) {
     n.copy_from(nr);
   } else {
     for(;;) {
+      n.zero_num();
       int k = crypto_get_random_bytes(p.size_ * sizeof(uint64_t), (byte*)n.value_);
       if (k < 0)
         return false;
