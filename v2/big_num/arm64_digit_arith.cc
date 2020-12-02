@@ -309,10 +309,6 @@ void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem
   uint64_t q_est= n_hi / c_hi;
   uint64_t a_t, b_t;
 
-  //printf("divide128x64 s: %d, l: %d, c_hi: %016lx, n_hi:n_lo = %016lx:%016lx\n",
-  //        s, l, c_hi, n_hi, n_lo);
-  //printf("divide128x64, q_est: %016lx = %016lx / %016lx\n", q_est, n_hi, c_hi);
-
   while(too_big(a, b, c, q_est<<32))
     q_est--;
   *q= q_est << 32;
@@ -458,8 +454,7 @@ int digit_array_sub_from(int capacity_a, int size_a, uint64_t* a, int size_b,
 
   uint64_t c[capacity_a];
   digit_array_zero_num(capacity_a, c);
-  int i = digit_array_sub(capacity_a, a, real_size_b, b,
-      capacity_a, c);
+  int i = digit_array_sub(capacity_a, a, real_size_b, b, capacity_a, c);
   if (i < 0) {
     printf("digit_array_sub fails cap_a: %d, real_size_b: %d\n", capacity_a, real_size_b);
     return -1;
@@ -488,20 +483,14 @@ int digit_array_mult(int size_a, uint64_t* a, int size_b, uint64_t* b,
   for (i = 0; i < real_size_a; i++) {
     mult_carry = 0ULL;
     for (j = 0; j < real_size_b; j++) {
-  //printf("a[%d]: %016lx, b[%d]: %016lx, mult_carry: %016lx, result[%d](in): %016lx\n", 
-          //i, a[i], j, b[j], mult_carry, i+j, result[i+j]);
       u64_product_step(a[i], b[j], mult_carry, result[i+j], &result[i+j], &carry_out);
-  //printf("result[%d](out): %016lx, new carry: %016lx\n", i+j, result[i+j], carry_out);
       mult_carry= carry_out;
     }
 
     k= i + j;
-  //printf("end arg k: %d size_result: %d carry: %016lx\n", k, size_result, mult_carry);
     for(; (k < size_result) && (mult_carry != 0ULL); k++) {
-  //printf("result[%d](in): %016lx, mult_carry_: %016lx, ", k, result[k], mult_carry);
       u64_add_with_carry_step(result[k], mult_carry, 0ULL,
         &result[k], &carry_out);
-  //printf("result[%d](out): %016lx, mult_carry_: %016lx\n", k, result[k], carry_out);
       mult_carry = carry_out;
     }
   }
