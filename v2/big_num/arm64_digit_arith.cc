@@ -591,6 +591,7 @@ bool digit_array_division_algorithm(int size_a, uint64_t* a, int size_b,
 
   if (real_size_b == 1) {
     if (b[0] == 0ULL) {
+      printf("digit_array_division_algorithm, zero divid \n");
       return false;
     }
     return digit_array_short_division_algorithm(real_size_a, a, b[0],
@@ -607,6 +608,7 @@ bool digit_array_division_algorithm(int size_a, uint64_t* a, int size_b,
   digit_array_zero_num(*size_q, q);
   digit_array_zero_num(*size_r, r);
   if (!digit_array_copy(size_a, a, *size_r, r)) {
+    printf("digit_array_division_algorithm remainder size is too small\n");
     return false;
   }
 
