@@ -16,7 +16,7 @@
 #include <big_num.h>
 #include <big_num_functions.h>
 
-#if 0
+#if 1
 // remove this when we compile cryptsupport
 void reverse_bytes_in_place(int size, byte* b) {
   byte t;
@@ -653,8 +653,8 @@ bool test_multi_euclid() {
   int size_op30 = 10;
   uint64_t op30[size_op30];
 
-  int size_s = digit_array_mult(size_q, op27, size_op26, op26, size_op29, op29);
-  int size_u = digit_array_add(size_s, op29, size_r, op28, size_30, op30);
+  size_s = digit_array_mult(size_q, op27, size_op26, op26, size_op29, op29);
+  size_u = digit_array_add(size_s, op29, size_r, op28, size_op30, op30);
   digit_array_print(size_q, op27);
   printf(" * ");
   digit_array_print(size_op26, op26);
@@ -663,7 +663,7 @@ bool test_multi_euclid() {
   printf(" = ");
   digit_array_print(size_u, op30);
   printf("\n");
-  if (digit_array_compare(real_size_op25, op25, size_u, op30) != 0)) {
+  if (digit_array_compare(real_size_op25, op25, size_u, op30) != 0) {
     printf("Failed\n");
     return false;
   }

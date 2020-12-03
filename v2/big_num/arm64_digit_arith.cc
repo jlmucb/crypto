@@ -591,7 +591,7 @@ bool digit_array_division_algorithm(int size_a, uint64_t* a, int size_b,
 
   if (real_size_b == 1) {
     if (b[0] == 0ULL) {
-      printf("digit_array_division_algorithm, zero divid \n");
+      printf("digit_array_division_algorithm, zero divide\n");
       return false;
     }
     return digit_array_short_division_algorithm(real_size_a, a, b[0],
