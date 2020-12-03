@@ -583,6 +583,7 @@ bool test_multi_euclid() {
   printf(" = ");
   digit_array_print(size_u, op8);
   printf("\n");
+  printf("\n");
   if (digit_array_compare(size_op3, op3, size_op8, op8) != 0)
     return false;
 
@@ -598,6 +599,10 @@ bool test_multi_euclid() {
   uint64_t op27[size_op27];
   int size_op28 = 10;
   uint64_t op28[size_op28];
+  int size_op29 = 10;
+  uint64_t op29[size_op29];
+  int size_op30 = 10;
+  uint64_t op30[size_op30];
 
   uint64_t num_digits[7] = {
     0x1ULL,
@@ -615,15 +620,17 @@ bool test_multi_euclid() {
     0xffffffff00000001ULL,
   };
 
-  for (int i = 0; i < 7; i++)
-    op25[i] = num_digits[i];
-  for (int i = 0; i < 4; i++)
-    op26[i] = num_digits[i];
-
   digit_array_zero_num(size_op25, op25);
   digit_array_zero_num(size_op26, op26);
   digit_array_zero_num(size_op27, op27);
   digit_array_zero_num(size_op28, op28);
+  digit_array_zero_num(size_op29, op29);
+  digit_array_zero_num(size_op30, op30);
+
+  for (int i = 0; i < 7; i++)
+    op25[i] = num_digits[i];
+  for (int i = 0; i < 4; i++)
+    op26[i] = num_digits[i];
 
   int real_size_op25 = digit_array_real_size(size_op25, op25);
   int real_size_op26 = digit_array_real_size(size_op26, op26);
@@ -647,11 +654,7 @@ bool test_multi_euclid() {
   printf(", rem: ");
   digit_array_print(size_r, op28);
   printf("\n");
-
-  int size_op29 = 10;
-  uint64_t op29[size_op29];
-  int size_op30 = 10;
-  uint64_t op30[size_op30];
+  printf("\n");
 
   size_s = digit_array_mult(size_q, op27, size_op26, op26, size_op29, op29);
   size_u = digit_array_add(size_s, op29, size_r, op28, size_op30, op30);
@@ -662,6 +665,7 @@ bool test_multi_euclid() {
   digit_array_print(size_r, op28);
   printf(" = ");
   digit_array_print(size_u, op30);
+  printf("\n");
   printf("\n");
   if (digit_array_compare(real_size_op25, op25, size_u, op30) != 0) {
     printf("Failed\n");
