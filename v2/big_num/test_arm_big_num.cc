@@ -16,7 +16,7 @@
 #include <big_num.h>
 #include <big_num_functions.h>
 
-#if 1
+#if 0
 // remove this when we compile cryptsupport
 void reverse_bytes_in_place(int size, byte* b) {
   byte t;
@@ -586,54 +586,87 @@ bool test_multi_euclid() {
   if (digit_array_compare(size_op3, op3, size_op8, op8) != 0)
     return false;
 
-  // big_unsigned_euclid fails
+  // Error case
   //  a: fffffffe00000000 fffffffffffffffe 0000000200000000 00000001fffffffe 
   //     ffffffffffffffff fffffffe00000000 0000000000000001 
   //  m: ffffffff00000001 0000000000000000 00000000ffffffff ffffffffffffffff 
-#if 0
-  int size_op5 = 10;
-  uint64_t op5[size_op5];
-  int size_op6 = 10;
-  uint64_t op6[size_op6];
-  int size_op7 = 10;
-  uint64_t op7[size_op7];
-  int size_op8 = 10;
-  uint64_t op8[size_op8];
+  int size_op25 = 10;
+  uint64_t op25[size_op25];
+  int size_op26 = 10;
+  uint64_t op26[size_op26];
+  int size_op27 = 10;
+  uint64_t op27[size_op27];
+  int size_op28 = 10;
+  uint64_t op28[size_op28];
 
-  digit_array_zero_num(size_op5, op5);
-  digit_array_zero_num(size_op6, op6);
-  digit_array_zero_num(size_op7, op7);
-  digit_array_zero_num(size_op8, op8);
+  uint64_t num_digits[7] = {
+    0x1ULL,
+    0xfffffffe00000000ULL,
+    0xffffffffffffffffULL,
+    0x00000001fffffffeULL,
+    0x0000000200000000ULL,
+    0xfffffffffffffffeULL,
+    0xfffffffe00000000ULL,
+  };
+  uint64_t den_digits[4] = {
+    0xffffffffffffffffULL,
+    0x00000000ffffffffULL,
+    0x0ULL,
+    0xffffffff00000001ULL,
+  };
 
-  digit_array_print(size_op3, op3);
+  for (int i = 0; i < 7; i++)
+    op25[i] = num_digits[i];
+  for (int i = 0; i < 4; i++)
+    op26[i] = num_digits[i];
+
+  digit_array_zero_num(size_op25, op25);
+  digit_array_zero_num(size_op26, op26);
+  digit_array_zero_num(size_op27, op27);
+  digit_array_zero_num(size_op28, op28);
+
+  int real_size_op25 = digit_array_real_size(size_op25, op25);
+  int real_size_op26 = digit_array_real_size(size_op26, op26);
+
+  digit_array_print(size_op25, op25);
   printf(" / ");
-  digit_array_print(size_op4, op4);
+  digit_array_print(size_op26, op4);
   printf("\n");
-  size_q = size_op5;
-  size_r = size_op6;
-  if (!digit_array_division_algorithm(size_op3, op3, size_op4, op4,
-        &size_q, op5, &size_r, op6))
+  size_q = size_op27;
+  size_r = size_op28;
+  if (!digit_array_division_algorithm(real_size_op25, op25, real_size_op26, op26,
+        &size_q, op27, &size_r, op28)) {
+    printf("digit_array_division_algorithm fails\n");
     return false;
-  digit_array_print(size_op3, op3);
+  }
+  digit_array_print(size_op25, op25);
   printf(" / ");
-  digit_array_print(size_op4, op4);
+  digit_array_print(size_op26, op26);
   printf(" = ");
-  digit_array_print(size_q, op5);
+  digit_array_print(size_q, op27);
   printf(", rem: ");
-  digit_array_print(size_r, op6);
+  digit_array_print(size_r, op28);
   printf("\n");
 
-  int size_s = digit_array_mult(size_q, op5, size_op4, op4, size_op7, op7);
-  int size_u = digit_array_add(size_s, op7, size_r, op6, size_op8, op8);
-  digit_array_print(size_q, op5);
+  int size_op29 = 10;
+  uint64_t op29[size_op29];
+  int size_op30 = 10;
+  uint64_t op30[size_op30];
+
+  int size_s = digit_array_mult(size_q, op27, size_op26, op26, size_op29, op29);
+  int size_u = digit_array_add(size_s, op29, size_r, op28, size_30, op30);
+  digit_array_print(size_q, op27);
   printf(" * ");
-  digit_array_print(size_op4, op4);
+  digit_array_print(size_op26, op26);
   printf(" + ");
-  digit_array_print(size_r, op6);
+  digit_array_print(size_r, op28);
   printf(" = ");
-  digit_array_print(size_u, op8);
+  digit_array_print(size_u, op30);
   printf("\n");
-#endif
+  if (digit_array_compare(real_size_op25, op25, size_u, op30) != 0)) {
+    printf("Failed\n");
+    return false;
+  }
 
   return true;
 }
