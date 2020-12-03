@@ -137,7 +137,7 @@ bool big_unsigned_euclid(big_num& a, big_num& b, big_num& q, big_num& r) {
   }
   q.normalize();
   r.normalize();
-  if (r.size_ > b.size_) {
+  if (r.capacity_ < b.size_) {
     r.zero_num();
     return false;
   }

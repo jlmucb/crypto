@@ -1038,8 +1038,12 @@ bool basic_number_theory_test1() {
   r.zero_num();
   p.normalize();
   n.normalize();
-  if (!big_mod_square_root(n, p, big_zero, r))
+  if (!big_mod_square_root(n, p, big_zero, r)) {
+    printf("big_mod_square_root fails in test\n");
+    printf("n: "); n.print(); printf("\n");
+    printf("p: "); p.print(); printf("\n");
     return false;
+  }
   if (FLAGS_print_all)  {
     printf("sqrt (");
     n.print();
@@ -1206,7 +1210,6 @@ bool basic_number_theory_test1() {
       return false;
   }
 
-  // 0000000000000001 00ffff666621ddbb 000000000268c90e 579bdfdfdfefff01 is a nr
   uint64_t p256_non_residue_digits[4] = {
     0x579bdfdfdfefff01ULL,
     0x000000000268c90eULL,
