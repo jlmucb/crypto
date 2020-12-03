@@ -135,8 +135,8 @@ bool big_unsigned_euclid(big_num& a, big_num& b, big_num& q, big_num& r) {
                   &size_q, q.value_, &size_r, r.value_)) {
     return false;
   }
-  q.size_ = digit_array_real_size(size_q, q.value_);
-  r.size_ = digit_array_real_size(size_r, r.value_);
+  q.normalize();
+  r.normalize();
   if (r.size_ > b.size_) {
     r.zero_num();
     return false;
