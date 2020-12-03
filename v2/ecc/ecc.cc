@@ -17,7 +17,7 @@
 #include "ecc.h"
 #include "ecc_curve_data.h"
 
-#define FASTECCMULT
+//#define FASTECCMULT
 
 curve_point::curve_point() {
   x_ = nullptr;
@@ -1447,32 +1447,35 @@ bool ecc::encrypt(int size, byte* plain, big_num& k, curve_point& pt1,
   if (!ecc_add(*c_, r_pt, p_pt, pt2)) {
     return false;
   }
-#if 1
+
   if(!ecc_is_on_curve(*c_, pt1)) {
     pt1.print();
     printf(" is not on curve (encrypt)\n");
+    return false;
   }
   if(!ecc_is_on_curve(*c_, pt2)) {
     pt2.print();
     printf(" is not on curve (encrypt)\n");
+    return false;
   }
-#endif
+
   return true;
 }
 
 bool ecc::decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain) {
   if (c_ == nullptr)
     return false;
-#if 1
+
   if(!ecc_is_on_curve(*c_, pt1)) {
     pt1.print();
-    printf("not on curve (decrypt)\n");
+    printf("is not on curve (decrypt)\n");
+    return false;
   }
   if(!ecc_is_on_curve(*c_, pt2)) {
     pt2.print();
-    printf("not on curve (decrypt)\n");
+    printf("is not on curve (decrypt)\n");
+    return false;
   }
-#endif
 
   big_num m(c_->curve_p_->capacity_);
   curve_point p_pt(2 * c_->curve_p_->capacity_);

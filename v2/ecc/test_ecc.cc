@@ -312,7 +312,9 @@ bool test_ecc_encrypt_decrypt() {
   memset(cipher_out, 0, 64);
   memset(recovered, 0, 64);
 
-  printf("encrypt/decrypt test\n");
+  if (FLAGS_print_all) {
+    printf("encrypt/decrypt test\n");
+  }
 
   if (!init_ecc_curves())
     return false;
@@ -321,8 +323,32 @@ bool test_ecc_encrypt_decrypt() {
   if (!key.generate_ecc_from_standard_template("P-256", "test_key-20",
               "anything", seconds_in_common_year))
     return false;
+
   key.print();
-  printf("\n");
+
+  if (key.base_point_ == nullptr) {
+    printf("No base point\n");
+    return false;
+  }
+  if (key.public_point_ == nullptr) {
+    printf("No public point\n");
+    return false;
+  }
+
+  if (key.c_ == nullptr) {
+    printf("empty curve\n");
+    return false;
+  }
+  if (!ecc_is_on_curve(*key.c_, *key.base_point_)) {
+    printf("base point is not on curve\n");
+    return false;
+  } 
+  if (!ecc_is_on_curve(*key.c_, *key.public_point_)) {
+    printf("base point is not on curve\n");
+    return false;
+  } 
+    
+  printf("base and public are on curve\n\n");
 
   int size_in = 6;
   int size_out = 64;

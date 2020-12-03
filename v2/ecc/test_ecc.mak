@@ -22,13 +22,13 @@ ifndef EXE_DIR
 EXE_DIR=$(HOME)/cryptobin
 endif
 #ifndef GOOGLE_INCLUDE
-#GOOGLE_INCLUDE=/usr/local/include/g
+#GOOGLE_INCLUDE=/usr/local/include/google
 #endif
 ifndef LOCAL_LIB
 LOCAL_LIB=/usr/local/lib
 endif
 ifndef TARGET_MACHINE_TYPE
-TARGET_MACHINE_TYPE= x64
+TARGET_MACHINE_TYPE=X64
 endif
 
 S= $(SRC_DIR)/ecc
