@@ -1142,9 +1142,9 @@ bool basic_number_theory_test1() {
     //return false;
   }
   if (FLAGS_print_all)  {
-    printf("proposed prime: (");
+    printf("\nproposed prime: (");
     p.print();
-    printf(")\n");
+    printf(")\n\n");
   }
   if (!big_high_bit(p))
     return false;
@@ -1169,58 +1169,99 @@ bool basic_number_theory_test1() {
     test_prime.value_ptr()[i] = test_prime_digits[i];
   test_prime.normalize();
 
- if (!big_mod_inv(big_two, test_prime, n1))
-   return false;
- if (!big_mod_mult(big_two, n1, test_prime, n2))
-   return false;
- if (big_compare(big_one, n2) == 0) {
-   printf("mod_inv works\n");
- } else {
-   printf("mod_inv does not work\n");
-   return false;
- }
-
- n1.zero_num();
- n2.zero_num();
-
- // 5ab272bb941b862c dc518ef533a8a165 3e234c315354ec8b 1c7b7bbef0ffa638  *
- //    cbbaf79954b50606 4e60635a3d1563c5 (inverse)  =
- //  18fcbe66f8936cf3 fe3ede71adccaa1e d53004f8 7e1440a1 3880ca9bd1ec710b
- //   mod  ffffffff00000001 0000000000000000 00000000ffffffff ffffffffffffffff
- big_num to_invert(5);
- big_num inverted(5);
- uint64_t n_a[4] = {
-  0x5ab272bb941b862cULL,
-  0xdc518ef533a8a165ULL,
-  0x3e234c315354ec8bULL,
-  0x1c7b7bbef0ffa638ULL 
- };
-
- if (!fill_test_number(4, n_a, to_invert)) {
+  if (!big_mod_inv(big_two, test_prime, n1))
     return false;
- }
- if (!big_mod_inv(to_invert, test_prime, inverted))
-   return false;
- printf("to_invert: "); to_invert.print(); printf("\n");
- printf("inverted : "); inverted.print(); printf("\n");
- if (!check_mod_inverse(to_invert, inverted, test_prime)) {
-    big_num r1(4*p.capacity_);
-  if (!big_mod_mult(to_invert, inverted, test_prime, r1))
+  if (!big_mod_mult(big_two, n1, test_prime, n2))
+    return false;
+  if (big_compare(big_one, n2) == 0) {
+    if (FLAGS_print_all) {
+      printf("mod_inv works\n");
+    }
+  } else {
+    printf("mod_inv fails\n");
+    return false;
+  }
+
+  n1.zero_num();
+  n2.zero_num();
+
+  // 5ab272bb941b862c dc518ef533a8a165 3e234c315354ec8b 1c7b7bbef0ffa638  *
+  //    cbbaf79954b50606 4e60635a3d1563c5 (inverse)  =
+  //  18fcbe66f8936cf3 fe3ede71adccaa1e d53004f8 7e1440a1 3880ca9bd1ec710b
+  //   mod  ffffffff00000001 0000000000000000 00000000ffffffff ffffffffffffffff
+ 
+  big_num to_invert(5);
+  big_num inverted(5);
+  uint64_t n_a[4] = {
+    0x5ab272bb941b862cULL,
+    0xdc518ef533a8a165ULL,
+    0x3e234c315354ec8bULL,
+    0x1c7b7bbef0ffa638ULL
+  };
+
+  if (!fill_test_number(4, n_a, to_invert)) {
       return false;
-    printf("should be 1: "); r1.print(); printf("\n");
+  }
+
+  big_num a_c(11);
+  big_num b_c(11);
+  big_num g2(11);
+
+  if (!big_extended_gcd(to_invert, test_prime, a_c, b_c, g2)) {
+    printf("big_extended_gcd failed\n");
     return false;
- }
+  }
+
+  if (FLAGS_print_all) {
+    to_invert.print(); printf(" * ");
+    a_c.print(); printf(" + ");
+    test_prime.print(); printf(" * ");
+    b_c.print(); printf(" = ");
+    g2.print();
+    printf("\n");
+  }
+ 
+  big_num rt1(11);
+  big_num rt2(11);
+  big_num rt3(11);
+
+  big_mult(to_invert, a_c, rt1);
+  big_mult(test_prime, b_c, rt2);
+  big_add(rt1, rt2, rt3);
+  if (FLAGS_print_all) {
+    printf("As calculated: ");
+    rt3.print();
+    printf("\n");
+    printf("\n");
+  }
+
+  if (!big_mod_inv(to_invert, test_prime, inverted))
+    return false;
+  if(FLAGS_print_all) {
+    printf("to_invert: "); to_invert.print(); printf("\n");
+    printf("inverted : "); inverted.print(); printf("\n");
+  }
+  if (!check_mod_inverse(to_invert, inverted, test_prime)) {
+      big_num r1(4*p.capacity_);
+    if (!big_mod_mult(to_invert, inverted, test_prime, r1))
+        return false;
+    if (FLAGS_print_all) {
+      printf("should be 1: "); r1.print(); printf("\n");
+    }
+      return false;
+  }
+  printf("\n");
 
 #if 0
- big_num t1(11);
- big_num t3(11);
- // t1:c77f3421731b1b0a 14db1c035cdd24f0 bbf84bad1a20251a 750572bd4c47c416
- // t3:59e3d9077dc4fb8f 86bc657187d88469 cfa711556d3d7879 5cd85cfae55e3338
- // m: 7746c2f114b0005f 85d85275e4b560f1 48d5836ac9e16104 a2d129d201448a21
- if (!big_mod_div(t3, t1, test_prime, m)) {
-    return false;
- }
-#endif
+  big_num t1(11);
+  big_num t3(11);
+  // t1:c77f3421731b1b0a 14db1c035cdd24f0 bbf84bad1a20251a 750572bd4c47c416
+  // t3:59e3d9077dc4fb8f 86bc657187d88469 cfa711556d3d7879 5cd85cfae55e3338
+  // m: 7746c2f114b0005f 85d85275e4b560f1 48d5836ac9e16104 a2d129d201448a21
+  if (!big_mod_div(t3, t1, test_prime, m)) {
+      return false;
+  }
+  #endif
 
   if (big_mod_is_square(big_two, test_prime)) {
     if (FLAGS_print_all) {
