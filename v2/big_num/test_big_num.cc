@@ -1151,6 +1151,20 @@ bool basic_number_theory_test1() {
     test_prime.value_ptr()[i] = test_prime_digits[i];
   test_prime.normalize();
 
+ if (!big_mod_inv(big_two, test_prime, n1))
+   return false;
+ if (!big_mod_mult(big_two, n1, test_prime, n2))
+   return false;
+ if (big_compare(big_one, n2) == 0) {
+   printf("mod_inv works\n");
+ } else {
+   printf("mod_inv does not work\n");
+   return false;
+ }
+
+ n1.zero_num();
+ n2.zero_num();
+
   if (big_mod_is_square(big_two, test_prime)) {
     if (FLAGS_print_all) {
       big_two.print();
