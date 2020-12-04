@@ -24,6 +24,10 @@
 #include "ecc_curve_data.h"
 
 
+bool check_big_mod_prod(big_num& a, big_num& b, big_num& m, big_num& c) {
+  return false;
+}
+
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
 // E: y^2 = y^3 +4x+4 (mod 2773)
@@ -120,9 +124,142 @@ bool test_ecc_affine_1() {
 }
 
 bool test_ecc_affine_2() {
-  // bool ecc_embed(ecc_curve& c, big_num& m, curve_point& pt, int shift, int trys);
-  // bool ecc_extract(ecc_curve& c, curve_point& pt, big_num& m, int shift);
-  // bool ecc_normalize(ecc_curve& c, curve_point& pt);
+
+  printf("\nbig affine\n\n");
+  big_num p(5);
+
+  p.value_[3] = 0xffffffff00000001ULL;
+  p.value_[2] = 0ULL;
+  p.value_[1] = 0x00000000ffffffffULL;
+  p.value_[0] = 0xffffffffffffffffULL;
+  p.normalize();
+
+  ecc_curve c(5);
+ 
+  c.curve_p_ = new big_num(p); 
+  c.curve_a_->value_[3] = 0xffffffff00000001ULL;
+  c.curve_a_->value_[2] = 0ULL;
+  c.curve_a_->value_[1] = 0x00000000ffffffffULL;
+  c.curve_a_->value_[0] = 0xfffffffffffffffcULL;
+  c.curve_a_->normalize();
+
+  c.curve_b_->value_[3] = 0x5ac635d8aa3a93e7ULL;
+  c.curve_b_->value_[2] = 0xb3ebbd55769886bcULL;
+  c.curve_b_->value_[1] = 0x651d06b0cc53b0f6ULL;
+  c.curve_b_->value_[0] = 0x3bce3c3e27d2604bULL;
+  c.curve_b_->normalize();
+
+  uint64_t x_digits[4] = {
+    5ULL,
+    0xf8273645aaaabbbbULL,
+    0x1111111111111111ULL,
+    0x4444ULL,
+  };
+  big_num x(5);
+  big_num y(5);
+  for(int i = 0; i < 4; i++)
+    x.value_[i]= x_digits[i];
+  x.normalize();
+
+  big_num t1(11);
+  big_num t2(11);
+  big_num t3(11);
+
+  if (!big_mod_mult(x, *c.curve_a_, *c.curve_p_, t1))
+    return false;
+  if (!big_mod_mult(x, x, *c.curve_p_, t3))
+    return false;
+  if (!big_mod_mult(x, t3, *c.curve_p_, t2))
+    return false;
+  t3.zero_num();
+  if (!big_mod_add(t1, t2, *c.curve_p_, t3))
+    return false;
+  t1.zero_num();
+  if (!big_mod_add(t3, *c.curve_b_, *c.curve_p_, t1))
+    return false;
+
+  for (;;) {
+    if (big_mod_is_square(t1, *c.curve_p_)) {
+      if (!big_mod_square_root(t1, *c.curve_p_, big_zero, y))
+        return false;
+      break;
+    }
+    if (!big_unsigned_add_to(x, big_four))
+     return false;
+  }
+
+  curve_point p1(5);
+  p1.x_->copy_from(x);
+  p1.y_->copy_from(y);
+  printf("point on curve is: "); p1.print(); printf("\n");
+  printf("\n");
+
+  if (ecc_is_on_curve(c, p1)) {
+   printf("test point is on curve: "); p1.print(); printf("\n");
+  } else {
+   printf("test point is not on curve: "); p1.print(); printf("\n");
+   return false;
+  }
+  printf("\n");
+
+  curve_point p2(5);
+  curve_point p3(5);
+  curve_point p4(5);
+  curve_point p5(5);
+  curve_point p6(5);
+  curve_point p7(5);
+
+  if (!ecc_add(c, p1, p1, p2))
+    return false;
+  if (!ecc_sub(c, p2, p1, p3))
+    return false;
+  p1.print();
+  printf(" + ");
+  p1.print();
+  printf(" = ");
+  p2.print();
+  printf("\n");
+
+  if (!p1.is_equal(p3)) {
+    printf("add or sub failed\n");
+    return false;
+  }
+
+  printf("\n");
+  if (!ecc_mult(c, p1, big_four, p4))
+    return false;
+  big_four.print();
+  printf(" * ");
+  p1.print();
+  printf(" = ");
+  p4.print();
+  printf("\n");
+
+  printf("\n");
+  if (!ecc_mult(c, p1, big_three, p5))
+    return false;
+  big_three.print();
+  printf(" * ");
+  p1.print();
+  printf(" = ");
+  p5.print();
+  printf("\n");
+
+  printf("\n");
+  if (!ecc_sub(c, p4, p5, p6))
+    return false;
+  p4.print();
+  printf(" + ");
+  p5.print();
+  printf(" = ");
+  p6.print();
+  printf("\n");
+
+  if (!p1.is_equal(p6)) {
+    printf("mult failed\n");
+    return false;
+  }
+
   return true;
 }
 
