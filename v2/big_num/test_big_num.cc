@@ -1165,6 +1165,22 @@ bool basic_number_theory_test1() {
  n1.zero_num();
  n2.zero_num();
 
+#if 0
+ // 5ab272bb941b862c dc518ef533a8a165 3e234c315354ec8b 1c7b7bbef0ffa638  *
+ //    cbbaf79954b50606 4e60635a3d1563c5 (inverse)  =
+ //  18fcbe66f8936cf3 fe3ede71adccaa1e d53004f8 7e1440a1 3880ca9bd1ec710b
+ //   mod  ffffffff00000001 0000000000000000 00000000ffffffff ffffffffffffffff
+
+ big_num t1(11);
+ big_num t3(11);
+ // t1:c77f3421731b1b0a 14db1c035cdd24f0 bbf84bad1a20251a 750572bd4c47c416
+ // t3:59e3d9077dc4fb8f 86bc657187d88469 cfa711556d3d7879 5cd85cfae55e3338
+ // m: 7746c2f114b0005f 85d85275e4b560f1 48d5836ac9e16104 a2d129d201448a21
+ if (!big_mod_div(t3, t1, test_prime, m)) {
+    return false;
+ }
+#endif
+
   if (big_mod_is_square(big_two, test_prime)) {
     if (FLAGS_print_all) {
       big_two.print();
