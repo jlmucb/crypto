@@ -58,10 +58,18 @@ bool big_extended_gcd(big_num& a, big_num& b, big_num& x, big_num& y, big_num& g
     if (r.is_zero())
       break;
     r.copy_to(*c[next]);
-    big_mult(q, *a_coeff[current], t1);
-    big_mult(q, *b_coeff[current], t2);
-    big_sub(*a_coeff[old], t1, *a_coeff[next]);
-    big_sub(*b_coeff[old], t2, *b_coeff[next]);
+    ret = big_mult(q, *a_coeff[current], t1);
+    if (!ret)
+      goto done;
+    ret = big_mult(q, *b_coeff[current], t2);
+    if (!ret)
+      goto done;
+    ret = big_sub(*a_coeff[old], t1, *a_coeff[next]);
+    if (!ret)
+      goto done;
+    ret = big_sub(*b_coeff[old], t2, *b_coeff[next]);
+    if (!ret)
+      goto done;
     old = (old + 1) % 3;
     current = (current + 1) % 3;
     next = (next + 1) % 3;
