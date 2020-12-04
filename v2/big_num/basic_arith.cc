@@ -128,6 +128,28 @@ bool big_unsigned_mult(big_num& a, big_num& b, big_num& r) {
   return true;
 }
 
+bool check_big_unsigned_euclid(big_num& a, big_num& b, big_num& q, big_num& r) {
+  big_num t1(2 * a.capacity_ + 1);
+  big_num t2(2 * a.capacity_ + 1);
+
+  if (!big_unsigned_mult(q, b, t1)) {
+    return false;
+  }
+  if (!big_unsigned_add(t1, r, t2)) {
+    return false;
+  }
+  if ((digit_array_compare(a.size_, a.value_, t2.size_, t2.value_) != 0) ||
+      (digit_array_compare(b.size_, b.value_, r.size_, r.value_) < 0)) {
+    printf("check_big_unsigned_euclid failed\n");
+    printf("a: "); a.print(); printf("\n");
+    printf("b: "); b.print(); printf("\n");
+    printf("q: "); q.print(); printf("\n");
+    printf("r: "); r.print(); printf("\n");
+    return false;
+  }
+  return true;
+}
+
 bool big_unsigned_euclid(big_num& a, big_num& b, big_num& q, big_num& r) {
   int size_q = q.capacity_;
   int size_r = r.capacity_;
@@ -141,6 +163,10 @@ bool big_unsigned_euclid(big_num& a, big_num& b, big_num& q, big_num& r) {
     r.zero_num();
     return false;
   }
+#if 1
+  if (!check_big_unsigned_euclid(a, b, q, r))
+    return false;
+#endif
   return true;
 }
 
