@@ -504,15 +504,7 @@ int digit_array_square(int size_a, uint64_t* a, int size_result,
   if ((real_size_a + real_size_a) > size_result) {
     return -1;
   }
-
-#ifdef FASTSQUARE
-  uint64_t cur_in = 0ULL;
-  uint64_t cur_out = 0ULL;
-
-  return digit_array_real_size(size_result, result);
-#else
   return digit_array_mult(size_a, a, size_a, a, size_result, result);
-#endif
 }
 
 // a*= x.  a must have size_a+1 positions available
