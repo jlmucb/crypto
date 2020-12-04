@@ -1201,10 +1201,9 @@ bool basic_number_theory_test1() {
  }
  if (!big_mod_inv(to_invert, test_prime, inverted))
    return false;
+ printf("to_invert: "); to_invert.print(); printf("\n");
+ printf("inverted : "); inverted.print(); printf("\n");
  if (!check_mod_inverse(to_invert, inverted, test_prime)) {
-    printf("to_invert: "); to_invert.print(); printf("\n");
-    printf("inverted : "); inverted.print(); printf("\n");
-
     big_num r1(4*p.capacity_);
   if (!big_mod_mult(to_invert, inverted, test_prime, r1))
       return false;
