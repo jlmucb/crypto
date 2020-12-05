@@ -679,6 +679,7 @@ bool basic_arith_test1() {
     return false;
   }
 
+  n1.toggle_sign();
   r.zero_num();
   if (!big_unsigned_square(n1, r)) {
     printf("big_unsigned_square fails\n");
@@ -697,7 +698,6 @@ bool basic_arith_test1() {
     b_cmp_sq.value_ptr()[j] = cmp_sq[j];
   b_cmp_sq.normalize();
   r.zero_num();
-  n1.toggle_sign();
   if (!big_square(n1, r)) {
     printf("big_square fails\n");
     return false;
@@ -727,7 +727,6 @@ bool basic_arith_test1() {
   s_mult_cmp.normalize();
 
   s_div_cmp.value_ptr()[0] = 0x2aULL;
-  s_div_cmp.toggle_sign();
   s_div_cmp.normalize();
 
   r.zero_num();
@@ -775,6 +774,7 @@ bool basic_arith_test1() {
     return false;
   }
 
+  n1.toggle_sign();
   r.zero_num();
   if (!big_div(n1, n2, r)) {
     printf("big_div fails\n");
@@ -1298,8 +1298,6 @@ bool basic_number_theory_test1() {
     }
     return false;
   }
-
-  return true;
 
   big_num test_power_of_2(1, 1ULL<<5);
   int pow2 = big_max_power_of_two_dividing(test_power_of_2);
