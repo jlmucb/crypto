@@ -145,6 +145,7 @@ bool check_big_unsigned_euclid(big_num& a, big_num& b, big_num& q, big_num& r) {
     printf("b: "); b.print(); printf("\n");
     printf("q: "); q.print(); printf("\n");
     printf("r: "); r.print(); printf("\n");
+    printf("a*b: "); t1.print(); printf("\n");
     return false;
   }
   return true;
@@ -164,8 +165,11 @@ bool big_unsigned_euclid(big_num& a, big_num& b, big_num& q, big_num& r) {
     return false;
   }
 #if 1
-  if (!check_big_unsigned_euclid(a, b, q, r))
+  if (!check_big_unsigned_euclid(a, b, q, r)) {
+    printf("a: "); a.print(); printf("\n");
+    printf("b: "); b.print(); printf("\n");
     return false;
+  }
 #endif
   return true;
 }

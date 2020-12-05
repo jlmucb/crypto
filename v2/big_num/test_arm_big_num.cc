@@ -672,6 +672,17 @@ bool test_multi_euclid() {
     return false;
   }
 
+  uint64_t aa = 0xfULL;
+  uint64_t bb = 0xf57465e2dab4a13bULL;
+  uint64_t cc = 0x2e7ae5fed4e5f32bULL;
+  uint64_t qq = 0ULL;
+  uint64_t rr = 0ULL;
+
+  extern void divide128x64(uint64_t, uint64_t, uint64_t, uint64_t*, uint64_t*);
+  printf("%016lx:%016lx / %016lx\n", aa, bb, cc);
+  divide128x64(aa, bb, cc, &qq, &rr);
+  printf("= %016lx, %016lx\n", qq, rr);
+
   return true;
 }
 
