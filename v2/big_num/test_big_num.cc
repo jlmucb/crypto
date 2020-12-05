@@ -775,7 +775,6 @@ bool basic_arith_test1() {
     return false;
   }
 
-#if 0
   r.zero_num();
   if (!big_div(n1, n2, r)) {
     printf("big_div fails\n");
@@ -790,7 +789,6 @@ bool basic_arith_test1() {
     printf("bad compare 9\n");
     return false;
   }
-#endif
 
   return true;
 }
