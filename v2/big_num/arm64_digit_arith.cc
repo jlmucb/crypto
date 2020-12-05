@@ -265,14 +265,38 @@ bool too_big(uint64_t a, uint64_t b, uint64_t c, uint64_t q) {
 }
 
 // a:b = c*q + *new_a:*new_b
-void reduce(uint64_t a, uint64_t b, uint64_t c, uint64_t q, uint64_t* new_a, uint64_t* new_b) {
+bool reduce(uint64_t a, uint64_t b, uint64_t c, uint64_t q, uint64_t* new_a, uint64_t* new_b) {
   uint64_t hi = 0ULL;
   uint64_t lo = 0ULL;
-  u64_mult_step(q, c, &lo, &hi);
   uint64_t borrow = 0ULL;
-  u64_mult_step(c, q, &lo, &hi);
+
+  u64_mult_step(q, c, &lo, &hi);
   u64_sub_with_borrow_step(b, lo, 1ULL, new_b, &borrow);
   u64_sub_with_borrow_step(a, hi, borrow, new_a, &borrow);
+  if (borrow == 0)
+    return false;
+  return true;
+}
+
+void divide128x32_check(uint64_t a, uint64_t b, uint64_t c,
+                        uint64_t q, uint64_t r) {
+  uint64_t lo = 0ULL;
+  uint64_t hi = 0ULL;
+  uint64_t t = 0ULL;
+  uint64_t carry = 0ULL;
+
+  u64_mult_step(q, c, &lo, &hi);
+  u64_add_with_carry_step(lo, r, 0ULL, &t, &carry);
+  lo = t;
+  t = 0ULL;
+  u64_add_with_carry_step(hi, 0ULL, carry, &t, &carry);
+  hi = t;
+  if (hi != a || lo != b) {
+    printf("divide128x32 check fail %016lx:%016lx != %016lx:%016lx, c: %016lx, q: %016lx, r: %016lx\n",
+           a, b, hi, lo, c, q, r);
+  }
+
+  return;
 }
 
 void divide128x32(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* r) {
@@ -282,13 +306,17 @@ void divide128x32(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* r) 
 
   n_t= (a&0xffffffff)<<32 | (b>>32);
   q_t = n_t / c;
-  r_t = n_t - c * q_t;
-  *q= q_t<<32;
-  n_t= (r_t<<32) | (b&0xffffffff);
+  uint64_t t = c * q_t;
+  r_t = n_t - t;
+  *q= q_t << 32;
+  n_t= (r_t << 32) | (b & 0xffffffff);
   q_t = n_t / c;
   r_t = n_t - c * q_t;
   *q|= q_t;
   *r= r_t;
+#if 1
+  divide128x32_check(a, b, c, *q, *r);
+#endif
 }
 
 #if 0
@@ -327,12 +355,32 @@ void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem
   *rem = b_t >> s;
 }
 #else
+void divide128x64_check(uint64_t a, uint64_t b, uint64_t c,
+                        uint64_t q, uint64_t r) {
+  uint64_t lo = 0ULL;
+  uint64_t hi = 0ULL;
+  uint64_t t = 0ULL;
+  uint64_t carry = 0ULL;
+
+  u64_mult_step(q, c, &lo, &hi);
+  u64_add_with_carry_step(lo, r, 0ULL, &t, &carry);
+  lo = t;
+  t = 0ULL;
+  u64_add_with_carry_step(hi, 0ULL, carry, &t, &carry);
+  hi = t;
+  if (hi != a || lo != b) {
+    printf("divide128x64 check fail %016lx:%016lx != %016lx:%016lx, c: %016lx, q: %016lx, r: %016lx\n",
+           a, b, hi, lo, c, q, r);
+  }
+
+  return;
+}
+
+
 void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem) {
   // Normalize
   int l =  high_bit_in_digit(c);
   int s = NBITSINUINT64 - l;
-
-//printf("divide128x64(%016lx, %016lx, %016lx), s: %d, l: %d\n", a, b, c, s, l);
 
   uint64_t a_s = 0ULL;
   if (s == 0)
@@ -351,7 +399,9 @@ void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem
   while(too_big(a_s, b_s, c_s, q_est << 32))
     q_est--;
   *q= q_est << 32;
-  reduce(a_s, b_s, c_s, *q, &a_s_t, &b_s_t);
+  if (!reduce(a_s, b_s, c_s, *q, &a_s_t, &b_s_t)) {
+    printf("Reduce value is negative\n");
+  }
 
   // Estimate and get lo 32 bits of quotient
   uint64_t t = ((a_s_t << 32) | (b_s_t >> 32));
@@ -361,10 +411,15 @@ void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem
     q_est--;
   *q|= q_est;
 
-  reduce(a_s, b_s, c_s, *q, &a_s_t, &b_s_t);
+  if (!reduce(a_s, b_s, c_s, *q, &a_s_t, &b_s_t)) {
+    printf("Reduce value is negative\n");
+  }
 
   // Unnormalize
   *rem = (b_s_t >> s);
+#if 1
+   divide128x64_check(a, b, c, *q, *rem);
+#endif
 }
 #endif
 
