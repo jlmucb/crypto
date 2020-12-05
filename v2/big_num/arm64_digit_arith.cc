@@ -291,6 +291,7 @@ void divide128x32(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* r) 
   *r= r_t;
 }
 
+#if 0
 void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem) {
 
   // Normalize
@@ -325,6 +326,47 @@ void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem
   // Unnormalize
   *rem = b_t >> s;
 }
+#else
+void divide128x64(uint64_t a, uint64_t b, uint64_t c, uint64_t* q, uint64_t* rem) {
+  // Normalize
+  int l =  high_bit_in_digit(c);
+  int s = NBITSINUINT64 - l;
+
+//printf("divide128x64(%016lx, %016lx, %016lx), s: %d, l: %d\n", a, b, c, s, l);
+
+  uint64_t a_s = 0ULL;
+  if (s == 0)
+    a_s = a;
+  else
+    a_s = (a<<s)|(b>>l);
+  uint64_t b_s = b << s;
+  uint64_t c_s = c << s;
+  uint64_t c_s_hi= c_s >> 32;
+  *q = 0ULL;
+
+  // Estimate and get hi 32 bits of quotient
+  uint64_t q_est= a_s / c_s_hi;
+  uint64_t a_s_t, b_s_t;
+
+  while(too_big(a_s, b_s, c_s, q_est << 32))
+    q_est--;
+  *q= q_est << 32;
+  reduce(a_s, b_s, c_s, *q, &a_s_t, &b_s_t);
+
+  // Estimate and get lo 32 bits of quotient
+  uint64_t t = ((a_s_t << 32) | (b_s_t >> 32));
+  q_est = t / c_s_hi;
+
+  while(too_big(a_s_t, b_s_t, c_s, q_est))
+    q_est--;
+  *q|= q_est;
+
+  reduce(a_s, b_s, c_s, *q, &a_s_t, &b_s_t);
+
+  // Unnormalize
+  *rem = (b_s_t >> s);
+}
+#endif
 
 //  q= a:b/c remainder, r
 //  a < c.  a may be 0.
@@ -599,7 +641,9 @@ bool digit_array_division_algorithm(int size_a, uint64_t* a, int size_b,
 
   digit_array_zero_num(*size_q, q);
   digit_array_zero_num(*size_r, r);
-  if (!digit_array_copy(size_a, a, *size_r, r)) {
+  if (*size_r < real_size_a)
+    return false;
+  if (!digit_array_copy(real_size_a, a, *size_r, r)) {
     printf("digit_array_division_algorithm remainder size is too small\n");
     return false;
   }
