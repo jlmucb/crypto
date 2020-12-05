@@ -828,26 +828,6 @@ bool basic_number_theory_test1() {
   big_num n1(10);
   big_num n2(10);
 
-  // a: 000000000000000f 57465e2dab4a13b0
-  // b: 2e7ae5fed4e5f32b
-  big_num aa(2);
-  aa.value_[1] = 0xfULL;
-  aa.value_[0] = 0xf57465e2dab4a13bULL;
-  aa.normalize();
-  big_num bb(1, 0x2e7ae5fed4e5f32bULL);
-  big_num qq(2);
-  big_num rr(1);
- 
-  printf("aa: "); aa.print(); printf("\n");
-  printf("bb: "); bb.print(); printf("\n");
-  if (!big_unsigned_euclid(aa, bb, qq, rr)) {
-    printf("Failed again\n");
-  }
-  printf("qq: "); qq.print(); printf("\n");
-  printf("rr: "); rr.print(); printf("\n");
-
-  return true;
-
   m.value_ptr()[0] = 0ULL;
   m.value_ptr()[1] = 0x4ULL;
   a.value_ptr()[0] = 0x08f0ULL;
@@ -1169,6 +1149,24 @@ bool basic_number_theory_test1() {
     printf("big_is_prime fails\n");
     return false;
   }
+
+  // a: 0x000000000000000f 0x57465e2dab4a13b0
+  // b: 0x2e7ae5fed4e5f32b
+  big_num aa(2);
+  aa.value_[1] = 0xfULL;
+  aa.value_[0] = 0xf57465e2dab4a13bULL;
+  aa.normalize();
+  big_num bb(1, 0x2e7ae5fed4e5f32bULL);
+  big_num qq(2);
+  big_num rr(1);
+ 
+  printf("aa: "); aa.print(); printf("\n");
+  printf("bb: "); bb.print(); printf("\n");
+  if (!big_unsigned_euclid(aa, bb, qq, rr)) {
+    printf("Failed again\n");
+  }
+  printf("qq: "); qq.print(); printf("\n");
+  printf("rr: "); rr.print(); printf("\n");
 
   uint64_t test_prime_digits[4] = {
     0xffffffffffffffffULL,
