@@ -141,11 +141,11 @@ bool check_big_unsigned_euclid(big_num& a, big_num& b, big_num& q, big_num& r) {
   if ((digit_array_compare(a.size_, a.value_, t2.size_, t2.value_) != 0) ||
       (digit_array_compare(b.size_, b.value_, r.size_, r.value_) < 0)) {
     printf("check_big_unsigned_euclid failed\n");
-    printf("a: "); a.print(); printf("\n");
-    printf("b: "); b.print(); printf("\n");
-    printf("q: "); q.print(); printf("\n");
-    printf("r: "); r.print(); printf("\n");
-    printf("a*b: "); t1.print(); printf("\n");
+    printf("  a: "); a.print(); printf("\n");
+    printf("  b: "); b.print(); printf("\n");
+    printf("  q: "); q.print(); printf("\n");
+    printf("  r: "); r.print(); printf("\n");
+    printf("  q*b: "); t1.print(); printf("\n");
     return false;
   }
   return true;
@@ -154,6 +154,8 @@ bool check_big_unsigned_euclid(big_num& a, big_num& b, big_num& q, big_num& r) {
 bool big_unsigned_euclid(big_num& a, big_num& b, big_num& q, big_num& r) {
   int size_q = q.capacity_;
   int size_r = r.capacity_;
+  r.zero_num();
+  q.zero_num();
   if (!digit_array_division_algorithm(a.size_, a.value_, b.size_, b.value_,
                   &size_q, q.value_, &size_r, r.value_)) {
     return false;
@@ -166,8 +168,6 @@ bool big_unsigned_euclid(big_num& a, big_num& b, big_num& q, big_num& r) {
   }
 #if 1
   if (!check_big_unsigned_euclid(a, b, q, r)) {
-    printf("a: "); a.print(); printf("\n");
-    printf("b: "); b.print(); printf("\n");
     return false;
   }
 #endif

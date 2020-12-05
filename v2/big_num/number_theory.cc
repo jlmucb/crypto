@@ -167,9 +167,6 @@ bool big_mod_normalize(big_num& a, big_num& m) {
   t2.zero_num();
   if (big_compare(a, m) >= 0) {
     if (!big_unsigned_euclid(a, m, t1, t2)) {
-      printf("big_unsigned_euclid fails\n");
-      printf("    a: ");a.print();printf("\n");
-      printf("    m: ");m.print();printf("\n");
       return false;
     }
     t2.normalize();
@@ -268,6 +265,9 @@ bool big_mod_inv(big_num& a, big_num& m, big_num& r) {
     return false;
   if (!big_extended_gcd(a, m, x, y, g))
     return false;
+#if 0
+  printf("from mod_inv, x: "); x.print();printf("\n");
+#endif
   r.copy_from(x);
   return big_mod_normalize(r, m);
 }
