@@ -131,9 +131,8 @@ Version 2
   In September, 2020, I rewrote most of the cryptocode to be cleaner and align
   with my current C++ coding style. The new version is in v2.  I also added LLL
   and some lattice based crypto.  The original version remains in the v1
-  directory.  I've also done an ARM version of the assembly assisted bignum
-  arithmetic which I'll move into the directory soon, I hope.  Also, I've
-  removed dependencies on any serialization except protobuf.  Same license
+  directory.  I've also done an ARM 64-bit version of the software.  There are
+  now no dependencies on any serialization except protobuf.  Same license
   conditions apply.
 
 
