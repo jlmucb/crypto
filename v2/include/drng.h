@@ -16,40 +16,44 @@
 #ifndef _CRYPTO_DRNG_H__
 #define _CRYPTO_DRNG_H__
 #include "crypto_support.h"
-#include "symmetric_cipher.h"
-#include "aes.h"
+#include "sha256.h"
 
 
-class ctr_drng_aes {
-  enum {MAXPOOL_SIZE = 512};
+class hash_drng {
+  enum {MAXPOOL_SIZE = 1024};
 private:
   bool initialized_;
   int reseed_ctr_;
   int reseed_interval_;
   int num_entropy_bits_present_;
   int num_ent_bits_required_;
+  int current_entropy_in_pool_;
   int current_size_pool_;
   int pool_size_;
+  int hash_byte_output_size_;
+  int seed_len_bits_;
+  int seed_len_bytes_;
   byte pool_[MAXPOOL_SIZE];
-  byte current_K_[64];
-  byte current_V_[64];
+  byte C_[64];
+  byte V_[64];
 
-  int key_size_bytes_;
-  int block_size_bytes_;
-  aes cipher;
-  void init_encrypt_key(byte* K);
-  void encrypt_block(byte* block, byte* dest);
+  sha256 hash_obj_;
+
 public:
-  ctr_drng_aes();
-  ~ctr_drng_aes();
+  hash_drng();
+  ~hash_drng();
 
   int entropy_estimate();
-  void set_requirement(int n_ent, int n_pool_size);
+  void set_policy(int n_ent, int bit_pool_size, int reseed_interval);
   void add_entropy(int n, byte* bits, int ent);
-  bool init(int n_ent_bits, byte* ent_bits, int n_extra_bits, byte* extra_bits, int ent);
-  bool reseed(int n_ent_bits, byte* ent_bits, int n_extra_bits, byte* extra_bits);
-  void update(int n, byte* data);
-  bool generate(int num_bits_needed, int n_add_in_bits, byte* add_in_bits);
+  void hash(int byte_size_in, byte* in, byte* out);
+  void hash_df(int byte_size_in, byte* in, int bit_size_out, byte* out);
+  void hash_gen(int num_requested_bits, byte* out);
+  bool init(int size_nonce, byte* nonce, int size_personalization,
+            byte* personalization);
+  bool reseed();
+  bool generate(int num_bits_needed, byte* out, int n_add_in_bits,
+            byte* add_in_bits);
 };
 #endif
 

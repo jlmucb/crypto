@@ -18,23 +18,113 @@
 #include "support.pb.h"
 #include "crypto_names.h"
 #include "drng.h"
-#include "symmetric_cipher.h"
-#include "aes.h"
 
-ctr_drng_aes::ctr_drng_aes() {
+void big_add(int size_n1, uint64_t* n1, int size_n2, uint64_t* n2, uint64_t* out) {
+}
+
+void big_add_one(int size_n, uint64_t* n) {
+  int carry = 1;
+  for (int i = 0; i < size_n; i++) {
+    if (carry != 0) {
+      if (n[i] < 0xffffffffffffffffULL) {
+        n[i] = n[i] + 1ULL;
+        carry = 0;
+      } else {
+        n[i] = 0ULL;
+      }
+    } else {
+      n[i] = n[i];
+    }
+  }
+}
+
+void hash_drng::hash(int byte_size_in, byte* in, byte* out) {
+  hash_obj_.init();
+  hash_obj_.add_to_hash(byte_size_in, in);
+  hash_obj_.finalize();
+  hash_obj_.get_digest(hash_byte_output_size_, out);
+}
+
+void hash_drng::hash_df(int byte_size_in, byte* in, int bit_size_out, byte* out) {
+  memset(out, 0, hash_byte_output_size_);
+  int byte_size_out = (bit_size_out + NBITSINBYTE - 1) / NBITSINBYTE;
+  int l = byte_size_out / hash_byte_output_size_;
+  int bytes_so_far = 0;
+  byte extra_out[hash_byte_output_size_];
+  byte ctr = 1;
+
+  for (int i = 0; i < l; i++) {
+    hash_obj_.init();
+    hash_obj_.add_to_hash(1, &ctr);
+    hash_obj_.add_to_hash(sizeof(int), (byte*)&bit_size_out);
+    hash_obj_.add_to_hash(byte_size_in, in);
+    hash_obj_.finalize();
+    hash_obj_.get_digest(hash_byte_output_size_, &out[byte_size_out]);
+    bytes_so_far += hash_byte_output_size_;
+    ctr++;
+  }
+  // partial block --- avoid overflow
+  if (bytes_so_far < byte_size_out) {
+    hash_obj_.init();
+    hash_obj_.add_to_hash(1, &ctr);
+    hash_obj_.add_to_hash(sizeof(int), (byte*)&bit_size_out);
+    hash_obj_.add_to_hash(byte_size_in, in);
+    hash_obj_.finalize();
+    hash_obj_.get_digest(hash_byte_output_size_, extra_out);
+    int n = 0;
+    while (byte_size_out > bytes_so_far) {
+      out[bytes_so_far] = extra_out[n++];
+    bytes_so_far++;
+    }
+  }
+}
+
+void hash_drng::hash_gen(int num_requested_bits, byte* out) {
+  int size_output_bytes = (num_requested_bits + NBITSINBYTE - 1) / NBITSINBYTE;
+  int m = size_output_bytes / hash_byte_output_size_;
+  byte data[seed_len_bytes_];
+  memcpy(data, V_, seed_len_bytes_);
+  int bytes_so_far = 0;
+  byte extra_out[hash_byte_output_size_];
+  memset(extra_out, 0, hash_byte_output_size_);
+
+  for (int i = 0; i < m; i++) {
+    hash_obj_.init();
+    hash_obj_.add_to_hash(seed_len_bytes_, data);
+    hash_obj_.finalize();
+    hash_obj_.get_digest(hash_byte_output_size_, &out[bytes_so_far]);
+    bytes_so_far += hash_byte_output_size_;
+    big_add_one(55, (uint64_t*)data);
+  }
+  // partial block --- avoid overflow
+  if (bytes_so_far < size_output_bytes) {
+    hash_obj_.init();
+    hash_obj_.add_to_hash(seed_len_bytes_, data);
+    hash_obj_.finalize();
+    hash_obj_.get_digest(hash_byte_output_size_, extra_out);
+    int n = 0;
+    while (size_output_bytes > bytes_so_far) {
+      out[bytes_so_far] = extra_out[n++];
+      bytes_so_far++;
+      }
+  }
+}
+
+hash_drng::hash_drng() {
   initialized_= false;
   reseed_ctr_ = 0;
   num_entropy_bits_present_ = 0;
   num_ent_bits_required_ = 0;
   current_size_pool_ = 0;
   pool_size_ = 0;
+  hash_byte_output_size_ = sha256::DIGESTBYTESIZE;
   memset(pool_, 0, MAXPOOL_SIZE);
-  key_size_bytes_;
-  block_size_bytes_ = aes::BLOCKBYTESIZE;
   reseed_interval_ = 100;
+  seed_len_bits_ = 440;  // we're using sha256
+  seed_len_bytes_ = seed_len_bits_ / NBITSINBYTE;;
 }
 
-ctr_drng_aes::~ctr_drng_aes() {
+hash_drng::~hash_drng() {
   initialized_= false;
   reseed_ctr_ = 0;
   num_entropy_bits_present_ = 0;
@@ -42,82 +132,91 @@ ctr_drng_aes::~ctr_drng_aes() {
   current_size_pool_ = 0;
   pool_size_ = 0;
   memset(pool_, 0, MAXPOOL_SIZE);
-  memset(current_K_, 0, 64);
-  memset(current_V_, 0, 64);
-  key_size_bytes_ = aes::BLOCKBYTESIZE;
-  block_size_bytes_ = aes::BLOCKBYTESIZE;
+  memset(C_, 0, 64);
+  memset(V_, 0, 64);
 }
 
-void ctr_drng_aes::init_encrypt_key(byte* K) {
-}
-
-void ctr_drng_aes::encrypt_block(byte* block, byte* dest) {
-}
-
-void ctr_drng_aes::set_requirement(int n_ent, int n_pool_size) {
+void hash_drng::set_policy(int n_ent, int bit_pool_size, int reseed_interval) {
   num_ent_bits_required_ = n_ent;
-  pool_size_ = n_pool_size;
+  if (bit_pool_size > MAXPOOL_SIZE * NBITSINBYTE)
+    pool_size_ = MAXPOOL_SIZE;
+  else
+    pool_size_ = (bit_pool_size + NBITSINBYTE - 1) / NBITSINBYTE;
+  reseed_interval_ = reseed_interval;
 }
 
-void ctr_drng_aes::add_entropy(int n, byte* bits, int ent) {
+void hash_drng::add_entropy(int n, byte* bits, int ent) {
 }
 
-int ctr_drng_aes::entropy_estimate() {
+int hash_drng::entropy_estimate() {
   return num_entropy_bits_present_;
 }
 
-bool ctr_drng_aes::init(int n_ent_bits, byte* ent_bits,
-      int n_extra_bits, byte* extra_bits, int ent) {
+bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization, byte* personalization) {
   reseed_ctr_ = 0;
-  if (num_ent_bits_required_ < num_entropy_bits_present_)
+  if (num_ent_bits_required_ > current_entropy_in_pool_)
     return false;
-  num_entropy_bits_present_ += ent;
-  // pool_ || ent_bits
-  // seed_bits = pool_ ^ extra_bits
-  current_size_pool_;
-  pool_size_;
-  pool_; 
+  num_entropy_bits_present_ = current_entropy_in_pool_;
+  int seed_material_size = current_size_pool_ + size_nonce + size_personalization;
+  byte seed_material[seed_material_size];
+  memset(seed_material, 0, seed_material_size);
+  hash_df(seed_material_size, seed_material, seed_len_bits_, V_);
+  memset(seed_material, 0, seed_material_size);
+  memcpy(&seed_material[1], V_, seed_len_bytes_);
+  hash_df(seed_len_bytes_ + 1, seed_material, seed_len_bits_, C_);
   initialized_= true;
-  // K = 0
-  // V = 0
-  // Update(pool_size_, pool_);
   reseed_ctr_ = 1;
-  // while (len(temp) < seed_len)
-  //    V= V+1
-  //    out = encrypt_block(K, V);
-  //    temp = temp || out
-  // K = Left(key_size_bytes_, temp)
-  // V = Right(block_size_bytes_, temp)
   return initialized_;
 }
 
-bool ctr_drng_aes::reseed(int n_ent_bits, byte* ent_bits, int n_extra_bits, byte* extra_bits) {
-}
-
-void ctr_drng_aes::update(int n, byte* data) {
-  // temp = empty
-  // while len(temp) < seed_len)
-  //    V= V+1
-  //    out = encrypt_block(V)
-  //    temp = temp || out
-  //  temp ^= data
-  // temp = Left(key_size_bytes_, temp)
-  // V = Right(block_size_bytes_, temp)
-}
-
-bool ctr_drng_aes::generate(int num_bits_needed, int n_add_in_bits, byte* add_in_bits) {
-  // if (reseed_ctr_ >= reseed_interval_)
-  //    reseed
-  // fill add_in_bits to seed_len with 0's
-  // Update(add_in_bits)
-  // temp = empty
-  //  while (len(temp) < num_bits_needed)
-  //    V+= 1
-  //    out= encrypt_block(V)
-  //    temp = temp || out
-  //    return Left num_bits_needed of temp
-  // Update(add_in_bits
-  // reseed_ctr++
+bool hash_drng::reseed() {
+  reseed_ctr_ = 0;
   return true;
 }
 
+bool hash_drng::generate(int num_bits_needed, byte* out, int size_add_in_bits,
+            byte* add_in_bits) {
+  if (reseed_ctr_ > reseed_interval_)
+    reseed();
+  if (num_entropy_bits_present_ < num_ent_bits_required_)
+    return false;
+  int add_in_byte_size = (size_add_in_bits + NBITSINBYTE - 1) / NBITSINBYTE;
+
+  // w = Hash(0x02||V_||add_in_bits)
+  byte w[hash_byte_output_size_];
+  memset(w, 0, hash_byte_output_size_);
+  byte two = 0x02;
+  hash_obj_.init();
+  hash_obj_.add_to_hash(1, &two);
+  hash_obj_.add_to_hash(seed_len_bytes_, V_);
+  hash_obj_.add_to_hash(add_in_byte_size, add_in_bits);
+  hash_obj_.finalize();
+  hash_obj_.get_digest(hash_byte_output_size_, w);
+
+  // if (size_add_in_bits > 0)
+  //   V+= w mod 2^seedlen
+
+  hash_gen(num_bits_needed, out);
+
+  // H = Hash(0x03||V_)
+  byte H[hash_byte_output_size_];
+  memset(H, 0, hash_byte_output_size_);
+  byte three = 0x03;
+  hash_obj_.init();
+  hash_obj_.add_to_hash(1, &three);
+  hash_obj_.add_to_hash(seed_len_bytes_, V_);
+  hash_obj_.finalize();
+  hash_obj_.get_digest(hash_byte_output_size_, H);
+
+  // V = V + H + C + reseed_ctr
+  int size_t = (seed_len_bytes_ + sizeof(uint64_t) - 1) / sizeof(uint64_t);
+  uint64_t t1[size_t];
+  uint64_t t2[size_t];
+  // big_add(V_, size_t, size_t, C_, t1);
+  // big_add(t1, size_t, hash_byte_output_size_ / sizeof(uint64_t), H, t2);
+  // t1= reseed_ctr_
+  // big_add(size_t, t2, size_t, t1, V_);
+
+  reseed_ctr_++;
+  return true;
+}
