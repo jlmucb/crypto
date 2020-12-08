@@ -16,25 +16,32 @@
 #ifndef _CRYPTO_DRNG_H__
 #define _CRYPTO_DRNG_H__
 #include "crypto_support.h"
+#include "symmetric_cipher.h"
 #include "aes.h"
 
-const int MAXPOOL_SIZE = 512;
 
 class ctr_drng_aes {
+  enum {MAXPOOL_SIZE = 512};
 private:
+  bool initialized_;
   int reseed_ctr_;
   int num_entropy_bits_;
   int num_required_ent_bits_;
+  int current_size_pool_;
+  int pool_size_;
   byte pool_[MAXPOOL_SIZE];
 
+  int key_size_bytes_;
+  int block_size_bytes_;
   aes cipher;
   void init_encrypt_key(byte* K);
   void encrypt_block(byte* block, byte* dest);
 public:
-  ctr_drng_aes::ctr_drng_aes();
-  ctr_drng_aes::~ctr_drng_aes();
+  ctr_drng_aes();
+  ~ctr_drng_aes();
 
-  void add_entropy(int n, byte* bits);:w
+  void set_requirement(int n_ent, int n_pool_size);
+  void add_entropy(int n, byte* bits);
   void init(int n_ent_bits, byte* ent_bits, int n_extra_bits, byte* extra_bits);
   void reseed(int n_ent_bits, byte* ent_bits, int n_extra_bits, byte* extra_bits);
   void update(int n, byte* data);

@@ -34,6 +34,7 @@ endif
 S= $(SRC_DIR)/drng
 O= $(OBJ_DIR)/drng
 S_SUPPORT=$(SRC_DIR)/crypto_support
+S_SYMMETRIC=$(SRC_DIR)/symmetric
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(S_SUPPORT) -I/usr/local/include
 
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable -D X64
@@ -45,7 +46,7 @@ AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=   $(O)/test_drng.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
-	$(O)/aes.o $(O)/drng.o
+	$(O)/symmetric_cipher.o $(O)/aes.o $(O)/drng.o
 
 all:    test_drng.exe
 clean:
@@ -77,13 +78,13 @@ $(O)/crypto_names.o: $(S_SUPPORT)/crypto_names.cc
 	@echo "compiling crypto_names.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/crypto_names.o $(S_SUPPORT)/crypto_names.cc
 
-$(O)/symmetric_cipher.o: $(S)/symmetric_cipher.cc
+$(O)/symmetric_cipher.o: $(S_SYMMETRIC)/symmetric_cipher.cc
 	@echo "compiling symmetric_cipher.cc"
-	$(CC) $(CFLAGS) -c $(I) -o $(O)/symmetric_cipher.o $(S)/symmetric_cipher.cc
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/symmetric_cipher.o $(S_SYMMETRIC)/symmetric_cipher.cc
 
-$(O)/aes.o: $(S)/aes.cc
+$(O)/aes.o: $(S_SYMMETRIC)/aes.cc
 	@echo "compiling aes.cc"
-	$(CC) $(CFLAGS) -c $(I) -o $(O)/aes.o $(S)/aes.cc
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/aes.o $(S_SYMMETRIC)/aes.cc
 
 $(O)/drng.o: $(S)/drng.cc
 	@echo "compiling drng.cc"
