@@ -45,7 +45,7 @@ public:
 
   int entropy_estimate();
   void set_policy(int n_ent, int bit_pool_size, int reseed_interval);
-  void add_entropy(int n, byte* bits, int ent);
+  void add_entropy(int size_bits, byte* bits, int ent);
   void hash(int byte_size_in, byte* in, byte* out);
   void hash_df(int byte_size_in, byte* in, int bit_size_out, byte* out);
   void hash_gen(int num_requested_bits, byte* out);

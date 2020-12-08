@@ -19,7 +19,39 @@
 #include "crypto_names.h"
 #include "drng.h"
 
-void big_add(int size_n1, uint64_t* n1, int size_n2, uint64_t* n2, uint64_t* out) {
+void zero_uint32_array(int l, uint32_t* n) {
+  for (int i = 0; i < l; i++) {
+    n[i] = 0;
+  }
+}
+
+// size_n1 >= size_n2
+void big_add(int size_n1, uint64_t* n1, int size_n2, uint64_t* n2,
+             int size_out, uint64_t* out) {
+
+  zero_uint32_array(2 * size_out, (uint32_t*) out);
+  int usize1 = 2 * size_n1;
+  int usize2 = 2 * size_n2;
+  uint32_t* p1= (uint32_t*) n1;
+  uint32_t* p2= (uint32_t*) n2;
+  uint32_t* p3= (uint32_t*) out;
+  uint32_t carry = 0ULL;
+  uint32_t x, y;
+  uint64_t t;
+
+  for (int i = 0; i < 2 * size_out; i++) {
+    if (usize2 <= i)
+      x = n2[i];
+    else
+      x = 0;
+    if (usize1 <= i)
+      y = n1[i];
+    else
+      y = 0;
+  t = (uint64_t) x + (uint64_t)y + (uint64_t) carry;
+  p3[i] = t&0xffffffff;
+  carry = t >> 32;
+  }
 }
 
 void big_add_one(int size_n, uint64_t* n) {
@@ -145,7 +177,13 @@ void hash_drng::set_policy(int n_ent, int bit_pool_size, int reseed_interval) {
   reseed_interval_ = reseed_interval;
 }
 
-void hash_drng::add_entropy(int n, byte* bits, int ent) {
+void hash_drng::add_entropy(int size_bits, byte* bits, int ent) {
+  int byte_size = (size_bits + NBITSINBYTE - 1) / NBITSINBYTE;
+  if ((byte_size + current_size_pool_) >= MAXPOOL_SIZE)
+    return;
+  memcpy(&pool_[current_size_pool_], bits, byte_size);
+  current_size_pool_ += byte_size;
+  current_entropy_in_pool_ += ent;
 }
 
 int hash_drng::entropy_estimate() {
@@ -164,6 +202,7 @@ bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization, byte
   memset(seed_material, 0, seed_material_size);
   memcpy(&seed_material[1], V_, seed_len_bytes_);
   hash_df(seed_len_bytes_ + 1, seed_material, seed_len_bits_, C_);
+  num_entropy_bits_present_ = current_entropy_in_pool_;
   initialized_= true;
   reseed_ctr_ = 1;
   return initialized_;
@@ -212,11 +251,14 @@ bool hash_drng::generate(int num_bits_needed, byte* out, int size_add_in_bits,
   int size_t = (seed_len_bytes_ + sizeof(uint64_t) - 1) / sizeof(uint64_t);
   uint64_t t1[size_t];
   uint64_t t2[size_t];
-  // big_add(V_, size_t, size_t, C_, t1);
-  // big_add(t1, size_t, hash_byte_output_size_ / sizeof(uint64_t), H, t2);
-  // t1= reseed_ctr_
-  // big_add(size_t, t2, size_t, t1, V_);
-
+  zero_uint32_array(2*size_t, (uint32_t*) t1);
+  zero_uint32_array(2*size_t, (uint32_t*) t2);
+  big_add(size_t, (uint64_t*) V_, size_t, (uint64_t*) C_, size_t, t1);
+  big_add(size_t, t1, hash_byte_output_size_ / sizeof(uint64_t), (uint64_t*)H, size_t, t2);
+  zero_uint32_array(2*size_t, (uint32_t*) t1);
+  zero_uint32_array(2*size_t, (uint32_t*) V_);
+  t1 [0] = reseed_ctr_;
+  big_add(size_t, t2, size_t, t1, size_t, (uint64_t*) V_);
   reseed_ctr_++;
   return true;
 }
