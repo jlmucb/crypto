@@ -25,6 +25,25 @@ DEFINE_bool(print_all, false, "Print intermediate test computations");
 
 
 bool test_ctr_drng() {
+  byte ent_bytes[512];
+  byte bytes_out[512];
+  memset(ent_bytes, 0, 512);
+  memset(bytes_out, 0, 512);
+ 
+  hash_drng obj;
+  obj.set_policy(256, 512, 200);
+  obj.add_entropy(512, ent_bytes, 256); 
+  if (!obj.init(0, nullptr, 0, nullptr)) {
+    printf("cannot init object\n");
+    return false;
+  }
+
+  if (!obj.generate(256, bytes_out, 0, nullptr)) {
+    printf("cannot generate bits\n");
+    return false;
+  }
+  printf("generated: "); printf("\n");
+  print_bytes(32, bytes_out);
   return true;
 }
 

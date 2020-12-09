@@ -70,6 +70,10 @@ void big_add_one(int size_n, uint64_t* n) {
   }
 }
 
+bool hash_drng::health_check() {
+  return true;
+}
+
 void hash_drng::hash(int byte_size_in, byte* in, byte* out) {
   hash_obj_.init();
   hash_obj_.add_to_hash(byte_size_in, in);
