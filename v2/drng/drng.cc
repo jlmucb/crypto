@@ -95,7 +95,7 @@ void hash_drng::hash_df(int byte_size_in, byte* in, int bit_size_out, byte* out)
     hash_obj_.add_to_hash(sizeof(int), (byte*)&bit_size_out);
     hash_obj_.add_to_hash(byte_size_in, in);
     hash_obj_.finalize();
-    hash_obj_.get_digest(hash_byte_output_size_, &out[byte_size_out]);
+    hash_obj_.get_digest(hash_byte_output_size_, &out[bytes_so_far]);
     bytes_so_far += hash_byte_output_size_;
     ctr++;
   }
@@ -198,7 +198,6 @@ bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization, byte
   reseed_ctr_ = 0;
   if (num_ent_bits_required_ > current_entropy_in_pool_)
     return false;
-  num_entropy_bits_present_ = current_entropy_in_pool_;
   int seed_material_size = current_size_pool_ + size_nonce + size_personalization;
   byte seed_material[seed_material_size];
   memset(seed_material, 0, seed_material_size);
@@ -207,6 +206,7 @@ bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization, byte
   memcpy(&seed_material[1], V_, seed_len_bytes_);
   hash_df(seed_len_bytes_ + 1, seed_material, seed_len_bits_, C_);
   num_entropy_bits_present_ = current_entropy_in_pool_;
+  current_entropy_in_pool_= 0;
   initialized_= true;
   reseed_ctr_ = 1;
   return initialized_;

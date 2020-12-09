@@ -31,19 +31,37 @@ bool test_ctr_drng() {
   memset(bytes_out, 0, 512);
  
   hash_drng obj;
-  obj.set_policy(256, 512, 200);
+  obj.set_policy(256, 1024, 200);
   obj.add_entropy(512, ent_bytes, 256); 
+
   if (!obj.init(0, nullptr, 0, nullptr)) {
     printf("cannot init object\n");
     return false;
+  }
+
+  if (FLAGS_print_all) {
+    printf("\n");
+    printf("initialized_: %d\n", obj.initialized_);
+    printf("reseed_ctr_: %d\n", obj.reseed_ctr_);
+    printf("int reseed_interval: %d\n", obj.reseed_interval_);
+    printf("num_entropy_bits_present: %d\n", obj.num_entropy_bits_present_);
+    printf("num_ent_bits_required: %d\n", obj.num_ent_bits_required_);
+    printf("current_entropy_in_pool: %d\n", obj.current_entropy_in_pool_);
+    printf("current_size_pool: %d\n", obj.current_size_pool_);
+    printf("pool_size_: %d\n", obj.pool_size_);
+    printf("hash_byte_output_size: %d\n", obj.hash_byte_output_size_);
+    printf("seed_len_bits: %d\n", obj.seed_len_bits_);
+    printf("seed_len_bytes: %d\n", obj.seed_len_bytes_);
+    printf("\n");
   }
 
   if (!obj.generate(256, bytes_out, 0, nullptr)) {
     printf("cannot generate bits\n");
     return false;
   }
-  printf("generated: "); printf("\n");
+  printf("generated: ");
   print_bytes(32, bytes_out);
+  printf("\n");
   return true;
 }
 

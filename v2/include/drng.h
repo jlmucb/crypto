@@ -21,7 +21,7 @@
 
 class hash_drng {
   enum {MAXPOOL_SIZE = 1024};
-private:
+public:
   bool initialized_;
   int reseed_ctr_;
   int reseed_interval_;
@@ -39,7 +39,6 @@ private:
 
   sha256 hash_obj_;
 
-public:
   hash_drng();
   ~hash_drng();
 
