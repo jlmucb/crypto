@@ -58,12 +58,18 @@ bool test_ctr_drng() {
     printf("\n");
   }
 
-  if (!obj.generate(256, bytes_out, 0, nullptr)) {
-    printf("cannot generate bits\n");
-    return false;
+  for (int j = 0; j < 5; j++) {
+    if (!obj.generate(256, bytes_out, 0, nullptr)) {
+      printf("cannot generate bits\n");
+      return false;
+    }
+    if (FLAGS_print_all) {
+      printf("generated: ");
+      print_bytes(32, bytes_out);
+      // printf("\n");
+    }
   }
-  printf("generated: ");
-  print_bytes(32, bytes_out);
+
   printf("\n");
   return true;
 }

@@ -222,7 +222,7 @@ bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization, byte
   byte seed_material[seed_material_size];
   memset(seed_material, 0, seed_material_size);
   memcpy(seed_material, pool_, current_size_pool_);
-#if 1
+#if 0
   printf("init, seed material: "); print_bytes(seed_material_size, seed_material);printf("\n");
 #endif
   hash_df(seed_material_size, seed_material, seed_len_bits_, V_);
@@ -234,7 +234,7 @@ bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization, byte
   current_size_pool_ = 0;
   initialized_= true;
   reseed_ctr_ = 1;
-#if 1
+#if 0
   printf("V initial: ");print_bytes(55, V_); printf("\n");
   printf("C initial: ");print_bytes(55, C_); printf("\n");
 #endif
@@ -299,7 +299,7 @@ bool hash_drng::generate(int num_bits_needed, byte* out, int size_add_in_bits,
   big_add(size_t, t2, size_t, t1, size_t, (uint64_t*) V_);
   for(int i= 55; i < 64; i++) V_[i] = 0;
   reseed_ctr_++;
-#if 1
+#if 0
   printf("new V: ");print_bytes(55, V_); printf("\n");
   printf("new C: ");print_bytes(55, C_); printf("\n");
 #endif
