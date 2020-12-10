@@ -25,6 +25,12 @@ void zero_uint32_array(int l, uint32_t* n) {
   }
 }
 
+void print_uint64(int n, uint64_t* x) {
+  for (int i = 0; i < n; i++) {
+    printf("%016lx ", x[i]);
+  }
+}
+
 // size_n1 >= size_n2
 void big_add(int size_n1, uint64_t* n1, int size_n2, uint64_t* n2,
              int size_out, uint64_t* out) {
@@ -40,22 +46,32 @@ void big_add(int size_n1, uint64_t* n1, int size_n2, uint64_t* n2,
   uint64_t t;
 
   for (int i = 0; i < 2 * size_out; i++) {
-    if (usize2 <= i)
-      x = n2[i];
+    if (i < usize2)
+      x = p2[i];
     else
       x = 0;
-    if (usize1 <= i)
-      y = n1[i];
+    if (i < usize1)
+      y = p1[i];
     else
       y = 0;
   t = (uint64_t) x + (uint64_t)y + (uint64_t) carry;
   p3[i] = t&0xffffffff;
   carry = t >> 32;
   }
+#if 0
+  printf("n1: "); print_uint64(size_n1, n1); printf("\n");
+  printf("n2: "); print_uint64(size_n2, n2); printf("\n");
+  printf("out: "); print_uint64(size_out, out); printf("\n");
+  printf("\n");
+#endif
 }
 
 void big_add_one(int size_n, uint64_t* n) {
-  int carry = 1;
+  uint64_t carry = 1;
+
+#if 0
+  printf("big_add_one, in : "); print_uint64(size_n, n); printf("\n");
+#endif
   for (int i = 0; i < size_n; i++) {
     if (carry != 0) {
       if (n[i] < 0xffffffffffffffffULL) {
@@ -68,6 +84,9 @@ void big_add_one(int size_n, uint64_t* n) {
       n[i] = n[i];
     }
   }
+#if 0
+  printf("big_add_one, out: "); print_uint64(size_n, n); printf("\n");
+#endif
 }
 
 bool hash_drng::health_check() {
@@ -118,7 +137,8 @@ void hash_drng::hash_df(int byte_size_in, byte* in, int bit_size_out, byte* out)
 void hash_drng::hash_gen(int num_requested_bits, byte* out) {
   int size_output_bytes = (num_requested_bits + NBITSINBYTE - 1) / NBITSINBYTE;
   int m = size_output_bytes / hash_byte_output_size_;
-  byte data[seed_len_bytes_];
+  byte data[seed_len_bytes_ + 1];  // to fill to uint64_t boundary
+  memset(data, 0, seed_len_bytes_ + 1);
   memcpy(data, V_, seed_len_bytes_);
   int bytes_so_far = 0;
   byte extra_out[hash_byte_output_size_];
@@ -130,7 +150,7 @@ void hash_drng::hash_gen(int num_requested_bits, byte* out) {
     hash_obj_.finalize();
     hash_obj_.get_digest(hash_byte_output_size_, &out[bytes_so_far]);
     bytes_so_far += hash_byte_output_size_;
-    big_add_one(55, (uint64_t*)data);
+    big_add_one(7, (uint64_t*)data);
   }
   // partial block --- avoid overflow
   if (bytes_so_far < size_output_bytes) {
@@ -201,14 +221,23 @@ bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization, byte
   int seed_material_size = current_size_pool_ + size_nonce + size_personalization;
   byte seed_material[seed_material_size];
   memset(seed_material, 0, seed_material_size);
+  memcpy(seed_material, pool_, current_size_pool_);
+#if 1
+  printf("init, seed material: "); print_bytes(seed_material_size, seed_material);printf("\n");
+#endif
   hash_df(seed_material_size, seed_material, seed_len_bits_, V_);
   memset(seed_material, 0, seed_material_size);
   memcpy(&seed_material[1], V_, seed_len_bytes_);
   hash_df(seed_len_bytes_ + 1, seed_material, seed_len_bits_, C_);
   num_entropy_bits_present_ = current_entropy_in_pool_;
   current_entropy_in_pool_= 0;
+  current_size_pool_ = 0;
   initialized_= true;
   reseed_ctr_ = 1;
+#if 1
+  printf("V initial: ");print_bytes(55, V_); printf("\n");
+  printf("C initial: ");print_bytes(55, C_); printf("\n");
+#endif
   return initialized_;
 }
 
@@ -251,18 +280,28 @@ bool hash_drng::generate(int num_bits_needed, byte* out, int size_add_in_bits,
   hash_obj_.finalize();
   hash_obj_.get_digest(hash_byte_output_size_, H);
 
+#if 0
+  printf("H: ");print_bytes(32, H);printf("\n");
+#endif
+
   // V = V + H + C + reseed_ctr
-  int size_t = (seed_len_bytes_ + sizeof(uint64_t) - 1) / sizeof(uint64_t);
+  int size_t = (seed_len_bytes_ + sizeof(uint64_t) - 1) / sizeof(uint64_t) + 1;
+  uint64_t t0[size_t];
   uint64_t t1[size_t];
   uint64_t t2[size_t];
   zero_uint32_array(2*size_t, (uint32_t*) t1);
   zero_uint32_array(2*size_t, (uint32_t*) t2);
   big_add(size_t, (uint64_t*) V_, size_t, (uint64_t*) C_, size_t, t1);
-  big_add(size_t, t1, hash_byte_output_size_ / sizeof(uint64_t), (uint64_t*)H, size_t, t2);
+  big_add(size_t, t1, 4, (uint64_t*)H, size_t, t2);
   zero_uint32_array(2*size_t, (uint32_t*) t1);
   zero_uint32_array(2*size_t, (uint32_t*) V_);
   t1 [0] = reseed_ctr_;
   big_add(size_t, t2, size_t, t1, size_t, (uint64_t*) V_);
+  for(int i= 55; i < 64; i++) V_[i] = 0;
   reseed_ctr_++;
+#if 1
+  printf("new V: ");print_bytes(55, V_); printf("\n");
+  printf("new C: ");print_bytes(55, C_); printf("\n");
+#endif
   return true;
 }

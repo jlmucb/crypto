@@ -32,6 +32,9 @@ bool test_ctr_drng() {
  
   hash_drng obj;
   obj.set_policy(256, 1024, 200);
+
+  for(int i = 0; i < 512; i++)
+    ent_bytes[i] = i % 2;
   obj.add_entropy(512, ent_bytes, 256); 
 
   if (!obj.init(0, nullptr, 0, nullptr)) {
