@@ -31,6 +31,8 @@ void print_uint64(int n, uint64_t* x) {
   }
 }
 
+// Note:  I think this is supposed to be big endian so we should reverse
+// the bytes before we add and reverse them again, afterwards.
 // size_n1 >= size_n2
 void big_add(int size_n1, uint64_t* n1, int size_n2, uint64_t* n2,
              int size_out, uint64_t* out) {
