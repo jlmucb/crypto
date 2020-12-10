@@ -34,13 +34,18 @@ bool test_ctr_drng() {
   obj.set_policy(256, 1024, 200);
 
   for(int i = 0; i < 512; i++)
-    ent_bytes[i] = i % 2;
+    ent_bytes[i] = i % 4;
   obj.add_entropy(512, ent_bytes, 256); 
 
   if (!obj.init(0, nullptr, 0, nullptr)) {
     printf("cannot init object\n");
     return false;
   }
+
+  // reinit pool for reseed
+  for(int i = 0; i < 384; i++)
+    ent_bytes[i] = i % 2;
+  obj.add_entropy(384, ent_bytes, 256); 
 
   if (FLAGS_print_all) {
     printf("\n");

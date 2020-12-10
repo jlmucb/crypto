@@ -31,8 +31,8 @@ void print_uint64(int n, uint64_t* x) {
   }
 }
 
-// Note:  I think this is supposed to be big endian so we should reverse
-// the bytes before we add and reverse them again, afterwards.
+// Note:  Mixers assume big endian so reverse bytes should
+// be invoked before and after any call to the addition stuff.
 // size_n1 >= size_n2
 void big_add(int size_n1, uint64_t* n1, int size_n2, uint64_t* n2,
              int size_out, uint64_t* out) {
@@ -86,6 +86,7 @@ void big_add_one(int size_n, uint64_t* n) {
       n[i] = n[i];
     }
   }
+
 #if 0
   printf("big_add_one, out: "); print_uint64(size_n, n); printf("\n");
 #endif
@@ -152,7 +153,9 @@ void hash_drng::hash_gen(int num_requested_bits, byte* out) {
     hash_obj_.finalize();
     hash_obj_.get_digest(hash_byte_output_size_, &out[bytes_so_far]);
     bytes_so_far += hash_byte_output_size_;
+    reverse_bytes_in_place(55, data);
     big_add_one(7, (uint64_t*)data);
+    reverse_bytes_in_place(55, data);
   }
   // partial block --- avoid overflow
   if (bytes_so_far < size_output_bytes) {
@@ -194,21 +197,20 @@ hash_drng::~hash_drng() {
   memset(V_, 0, 64);
 }
 
-void hash_drng::set_policy(int n_ent, int bit_pool_size, int reseed_interval) {
+void hash_drng::set_policy(int n_ent, int byte_pool_size, int reseed_interval) {
   num_ent_bits_required_ = n_ent;
-  if (bit_pool_size > MAXPOOL_SIZE * NBITSINBYTE)
+  if (byte_pool_size > MAXPOOL_SIZE * NBITSINBYTE)
     pool_size_ = MAXPOOL_SIZE;
   else
-    pool_size_ = (bit_pool_size + NBITSINBYTE - 1) / NBITSINBYTE;
+    pool_size_ = byte_pool_size;
   reseed_interval_ = reseed_interval;
 }
 
-void hash_drng::add_entropy(int size_bits, byte* bits, int ent) {
-  int byte_size = (size_bits + NBITSINBYTE - 1) / NBITSINBYTE;
-  if ((byte_size + current_size_pool_) >= MAXPOOL_SIZE)
+void hash_drng::add_entropy(int size_bytes, byte* bits, int ent) {
+  if ((size_bytes + current_size_pool_) >= MAXPOOL_SIZE)
     return;
-  memcpy(&pool_[current_size_pool_], bits, byte_size);
-  current_size_pool_ += byte_size;
+  memcpy(&pool_[current_size_pool_], bits, size_bytes);
+  current_size_pool_ += size_bytes;
   current_entropy_in_pool_ += ent;
 }
 
@@ -245,7 +247,31 @@ bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization, byte
 
 bool hash_drng::reseed() {
   reseed_ctr_ = 0;
-  return true;
+  if (num_ent_bits_required_ > current_entropy_in_pool_)
+    return false;
+  int seed_material_size = 1 + current_size_pool_ + seed_len_bytes_;
+  byte seed_material[seed_material_size];
+  memset(seed_material, 0, seed_material_size);
+  seed_material[0] = 0x01;
+  memcpy(&seed_material[1], V_, seed_len_bytes_);
+  memcpy(&seed_material[1 + seed_len_bytes_], pool_, current_size_pool_);
+#if 0
+  printf("init, seed material: "); print_bytes(seed_material_size, seed_material);printf("\n");
+#endif
+  hash_df(seed_material_size, seed_material, seed_len_bits_, V_);
+  memset(seed_material, 0, seed_material_size);
+  memcpy(&seed_material[1], V_, seed_len_bytes_);
+  hash_df(seed_len_bytes_ + 1, seed_material, seed_len_bits_, C_);
+  num_entropy_bits_present_ = current_entropy_in_pool_;
+  current_entropy_in_pool_= 0;
+  current_size_pool_ = 0;
+  initialized_= true;
+  reseed_ctr_ = 1;
+#if 0
+  printf("reseed V initial: ");print_bytes(55, V_); printf("\n");
+  printf("reseed C initial: ");print_bytes(55, C_); printf("\n");
+#endif
+  return initialized_;
 }
 
 bool hash_drng::generate(int num_bits_needed, byte* out, int size_add_in_bits,
@@ -256,19 +282,27 @@ bool hash_drng::generate(int num_bits_needed, byte* out, int size_add_in_bits,
     return false;
   int add_in_byte_size = (size_add_in_bits + NBITSINBYTE - 1) / NBITSINBYTE;
 
-  // w = Hash(0x02||V_||add_in_bits)
-  byte w[hash_byte_output_size_];
-  memset(w, 0, hash_byte_output_size_);
-  byte two = 0x02;
-  hash_obj_.init();
-  hash_obj_.add_to_hash(1, &two);
-  hash_obj_.add_to_hash(seed_len_bytes_, V_);
-  hash_obj_.add_to_hash(add_in_byte_size, add_in_bits);
-  hash_obj_.finalize();
-  hash_obj_.get_digest(hash_byte_output_size_, w);
+  if (size_add_in_bits > 0) {
+    // w = Hash(0x02 || V_||add_in_bits)
+    byte w[hash_byte_output_size_];
+    memset(w, 0, hash_byte_output_size_);
+    byte two = 0x02;
+    hash_obj_.init();
+    hash_obj_.add_to_hash(1, &two);
+    hash_obj_.add_to_hash(seed_len_bytes_, V_);
+    hash_obj_.add_to_hash(add_in_byte_size, add_in_bits);
+    hash_obj_.finalize();
+    hash_obj_.get_digest(hash_byte_output_size_, w);
 
-  // if (size_add_in_bits > 0)
-  //   V+= w mod 2^seedlen
+    // V+= w mod 2^seedlen
+    reverse_bytes_in_place(55, V_);
+    reverse_bytes_in_place(32, w);
+    int size_v = (seed_len_bytes_ + sizeof(uint64_t) - 1) / sizeof(uint64_t);
+    uint64_t t[size_v];
+    big_add(size_v, (uint64_t*) V_, 4, (uint64_t*) w, size_v, t);
+    reverse_bytes(55, (byte*)t, V_);
+    reverse_bytes_in_place(32, w);
+  }
 
   hash_gen(num_bits_needed, out);
 
@@ -293,12 +327,18 @@ bool hash_drng::generate(int num_bits_needed, byte* out, int size_add_in_bits,
   uint64_t t2[size_t];
   zero_uint32_array(2*size_t, (uint32_t*) t1);
   zero_uint32_array(2*size_t, (uint32_t*) t2);
+  reverse_bytes_in_place(55, V_);
+  reverse_bytes_in_place(55, C_);
+  reverse_bytes_in_place(32, H);
   big_add(size_t, (uint64_t*) V_, size_t, (uint64_t*) C_, size_t, t1);
   big_add(size_t, t1, 4, (uint64_t*)H, size_t, t2);
   zero_uint32_array(2*size_t, (uint32_t*) t1);
   zero_uint32_array(2*size_t, (uint32_t*) V_);
   t1 [0] = reseed_ctr_;
   big_add(size_t, t2, size_t, t1, size_t, (uint64_t*) V_);
+  reverse_bytes_in_place(55, V_);
+  reverse_bytes_in_place(55, C_);
+  reverse_bytes_in_place(32, H);
   for(int i= 55; i < 64; i++) V_[i] = 0;
   reseed_ctr_++;
 #if 0

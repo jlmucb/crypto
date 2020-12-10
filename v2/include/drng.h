@@ -20,7 +20,7 @@
 
 
 class hash_drng {
-  enum {MAXPOOL_SIZE = 1024};
+  enum {MAXPOOL_SIZE = 4096};
 public:
   bool initialized_;
   int reseed_ctr_;
@@ -43,8 +43,8 @@ public:
   ~hash_drng();
 
   int entropy_estimate();
-  void set_policy(int n_ent, int bit_pool_size, int reseed_interval);
-  void add_entropy(int size_bits, byte* bits, int ent);
+  void set_policy(int n_ent, int byte_pool_size, int reseed_interval);
+  void add_entropy(int size_bytes, byte* bits, int ent);
   bool health_check();
   void hash(int byte_size_in, byte* in, byte* out);
   void hash_df(int byte_size_in, byte* in, int bit_size_out, byte* out);
