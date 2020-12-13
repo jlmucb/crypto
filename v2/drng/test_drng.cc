@@ -79,6 +79,73 @@ bool test_ctr_drng() {
   return true;
 }
 
+bool test_markov() {
+  const int seq_len = 4;
+  byte seq[seq_len + 8];
+  int num_seq = 1 << seq_len;
+
+  byte b;
+  double p_0 = .5;
+  double p_1 = .5;
+  double p_00 = .5;
+  double p_01 = .5;
+  double p_10 = .5;
+  double p_11 = .5;
+  double probs[num_seq];
+  double total_prob = 0.0;
+
+  for (byte b = 0; b <= 15; b++) {
+    if (!bits_to_byte(1, &b, 8, seq)) {
+      printf("bad conversion\n");
+      return false;
+    }
+    probs[(int) b] = markov_sequence_probability(seq_len, seq, p_0, p_1,
+        p_00, p_01, p_10, p_11);
+  }
+
+  total_prob = 0.0;
+  for (int i = 0; i < num_seq; i++)
+    total_prob += probs[i];
+
+  printf("\n");
+  printf("P(0): %lf, p(1): %lf, P(0|0): %lf, P(1|0): %lf, P(1|0): %lf, P(1|1): %lf\n",
+    p_0, p_1, p_00, p_01, p_10, p_11);
+  printf("Total prob: %lf\n", total_prob);
+  for(int i = 0; i < num_seq; i++) {
+    printf("Prob(%x)= %lf ", i, probs[i]);
+    if ((i%4) == 3)
+      printf("\n");
+  }
+
+  p_00 = .75;
+  p_01 = .25;
+  p_10 = .25;
+  p_11 = .75;
+  for (byte b = 0; b <= 15; b++) {
+    if (!bits_to_byte(1, &b, 8, seq)) {
+      printf("bad conversion\n");
+      return false;
+    }
+    probs[(int) b] = markov_sequence_probability(seq_len, seq, p_0, p_1,
+        p_00, p_01, p_10, p_11);
+  }
+
+  total_prob = 0.0;
+  for (int i = 0; i < num_seq; i++)
+    total_prob += probs[i];
+
+  printf("\n");
+  printf("P(0): %lf, p(1): %lf, P(0|0): %lf, P(1|0): %lf, P(1|0): %lf, P(1|1): %lf\n",
+    p_0, p_1, p_00, p_01, p_10, p_11);
+  printf("Total prob: %lf\n", total_prob);
+  for(int i = 0; i < num_seq; i++) {
+    printf("Prob(%x)= %lf ", i, probs[i]);
+    if ((i%4) == 3)
+      printf("\n");
+  }
+  return true;
+}
+
 bool test_entropy() {
   const int num_bits_to_test = 4096;
   byte one_bit_per_byte[num_bits_to_test];
@@ -87,38 +154,36 @@ bool test_entropy() {
   memset(one_bit_per_byte, 0, num_bits_to_test);
   memset(all_bits_in_byte, 0, num_bits_to_test / NBITSINBYTE);
 
+  printf("\n");
+  print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  printf("\n");
+
+  double s_ent = shannon_entropy(255,
+        num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  printf("Shannon entropy: %lf\n", s_ent);
+  double min_ent = most_common_value_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  printf("Min entropy: %lf\n", min_ent);
+  double mark_ent = markov_entropy(num_bits_to_test, one_bit_per_byte);
+  printf("Mark entropy: %lf\n", mark_ent);
+  printf("\n");
+
+  crypto_get_random_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
   if (!bits_to_byte(num_bits_to_test / NBITSINBYTE, all_bits_in_byte,
                   num_bits_to_test, one_bit_per_byte)) {
     printf("bad conversion\n");
     return false;
   }
 
+
   printf("\n");
-  double min_ent = most_common_value_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
   print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  printf("Min entropy: %lf\n", min_ent);
-  printf("\n");
 
-  // markov_entropy(num_samples, samples);
-
-  printf("\n");
-  double s_ent = shannon_entropy(255,
-        num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  printf("Shannon entropy: %lf\n", s_ent);
-  printf("\n");
-
-  crypto_get_random_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  printf("\n");
   s_ent = shannon_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
   printf("Shannon entropy: %lf\n", s_ent);
-  printf("\n");
-
-  printf("\n");
   min_ent = most_common_value_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
   printf("Min entropy: %lf\n", min_ent);
+  mark_ent = markov_entropy(num_bits_to_test, one_bit_per_byte);
+  printf("Mark entropy: %lf\n", mark_ent);
   printf("\n");
 
   return true;
@@ -127,8 +192,11 @@ bool test_entropy() {
 TEST (drng, test_ctr_drng) {
   EXPECT_TRUE(test_ctr_drng());
 }
-TEST (entropy_tests, ) {
+TEST (entropy_tests, test_entropy) {
   EXPECT_TRUE(test_entropy());
+}
+TEST (markov_tests, test_markov) {
+  EXPECT_TRUE(test_markov());
 }
 
 int main(int an, char** av) {

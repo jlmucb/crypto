@@ -55,6 +55,19 @@ public:
   bool generate(int num_bits_needed, byte* out, int n_add_in_bits,
             byte* add_in_bits);
 };
+
+double lg(double x);
+bool bits_to_byte(int n_bit_bytes, byte* all_bits_in_byte,
+                  int n_one_bit_per_byte, byte* one_bit_per_byte);
+bool byte_to_bits(int n_one_bit_per_byte, byte* one_bit_per_byte,
+                  int n_bit_bytes, byte* all_bits_in_byte);
+double most_common_value_entropy(int largest_possible_sample,
+          int num_samples, byte* samples);
+double markov_sequence_probability(int seq_len, byte* seq,
+  double p_0, double p_1, double p_00, double p_01, double p_10, double p_11);
+double markov_entropy(int num_samples, byte* samples);
+double shannon_entropy(int largest_possible_sample,
+        int num_samples, byte* samples);
 #endif
 
 

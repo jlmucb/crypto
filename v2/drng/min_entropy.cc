@@ -119,14 +119,45 @@ double most_common_value_entropy(int largest_possible_sample, int num_samples, b
   return -lg(p_u);
 }
 
+double markov_sequence_probability(int seq_len, byte* seq,
+  double p_0, double p_1,
+  double p_00, double p_01, double p_10, double p_11) {
+
+  double p = 0.0;
+
+  if (seq[0] = 0)
+    p = p_0;
+  else
+    p = p_1;
+
+  for (int i = 1; i < seq_len; i++) {
+    if (seq[i-1] == 0 && seq[i] == 0) {
+      p *= p_00;
+    } else if (seq[i-1] == 0 && seq[i] == 1) {
+      p *= p_01;
+    } else if (seq[i-1] == 1 && seq[i] == 0) {
+      p *= p_10;
+    } else {
+      p *= p_11;
+    }
+  }
+  return p;
+}
+
 // samples are bytes containing 1 bit
 double markov_entropy(int num_samples, byte* samples) {
+  int n_zero = 0;
+  int n_one= 0;
   int n_00 = 0;
   int n_01 = 0;
   int n_10 = 0;
   int n_11 = 0;
 
   for (int i = 0; i < (num_samples - 1); i++) {
+    if (samples[i] == 0)
+      n_zero++;
+    else
+      n_one++;
     if (samples[i] == 0 && samples[i + 1] == 0) {
       n_00++;
     } else if (samples[i] == 0 && samples[i + 1] == 1) {
@@ -137,6 +168,35 @@ double markov_entropy(int num_samples, byte* samples) {
       n_11++;
     }
   }
+
+  double p_0 = ((double)n_zero) / ((double) num_samples);
+  double p_1 = 1.0 - p_0;
+
+  double p_00;
+  double p_01;
+  double p_10;
+  double p_11;
+
+  if ((n_00 + n_01) > 0) {
+    p_00 = ((double) n_00) / ((double)(n_00 + n_01));
+    p_01 = ((double) n_01) / ((double)(n_00 + n_01));
+  } else {
+    p_00 = 0.0;
+    p_01 = 0.0;
+  }
+  if ((n_10 + n_11) > 0) {
+    p_10 = ((double) n_10) / ((double)(n_10 + n_11));
+    p_11 = ((double) n_11) / ((double)(n_10 + n_11));
+  } else {
+    p_10 = 0.0;
+    p_11 = 0.0;
+  }
+
+#if 0
+  printf("P(0): %lf, P(1): %lf\n", p_0, p_1);
+  printf("P(0|0): %lf, P(1|0): %lf, P(0|1): %lf, P(1|1): %lf\n", 
+    p_00, p_01, p_10, p_11);
+#endif
 
   // largest probability of 128 bit sequence
   double p_max = 1.0;
