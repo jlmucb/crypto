@@ -93,8 +93,14 @@ bool test_entropy() {
     return false;
   }
 
-  // most_common_value_entropy(largest_possible_sample, num_samples, samples);
+  printf("\n");
+  double min_ent = most_common_value_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  printf("Min entropy: %lf\n", min_ent);
+  printf("\n");
+
   // markov_entropy(num_samples, samples);
+
   printf("\n");
   double s_ent = shannon_entropy(255,
         num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
@@ -107,6 +113,12 @@ bool test_entropy() {
   s_ent = shannon_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
   print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
   printf("Shannon entropy: %lf\n", s_ent);
+  printf("\n");
+
+  printf("\n");
+  min_ent = most_common_value_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  printf("Min entropy: %lf\n", min_ent);
   printf("\n");
 
   return true;

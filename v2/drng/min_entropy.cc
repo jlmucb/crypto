@@ -114,6 +114,8 @@ double most_common_value_entropy(int largest_possible_sample, int num_samples, b
   double p_u = v[n] + 2.576 * sqrt((v[n] * (1 - v[n])) / ((double) (num_samples - 1)));
   if (1.0 < p_u)
     p_u = 1.0;
+  if (p_u == 0.0)
+    return 0.0;
   return -lg(p_u);
 }
 
