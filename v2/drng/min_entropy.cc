@@ -15,6 +15,7 @@
 #include <gflags/gflags.h>
 #include <stdio.h>
 #include <math.h>
+#include <crypto_support.h>
 
 // Entropy tests:
 //    Adaptive proportion test
@@ -23,6 +24,7 @@
 //    # increases/decreases
 //    # runs based on median
 //    Length of runs based on median
+//    Excursion
 //    Average collisions test
 //    Max collision
 //    Periodicity
@@ -47,6 +49,97 @@
 //  Find p_max = most likely 128 bit sequence
 //    min_e = min(-lg(p_max), 1)
 
+double lg(double x) {
+  return log(x) / log (2.0);
+}
 
+bool bits_to_byte(int n_bit_bytes, byte* all_bits_in_byte,
+                  int n_one_bit_per_byte, byte* one_bit_per_byte) {
+  if ((NBITSINBYTE * n_bit_bytes) > n_one_bit_per_byte)
+    return false;
+  byte b;
+  for (int i = 0; i < n_bit_bytes; i++) {
+    b = all_bits_in_byte[i];
+    for (int j = 0; j < NBITSINBYTE; j++) {
+      one_bit_per_byte[NBITSINBYTE * i + j] = b & 0x1;
+      b >>= 1;
+    }
+  }
+  return true;
+}
 
+bool byte_to_bits(int n_one_bit_per_byte, byte* one_bit_per_byte,
+                  int n_bit_bytes, byte* all_bits_in_byte) {
+  if (((n_one_bit_per_byte + NBITSINBYTE - 1) / NBITSINBYTE) > n_one_bit_per_byte)
+    return false;
+  byte b;
+  for (int i = 0; i < n_one_bit_per_byte; i+= NBITSINBYTE) {
+    b = 0;
+    for (int j = 0; j < NBITSINBYTE; j++) {
+      b <<= 1;
+      b |= one_bit_per_byte[NBITSINBYTE * i + j];
+    }
+    all_bits_in_byte[i / NBITSINBYTE] = b;
+  }
+  return true;
+}
 
+int largest_value_index(int n, double* v) {
+  int m = 0;
+  double largest = v[0];
+
+  for (int i = 1; i < n; i++) {
+    if (v[i] > largest)
+      m = i;
+  }
+  return m;
+}
+
+// samples are  integers 0, 1, ..., largest_possible_sample
+double most_common_value(int largest_possible_sample, int num_samples, byte* samples) {
+  int sample_index = largest_possible_sample + 1;
+  double v[sample_index];
+  for (int i = 0; i < sample_index; i++)
+    v[i] = 0.0;
+
+  for( int i = 0; i < num_samples; i++) {
+    v[(int)samples[i]] += 1.0;
+  }
+  for( int i = 0; i < sample_index; i++) {
+    v[i] /= ((double) sample_index);
+  }
+
+  int n = largest_value_index(sample_index, v);
+
+  double p_u = v[n] + 2.576 * sqrt((v[n] * (1 - v[n])) / ((double) (num_samples - 1)));
+  if (1.0 < p_u)
+    p_u = 1.0;
+  return -lg(p_u);
+}
+
+// samples are bytes containing 1 bit
+double markov_ent(int num_samples, byte* samples) {
+  int n_00 = 0;
+  int n_01 = 0;
+  int n_10 = 0;
+  int n_11 = 0;
+
+  for (int i = 0; i < (num_samples - 1); i++) {
+    if (samples[i] == 0 && samples[i + 1] == 0) {
+      n_00++;
+    } else if (samples[i] == 0 && samples[i + 1] == 1) {
+      n_01++;
+    } else if (samples[i] == 1 && samples[i + 1] == 0) {
+      n_10++;
+    } else {
+      n_11++;
+    }
+  }
+
+  // largest probability of 128 bit sequence
+  double p_max = 1.0;
+  double min_e = -lg(p_max /128.0);
+  if (min_e > 1.0)
+    min_e =1.0;
+  return min_e;
+}
