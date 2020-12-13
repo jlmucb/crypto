@@ -46,7 +46,7 @@ AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=   $(O)/test_drng.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
-	$(O)/hash.o $(O)/sha256.o $(O)/drng.o
+	$(O)/hash.o $(O)/sha256.o $(O)/drng.o $(O)/min_entropy.o
 
 all:    test_drng.exe
 clean:
@@ -89,3 +89,7 @@ $(O)/sha256.o: $(S_HASH)/sha256.cc
 $(O)/drng.o: $(S)/drng.cc
 	@echo "compiling drng.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/drng.o $(S)/drng.cc
+
+$(O)/min_entropy.o: $(S)/min_entropy.cc
+	@echo "compiling min_entropy.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/min_entropy.o $(S)/min_entropy.cc
