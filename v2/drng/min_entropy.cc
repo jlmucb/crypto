@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <crypto_support.h>
+#include <drng.h>
 
 // Entropy tests:
 //    Adaptive proportion test
@@ -96,7 +97,7 @@ int largest_value_index(int n, double* v) {
 }
 
 // samples are  integers 0, 1, ..., largest_possible_sample
-double most_common_value(int largest_possible_sample, int num_samples, byte* samples) {
+double most_common_value_entropy(int largest_possible_sample, int num_samples, byte* samples) {
   int sample_index = largest_possible_sample + 1;
   double v[sample_index];
   for (int i = 0; i < sample_index; i++)
@@ -106,11 +107,10 @@ double most_common_value(int largest_possible_sample, int num_samples, byte* sam
     v[(int)samples[i]] += 1.0;
   }
   for( int i = 0; i < sample_index; i++) {
-    v[i] /= ((double) sample_index);
+    v[i] /= ((double) num_samples);
   }
 
   int n = largest_value_index(sample_index, v);
-
   double p_u = v[n] + 2.576 * sqrt((v[n] * (1 - v[n])) / ((double) (num_samples - 1)));
   if (1.0 < p_u)
     p_u = 1.0;
@@ -118,7 +118,7 @@ double most_common_value(int largest_possible_sample, int num_samples, byte* sam
 }
 
 // samples are bytes containing 1 bit
-double markov_ent(int num_samples, byte* samples) {
+double markov_entropy(int num_samples, byte* samples) {
   int n_00 = 0;
   int n_01 = 0;
   int n_10 = 0;
@@ -142,4 +142,26 @@ double markov_ent(int num_samples, byte* samples) {
   if (min_e > 1.0)
     min_e =1.0;
   return min_e;
+}
+
+// samples are  integers 0, 1, ..., largest_possible_sample
+double shannon_entropy(int largest_possible_sample, int num_samples, byte* samples) {
+  int sample_index = largest_possible_sample + 1;
+  double v[sample_index];
+  for (int i = 0; i < sample_index; i++)
+    v[i] = 0.0;
+
+  for( int i = 0; i < num_samples; i++) {
+    v[(int)samples[i]] += 1.0;
+  }
+  for( int i = 0; i < sample_index; i++) {
+    v[i] /= ((double) num_samples);
+  }
+
+  double entropy = 0.0;
+  for( int i = 0; i < sample_index; i++) {
+    if (v[i] != 0.0)
+      entropy += -v[i] * lg(v[i]);
+  }
+  return entropy;
 }

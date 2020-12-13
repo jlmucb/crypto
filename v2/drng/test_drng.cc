@@ -79,8 +79,44 @@ bool test_ctr_drng() {
   return true;
 }
 
+bool test_entropy() {
+  const int num_bits_to_test = 4096;
+  byte one_bit_per_byte[num_bits_to_test];
+  byte all_bits_in_byte[num_bits_to_test / NBITSINBYTE];
+
+  memset(one_bit_per_byte, 0, num_bits_to_test);
+  memset(all_bits_in_byte, 0, num_bits_to_test / NBITSINBYTE);
+
+  if (!bits_to_byte(num_bits_to_test / NBITSINBYTE, all_bits_in_byte,
+                  num_bits_to_test, one_bit_per_byte)) {
+    printf("bad conversion\n");
+    return false;
+  }
+
+  // most_common_value_entropy(largest_possible_sample, num_samples, samples);
+  // markov_entropy(num_samples, samples);
+  printf("\n");
+  double s_ent = shannon_entropy(255,
+        num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  printf("Shannon entropy: %lf\n", s_ent);
+  printf("\n");
+
+  crypto_get_random_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  printf("\n");
+  s_ent = shannon_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  printf("Shannon entropy: %lf\n", s_ent);
+  printf("\n");
+
+  return true;
+}
+
 TEST (drng, test_ctr_drng) {
   EXPECT_TRUE(test_ctr_drng());
+}
+TEST (entropy_tests, ) {
+  EXPECT_TRUE(test_entropy());
 }
 
 int main(int an, char** av) {
@@ -88,8 +124,11 @@ int main(int an, char** av) {
   an = 1;
   ::testing::InitGoogleTest(&an, av);
 
+  init_crypto();
+
   int result = RUN_ALL_TESTS();
 
+  close_crypto();
   printf("\n");
   return result;
 }
