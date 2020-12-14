@@ -122,10 +122,9 @@ double most_common_value_entropy(int largest_possible_sample, int num_samples, b
 double markov_sequence_probability(int seq_len, byte* seq,
   double p_0, double p_1,
   double p_00, double p_01, double p_10, double p_11) {
-
   double p = 0.0;
 
-  if (seq[0] = 0)
+  if (seq[0] == 0)
     p = p_0;
   else
     p = p_1;
@@ -192,17 +191,36 @@ double markov_entropy(int num_samples, byte* samples) {
     p_11 = 0.0;
   }
 
-#if 0
+#if 1
   printf("P(0): %lf, P(1): %lf\n", p_0, p_1);
   printf("P(0|0): %lf, P(1|0): %lf, P(0|1): %lf, P(1|1): %lf\n", 
     p_00, p_01, p_10, p_11);
 #endif
 
-  // largest probability of 128 bit sequence
-  double p_max = 1.0;
-  double min_e = -lg(p_max /128.0);
+  const int seq_len = 16;
+  byte seq[seq_len + 8];
+  int num_seq = 1 << seq_len;
+  double probs[num_seq];
+
+  for (uint32_t b = 0; b < num_seq; b++) {
+    if (!bits_to_byte(seq_len / NBITSINBYTE, (byte*)&b, seq_len, seq)) {
+      printf("bad conversion\n");
+      return -1;
+    }
+    probs[(int) b] = markov_sequence_probability(seq_len, seq, p_0, p_1,
+        p_00, p_01, p_10, p_11);
+  }
+
+  int i_max = largest_value_index(num_seq, probs);
+  if (i_max < 0)
+    return 0.0;
+  double p_max = probs[i_max];
+  double min_e = -lg(p_max) / ((double) seq_len) ;
+#if 1
+  printf("p_max: %lf, min_e: %lf\n", p_max, min_e);
+#endif
   if (min_e > 1.0)
-    min_e =1.0;
+    min_e = 1.0;
   return min_e;
 }
 

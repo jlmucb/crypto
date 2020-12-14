@@ -164,7 +164,7 @@ bool test_entropy() {
   double min_ent = most_common_value_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
   printf("Min entropy: %lf\n", min_ent);
   double mark_ent = markov_entropy(num_bits_to_test, one_bit_per_byte);
-  printf("Mark entropy: %lf\n", mark_ent);
+  printf("Markov entropy: %lf\n", mark_ent);
   printf("\n");
 
   crypto_get_random_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
@@ -183,7 +183,7 @@ bool test_entropy() {
   min_ent = most_common_value_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
   printf("Min entropy: %lf\n", min_ent);
   mark_ent = markov_entropy(num_bits_to_test, one_bit_per_byte);
-  printf("Mark entropy: %lf\n", mark_ent);
+  printf("Markov entropy: %lf\n", mark_ent);
   printf("\n");
 
   return true;
