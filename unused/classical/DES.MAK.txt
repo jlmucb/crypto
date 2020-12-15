@@ -1,0 +1,57 @@
+DES_HOME=	\jlm
+BIN=		$(DES_HOME)\bin
+OBJ=		$(DES_HOME)\obj
+SRC=		$(DES_HOME)\crypto
+
+CC=		cl
+OPTSW=	-O
+INCLDIR=	"\Program Files\Devstudio\Vc\include"
+CFLAGS=	/nologo /c /DEBUG $(OPTSW) -I$(INCLDIR) -I$(INCLDIR)/sys \
+/D "_DEBUG" /D "DEBUG" /D "_CONSOLE" /D "_MBCS" /Zi /Fd$(BIN)\desvc.pdb
+LINK=		link
+LINKFLAGS=	/nologo /DEBUG /debug /subsystem:console  
+LIBDIR=	"\Program Files\DevStudio\Vc\lib"
+LIB=		"\Program Files\DevStudio\Vc\lib"
+LIBEXT=		libcd.lib
+
+srcs= desdriv.c deslib.c
+
+dobjs= $(OBJ)\desdrive.obj $(OBJ)\deslib.obj
+pobjs= $(OBJ)\dumpbool.obj $(OBJ)\deslib.obj
+polyobjs= $(OBJ)\polyd.obj $(OBJ)\deslib.obj
+xorobjs= $(OBJ)\xor.obj
+
+all: des.exe dumpbool.exe poly.exe xor.exe
+
+des.exe: $(OBJ)\desdrive.obj $(OBJ)\deslib.obj
+	@echo "des"
+	$(LINK) $(LINKFLAGS) /OUT:$(BIN)/des.exe $(dobjs) /pdb:$(OBJ)\des.pdb $(LIBEXT)
+
+dumpbool.exe: $(OBJ)\dumpbool.obj $(OBJ)\deslib.obj
+	@echo "dumpbool"
+	$(LINK) $(LINKFLAGS) /OUT:$(BIN)/dumpbool.exe $(pobjs) /pdb:$(OBJ)\dumpbool.pdb $(LIBEXT)
+
+xor.exe: $(BIN)\xor.obj
+	@echo "xor"
+	$(LINK) $(LINKFLAGS) /OUT:$(BIN)/xor.exe $(xorobjs) /pdb:$(OBJ)\xor.pdb $(LIBEXT)
+
+poly.exe: $(BIN)\polyd.obj $(BIN)\deslib.obj
+	@echo "dumpbool"
+	$(LINK) $(LINKFLAGS) /OUT:$(BIN)/poly.exe $(polyobjs) /pdb:$(OBJ)\poly.pdb $(LIBEXT)
+
+$(BIN)/deslib.obj: deslib.c
+	$(CC) $(CFLAGS) -c deslib.c
+	mv deslib.obj $(OBJ)
+$(BIN)/desdrive.obj: desdrive.c 
+	$(CC) $(CFLAGS) -c desdrive.c
+	mv desdrive.obj $(OBJ)
+$(BIN)/dumpbool.obj: dumpbool.c 
+	$(CC) $(CFLAGS) -c dumpbool.c
+	mv dumpbool.obj $(OBJ)
+$(BIN)/polyd.obj: polyd.c 
+	$(CC) $(CFLAGS) -c polyd.c
+	mv polyd.obj $(OBJ)
+$(BIN)/xor.obj: xor.c 
+	$(CC) $(CFLAGS) -c xor.c
+	mv xor.obj $(OBJ)
+

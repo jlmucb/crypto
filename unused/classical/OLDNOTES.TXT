@@ -1,0 +1,585 @@
+
+Poe.key
+
+UNITEDSTATES
+
+
+poe.o1
+
+GE JEAXGDXV
+
+ZIJ GL LAAM XZY ZMLWHFZEK EJLVDXW KWKE TX LBR ATGH LBMX
+AANU BAI VSMUKKSS PWN VLWK AGH GNUMK WDLNZWEG JNBXVV OAEG ENWB
+ZWMGY MO MLW WNXB MW AL PNFDCFPKH WZKEX HSSF XKIYAHUL MK NUM
+YEXDM WBXY SBC HV WYX PHWKGNAMCUK
+
+
+poe.3
+
+GJLXT ANKXW BKKYH M
+
+
+a1
+
+geedn tkvlm tbtfy cyedv wyzkq ieqfo gvvus ojoxp buhuf rldlk
+sdlhy byuvb ttmzx toqqo fvtvg pkitt edxzf hnlmg ibfov dbhvo
+pcirm vrtyi axotw ovvvb jcnnt eebcg jgjuz djowy xxwcq cktwl
+cjsay nlgin whkcg qseaf cjagj ngwfq writy ymvqz kficg exwko
+vqahu hkzbm oaxiy tmkap cjhwh wgipm qkvgr glnpi
+
+Determine fast rotor
+
+
+a3
+
+CONFIDENTIALF
+geedntkvlmtbt
+
+ORJONESSTOPIAMRETURNINGTON
+fycyedvwyzkqieqfogvvusojox
+
+
+bazaries
+
+wheels
+
+fnwadlzjkmqscxhvptgiboeyru
+etxqpvjcbnradskhiyogulmzfw
+levoxygcdozwtpjrhibkamsunf
+xycvqweithnplksaogrjbuzdfm
+odtzcrfhenbyumoxawvgljsikp
+vkunyewfmicojlhgaptzrxsvqd
+jmphvoxrifkbecuqdztalgnswy
+rgjyzbnqhcfamtilowvepuxskd
+zqjkoibrmfhvtnwxegscupyadl
+uaxtorvwkhpznlimvqcjfgeysd
+mghxletyfkzsrabnoupcqwdijv
+pgnbrtfvowsczxdlmikujahyeq
+zedipguosmfbrxjcywnvqktalh
+fdpsmlykxzwjoncbuveirthaqg
+mighuoslycdjvqxbtrefkwnpaz
+gpzltabunejsfvkrwmihcxdqyo
+xidletvzyhubqnwagmskcrojpf
+whmfsguzeyxrvicolqkpbdanjt
+iklmathnczxwuogsvybqfpjder
+jvohkyzcluxesfwtrpqdbmagni
+
+message:
+
+osuzkmtklzyfyvtmdhkt
+qwwibdmzianzntwdbvbh
+wgpddhbpzcrjmdswnzth
+fpbovmveruatthciylnt
+yxsdoyzkxuypswbuhzxj
+kryvyhanngqzvlmcrhij
+vbzoihbvcefpmccopisg
+xmblczmctoxtwdgyecvu
+uiyiqqfyhwmdzpkauurt
+ksnzocssdzjbpmndbppw
+scffbladxkdphoadeeba
+gknbglelndjbazmojudo
+
+
+
+Hebern
+
+Heburn Cryptograph
+
+
+p KC(i)R1C(-i)C(j)R2C(-j)C(k)R3C(-k)C(l)R4C(-l)C(m)R5C(-m)L=c
+
+rotors 2 and 4 dont turn
+rachet wheels on rotors 1 and 5, 5 turns fastest
+both toggle after n appears.
+
+Representation:
+
+LR- left ratchet
+RR- right ratchet
+R1,...,R5 are 5 rotors
+
+LR  R1  R2  R3  R4  R5  RR
+m   e   a   n   i   n   g
+m   e   a   n   i   o   h
+     ...
+m   e   a   n   i   u   n
+n   f   a   n   i   v   o
+n   f   a   o   i   w   p
+
+
+Cryptanalysis: fix all rotors but 5, with many messages check position using IC
+
+
+a b c d e f g h i j k l m n o p q r s t u v w x y z		Input
+x a k h s z j l y w g p m i o u r d b f t n v c q e		Keyboard
+g a d b o c t k n u z x  i w h f q y j v p m e l s r		Rotor 1
+i z n c t k u d p j e v o w l f h x s m g q a y b r		Rotor 2
+p jx f w l t a u g y b m h r o v n c k s e q i z d		Rotor 3
+f l v a r g w c m q b x n y i o t j u p s k e d h z		Rotor 4
+f q t g x a n w c j o i v z p h y b d r k u s l e m		Rotor 5
+t y o e u m x d f j q v k w b n s h c i l r z a g p		Lampboard
+
+Enigma
+
+p k C(i)R1C(-i)C(j)R2C(-j)C(k)R3C(-k)RRC(k)R3(-1)C(-k)C(j)R2(-1)C(-j)C(i)R1C(-i)K(-1)= c
+
+Enigma D
+
+a b c d e f g h i j k l m n o p q r s t u v w x y z		Input
+j w u l c m n o h p q z y x i r a d k e g v b t s f		Stator
+l p g s z m h a e o q k v x r f y b u t n i c j d w		Rotor 1
+s l v g b t f x j q o h e w i r z y a m k p c n d u		Rotor 2
+c j g d p s h k t u r a w z x f m y n q o b v l i e		Rotor 3
+i m e t c f g r a y s q b z x w l h k p v u p o j n		Reverse
+
+Enigma I
+	Static reflecting rotor, plugboard, keyboard from qwerty to abcdef  (1935)
+
+German Navy: add 2 rotors
+
+To set:
+	1. Rotor Order
+	2. Alphabet ring settings
+	3. Plugboard connections
+	4. Rotor starting positions
+
+a b c d e f g h i j k l m n o p q r s t u v w x y z		Input
+e k m f l g d q v z n t o w y h x u s p a i b r c j		Rotor 1
+a j d k s i r u x b l h w t m c q g z n p y f v o e 		Rotor 2
+b d f h j l c p r t x v z n y e i w g a k m u s q o		Rotor 3
+e s o v p z j a y q u i r h x l n f t g k d c m w b		Rotor 4
+v z b r g i t y u p s d n h l x a w m j q o f e c k		Rotor 5
+
+Reflector: ay br cu dh eq fs gl ip jx kn mo tz vw	 
+
+
+red:
+
+ebjhe vawra upvxo vvihb agewk ikdyu cjekb poeky grylu 
+ppops ywatc ceqal culmy certy netmb ixocy tyypr qygha
+hzcaz gtisi ymena ryrsi zemfy nomaw ahyry qyvab ymyzq
+yjiix pdymi flota vaini aqjyx rodvu hacet ebqeh agzpd 
+uplty okkyg ofutl nolli wqave mzizs hvada vcume xkehm
+podma efima zcerv kyxav dcaqy rluak orydt yjima cugof
+gumyc shuur aebun wigkx yateq cevox dpemt sucda rpryp
+pebtu ziqde dwlby rivem vuskk ezgad ognnq feihk itvyu
+cybte lwibc iroqx xiziu guhoa vpayk lizvu zbuwy zhwyl 
+yhetg ianwz yxfsu zidxn cucsh efahr owuna jkolo qazro
+qkbpy gikeb egwwo lrypi rzzib yuhef ihice topry zydau
+bidsu gynoi nqkyx efogt eoszi pduqg uzuzu lvuuj ylzen
+owaag wlidp uyxhk ohzyi bkyfn
+
+Reeds
+
+P.1.  Given T[i], i= 1,2,3,...,26 find X: T[i]= XC(i)X(-1);  alpha chaining
+P.2.  Given S[i], find X,Y: s[i]=XC(i)Y
+P.3.  Given U[i], i=0,1,2,3,...,26: U[i]= X(i)YX(-i)
+
+
+Heburn with  rotors above
+
+geedn tkvlm tbtfy cyedv wyzkq ieqfo gvvus ojoxp buhuf rldlk
+sdlhy byuvb ttmzx  tiqqo fvtvg pkitt edxzf hnlmg ibfov dbhvo
+pcirm vrtyi axotw ovvvb jcnnt eebcg jgjuz djowy xxwcq cktwl
+cjsaynlgin whkcg qseaf cjagj ngwfq writy ymvqz kficg exwkq
+vqahu hkzbm oaxiy tmkap cjhwh wgipm qkvgr glnpi
+
+
+friedman's heburn gig
+
+5 rotors
+
+
+dispatch 1
+
+                                                  p
+nutxhvzslumlzxhxhohybrclms
+ufcdsufmovkcnkynngauwyliqz
+utlwbydgowkhrxtcjcsvgjjfyv
+jsrcezuqkdoytxvtvcasnqpgec
+arucwlddcuqdxflcbkdbechxdg
+vayeeuzhwrwvvpvdvmgenjwvuu
+enmoqjpumvkgwqczwkriixmjac
+lnsweamiauuvwvblembospxfrr
+sgowcjlvmhyajezgfybudazloq
+umtztovtbdkwhachynyobnpihr
+tksxfgwmnlngohymkhpgwiebel
+ablzcjucljxsoudlwutafiartu
+sngxazbohgwpygzrv
+
+dispatch 2
+
+bjenfcaddaygknsfrbhwlukjpq
+uqisahsvihswdtidyabjgtkkmy
+xoldynvhcbqtjoniyxjmjdodtb
+lrksnzkmkpxusudsocrjiyatxj
+xmrywfzhebbzebxffwhpfvyhfv
+bsagbtalzussexaxakxyihhnft
+dtllowuoainhnjwybpyayidgjb
+nuvjlytgfcdnfqjplxtjcjrphk
+zggvjmxfmcztqkzstfhswoudtr
+zlupjtybgjcponxyaqyhhmcwmw
+ybhiwivozhhjkeowyiceacyyoq
+vgwcsfszuenjziopdjfucubtov
+wpzaqstmkgihgz
+
+
+dispatch 3
+
+     pzxxozwtsrsffbxkhyxbb
+jnirnlifkvorarbvzugvaccnbb
+ylpcwtolqdvhazzgzpgjpfermm
+udpkfkqembsodlmokrtduvcann
+zqborwiupfhqoogxmtmijmvubb
+gahpngqrjftlsipnlwckiethii
+oseroibjophxsbxglyufyaelgk
+olalfvefhrnzdcixzkvbgiqpml
+ryhaqhqugqxoukzxpaqurnzeac
+xntxiclrszoaaphbiksdchryrs
+wwdycqskkubjiqwqfjhnukzusd
+ribnwmscsfmnhqdpuedzrkurah
+xngqedjmrwxxkrysv
+
+
+dispatch 4
+
+                     fsruxmmfyepa
+jiukxjsqsgzirksryllrdycovz
+oeekapnzrqbpossepqdxgdltna
+oprrnfobzglckgmkclmxlljhvv
+ohudhvogakdicscbeyxmpytrdk
+kvjdwdoaljzcqnmwtyuodyzcoe
+snwtsftcgpxvrvjceyyvlgwpip
+yrmkzomclgpcsozsccanpnxywy
+kskjhllzfnzqysbzoltixmruju
+zampkqadbrbcorpugjihkajklk
+mgspegresifaixzqfiwmaducfm
+ivdaesieuozsobhmqnwndurgol
+bfrubhcviquaungw
+
+
+dispatch 5
+
+ hkwzarrpbqbivysmpdmqmvudc
+emzxdpidliawwubqmizpixishz
+riqowyinrcxymxhjzcrhathsbz
+pmlkvouzrsaugohltkouzjecxl
+skdhwbileskswgzgpruiqlhjjp
+mkdqeudkmigeojlrzdknnpnyxy
+hnmssywqdwdkvobbvluebwmzxd
+wksavueasulcogrqlzwukiktjz
+powiixhljbhfkbwvgglaggyicy
+vcjabxndiwccemhgkoodcbigri
+azehoforzffjonfivsmoqwtzis
+wzlieueyzpbqeziqgoplvwbtix
+hqbxrzsivzmcspz
+
+
+dispatch 6
+
+    lpiouezksjbxcafeuksdwh
+rysnwanipujmzahouyvuvoecnb
+smpnlqapyaggvhrmzvbnziixpb
+olyxbssmbwlhvxvspzikogoocc
+fekxmralnvrskaesdsmtgrxsyp
+smgsgzbvdenwzsivjesvwyjrgx
+epixvejebhifgsvpxxgazcqczs
+frivwwdgvahghqlvlmvbuswxyz
+hnwwtnkvbzuyrtpmrwpiczozpd
+nxcewyrmhdwnpzlwccnxwtlvkg
+lpentmeglcumevkhzynahdstjl
+dhjbniqwnwatitlsjfuarynwle
+fkospscfazwsntqybxqmggvan
+
+
+dispatch 7
+
+bypfmlwqysdzu
+wxqgmgxnktrvkvttbytpvdztnn
+nrot ldhswwgmipbzzcgpgprvtb
+mbybuqqourqdmdbneqdsbhyczj
+xsjrliggdjdvathywruwxlbyyi
+lyjvtndbqtzwhxdqccgmouryxw
+ctbjpnrmffovlzqdvbzqatocqz
+ewdklwhhpvwautunkaeisjtbzp
+illvmkqboyxjmhukfhbgxsahzo
+oiqnmgmogybwuhyfkotsplibof
+ewkdyadxzsnxljqwoskurleogl
+svzwwgoyqcwjsadpsoquyhdsur
+senxtmftqyloswumjlpvaqkt
+
+
+dispatch 8
+
+syygstxvp
+magvqjtarqrmflahwtzlbhtvdr
+ohhbhpdqntkqqhsfjmcfojaamk
+wysxvbiwoajzgzejadckwzkwzkrii
+tinovuozpylhtysrpwglrvyfgb
+aihpucbrkozugcchwzdixgrbap
+zgcunvkuatdyxveknwyxrvpdwk
+buxibxeodspqsaxaozmbvkfgmg
+zifodofziftelvmudcbvpoptno
+abinklbwvxjvcvzykawoptecpy
+cuwiijkbqpwothsglsydfquqnj
+vrqgbsnjhbspxqvsumhkwyibcy
+howfvfjnnaujflsco
+
+
+dispatch 9
+
+hdryyzyto
+ujjslswcrnulsaextgwpzyvgiv
+cbxyrkrhnzzwjayynryvfzjskg
+ovduqzthhsygegkoaqfzhxrpmh
+yztjliunxxujaivsstfxtzljvu
+veyygodzlnmlvkuofrxhvkihpf
+lncelfqfsqzswhlehdtgsbuhet
+uzacamhvpdjzkifajgvorhxodj
+sjbuskbhhfnibyxyxdihlkehqj
+elchukfncozdycktypqpcdchom
+ulzpoatxitvktckwbtqjevodgg
+cuzwqdvwqxzeneqeshcecluhps
+nxekoe
+
+
+dispatch 10
+
+ar
+siibxarundegxdzmmqxyaytfgb
+euzwclgrbmqktccghvptfabxdh
+hudxzspnolyvctrecgjseajlwt
+pmljbryomcvtnpqpydmntscpuf
+exvmnpxqyiirfxzzgkgztcydvw
+qiafmvdufclqjagczabbdkyiue
+jywpotpfgwlbxmmbdjvlfqfqwt
+pxdjkbxcnifscmgstgbtoremte
+klhccupdqxcptfoblmvyzrirmv
+hdgghvtfwqrqfhkhnlxqjitncs
+gsnsejqwrbiukvgtouetbwplcj
+ycxqtbpjdmusirokymadobvupz
+mbkhvb
+
+rotor positions
+
+1	agran
+2	coban
+3	blois
+4	agana
+5	cuneo
+6	dover
+7	genoa
+8	hague
+9	monte
+10	nepal
+
+no starting position for stators
+left cr 1,3,5 rcr
+
+zepplin, company, united states, alternating current
+
+heb.msg
+
+geedn tkvlm tbtfy cyedv wyzkq ieqfo gvvus ojoxp buhuf rldlk
+sdlhy byuvb ttmzx toqqo fvtvg pkitt edxzf hnlmg ibfov dbhvo
+pcirm vrtyi axotw ovvvb jcnnt eebcg jgjuz djowy xxwcq cktwl
+cjsay nlgin whkcg qseaf cjagj ngwfq writy ymvqz kficg exwko
+vqahu hkzbm oaxiy tmkap cjhwh wgipm qkvgr glnpi
+
+Determine fast rotor
+
+
+
+
+frankly urgent talks held by british cabinet on falkland crisis
+qyrcebv typocf frbea gobs kv kylflag wrklcof nc qrbebrcs wylala
+
+canadian doctors demand more pay for publicly financed care
+epkphtpk hbecbdg hlypkh ybdl jps wbd jnoftefs wtkpkelh epdl
+
+final accord seen unlikely at budget talks today
+qlcrb rwwnys aooc tcbleobv rf ktspof frbea fnsrv
+
+reagan sees interest rates falling soon
+sbdjde pbbp fewbsbpw sdwbp udqqfej pkke
+
+bullets feel ready for bostons best
+gvhhdze mddh ndokc msn gsezsae gdez
+
+Setting: agape, Key: nosey, Hat: rubberneck
+
+
+
+                New York Times Puzzle (after NSAN) 12/23/82
+
+
+
+Plain:          abcde fghij klmno pqrst uvwxy z
+Cipher 1,3:     rkwso qpgl  eb cn   yaf t   v  
+Cipher 2:       poehl w  t   fykb j dg  n   s  
+Cipher 4:       d   b uj f   q ek   spw        
+Cipher 5:       og kd m      h as   nez v       
+
+        Alphabet Chains                                 CHAIN
+
+Cipher 1,3:     rkwso qpgl  eb cn   yaf t   v  
+Cipher 2:       poehl w  t   fykb j dg  n   s   rp ckoltnbf qwe yd ag
+
+Cipher 1,3:     rkwso qpgl  eb cn   yaf t   v  
+Cipher 4:       d   b uj f   q ek   spw         obqu apj lfw ce nk ys rd
+
+Cipher 1,3:     rkwso qpgl  eb cn   yaf t   v  
+Cipher 5:       og kd m      h as   nez v       rod ynskg qm bh cae fz
+
+Cipher 2:       poehl w  t   fykb j dg  n   s  
+Cipher 4:       d   b uj f   q ek   spw         gpds lbke wu tfq
+
+Cipher 2:       poehl w  t   fykb j dg  n   s  
+Cipher 5:       og kd m      h as   nez v       poge ldnv wm fhka
+
+Cipher 4:       d   b uj f   q ek   spw        
+Cipher 5:       og kd m      h as   nez v       bdo um qh pea ksn wz
+
+        New York Times Puzzle 23 Dec 82 (after NSAN)
+
+
+Plain:          abcde fghij klmno pqrst uvwxy z
+Cipher 1,3:     rkwso qpgl  eb cn   yaf t   v  
+
+Plain:          abcde fghij klmno pqrst uvwxy z
+Cipher 2:       poehl w  t   fykb j dg  n   s  
+
+Plain:          abcde fghij klmno pqrst uvwxy z
+Cipher 4:       d   b uj f   q ek   spw        
+
+Plain:          abcde fghij klmno pqrst uvwxy z
+Cipher 5:       og kd m      h as   nez v       
+
+
+
+        Alphabet Chains                                 CHAIN
+
+Cipher 1,3:     rkwso qpgl  eb cn   yaf t   v  
+Cipher 2:       poehl w  t   fykb j dg  n   s   rp ckoltnbf qwe yd ag
+
+Cipher 1,3:     rkwso qpgl  eb cn   yaf t   v  
+Cipher 4:       d   b uj f   q ek   spw         obqu apj lfw ce nk ys rd
+
+Cipher 1,3:     rkwso qpgl  eb cn   yaf t   v  
+Cipher 5:       og kd m      h as   nez v       rod ynskg qm bh cae fz
+
+Cipher 2:       poehl w  t   fykb j dg  n   s  
+Cipher 4:       d   b uj f   q ek   spw         gpds lbke wu tfq
+
+Cipher 2:       poehl w  t   fykb j dg  n   s  
+Cipher 5:       og kd m      h as   nez v       poge ldnv wm fhka
+
+Cipher 4:       d   b uj f   q ek   spw        
+Cipher 5:       og kd m      h as   nez v       bdo um qh pea ksn wz
+
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/*  NUL   ^A   ^B   ^C   ^D   ^E   ^F   ^G */
+	/* 0x00 0x01 0x02 0x03 0x04 0x05 0x06 0x07 */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/*   ^H   ^I   ^J   ^K   ^L   ^M   ^N   ^O */
+	/* 0x08 0x09 0x0a 0x0b 0x0c 0x0d 0x0e 0x0f */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/*   ^P   ^Q   ^R   ^S   ^T   ^U   ^V   ^W */
+	/* 0x10 0x11 0x12 0x13 0x14 0x15 0x16 0x17 */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/*   ^X   ^Y   ^Z   ^[   ^\   ^]   ^^   ^_  */
+	/* 0x18 0x19 0x1a 0x1b 0x1c 0x1d 0x1e 0x1f */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+        /*    !    "    #    $    %    &    '    ( */
+	/* 0x20 0x21 0x22 0x23 0x24 0x25 0x26 0x27 */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/*    )    *    +    ,    -    .    /      */
+	/* 0x28 0x29 0x2a 0x2b 0x2c 0x2d 0x2e 0x2f */
+
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+        /*    0    1    2    3    4    5    6    7 */
+	/* 0x30 0x31 0x32 0x33 0x34 0x35 0x36 0x37 */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+        /*    8    9    :    ;    <    =    >    ? */
+	/* 0x38 0x39 0x3a 0x3b 0x3c 0x3d 0x3e 0x3f */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/*    @    A    B    C    D    E    F    G */
+	/* 0x40 0x41 0x42 0x43 0x44 0x45 0x46 0x47 */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+  	/*    H    I    J    K    L    M    N    O  */
+	/* 0x48 0x49 0x4a 0x4b 0x4c 0x4d 0x4e 0x4f */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/*    P    Q    R    S    T    U    V    W  */
+	/* 0x50 0x51 0x52 0x53 0x54 0x55 0x56 0x57 */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+ 	/*    X    Y    Z    [    \    ]    ^    _  */
+	/* 0x58 0x59 0x5a 0x5b 0x5c 0x5d 0x5e 0x5f */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/*    `    a    b    c    d    e    f    g  */
+	/* 0x60 0x61 0x62 0x63 0x64 0x65 0x66 0x67 */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/*    h    i    j    k    l    m    n    o  */
+	/* 0x68 0x69 0x6a 0x6b 0x6c 0x6d 0x6e 0x6f */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/*    p    q    r    s    t    u    v    w */
+	/* 0x70 0x71 0x72 0x73 0x74 0x75 0x76 0x77 */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/*    x    y    z    {    |    }    ~      */
+	/* 0x78 0x79 0x7a 0x7b 0x7c 0x7d 0x7e 0x7f */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/* 0x80 0x81 0x82 0x83 0x84 0x85 0x86 0x87 */
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/* 0x88 0x89 0x8a 0x8b 0x8c 0x8d 0x8e 0x8f */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/* 0x90 0x91 0x92 0x93 0x94 0x95 0x96 0x97 */
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/* 0x98 0x99 0x9a 0x9b 0x9c 0x9d 0x9e 0x9f */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/* 0xa0 0xa1 0xa2 0xa3 0xa4 0xa5 0xa6 0xa7 */
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/* 0xa8 0xa9 0xaa 0xab 0xac 0xad 0xae 0xaf */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/* 0xb0 0xb1 0xb2 0xb3 0xb4 0xb5 0xb6 0xb7 */
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/* 0xb8 0xb9 0xba 0xbb 0xbc 0xbd 0xbe 0xbf */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/* 0xc0 0xc1 0xc2 0xc3 0xc4 0xc5 0xc6 0xc7 */
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/* 0xc8 0xc9 0xca 0xcb 0xcc 0xcd 0xce 0xcf */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/* 0xd0 0xd1 0xd2 0xd3 0xd4 0xd5 0xd6 0xd7 */
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/* 0xd8 0xd9 0xda 0xdb 0xdc 0xdd 0xde 0xdf */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/* 0xe0 0xe1 0xe2 0xe3 0xe4 0xe5 0xe6 0xe7 */
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/* 0xe8 0xe9 0xea 0xeb 0xec 0xed 0xee 0xef */
+
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/* 0xf0 0xf1 0xf2 0xf3 0xf4 0xf5 0xf6 0xf7 */
+	      0,   0,   0,   0,   0,   0,   0,   0,   
+	/* 0xf8 0xf9 0xfa 0xfb 0xfc 0xfd 0xfe 0xff */
+
