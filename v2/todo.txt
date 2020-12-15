@@ -1,4 +1,0 @@
-1. Put lwe and ntru in cryptoutil with real parameters (like NIST Frodo and NIST ntru)
-2. Put assembly version of speedups for ARM64 in arm_digit_arith.cc
-3. Maybe more automated testing
-
