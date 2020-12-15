@@ -18,7 +18,7 @@
 #include <crypto_support.h>
 #include <drng.h>
 
-// Entropy tests:
+// IID tests:
 //    Adaptive proportion test
 //    Permutation test
 //    Length of directional runs
@@ -33,6 +33,17 @@
 //    Compression
 //    Chi
 
+// Min Entropy tests
+//    Most Common Value Estimate
+//    Collision Estimate
+//    Markov Estimate
+//    Compression Estimate
+//    t-Tuple Estimate
+//    Longest Repeated Substring (LRS) Estimate
+//    Multi Most Common in Window Prediction Estimate
+//    Lag Prediction Estimate
+//    MultiMMC Prediction Estimate
+//    LZ78Y Prediction Estimate
 
 // s_0, s_1, ..., s_(L-1)  are samples from A= <x_0,..., x_(k-1)>
 //
