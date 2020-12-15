@@ -177,6 +177,7 @@ bool test_entropy() {
 
   printf("\n");
   print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  printf("\n");
 
   s_ent = shannon_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
   printf("Shannon entropy: %lf\n", s_ent);
