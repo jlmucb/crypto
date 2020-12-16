@@ -5,10 +5,6 @@
  *	(c) Copyright, 1991, John L. Manferdelli.  All Rights Reserved.
  */
 
-
-/* ------------------------------------------------------------------------ */
-
-
 #define BUF  2048
 #define UGBUF  256
 
@@ -24,14 +20,8 @@ static char *cpos;
 
 int nlines={0};
 
-
-/* ------------------------------------------------------------------------ */
-
-
 jgetc(in)
-
 int in;
-
 {
 	int i;
 

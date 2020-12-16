@@ -27,20 +27,13 @@ void printControlOffsetsTemp();
 void printControlOffsetsPhase2();
 void reverse (int index);
 void setPosition (int rotor, char pos);
-void simulator (char cipherInit[],
-			    char controlInit[],
- 			    char indexInit[],
-			    char cipherOrder[],
-			    char controlOrder[],
-			    char indexOrder[],
-			    char cipherOrient[],
-			    char controlOrient[],
-			    int direction);
+void simulator (char cipherInit[], char controlInit[], char indexInit[],
+      char cipherOrder[], char controlOrder[], char indexOrder[],
+      char cipherOrient[], char controlOrient[], int direction);
 void stepOffsets (int rotor);
 
 
-FILE *in,
-	 *out;
+FILE *in, *out;
 	  
 int stepCount[5] = {0,0,0,0,0};
 const int ENCRYPT = 0;	// Encryption mode
@@ -48,15 +41,15 @@ const int DECRYPT = 1;	// Decryption mode
 const char* INDEX_ROTORS[5] = {"7591482630" , "3810592764", "4086153297",
 								"3980526174", "6497135280"};
 const char* CIPHER_AND_CONTROL_ROTORS[10] = {"YCHLQSUGBDIXNZKERPVJTAWFOM",
-											"INPXBWETGUYSAOCHVLDMQKZJFR",
-											"WNDRIOZPTAXHFJYQBMSVEKUCGL",
-											"TZGHOBKRVUXLQDMPNFWCJYEIAS",
-											"YWTAHRQJVLCEXUNGBIPZMSDFOK",
-					 						"QSLRBTEKOGAICFWYVMHJNXZUDP",
-											"CHJDQIGNBSAKVTUOXFWLEPRMZY",
-											"CDFAJXTIMNBEQHSUGRYLWZKVPO",
-											"XHFESZDNRBCGKQIJLTVMUOYAPW",
-											"EZJQXMOGYTCSFRIUPVNADLHWBK"};
+"INPXBWETGUYSAOCHVLDMQKZJFR",
+"WNDRIOZPTAXHFJYQBMSVEKUCGL",
+"TZGHOBKRVUXLQDMPNFWCJYEIAS",
+"YWTAHRQJVLCEXUNGBIPZMSDFOK",
+"QSLRBTEKOGAICFWYVMHJNXZUDP",
+"CHJDQIGNBSAKVTUOXFWLEPRMZY",
+"CDFAJXTIMNBEQHSUGRYLWZKVPO",
+"XHFESZDNRBCGKQIJLTVMUOYAPW",
+"EZJQXMOGYTCSFRIUPVNADLHWBK"};
 
 
 char *CipherRotors[5];	// 2D array that represents the initial cipher rotors

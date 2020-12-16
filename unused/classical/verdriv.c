@@ -4,14 +4,9 @@ int round;
 char inpcons[64],outcons[64],keycons[64];
 
 
-/* ----------------------------------------------------------------------- */
-
-
 main(argn,argv)
-
 int argn;
 char *argv[];
-
 /*
  *	verify constriants
  *	Format of input/output files
@@ -20,7 +15,6 @@ char *argv[];
  *		...
  *		keyn(64) sizen*64bits of data
  */
-
 {
 	int i, j,nz,no,n;
 	int key[2], inblk[2], outblk[2];

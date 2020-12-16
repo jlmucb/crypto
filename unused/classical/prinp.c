@@ -70,12 +70,7 @@ main(int argn, char *argv[])
 }
 
 
-/* ---------------------------------------------------------------------- */
-
-
-get()
-
-{
+get() {
 	int i,j;
 
 	if(left<=0) {
@@ -88,9 +83,7 @@ get()
 }
 
 
-get2(int n)
-
-{
+get2(int n) {
 	int i,j,k;
 
 	if((n=='0')||(n=='1'))
@@ -109,9 +102,7 @@ get2(int n)
 }
 
 
-get8(int n)
-
-{
+get8(int n) {
 	int i,j,k;
 
 	if((n>='0')&&(n<='7'))
@@ -130,9 +121,7 @@ get8(int n)
 }
 
 
-get16(int n)
-
-{
+get16(int n) {
 	int i,j,k;
 
 	if((n>='0')&&(n<='9'))

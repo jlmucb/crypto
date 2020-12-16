@@ -8,16 +8,11 @@
 const int s_iBufMax= 8192;
 unsigned char g_rgBuf[s_iBufMax];
 
-
-
-int main(int argn, char** argv)
-
-
 /*
  *	zerodisk
  */
 
-{
+int main(int argn, char** argv) {
 	int i;
 	int iSize;
 	int iOut= 0;

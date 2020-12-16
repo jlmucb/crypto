@@ -7,8 +7,7 @@
 //  -----------------------------------------------------------------------------------------------------------
 
 
-void X917::X917()
-{
+void X917::X917() {
 	memset((void*)m_rguState,0,16);
 	memset((void*)m_rguSeed,0,16);
 	memset((void*)m_rguKey,0,16);
@@ -16,20 +15,17 @@ void X917::X917()
 }
 
 
-void X917::~X917()
-{
+void X917::~X917() {
 	memset((void*)m_rguState,0,16);
 	memset((void*)m_rguSeed,0,16);
 }
 
 
-void X917::Init(int j, unsigned* puSeed)
-{
+void X917::Init(int j, unsigned* puSeed) {
 	int k= (j>16)?j:16;
 
 	memcpy((void*)m_rguSeed, (void*)puSeed, k);
-	if(k<16)
-	{
+	if(k<16) {
 		memset((void*)m_rguSeed+k,0,16-k);
 	}
 
@@ -39,34 +35,27 @@ void X917::Init(int j, unsigned* puSeed)
 }
 
 
-void X917::NextState()
-{
+void X917::NextState() {
 	//
 	// State= E(k,I^Seed), Seed= E(k,State^I)
 	//
 }
 
 
-//  -----------------------------------------------------------------------------------------------------------
-
-
-void FIPS186::FIPS186()
-{
+void FIPS186::FIPS186() {
 	memset((void*)m_rguState,0,16);
 	memset((void*)m_rguSeed,0,16);
 	memset((void*)m_rguK,0,16);
 }
 
 
-void FIPS186::~FIPS186()
-{
+void FIPS186::~FIPS186() {
 	memset((void*)m_rguState,0,16);
 	memset((void*)m_rguSeed,0,16);
 }
 
 
-bool	FIPS186::G(unsigned* put, unsigned* puS)
-{
+bool	FIPS186::G(unsigned* put, unsigned* puS) {
 
 	// pad c with 0s for 512 bit blocks
 	// apply SHA state change to get new H's
@@ -74,8 +63,7 @@ bool	FIPS186::G(unsigned* put, unsigned* puS)
 }
 
 
-void FIPS186::Init(int j, unsigned* puSeed)
-{
+void FIPS186::Init(int j, unsigned* puSeed) {
 	int k= (j>16)?j:16;
 
 	memcpy((void*)m_rguSeed, (void*)puSeed, k);
@@ -89,11 +77,6 @@ void FIPS186::Init(int j, unsigned* puSeed)
 }
 
 
-void FIPS186::NextState()
-{
+void FIPS186::NextState() {
 	// State= G(t, Seed), Seed= (1+Seed+State) (mod 2**b), output State
 }
-
-//  -----------------------------------------------------------------------------------------------------------
-
-

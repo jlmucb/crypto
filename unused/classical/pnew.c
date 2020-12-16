@@ -5,10 +5,8 @@
 
 
 main(argn,argv)
-
 int argn;
 char *argv[];
-
 {
 	int i,j,k,n;
 	double p,q,pn,qn;

@@ -31,14 +31,12 @@ typedef unsigned char byte;
 // --------------------------------------------------------------------- 
 
 
-inline bool whitespace(char b)
-{
+inline bool whitespace(char b) {
     return(b==' ' || b=='\t' || b=='\r' || b=='\n');
 }
 
 
-inline bool validHex(char b)
-{
+inline bool validHex(char b) {
     if(b>='0' && b<='9')
         return true;
     if(b>='a' && b<='f')
@@ -49,8 +47,7 @@ inline bool validHex(char b)
 }
 
 
-int getLine(int inFile)
-{
+int getLine(int inFile) {
     int     iLineSize= 0;
 
     for(;;) {
@@ -72,8 +69,7 @@ int getLine(int inFile)
 #define SIZEPATTERN 64
 
 
-bool matchpattern(byte* szWord, int iLen, byte* rgMatch, int iPLen)
-{
+bool matchpattern(byte* szWord, int iLen, byte* rgMatch, int iPLen) {
     byte        rgMatchMat[26];
     byte        a, b, c;
 
@@ -109,8 +105,7 @@ bool matchpattern(byte* szWord, int iLen, byte* rgMatch, int iPLen)
 }
 
 
-int parsePattern(char* szP, byte* rgP)
-{
+int parsePattern(char* szP, byte* rgP) {
     for(int i=0;;i++) {
         rgP[i]= szP[i];
         if(szP[i]=='\0')
@@ -121,9 +116,7 @@ int parsePattern(char* szP, byte* rgP)
 }
 
 
-int main(int an, char** av)
-
-{
+int main(int an, char** av) {
         int         iIn;
         char*       szinFile=  NULL;
         char*       szPattern= NULL;
@@ -160,8 +153,4 @@ int main(int an, char** av)
 
         return 0;
 }
-
-
-// --------------------------------------------------------------------- 
-
 

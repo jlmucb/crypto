@@ -16,12 +16,7 @@
 //	Block so top 2 bytes contain sizes
 
 
-
-// -----------------------------------------------------------------
-
-
-bool GetSeed(int iSize, byte* pbSeed)
-{
+bool GetSeed(int iSize, byte* pbSeed) {
 	// call Mikes RNG
 	// for now
 	if(pbSeed==NULL)
@@ -46,9 +41,7 @@ bool GetSeed(int iSize, byte* pbSeed)
 
 bool BlockOAEP(int iBlockSize, int iSizeIn, byte* pbIn, 
 			   int* piOut, byte* pbOut, 
-			   unsigned uHash, unsigned uRandGen)
-
-{
+			   unsigned uHash, unsigned uRandGen) {
 	int		  iHashSize= 20;
 	int		  iRandSize= 20;
 	InlineRNG oRc4;
@@ -127,9 +120,7 @@ bool BlockOAEP(int iBlockSize, int iSizeIn, byte* pbIn,
 
 bool UnBlockOAEP(int iBlockSize, int iSizeIn, byte* pbIn, 
 			     int* piOut, byte* pbOut, 
-			     unsigned uHash, unsigned uRandGen)
-
-{
+			     unsigned uHash, unsigned uRandGen) {
 	int		  iHashSize= 20;
 	int		  iRandSize= 20;
 	InlineRNG oRc4;
@@ -197,8 +188,4 @@ bool UnBlockOAEP(int iBlockSize, int iSizeIn, byte* pbIn,
 
 	return(true);
 	}
-
-
-// -----------------------------------------------------------------
-
 

@@ -9,9 +9,6 @@
  */
 
 
-/* ------------------------------------------------------------------------ */
-
-
 #define BUF  2048
 #define UGBUF  256
 
@@ -28,13 +25,7 @@ static char *cpos;
 int nlines={0};
 
 
-/* ------------------------------------------------------------------------ */
-
-
-int jgetc(int in)
-
-
-{
+int jgetc(int in) {
 	int i;
 
 	if(ugnc>0)
@@ -53,9 +44,7 @@ int jgetc(int in)
 }
 
 
-int jungetc(int in,int ugc)
-
-{
+int jungetc(int in,int ugc) {
 	if(ugnc>=UGBUF)
 		return(-1);
 	ugbuf[ugnc++]= ugc;
@@ -97,17 +86,12 @@ double g_rgxRegDist[g_iSize]= {
 
 
 double g_rgxCurrentDist[g_iSize];
-
 double g_rgxResult[g_iSize];
-
-
-/* ------------------------------------------------------------------------ */
 
 
 #define iMaxLine 120
 
-int Getaline(int in, char szLine[])
-{
+int Getaline(int in, char szLine[]) {
 	int	iC;
 	int	iLen= 0;
 
@@ -125,15 +109,13 @@ int Getaline(int in, char szLine[])
 		}
 }
 
-bool isWhitespace(char a)
-
+bool isWhitespace(char a) 
 {
 	return(a==' ' || a== '\n');
 	}
 
 
-bool isNumber(char* p)
-{
+bool isNumber(char* p) {
 	if(*p=='.' || (*p>='0' && *p<='9'))
 		return true;
 	return false;
@@ -141,8 +123,7 @@ bool isNumber(char* p)
 
 
 
-bool ReadDist(char* szName)
-{
+bool ReadDist(char* szName) {
 	int	in;
 	int	iLine;
 	char*	p;
@@ -186,9 +167,7 @@ bool ReadDist(char* szName)
 }
 
 
-main(int an, char** av)
-
-{
+main(int an, char** av) {
 	int i,j,k;
 	double x,xDist;
 
@@ -222,7 +201,4 @@ main(int an, char** av)
 	return(0);
 
 }
-
-
-/* ------------------------------------------------------------------------ */
 
