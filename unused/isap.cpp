@@ -30,14 +30,12 @@ Miracl precision=10;
 // Extract ECn point in internal ZZn format
 //
 
-void extract(ECn& A,ZZn& x,ZZn& y)
-{ 
+void extract(ECn& A,ZZn& x,ZZn& y) { 
     x=(A.get_point())->X;
     y=(A.get_point())->Y;
 }
 
-void extract(ECn& A,ZZn& x,ZZn& y,ZZn& z)
-{ 
+void extract(ECn& A,ZZn& x,ZZn& y,ZZn& z) { 
     big t;
     x=(A.get_point())->X;
     y=(A.get_point())->Y;
@@ -50,8 +48,7 @@ void extract(ECn& A,ZZn& x,ZZn& y,ZZn& z)
 // Add A=A+B  (or A=A+A) 
 //
 
-ZZn2 g(ECn& A,ECn& B,ECn& Q)
-{
+ZZn2 g(ECn& A,ECn& B,ECn& Q) {
     big ptr;
     ZZn lam,a,d,x,y,z,t;
     ZZn2 w;
@@ -86,8 +83,7 @@ ZZn2 g(ECn& A,ECn& B,ECn& Q)
 // Note - this code uses projective co-ordinates and is completely inversion-free
 //
 
-void tate(ECn& P,ECn& Q,ZZn2& res)
-{ 
+void tate(ECn& P,ECn& Q,ZZn2& res) { 
     Big n,m;
     ECn A;
     ZZn x,y,z;
@@ -117,8 +113,7 @@ void tate(ECn& P,ECn& Q,ZZn2& res)
     return;
 }
 
-int main(int argc,char **argv)
-{
+int main(int argc,char **argv) {
     miracl *mip=&precision;
     ECn P,Q;
     int j;
@@ -129,8 +124,7 @@ int main(int argc,char **argv)
 
     argc--; argv++;
 
-    if (argc!=3)
-    {
+    if (argc!=3) {
         cout << "Not enough parameters" << endl;
         cout << "Curve is y^2=x^3+ax" << endl;
         cout << "isap <a,x,y>" << endl;
@@ -142,16 +136,14 @@ int main(int argc,char **argv)
     x=argv[1];
     y=argv[2];
 
-    if (y*y!=x*x*x+a*x)
-    {
+    if (y*y!=x*x*x+a*x) {
         cout << "Not an integer point on the curve!" << endl;
         exit(0);
     }
 
     mip->NTRY=50; // Miller-Rabin for prime(.) - 50 iterations
 
-    for (j=0,n=7;n<100000000;n+=4,j++)
-    {   
+    for (j=0,n=7;n<100000000;n+=4,j++) {   
         if (j>0 && j%100000==0)  cout << "max= " << n << ", numbers tested for primality= " << j << endl;        
         
         ecurve(a,0,n,MR_PROJECTIVE);
@@ -162,15 +154,13 @@ int main(int argc,char **argv)
 // calculate pairing
 
         Q=P; Q+=Q; 
-        if (Q.iszero())
-        {
+        if (Q.iszero()) {
             cout << "P is of order 2 for n= " << n << endl;
             continue;
         }
 
         Q+=Q; 
-        if (Q.iszero())
-        {
+        if (Q.iszero()) {
             cout << "P is of order 4 for n= " << n << endl;
             continue;
         }
@@ -185,24 +175,19 @@ int main(int argc,char **argv)
 
 // second... a simple bilinearity check.... ecap(2P,P) = ecap(P,2P)
 
-        if (isprime)
-        {
+        if (isprime) {
             tate(2*P,P,r2);
             if (r2!=r*r) isprime=FALSE;
         }
 
-        if (isprime)
-        {
+        if (isprime) {
             tate(P,2*P,r2);
             if (r2!=r*r) isprime=FALSE;
         }
 
-        if (prime(n))
-        {
+        if (prime(n)) {
             if (!isprime) cout << "Whoops= " << n << " r= " << r << endl;      // should not happen
-        }
-        else
-        {
+        } else {
             if (isprime)  cout << "Pseudoprime= " << n << " r= " << r << endl; // pseudoprime
         }              
     }
