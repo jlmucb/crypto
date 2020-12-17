@@ -611,7 +611,7 @@ bool test_big_ntru() {
 
   // construct test message
   for (int j = 0; j < (N + 1); j++)
-    msg[j] = j%2
+    msg[j] = j%2;
 
   // construct r in T(d,d)
   if (!pick_T_values(N + 1, d, d, r))
@@ -640,7 +640,7 @@ bool test_big_ntru() {
 //    n=1344, q=2^16, |s| = 6
 bool test_big_lwe() {
 
-#if 1
+#if 0
   lwe obj;
 
   // l = B x m x n, 2^B <=q
@@ -649,7 +649,7 @@ bool test_big_lwe() {
   // int frodo_n_bar = 8;
   // int frodo_l = frodo_B * frodo_m_bar * frodo_n_bar; // 256
   // int frodo_n = 1344;
-  int frodo_n = 16;
+  int frodo_n = 32;
   int frodo_l = frodo_n;
   int frodo_m = frodo_n + 16;  // m >= n
   int frodo_q = 1 << 16;
