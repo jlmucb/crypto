@@ -381,7 +381,7 @@ bool lwe::encrypt(int_vector& in, int_vector& a, int_vector* out1, int_vector* o
 
   if (!apply_matrix_transpose(q_, m_, n_, A_, a, out1))
     return false;
-  if (!mult_int_vector_by_scalar(q_, m_, (int64_t) q_r, in, &v_r))
+  if (!mult_int_vector_by_scalar(q_, l_, (int64_t) q_r, in, &v_r))   // changed from m_ tp l_
     return false;
   if (!apply_matrix_transpose(q_, m_, l_, P_, a, &v_t))
     return false;

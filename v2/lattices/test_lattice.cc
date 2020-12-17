@@ -580,7 +580,7 @@ bool test_lwe() {
 //    n=701, p=4096, q=3
 bool test_big_ntru() {
 
-#if 1
+#if 0
   int N = 701;  // reduction poly is (X^N - 1)
   int64_t p = 3LL;
   int64_t q = 4096LL;
@@ -640,7 +640,6 @@ bool test_big_ntru() {
 //    n=1344, q=2^16, |s| = 6
 bool test_big_lwe() {
 
-#if 0
   lwe obj;
 
   // l = B x m x n, 2^B <=q
@@ -724,7 +723,6 @@ bool test_big_lwe() {
   }
   if (!int_vector_equal(msg, recovered))
     return false;
-#endif
   return true;
 }
 
@@ -1060,7 +1058,7 @@ TEST (int_ntru_support, test_ntru_support) {
 TEST (ntru, test_ntru) {
   EXPECT_TRUE(test_ntru(true));
   //EXPECT_TRUE(test_ntru(false));
-  //EXPECT_TRUE(test_big_ntru());
+  EXPECT_TRUE(test_big_ntru());
   //EXPECT_TRUE(test_big_ntru());
 }
 
