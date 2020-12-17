@@ -19,12 +19,6 @@
 #include "support.pb.h"
 #include "lattice.h"
 
-// NIST parameters
-//  Frodo
-//    n=1344, q=2^16, |s| = 6
-//  NTRU
-//    n=701, p=4096, q=3
-
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
 bool test_support_functions() {
@@ -573,9 +567,164 @@ bool test_lwe() {
   if (FLAGS_print_all) {
     printf("recovered: "); print_int_vector(recovered_msg); printf("\n");
   }
-  if (!int_vector_equal(msg, recovered_msg))
+  if (!int_vector_equal(msg, recovered_msg)) {
+    return false;
+  }
+
+  return true;
+}
+
+
+// NIST parameters test sizes
+
+//    n=701, p=4096, q=3
+bool test_big_ntru() {
+
+#if 1
+  int N = 701;  // reduction poly is (X^N - 1)
+  int64_t p = 3LL;
+  int64_t q = 4096LL;
+  int d = 22;  // (q > (6d+1)p
+
+  printf("\nntru\n");
+  ntru nt;
+
+  if (!nt.init(N, p, q, d)) {
+    printf("inti failed\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("N: %d, p: %ld, q: %ld, d: %d\n", nt.N_, nt.p_, nt.q_, nt.d_);
+    printf("f: "); print_poly(nt.n_, nt.f_); printf("\n");
+    printf("fp: "); print_poly(nt.n_, nt.fp_); printf("\n");
+    printf("g: "); print_poly(nt.n_, nt.g_); printf("\n");
+    printf("fq: "); print_poly(nt.n_, nt.fq_); printf("\n");
+    printf("h: "); print_poly(nt.n_, nt.h_); printf("\n");
+    printf("gen: "); print_poly(nt.n_, nt.gen_); printf("\n");
+  }
+
+  // Message space is R(p), cipher space is R_q
+  int64_t msg[N + 1];
+  int64_t c[N + 1];
+  int64_t r[N + 1];
+  int64_t recovered[N + 1];
+
+  // construct test message
+  for (int j = 0; j < (N + 1); j++)
+    msg[j] = j%2
+
+  // construct r in T(d,d)
+  if (!pick_T_values(N + 1, d, d, r))
     return false;
 
+  if (FLAGS_print_all) {
+    printf("msg: "); print_poly(nt.n_, msg); printf("\n");
+    printf("r: "); print_poly(nt.n_, r); printf("\n");
+  }
+  if (!nt.encrypt(msg, r, c)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("c: "); print_poly(nt.n_, c); printf("\n");
+  }
+  if (!nt.decrypt(c, recovered)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("recovered: "); print_poly(nt.n_, recovered); printf("\n");
+  }
+#endif
+  return true;
+}
+
+//    n=1344, q=2^16, |s| = 6
+bool test_big_lwe() {
+
+#if 1
+  lwe obj;
+
+  // l = B x m x n, 2^B <=q
+  // int frodo_B = 4;
+  // int frodo_m_bar = 8;
+  // int frodo_n_bar = 8;
+  // int frodo_l = frodo_B * frodo_m_bar * frodo_n_bar; // 256
+  // int frodo_n = 1344;
+  int frodo_n = 16;
+  int frodo_l = frodo_n;
+  int frodo_m = frodo_n + 16;  // m >= n
+  int frodo_q = 1 << 16;
+  int frodo_s = 6;
+
+  if (FLAGS_print_all) {
+    printf("lwe parameters\nl: %d, m: %d, n: %d, q: %d, s: %d\n", frodo_l,
+       frodo_m, frodo_n, (int)frodo_q, frodo_s);
+  }
+  if (!obj.init(frodo_l, frodo_m, frodo_n, frodo_q, frodo_s)) {
+    printf("lwe init failed\n");
+    return false;
+  }
+
+  if (FLAGS_print_all) {
+    printf("returned from init\n");
+    //printf("\nA:\n"); print_int_matrix(obj.m_, obj.n_, obj.A_); printf("\n");
+    //printf("\nS:\n"); print_int_matrix(obj.n_, obj.l_, obj.S_); printf("\n");
+    //printf("\nE:\n"); print_int_matrix(obj.m_, obj.l_, obj.E_); printf("\n");
+    //printf("\nP:\n"); print_int_matrix(obj.m_, obj.l_, obj.P_); printf("\n");
+  }
+
+  int_vector msg(frodo_l);
+  int_vector a(frodo_m);
+  int_vector u(frodo_n);
+  int_vector c(frodo_l);
+  int_vector recovered(frodo_l);
+
+  zero_int_vector(a);
+  zero_int_vector(msg);
+  zero_int_vector(u);
+  zero_int_vector(c);
+  zero_int_vector(recovered);
+
+  // fill msg and a
+  for (int i = 0 ; i < frodo_l; i++)
+    msg[i] = i%2;
+  for (int i = 0 ; i < frodo_m; i++)
+    a[i] = (i % 16);
+
+  if (FLAGS_print_all) {
+    printf("\nmsg: "); print_int_vector(msg); printf("\n");
+    printf("a  : "); print_int_vector(a); printf("\n");
+  }
+
+  if (!obj.encrypt(msg, a, &u, &c)) {
+    printf("lwe encrypt failed\n");
+    return false;
+  }
+
+  if (FLAGS_print_all) {
+    printf("returned from encrypt\n");
+  }
+
+  if (FLAGS_print_all) {
+    printf("(u, c): ");
+    printf("( "); print_int_vector(u);
+    printf(", "); print_int_vector(c);
+    printf(" )\n");
+  }
+
+  if (!obj.decrypt(u, c, &recovered)) {
+    printf("lwe decrypt failed\n");
+    return false;
+  }
+
+  if (FLAGS_print_all) {
+    printf("returned from decrypt\n");
+  }
+  if (FLAGS_print_all) {
+    printf("recovered: "); print_int_vector(recovered); printf("\n");
+  }
+  if (!int_vector_equal(msg, recovered))
+    return false;
+#endif
   return true;
 }
 
@@ -875,8 +1024,9 @@ bool test_ntru(bool fakeinit) {
   if (FLAGS_print_all) {
     printf("recovered: "); print_poly(nt.n_, recovered); printf("\n");
   }
-  if (!poly_equal(nt.n_, msg, recovered))
+  if (!poly_equal(nt.n_, msg, recovered)) {
     return false;
+  }
 
   return true;
 }
@@ -893,16 +1043,25 @@ TEST (lll, test_lll) {
   EXPECT_TRUE(test_lll());
 }
 
-TEST (lwe, test_lwe) {
+TEST (lwe_support, test_lwe_support) {
   EXPECT_TRUE(test_vector());
+}
+
+TEST (lwe, test_lwe) {
   EXPECT_TRUE(test_lwe());
+  EXPECT_TRUE(test_big_lwe());
 }
 
 TEST (int_ntru_support, test_ntru_support) {
   EXPECT_TRUE(test_int_support());
   EXPECT_TRUE(test_poly_support());
+}
+
+TEST (ntru, test_ntru) {
   EXPECT_TRUE(test_ntru(true));
   //EXPECT_TRUE(test_ntru(false));
+  //EXPECT_TRUE(test_big_ntru());
+  //EXPECT_TRUE(test_big_ntru());
 }
 
 

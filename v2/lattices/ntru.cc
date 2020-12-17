@@ -306,7 +306,7 @@ bool poly_gcd(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* x, int64_
 
   while(k++ < n) {
     if (!poly_euclid(n, modulus, gc[0], gc[1], q, r)) {
-      printf("Fail 1\n");
+      printf("NTRU fail 1\n");
       return false;
     }
 #if 0
