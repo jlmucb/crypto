@@ -637,28 +637,23 @@ bool test_big_ntru() {
   return true;
 }
 
-//    n=1344, q=2^16, |s| = 6
+// Frodo:   n=1344, q=2^16, |s| = 6
 bool test_big_lwe() {
 
   lwe obj;
 
-  // l = B x m x n, 2^B <=q
-  // int frodo_B = 4;
-  // int frodo_m_bar = 8;
-  // int frodo_n_bar = 8;
-  // int frodo_l = frodo_B * frodo_m_bar * frodo_n_bar; // 256
-  // int frodo_n = 1344;
-  int frodo_n = 32;
-  int frodo_l = frodo_n;
-  int frodo_m = frodo_n + 16;  // m >= n
-  int frodo_q = 1 << 16;
-  int frodo_s = 6;
+  int big_n = 32;
+  int big_l = big_n;
+  int big_m = big_n + 16;  // m >= n
+  int big_q = 1 << 16;
+  int big_s = 6;
 
+  printf("\n");
   if (FLAGS_print_all) {
-    printf("lwe parameters\nl: %d, m: %d, n: %d, q: %d, s: %d\n", frodo_l,
-       frodo_m, frodo_n, (int)frodo_q, frodo_s);
+    printf("lwe parameters\nl: %d, m: %d, n: %d, q: %d, s: %d\n", big_l,
+       big_m, big_n, (int)big_q, big_s);
   }
-  if (!obj.init(frodo_l, frodo_m, frodo_n, frodo_q, frodo_s)) {
+  if (!obj.init(big_l, big_m, big_n, big_q, big_s)) {
     printf("lwe init failed\n");
     return false;
   }
@@ -671,11 +666,11 @@ bool test_big_lwe() {
     //printf("\nP:\n"); print_int_matrix(obj.m_, obj.l_, obj.P_); printf("\n");
   }
 
-  int_vector msg(frodo_l);
-  int_vector a(frodo_m);
-  int_vector u(frodo_n);
-  int_vector c(frodo_l);
-  int_vector recovered(frodo_l);
+  int_vector msg(big_l);
+  int_vector a(big_m);
+  int_vector u(big_n);
+  int_vector c(big_l);
+  int_vector recovered(big_l);
 
   zero_int_vector(a);
   zero_int_vector(msg);
@@ -684,9 +679,9 @@ bool test_big_lwe() {
   zero_int_vector(recovered);
 
   // fill msg and a
-  for (int i = 0 ; i < frodo_l; i++)
+  for (int i = 0 ; i < big_l; i++)
     msg[i] = i%2;
-  for (int i = 0 ; i < frodo_m; i++)
+  for (int i = 0 ; i < big_m; i++)
     a[i] = (i % 16);
 
   if (FLAGS_print_all) {
