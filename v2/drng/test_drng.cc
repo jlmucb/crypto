@@ -238,6 +238,36 @@ bool test_periodicity_test() {
 }
 
 bool test_chi_squared_test() {
+  const int num_bits_to_test = 4096;
+  byte one_bit_per_byte[num_bits_to_test];
+  byte all_bits_in_byte[num_bits_to_test / NBITSINBYTE];
+
+  memset(one_bit_per_byte, 0, num_bits_to_test);
+  memset(all_bits_in_byte, 0, num_bits_to_test / NBITSINBYTE);
+
+  crypto_get_random_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  if (!bits_to_byte(num_bits_to_test / NBITSINBYTE, all_bits_in_byte,
+                  num_bits_to_test, one_bit_per_byte)) {
+    printf("bad conversion\n");
+    return false;
+  }
+
+  printf("\n");
+  print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  printf("\n");
+
+  double chi_value= 0.0;
+  double p[2] = {0.5, 0.5};
+  if (!chi_squared_test(num_bits_to_test, one_bit_per_byte, 2, p, &chi_value)) {
+    printf("runs test fails\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("Chi squared test, n: %d, chi_squared: %lf\n",
+           num_bits_to_test, chi_value);
+  }
+
+  printf("\n");
   return true;
 }
 

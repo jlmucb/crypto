@@ -302,6 +302,20 @@ bool periodicity_test(int n, byte* s) {
   return true;
 }
 
-bool chi_squared_test(int n, byte* s) {
+bool chi_squared_test(int n, byte* x, int num_values, double* p, double* chi_value) {
+  int count[num_values];
+
+  for (int i = 0; i < num_values; i++)
+    count[i] = 0;
+  for (int i = 0; i < n; i++) {
+      count[(int)x[i]]++;
+  }
+
+  double chi_squared = 0.0;
+
+  for (int i = 0; i < num_values; i++) {
+      chi_squared += (((double)count[(int)x[i]]) - ((double)n) * p[i]) / (((double)n) * p[i]);
+  }
+  *chi_value = chi_squared;
   return true;
 }
