@@ -174,7 +174,6 @@ bool test_entropy() {
     return false;
   }
 
-
   printf("\n");
   print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
   printf("\n");
@@ -190,6 +189,58 @@ bool test_entropy() {
   return true;
 }
 
+bool test_runs() {
+  const int num_bits_to_test = 4096;
+  byte one_bit_per_byte[num_bits_to_test];
+  byte all_bits_in_byte[num_bits_to_test / NBITSINBYTE];
+
+  memset(one_bit_per_byte, 0, num_bits_to_test);
+  memset(all_bits_in_byte, 0, num_bits_to_test / NBITSINBYTE);
+
+  crypto_get_random_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  if (!bits_to_byte(num_bits_to_test / NBITSINBYTE, all_bits_in_byte,
+                  num_bits_to_test, one_bit_per_byte)) {
+    printf("bad conversion\n");
+    return false;
+  }
+
+  printf("\n");
+  print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  printf("\n");
+
+  int num_runs = 0;
+  double mu = 0.0;
+  double sigma = 0.0;
+
+  if (!runs_test(num_bits_to_test, one_bit_per_byte, &num_runs, &mu, &sigma)) {
+    printf("runs test fails\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("Runs test, n: %d, num_runs: %d, mu: %lf, sigma: %lf\n",
+           num_bits_to_test, num_runs, mu, sigma);
+  }
+
+  printf("\n");
+  return true;
+}
+
+bool test_berlekamp_massey() {
+  return true;
+}
+
+bool test_excursion_test() {
+  return true;
+}
+
+bool test_periodicity_test() {
+  return true;
+}
+
+bool test_chi_squared_test() {
+  return true;
+}
+
 TEST (drng, test_ctr_drng) {
   EXPECT_TRUE(test_ctr_drng());
 }
@@ -198,6 +249,13 @@ TEST (entropy_tests, test_entropy) {
 }
 TEST (markov_tests, test_markov) {
   EXPECT_TRUE(test_markov());
+}
+TEST (stat_tests, test_stat) {
+  EXPECT_TRUE(test_runs());
+  EXPECT_TRUE(test_berlekamp_massey());
+  EXPECT_TRUE(test_excursion_test());
+  EXPECT_TRUE(test_periodicity_test());
+  EXPECT_TRUE(test_chi_squared_test());
 }
 
 int main(int an, char** av) {

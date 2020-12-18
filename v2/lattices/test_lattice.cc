@@ -642,9 +642,9 @@ bool test_big_lwe() {
 
   lwe obj;
 
-  int big_n = 32;
+  int big_n = 64;
   int big_l = big_n;
-  int big_m = big_n + 16;  // m >= n
+  int big_m = big_n + big_n / 2;  // m >= n
   int big_q = 1 << 16;
   int big_s = 6;
 

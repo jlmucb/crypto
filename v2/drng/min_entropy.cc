@@ -256,3 +256,52 @@ double shannon_entropy(int largest_possible_sample, int num_samples, byte* sampl
   }
   return entropy;
 }
+
+bool runs_test(int n, byte* s, int* number_of_runs, double* mu, double* sigma) {
+  byte current_value = s[0];
+  int current_run_length = 1;
+  int num_runs = 1;
+  int n0 = 0;
+  int n1 = 0;
+
+  if (current_value == 0)
+    n0++;
+  else
+    n1++;
+
+  for (int i = 1; i < n; i++) {
+    if (current_value == 0)
+      n0++;
+    else
+      n1++;
+    if (current_value != s[i]) {
+      num_runs++;
+      current_run_length = 1;
+      current_value = s[i];
+    }
+    current_run_length++;
+  }
+  *number_of_runs = num_runs;
+  *mu = (2.0 * ((double) n1) * ((double) n0)) / ((double) n) + 1.0;
+  *sigma = sqrt(((*mu - 1.0)*(*mu - 2.0)) / ((double) (n-1)));
+  // n1 / n is normally distributed with mu and sigma parameters
+
+  return true;
+}
+
+bool berlekamp_massy(int n, byte* s, int* L) {
+
+  return true;
+}
+
+bool excursion_test(int n, byte* s) {
+  return true;
+}
+
+bool periodicity_test(int n, byte* s) {
+  return true;
+}
+
+bool chi_squared_test(int n, byte* s) {
+  return true;
+}
