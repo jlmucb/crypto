@@ -347,7 +347,7 @@ bool test_compression_test() {
     return false;
   }
   if (FLAGS_print_all) {
-    printf("Compression test, n: %d, compressed: %d\n", n, compressed);
+    printf("Compression test, uncompressed size: %d, compressed size: %d\n", n, compressed);
   }
   return true;
 }

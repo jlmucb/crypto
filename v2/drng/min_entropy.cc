@@ -438,6 +438,29 @@ bool periodicity_test(int n, byte* s, int lag, int* result) {
   return true;
 }
 
+/*
+ *  LZ77 compression
+ *    while input is not empty do
+ *        prefix := longest prefix of input that begins in window
+ *        if prefix exists then
+ *            i := distance to start of prefix
+ *           l := length of prefix
+ *           c := char following prefix in input
+ *       else
+ *            i := 0
+ *            l := 0
+ *            c := first char of input
+ *        end if
+ *        output (i, l, c)
+ *        s := pop l + 1 chars from front of input
+ *        discard l + 1 chars from front of window
+ *        append s to back of window
+ *    repeat
+ */
+extern uint32_t lz77_compress (uint8_t *uncompressed_text, uint32_t uncompressed_size,
+         uint8_t *compressed_text);
 bool compression_test(int n, byte* s, int* compressed) {
+  byte compressed_bytes[n];
+  *compressed = lz77_compress (s, n, compressed_bytes);
   return true;
 }
