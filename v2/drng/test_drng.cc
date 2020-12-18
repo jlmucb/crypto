@@ -230,10 +230,74 @@ bool test_berlekamp_massey() {
 }
 
 bool test_excursion_test() {
+  const int num_bytes_to_test = 1024;
+  byte all_bits_in_byte[num_bytes_to_test];
+
+  memset(all_bits_in_byte, 0, num_bytes_to_test);
+  crypto_get_random_bytes(num_bytes_to_test, all_bits_in_byte);
+
+  printf("\n");
+  print_bytes(num_bytes_to_test, all_bits_in_byte);
+  printf("\n");
+
+  double largest_excursion = excursion_test(num_bytes_to_test, all_bits_in_byte);
+  if (FLAGS_print_all) {
+    printf("Excursion test, n: %d, maximum excursion: %06.2lf\n",
+           num_bytes_to_test, largest_excursion);
+  }
+  printf("\n");
   return true;
 }
 
 bool test_periodicity_test() {
+  const int n = 25;
+  double data[n] = {
+    0.0, 1.0, 2.0, 3.0, 4.0,
+    0.0, 1.0, 2.0, 3.0, 4.0,
+    0.0, 1.0, 2.0, 3.0, 4.0,
+    0.0, 1.0, 2.0, 3.0, 4.0,
+    0.0, 1.0, 2.0, 3.0, 4.0,
+  };
+  double transform[n];
+
+  if (!real_dft(n, data, transform)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("\ndft\n");
+    printf("data     :");
+    for (int i = 0; i < n; i++)
+      printf("%5.1lf", data[i]);
+    printf("\n");
+    printf("transform:");
+    for (int i = 0; i < n; i++)
+      printf("%5.1lf", transform[i]);
+    printf("\n");
+    printf("\n");
+  }
+
+  byte x[n] = {
+    0, 1, 2, 3, 4,
+    0, 1, 2, 3, 4,
+    0, 1, 2, 3, 4,
+    0, 1, 2, 3, 4,
+    0, 1, 2, 3, 4,
+  };
+  int r = 0;
+  int lag = 1;
+  if (!periodicity_test(n, x, lag, &r)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("period test with lag %d: %d\n", lag, r);
+  }
+  lag = 5;
+  if (!periodicity_test(n, x, lag, &r)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("period test with lag %d: %d\n", lag, r);
+  }
   return true;
 }
 
@@ -271,6 +335,23 @@ bool test_chi_squared_test() {
   return true;
 }
 
+bool test_compression_test() {
+  const int n = 100;
+  byte x[n];
+  int compressed = 0;
+
+  for (int j = 0; j < n; j++)
+    x[j] = j % 4;
+
+  if (!compression_test(n, x, &compressed)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("Compression test, n: %d, compressed: %d\n", n, compressed);
+  }
+  return true;
+}
+
 TEST (drng, test_ctr_drng) {
   EXPECT_TRUE(test_ctr_drng());
 }
@@ -286,6 +367,7 @@ TEST (stat_tests, test_stat) {
   EXPECT_TRUE(test_excursion_test());
   EXPECT_TRUE(test_periodicity_test());
   EXPECT_TRUE(test_chi_squared_test());
+  EXPECT_TRUE(test_compression_test());
 }
 
 int main(int an, char** av) {

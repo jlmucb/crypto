@@ -68,12 +68,13 @@ double markov_sequence_probability(int seq_len, byte* seq,
 double markov_entropy(int num_samples, byte* samples);
 double shannon_entropy(int largest_possible_sample,
         int num_samples, byte* samples);
-
+bool real_dft(int n, double* data, double* transform);
 bool runs_test(int n, byte* s, int* number_of_runs, double* mu, double* sigma);
 bool berlekamp_massy(int n, byte* s, int* L);
-bool excursion_test(int n, byte* s);
-bool periodicity_test(int n, byte* s);
+double excursion_test(int n, byte* s);
 bool chi_squared_test(int n, byte* x, int num_values, double* p, double* chi_value);
+bool periodicity_test(int n, byte* s, int lag, int* result);
+bool compression_test(int n, byte* s, int* compressed);
 #endif
 
 

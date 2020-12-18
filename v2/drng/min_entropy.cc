@@ -289,17 +289,85 @@ bool runs_test(int n, byte* s, int* number_of_runs, double* mu, double* sigma) {
   return true;
 }
 
+// copy a to b
+void copy_byte_array(int n, byte* a, byte* b) {
+  for (int i = 0; i < n; i++)
+    b[i] = a[i];
+}
+
+// Determine c[0],...,c[n-1] that gives syndrones of s[n-1] + c[0]s[n-2] + ... + c[*L-1] s[n-*L]
+// *L is the length of the shortest LFSR for s
 bool berlekamp_massy(int n, byte* s, int* L) {
+  byte b[n];
+  byte c[n];
+  byte t[n];
+
+  b[0] = 1;
+  c[0] = 1;
+  for (int i = 1; i < n; i++) {
+    b[i] = 0;
+    c[i] = 0;
+  }
+
+  *L = 0;
+  int m = -1;
+  byte d = 0;
+  for (int k = 0; k < n; k++) {
+    for (int j = 1; j <= *L; j++) {
+      d ^= c[j] * s[k-j];
+    }
+    d ^= s[k];
+    if (d != 0) {
+      copy_byte_array(n, c, t);
+      // c[k-m] = c[k-m] ^ b[0], ... , b[n-k-1+m]^c[n-1]
+      for (int j = (k-m); j < n; j++) {
+        c[j] = c[j]^b[m-k+j];
+      }
+      if (*L < (n / 2)) {
+        *L = k - 1 - *L;
+        m = k;
+        copy_byte_array(n, t, b);
+      }
+    }
+  }
 
   return true;
 }
 
-bool excursion_test(int n, byte* s) {
-  return true;
+double sum(int n, byte* x) {
+  double total = 0.0;
+  for (int i = 0; i < n; i++)
+    total += (double)x[i];
+  return total;
 }
 
-bool periodicity_test(int n, byte* s) {
-  return true;
+double average(int n, byte* x) {
+  double total = sum(n, x);;
+  return total / ((double) n);
+}
+
+// largest deviation from the average
+double excursion_test(int n, byte* x) {
+  double av = average(n, x);
+  double largest_excursion = 0.0;
+  double d;
+  double t;
+  double s;
+
+  if (n <= 0)
+    return 0.0;
+
+  for (int i = 0; i < n; i++) {
+    s = sum(i + 1, x);
+    t = s - ((double)(i + 1)) * av;
+    if (t < 0.0)
+      t = -t;
+    // printf("i: %d, n: %d, sum: %7.2lf, av: %7.2lf, t: %7.2lf\n", i, n, s, av, t);
+    if (t > largest_excursion)
+      largest_excursion = t;
+  }
+
+  return largest_excursion;
 }
 
 bool chi_squared_test(int n, byte* x, int num_values, double* p, double* chi_value) {
@@ -317,5 +385,59 @@ bool chi_squared_test(int n, byte* x, int num_values, double* p, double* chi_val
       chi_squared += (((double)count[(int)x[i]]) - ((double)n) * p[i]) / (((double)n) * p[i]);
   }
   *chi_value = chi_squared;
+  return true;
+}
+
+const double pi = 3.141592653589793;
+
+bool complex_fourier_sum(int n, int k, double* x, double* real, double* im) {
+  double real_total = 0.0;
+  double im_total = 0.0;
+  double t;
+
+  for (int j = 0; j < n; j++) {
+    t = -(2.0 * pi * ((double)j) * ((double)k)) / ((double)n);
+    real_total += x[j] * cos(t);
+    im_total += x[j] * sin(t);
+  }
+  *real = real_total;
+  *im= im_total;
+  return true;
+}
+
+// X[k] = sum from j = 0 to j= n-1  x[j] e^(-2 pi i)jk/n
+// We return amplitude coefficients
+bool real_dft(int n, double* data, double* transform) {
+  double real_value = 0.0;
+  double im_value = 0.0;
+
+  for (int k = 0; k < n; k++) {
+    if (!complex_fourier_sum(n, k, data, &real_value, &im_value)) {
+      return false;
+    }
+#if 0
+    printf("X[%d] = %7.2lf + i %7.2lf\n", k, real_value, im_value);
+#endif
+    transform[k] = sqrt(real_value * real_value + im_value * im_value);
+  }
+  return true;
+}
+
+// The periodicity test determines the number of periodic structures in the data.
+// The test takes a lag parameter p as input, where p < L, T is calculated as follows:
+//    1. Initialize T to zero.
+//    2. For i = 1 to L − p
+//    If (s i = s i+p ), increment T by one.
+bool periodicity_test(int n, byte* s, int lag, int* result) {
+  int coincident = 0;
+  for (int i = 0; i < (n-lag); i++) {
+    if (s[i] == s[i + lag])
+      coincident++;
+  }
+  *result = coincident;
+  return true;
+}
+
+bool compression_test(int n, byte* s, int* compressed) {
   return true;
 }
