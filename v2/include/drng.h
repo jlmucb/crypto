@@ -73,7 +73,7 @@ bool runs_test(int n, byte* s, int* number_of_runs, double* mu, double* sigma);
 bool berlekamp_massy(int n, byte* s, int* L);
 bool excursion_test(int n, byte* s);
 bool periodicity_test(int n, byte* s);
-bool chi_squared_test(int n, byte* s);
+bool chi_squared_test(int n, byte* x, int num_values, double* p, double* chi_value);
 #endif
 
 
