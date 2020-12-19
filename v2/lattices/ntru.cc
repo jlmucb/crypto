@@ -484,7 +484,7 @@ bool ntru::init(int N, int64_t p, int64_t q, int d) {
     return false;
   }
 
-  const int max_trys = 20;
+  const int max_trys = 50;
   int ntry = 0;
   bool succeeded = false;
   while (ntry++ < max_trys) {
@@ -504,16 +504,32 @@ bool ntru::init(int N, int64_t p, int64_t q, int d) {
     poly_zero(n_, g_);
     if (!pick_T_values(n_, d, d, g_))
       continue;
+#if 0
+    printf("proposed f: ");
+    print_poly(n_, f_);
+    printf("\n");
+    printf("proposed g: ");
+    print_poly(n_, g_);
+    printf("\n");
+#endif
 
     //  calculate fp, f fp = 1 (mod p)
     poly_zero(n_, fp_);
-    if (!poly_inverse_mod_poly(n_, p_, gen_, f_, fp_))
+    if (!poly_inverse_mod_poly(n_, p_, gen_, f_, fp_)) {
+#if 0
+    printf("no fp_ inverse\n");
+#endif
       continue;
+    }
 
     //  calculate fq, f fq= 1 (mod q)
     poly_zero(n_, fq_);
-    if (!poly_inverse_mod_poly(n_, q_, gen_, f_, fq_))
+    if (!poly_inverse_mod_poly(n_, q_, gen_, f_, fq_)) {
+#if 0
+    printf("no fq_ inverse\n");
+#endif
       continue;
+    }
     succeeded = true;
     break;
   }

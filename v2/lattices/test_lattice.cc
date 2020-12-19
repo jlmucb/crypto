@@ -576,15 +576,14 @@ bool test_lwe() {
 
 
 // NIST parameters test sizes
-
 //    n=701, p=4096, q=3
 bool test_big_ntru() {
 
-#if 0
-  int N = 701;  // reduction poly is (X^N - 1)
+#if 1
+  int N = 743;  // reduction poly is (X^N - 1)
   int64_t p = 3LL;
-  int64_t q = 4096LL;
-  int d = 400;  // (q > (6d+1)p
+  int64_t q = 2048LL;
+  int d = 11;  // (q > (6d+1)p
 
   printf("\nntru\n");
   ntru nt;
@@ -1054,7 +1053,8 @@ TEST (int_ntru_support, test_ntru_support) {
 TEST (ntru, test_ntru) {
   EXPECT_TRUE(test_ntru(true));
   EXPECT_TRUE(test_ntru(false));
-  EXPECT_TRUE(test_big_ntru());
+  // very few f have inverses mod p and q so this can take a long time
+  // EXPECT_TRUE(test_big_ntru());
 }
 
 
