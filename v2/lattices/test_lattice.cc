@@ -580,7 +580,7 @@ bool test_lwe() {
 //    n=701, p=4096, q=3
 bool test_big_ntru() {
 
-#if 0
+#if 1
   int N = 701;  // reduction poly is (X^N - 1)
   int64_t p = 3LL;
   int64_t q = 4096LL;
@@ -590,7 +590,7 @@ bool test_big_ntru() {
   ntru nt;
 
   if (!nt.init(N, p, q, d)) {
-    printf("inti failed\n");
+    printf("init failed\n");
     return false;
   }
   if (FLAGS_print_all) {
@@ -979,6 +979,7 @@ bool test_ntru(bool fakeinit) {
   ntru nt;
 
   if (!nt.init(N, p, q, d)) {
+    printf("init failed\n");
     return false;
   }
   if (FLAGS_print_all) {
@@ -1052,8 +1053,7 @@ TEST (int_ntru_support, test_ntru_support) {
 
 TEST (ntru, test_ntru) {
   EXPECT_TRUE(test_ntru(true));
-  //EXPECT_TRUE(test_ntru(false));
-  EXPECT_TRUE(test_big_ntru());
+  EXPECT_TRUE(test_ntru(false));
   //EXPECT_TRUE(test_big_ntru());
 }
 

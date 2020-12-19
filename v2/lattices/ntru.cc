@@ -306,7 +306,6 @@ bool poly_gcd(int n, int64_t modulus, int64_t* a, int64_t* b, int64_t* x, int64_
 
   while(k++ < n) {
     if (!poly_euclid(n, modulus, gc[0], gc[1], q, r)) {
-      printf("NTRU fail 1\n");
       return false;
     }
 #if 0
@@ -481,30 +480,44 @@ bool ntru::init(int N, int64_t p, int64_t q, int d) {
   h_ = new int64_t[n_];
 
   if (f_ == nullptr || g_ == nullptr || fp_ == nullptr ||
-      fq_ == nullptr || h_ == nullptr || gen_ == nullptr)
+      fq_ == nullptr || h_ == nullptr || gen_ == nullptr) {
     return false;
+  }
 
-  poly_zero(n_, gen_);
-  gen_[0] = -1LL;
-  gen_[N_] = 1LL;
-  //  generate f in T(d+1, d)
-  poly_zero(n_, f_);
-  if (!pick_T_values(n_, d + 1, d, f_))
-    return false;
+  const int max_trys = 20;
+  int ntry = 0;
+  bool succeeded = false;
+  while (ntry++ < max_trys) {
+#if 0
+    printf("TRY %d\n", ntry);
+#endif
+    poly_zero(n_, gen_);
+    gen_[0] = -1LL;
+    gen_[N_] = 1LL;
 
-  //  generate g in T(d,d)
-  poly_zero(n_, g_);
-  if (!pick_T_values(n_, d, d, g_))
-    return false;
+    //  generate f in T(d+1, d)
+    poly_zero(n_, f_);
+    if (!pick_T_values(n_, d + 1, d, f_))
+      continue;
 
-  //  calculate fp, f fp = 1 (mod p)
-  poly_zero(n_, fp_);
-  if (!poly_inverse_mod_poly(n_, p_, gen_, f_, fp_))
-    return false;
+    //  generate g in T(d,d)
+    poly_zero(n_, g_);
+    if (!pick_T_values(n_, d, d, g_))
+      continue;
 
-  //  calculate fq, f fq= 1 (mod q)
-  poly_zero(n_, fq_);
-  if (!poly_inverse_mod_poly(n_, q_, gen_, f_, fq_))
+    //  calculate fp, f fp = 1 (mod p)
+    poly_zero(n_, fp_);
+    if (!poly_inverse_mod_poly(n_, p_, gen_, f_, fp_))
+      continue;
+
+    //  calculate fq, f fq= 1 (mod q)
+    poly_zero(n_, fq_);
+    if (!poly_inverse_mod_poly(n_, q_, gen_, f_, fq_))
+      continue;
+    succeeded = true;
+    break;
+  }
+  if (!succeeded)
     return false;
 
   //  calculate h= fq g
