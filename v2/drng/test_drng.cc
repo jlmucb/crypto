@@ -301,6 +301,7 @@ bool test_periodicity_test() {
     return false;
   }
   if (FLAGS_print_all) {
+    print_bytes(n, x);
     printf("period test with lag %d: %d\n", lag, r);
   }
   lag = 5;
