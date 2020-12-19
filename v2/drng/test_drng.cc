@@ -226,6 +226,18 @@ bool test_runs() {
 }
 
 bool test_berlekamp_massey() {
+  const int n = 128;
+  byte bits[n];
+
+  for (int i = 0; i < n; i++) {
+    bits[i] = i % 4;
+  }
+
+  int sr_size = 0;
+  if (!berlekamp_massy(n, bits, &sr_size)) {
+    return false;
+  }
+  printf("Berlekamp massy, n: %d, sr size: %d\n", n, sr_size);
   return true;
 }
 

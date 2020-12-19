@@ -580,11 +580,11 @@ bool test_lwe() {
 //    n=701, p=4096, q=3
 bool test_big_ntru() {
 
-#if 1
+#if 0
   int N = 701;  // reduction poly is (X^N - 1)
   int64_t p = 3LL;
   int64_t q = 4096LL;
-  int d = 22;  // (q > (6d+1)p
+  int d = 400;  // (q > (6d+1)p
 
   printf("\nntru\n");
   ntru nt;
@@ -1054,7 +1054,7 @@ TEST (int_ntru_support, test_ntru_support) {
 TEST (ntru, test_ntru) {
   EXPECT_TRUE(test_ntru(true));
   EXPECT_TRUE(test_ntru(false));
-  //EXPECT_TRUE(test_big_ntru());
+  EXPECT_TRUE(test_big_ntru());
 }
 
 

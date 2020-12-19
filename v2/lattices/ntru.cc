@@ -520,6 +520,9 @@ bool ntru::init(int N, int64_t p, int64_t q, int d) {
   if (!succeeded)
     return false;
 
+#if 0
+    printf("parameters succeeded\n");
+#endif
   //  calculate h= fq g
   poly_zero(n_, h_);
   if (!poly_mult_mod_poly_and_reduce(n_, q_, gen_, fq_, g_, h_))
