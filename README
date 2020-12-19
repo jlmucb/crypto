@@ -113,6 +113,7 @@ How to build
   directories for the object files and binaries.  I put binaries in ~/cryptobin and
   object files in ~/cryptoobj (in several subdirectories).  Most of the executables
   buildall builds are tests; however, there is a command line utility called cryptutil.
+  In v2, make_all_tests.sh builds everything.
 
   You need a c-11 compiler with the standard libraries, protobuf, gtest and gflags all
   of which are available in open source.  Currently, the code is Intel64 only (the
