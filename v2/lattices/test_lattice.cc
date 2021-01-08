@@ -27,6 +27,9 @@ bool test_support_functions() {
   real_vector v_t;
   double d, x;
 
+  if (FLAGS_print_all) {
+    printf("test_support_functions\n");
+  }
   vector_alloc(n, &v_t); 
   for (int i = 0; i < n; i++)
     vector_alloc(n, &b[i]); 
@@ -57,6 +60,9 @@ bool test_support_functions() {
     print_vector(v_t);
     printf("\n");
   }
+  // Answer: (2.0000, 10.0000, 25.0000)
+  if (v_t[0] != 2.0 || v_t[1] != 10.0 || v_t[2] != 25.0)
+    return false;
   vector_zero(&v_t);
   if (!vector_sub(n, b[0],  b[1], &v_t))
     return false;
@@ -68,17 +74,23 @@ bool test_support_functions() {
     print_vector(v_t);
     printf("\n");
   }
+  // Answer: (2.0000, -4.0000, 3.0000)
+  if (v_t[0] != 2.0 || v_t[1] != -4.0 || v_t[2] != 3.0)
+    return false;
   vector_zero(&v_t);
   x = 2.0;
   if (!vector_scalar_mult(n, x,  b[0], &v_t))
     return false;
   if (FLAGS_print_all) {
-    printf("%lf  ", x);
+    printf("%lf * ", x);
     print_vector(b[0]);
     printf(" = ");
     print_vector(v_t);
     printf("\n");
   }
+  // Answer: ( 4.0000,  6.0000,  28.0000 )
+  if (v_t[0] != 4.0 || v_t[1] != 6.0 || v_t[2] != 28.0)
+    return false;
   vector_zero(&v_t);
   if (!vector_dot_product(n, b[0], b[0], &d))
     return false;
@@ -89,6 +101,9 @@ bool test_support_functions() {
     printf(" = ");
     printf("%lf\n", d);
   }
+  // Answer: 209
+  if (d != 209.0)
+    return false;
   vector_zero(&v_t);
   if (!vector_dot_product(n, b[0], b[1], &d))
     return false;
@@ -99,6 +114,9 @@ bool test_support_functions() {
     printf(" = ");
     printf("%lf\n", d);
   }
+  // Answer: 175
+  if (d != 175.0)
+    return false;
 
   x = 1.33;
   int64_t a =  closest_int(x);
@@ -108,21 +126,21 @@ bool test_support_functions() {
   if (a != 1LL)
     return false;
   x = .87;
-  a =  closest_int(x);
+  a = closest_int(x);
   if (FLAGS_print_all) {
     printf("close(%lf) = %lld\n", x, a);
   }
   if (a != 1LL)
     return false;
   x = -1.33;
-  a =  closest_int(x);
+  a = closest_int(x);
   if (FLAGS_print_all) {
     printf("close(%lf) = %lld\n", x, a);
   }
   if (a != -1LL)
     return false;
   x = -.87;
-  a =  closest_int(x);
+  a = closest_int(x);
   if (FLAGS_print_all) {
     printf("close(%lf) = %lld\n", x, a);
   }
@@ -1024,7 +1042,6 @@ bool test_ntru(bool fakeinit) {
   return true;
 }
 
-
 TEST (support, support_functions) {
   EXPECT_TRUE(test_support_functions());
   EXPECT_TRUE(test_matrix());
@@ -1056,7 +1073,6 @@ TEST (ntru, test_ntru) {
   // very few f have inverses mod p and q so this can take a long time
   // EXPECT_TRUE(test_big_ntru());
 }
-
 
 int main(int an, char** av) {
   gflags::ParseCommandLineFlags(&an, &av, true);
