@@ -1392,23 +1392,23 @@ bool ecc::extract_key_message_from_serialized(string& s) {
 
 void ecc::print() {
   printf("\necc key:\n");
-  printf("modulus size: %d bits\n", prime_bit_size_);
+  printf("    modulus size      : %d bits\n", prime_bit_size_);
   if (c_ == nullptr)
     return;
   c_->print_curve();
-  printf("Not before: %s\n", not_before_.c_str());
-  printf("Not after: %s\n", not_after_.c_str());
+  printf("    Not before        : %s\n", not_before_.c_str());
+  printf("    Not after         : %s\n", not_after_.c_str());
   if (base_point_ != nullptr) {
-    printf("base: "); base_point_->print(); printf("\n");
+    printf("    base              : "); base_point_->print(); printf("\n");
   }
   if (order_of_base_point_ != nullptr) {
-    printf("order base point: "); order_of_base_point_->print(); printf("\n");
+    printf("    order base point  : "); order_of_base_point_->print(); printf("\n");
   }
   if (secret_ != nullptr) {
-    printf("secret: "); secret_->print(); printf("\n");
+    printf("    secret            : "); secret_->print(); printf("\n");
   }
   if (public_point_ != nullptr) {
-    printf("public: "); public_point_->print(); printf("\n");
+    printf("    public            : "); public_point_->print(); printf("\n");
   }
   printf("\n");
 }

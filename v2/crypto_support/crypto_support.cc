@@ -983,9 +983,24 @@ certificate_message* make_certificate(certificate_body_message& cbm,
 }
 
 void print_binary_blob(binary_blob_message& m) {
+  printf("Binary blob: ");
+  print_bytes((int)m.blob().size(), (byte*)m.blob().data());
 }
 
 void print_encrypted_message(encrypted_message& m) {
+  printf("Encrypted message:\n");
+  if (m.has_scheme_identifier())
+    printf("  Scheme id   : %s\n", m.scheme_identifier().c_str());
+  if (m.has_message_identifier())
+    printf("  Message id  : %s\n", m.message_identifier().c_str());
+  if (m.has_source() && m.has_destination())
+    printf("  Source      : %s, destination: %s\n", m.source().c_str(), m.destination().c_str());
+  if (m.has_date())
+    printf("  Date        : %s\n", m.date().c_str());
+  if (m.has_buffer()) {
+    printf("  Buffer      : ");
+    print_bytes((int)m.buffer().size(), (byte*)m.buffer().data());
+  }
 }
 
 void print_signature_message(signature_message& m) {
@@ -1091,51 +1106,51 @@ void print_key_message(key_message& m) {
     if (pub->has_cm()) {
       curve_message* cmsg= pub->mutable_cm();
       if (cmsg->has_curve_name())  
-        printf("  curve name : %s\n", cmsg->curve_name().c_str());
+        printf("  curve name  : %s\n", cmsg->curve_name().c_str());
       if (cmsg->has_curve_p())   {
-        printf("  curve p    : ");
+        printf("  curve p     : ");
         print_bytes((int)cmsg->curve_p().size(), (byte*)cmsg->curve_p().data());
       }
       if (cmsg->has_curve_a())   {
-        printf("  curve a    : ");
+        printf("  curve a     : ");
         print_bytes((int)cmsg->curve_a().size(), (byte*)cmsg->curve_a().data());
       }
       if (cmsg->has_curve_b())   {
-        printf("  curve b    : ");
+        printf("  curve b     : ");
         print_bytes((int)cmsg->curve_b().size(), (byte*)cmsg->curve_b().data());
       }
     }
     if (pub->has_base_point()) {
-        point_message* pt= pub->mutable_base_point();
-        if (pt->has_x()) {
-          printf("  base x   : ");
-          print_bytes((int)pt->x().size(), (byte*)pt->x().data());
-        }
-        if (pt->has_y()) {
-          printf("  base y   : ");
-          print_bytes((int)pt->y().size(), (byte*)pt->y().data());
-        }
+      point_message* pt= pub->mutable_base_point();
+      if (pt->has_x()) {
+        printf("  base x     : ");
+        print_bytes((int)pt->x().size(), (byte*)pt->x().data());
+      }
+      if (pt->has_y()) {
+        printf("  base y     : ");
+        print_bytes((int)pt->y().size(), (byte*)pt->y().data());
+      }
     }
     if (pub->has_public_point()) {
-        point_message* pt= pub->mutable_public_point();
-        if (pt->has_x()) {
-          printf("  public x : ");
-          print_bytes((int)pt->x().size(), (byte*)pt->x().data());
-        }
-        if (pt->has_y()) {
-          printf("  public y : ");
-          print_bytes((int)pt->y().size(), (byte*)pt->y().data());
-        }
+      point_message* pt= pub->mutable_public_point();
+      if (pt->has_x()) {
+        printf("  public x   : ");
+        print_bytes((int)pt->x().size(), (byte*)pt->x().data());
+      }
+      if (pt->has_y()) {
+        printf("  public y   : ");
+        print_bytes((int)pt->y().size(), (byte*)pt->y().data());
+      }
     }
     if (pub->has_order_of_base_point()) {
-        printf("  order base : ");
-        print_bytes((int)pub->order_of_base_point().size(), (byte*)pub->order_of_base_point().data());
+      printf("  order base   : ");
+      print_bytes((int)pub->order_of_base_point().size(), (byte*)pub->order_of_base_point().data());
     }
-
   }
+
   if (m.has_ecc_priv() && (int)m.ecc_priv().private_multiplier().size() > 0) {
-      printf("  private key  : ");
-      print_bytes((int)m.ecc_priv().private_multiplier().size(), (byte*)m.ecc_priv().private_multiplier().data());
+    printf("  private key    : ");
+    print_bytes((int)m.ecc_priv().private_multiplier().size(), (byte*)m.ecc_priv().private_multiplier().data());
   }
 }
 
@@ -1168,10 +1183,6 @@ void print_scheme_message(scheme_message& m) {
     print_hmac_parameters_message(*hp);
   }
 }
-
-void print_crypto_signature_message(crypto_signature_message& m) {
-}
-
 void print_certificate_name_message(certificate_name_message& m) {
   if (m.has_name_type()) 
     printf("    type      : %s, ", m.name_type().c_str());

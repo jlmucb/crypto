@@ -44,8 +44,10 @@ bool test_ecc_affine_1() {
   curve_point p4(2);
   curve_point p5(2);
 
-  printf("curve:\n");
-  c1.print_curve();
+  if (FLAGS_print_all) {
+    printf("curve:\n");
+    c1.print_curve();
+  }
 
   p1.x_->zero_num();
   p1.y_->zero_num();
@@ -125,7 +127,9 @@ bool test_ecc_affine_1() {
 
 bool test_ecc_affine_2() {
 
-  printf("\nbig affine\n\n");
+  if (FLAGS_print_all) {
+    printf("\nbig affine\n\n");
+  }
   big_num p(5);
 
   p.value_[3] = 0xffffffff00000001ULL;
@@ -191,8 +195,10 @@ bool test_ecc_affine_2() {
   curve_point p1(5);
   p1.x_->copy_from(x);
   p1.y_->copy_from(y);
-  printf("point on curve is: "); p1.print(); printf("\n");
-  printf("\n");
+  if (FLAGS_print_all) {
+    printf("point on curve is: "); p1.print(); printf("\n");
+    printf("\n");
+  }
 
   if (ecc_is_on_curve(c, p1)) {
    printf("test point is on curve: "); p1.print(); printf("\n");
@@ -225,35 +231,40 @@ bool test_ecc_affine_2() {
     return false;
   }
 
-  printf("\n");
   if (!ecc_mult(c, p1, big_four, p4))
     return false;
-  big_four.print();
-  printf(" * ");
-  p1.print();
-  printf(" = ");
-  p4.print();
-  printf("\n");
 
-  printf("\n");
+  if (FLAGS_print_all) {
+    printf("\n");
+    big_four.print();
+    printf(" * ");
+    p1.print();
+    printf(" = ");
+    p4.print();
+    printf("\n");
+  }
+
   if (!ecc_mult(c, p1, big_three, p5))
     return false;
-  big_three.print();
-  printf(" * ");
-  p1.print();
-  printf(" = ");
-  p5.print();
-  printf("\n");
+  if (FLAGS_print_all) {
+    big_three.print();
+    printf(" * ");
+    p1.print();
+    printf(" = ");
+    p5.print();
+    printf("\n");
+  }
 
-  printf("\n");
   if (!ecc_sub(c, p4, p5, p6))
     return false;
-  p4.print();
-  printf(" + ");
-  p5.print();
-  printf(" = ");
-  p6.print();
-  printf("\n");
+  if (FLAGS_print_all) {
+    p4.print();
+    printf(" + ");
+    p5.print();
+    printf(" = ");
+    p6.print();
+    printf("\n");
+  }
 
   if (!p1.is_equal(p6)) {
     printf("mult failed\n");
@@ -394,7 +405,6 @@ bool test_ecc_curve() {
 
 bool test_ecc_class() {
 
-printf("ecc class :\n");
   if (!init_ecc_curves())
     return false;
   p256_key.print();
@@ -419,22 +429,19 @@ printf("ecc class :\n");
   ecc key1;
   if (!key1.extract_key_message_from_serialized(serialized_str))
     return false;
-  printf("\n");
-  key1.print();
-  printf("\nPrinting key_message\n");
-  print_key_message(*key1.ecc_key_);
   if (FLAGS_print_all) {
-    printf("Key 2 extracted message\n");
+    printf("\n");
+    key1.print();
+    printf("\nPrinting key_message\n");
+    print_key_message(*key1.ecc_key_);
   }
 
   if (!key1.retrieve_parameters_from_key_message())
     return false;
-  key1.print();
   if (FLAGS_print_all) {
+    key1.print();
     printf("Key 2 retrieved params\n");
   }
-
-  // if (!set_parameters_in_key_message()) return false;
 
   return true;
 }
@@ -461,7 +468,9 @@ bool test_ecc_encrypt_decrypt() {
               "anything", seconds_in_common_year))
     return false;
 
-  key.print();
+  if (FLAGS_print_all) {
+    key.print();
+  }
 
   if (key.base_point_ == nullptr) {
     printf("No base point\n");
@@ -485,16 +494,16 @@ bool test_ecc_encrypt_decrypt() {
     return false;
   } 
     
-  printf("base and public are on curve\n\n");
-
   int size_in = 6;
   int size_out = 64;
   memcpy(plain_in, (byte*)"hello", size_in);
 
   big_num nonce(10, 0x48283746882294);
   nonce.normalize();
-  printf("plain     : "); print_bytes(size_in, plain_in);
-  printf("nonce     : "); nonce.print(); printf("\n");
+  if (FLAGS_print_all) {
+    printf("plain     : "); print_bytes(size_in, plain_in);
+    printf("nonce     : "); nonce.print(); printf("\n");
+  }
 
   curve_point pt1(10);
   curve_point pt2(10);
@@ -507,11 +516,14 @@ bool test_ecc_encrypt_decrypt() {
     printf("ecc decrypt returns false\n");
     return false;
   }
-  printf("cipher    : ("); pt1.print(); printf(" , "); pt2.print(); printf(")\n");
-  printf("recovered : "); print_bytes(size_out, recovered); printf("\n");
+
+  if (FLAGS_print_all) {
+    printf("cipher    : ("); pt1.print(); printf(" , "); pt2.print(); printf(")\n");
+    printf("recovered : "); print_bytes(size_out, recovered); printf("\n");
+  }
+
   if (memcmp(plain_in, recovered, size_in) != 0)
       return false;
-
   return true;
 }
 

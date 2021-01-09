@@ -218,7 +218,6 @@ void print_ecc_private_parameters_message(ecc_private_parameters_message& m);
 void print_hmac_parameters_message(hmac_parameters_message& m);
 void print_key_message(key_message& m);
 void print_scheme_message(scheme_message& m);
-void print_crypto_signature_message(crypto_signature_message& m);
 void print_certificate_name_message(certificate_name_message& m);
 void print_certificate_algorithm_message(certificate_algorithm_message& m);
 void print_certificate_message(certificate_message& m);
