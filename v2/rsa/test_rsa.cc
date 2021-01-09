@@ -25,9 +25,9 @@
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
-bool test_rsa1() {
+bool test_rsa1(int num_bits) {
+  int byte_size = num_bits / NBITSINBYTE;
   rsa r;
-  int num_bits = 512;
 
   if (!r.generate_rsa(num_bits))
     return false;
@@ -39,27 +39,34 @@ bool test_rsa1() {
     return false;
 
   key_message* km = r.get_key();
-  if (km != nullptr)
-    print_key_message(*km);
+  if (FLAGS_print_all) {
+    printf("\n%d bit rsa key test\n", num_bits);
+    if (km != nullptr)
+      print_key_message(*km);
+  }
 
-  byte msg_in[128];
-  byte msg_out[128];
-  byte msg_recovered[128];
-  memset(msg_in, 0, 128);
-  memset(msg_out, 0, 128);
-  memset(msg_recovered, 0, 128);
+  byte msg_in[byte_size];
+  byte msg_out[byte_size];
+  byte msg_recovered[byte_size];
+  memset(msg_in, 0, byte_size);
+  memset(msg_out, 0, byte_size);
+  memset(msg_recovered, 0, byte_size);
 
   memcpy(msg_in, (byte*)"hello", 6);
+  int size_out1 = byte_size;
+  int size_out2 = byte_size;
 
-  int size_out1 = 128;
-  int size_out2 = 128;
   if(!r.encrypt(64, msg_in, &size_out1, msg_out, 0))
     return false;
   if (!r.decrypt(size_out1, msg_out, &size_out2, msg_recovered, 0))
     return false;
-  printf("Message   :"); print_bytes(64, msg_in); printf("\n");
-  printf("Encrypted :"); print_bytes(size_out1, msg_out); printf("\n");
-  printf("Recovered :"); print_bytes(size_out2, msg_recovered); printf("\n");
+
+  if (FLAGS_print_all) {
+    printf("\n");
+    printf("Message       : "); print_bytes(64, msg_in);
+    printf("Encrypted     : "); print_bytes(size_out1, msg_out);
+    printf("Recovered     : "); print_bytes(size_out2, msg_recovered);
+  }
 
   if (memcmp(msg_in, msg_recovered, 64) != 0)
     return false;
@@ -67,7 +74,12 @@ bool test_rsa1() {
 }
 
 TEST (rsa, test_rsa1) {
-  EXPECT_TRUE(test_rsa1());
+  EXPECT_TRUE(test_rsa1(512));
+  EXPECT_TRUE(test_rsa1(512));
+  EXPECT_TRUE(test_rsa1(1024));
+  EXPECT_TRUE(test_rsa1(1024));
+  EXPECT_TRUE(test_rsa1(2048));
+  EXPECT_TRUE(test_rsa1(2048));
 }
 
 int main(int an, char** av) {

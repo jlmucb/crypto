@@ -389,6 +389,8 @@ bool rsa::set_parameters_in_key_message() {
 }
 
 bool rsa::generate_rsa(int num_bits) {
+  int n_trys = 5;
+  bool succeeded = true;
   bit_size_modulus_ = num_bits;
 
   m_ = new big_num(1 + 2 * num_bits / NBITSINUINT64);
@@ -397,12 +399,22 @@ bool rsa::generate_rsa(int num_bits) {
   e_ = new big_num(1, 0x010001ULL);
   d_ = new big_num(1 + num_bits / NBITSINUINT64);
 
-  if (!big_gen_prime(*p_, num_bits / 2)) {
-    return false;
+  for (int i = 0; i < n_trys; i++) {
+    succeeded = big_gen_prime(*p_, num_bits / 2);
+    if (succeeded)
+      break;
   }
-  if (!big_gen_prime(*q_, num_bits / 2)) {
+  if (!succeeded)
     return false;
+
+  for (int i = 0; i < n_trys; i++) {
+    succeeded = big_gen_prime(*q_, num_bits / 2);
+    if (succeeded)
+      break;
   }
+  if (!succeeded)
+    return false;
+
   if (!big_mult(*p_, *q_, *m_)) {
     return false;
   }
