@@ -419,6 +419,7 @@ bool pkcs_sign_rsa_hash(const char* hash_alg, rsa& rk, byte* digest, int block_s
     return false;
   } 
   s_signature->assign((char*)signature, (size_t)block_size);
+
   return true;
 }
 
@@ -432,6 +433,7 @@ bool pkcs_verify_hash(const char* hash_alg, rsa& rk, byte* digest, int block_siz
   if (!rk.encrypt((int)signature.size(), (byte*)signature.data(), &signature_size, unsealed_signature, 0)) {
       printf("Can't verify signature block\n");
   } 
+
   if (pkcs_verify(hash_alg, digest, block_size, unsealed_signature)) {
     return true;
   } else {
@@ -951,16 +953,16 @@ int main(int an, char** av) {
                           (byte*)serialized_pt1.data());
       out_file.write_file(FLAGS_output2_file.c_str(), (int)serialized_pt2.size(),
                           (byte*)serialized_pt2.data());
-      printf("in               : "); print_bytes(in_out_size, in);
-      printf("out              : "); pt1.print(); printf(", "); pt2.print(); printf("\n");
+      printf("in            : "); print_bytes(in_out_size, in);
+      printf("out           : "); pt1.print(); printf(", "); pt2.print(); printf("\n");
     } else if (strcmp(alg, "ecc") == 0 && strcmp(FLAGS_operation.c_str(), "decrypt_with_key") == 0) {
       out_file.write_file(FLAGS_output_file.c_str(), in_out_size, out);
-      printf("in               : "); pt1.print(); printf(", "); pt2.print(); printf("\n");
-      printf("out              : "); print_bytes(in_out_size, out);
+      printf("in            : "); pt1.print(); printf(", "); pt2.print(); printf("\n");
+      printf("out           : "); print_bytes(in_out_size, out);
     } else {
       out_file.write_file(FLAGS_output_file.c_str(), in_out_size, out);
-      printf("in               : "); print_bytes(in_out_size, in);
-      printf("out              : "); print_bytes(in_out_size, out);
+      printf("in            : "); print_bytes(in_out_size, in);
+      printf("out           : "); print_bytes(in_out_size, out);
     }
     goto done;
 
