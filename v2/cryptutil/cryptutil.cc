@@ -1811,6 +1811,7 @@ int main(int an, char** av) {
     sm.set_key_name(FLAGS_key_name.c_str());
     sm.set_signature(s_signature);
     sm.set_signer_name(FLAGS_signer_name.c_str());
+    print_signature_message(sm);
 
     string serialized_signature;
     sm.SerializeToString(&serialized_signature);

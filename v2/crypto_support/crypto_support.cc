@@ -1,4 +1,5 @@
 // Copyright 2020 John Manferdelli, All Rights Reserved.
+
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -988,11 +989,17 @@ void print_encrypted_message(encrypted_message& m) {
 }
 
 void print_signature_message(signature_message& m) {
+  printf("Signature message\n");
+  printf("    algorithm : %s\n", m.encryption_algorithm_name().c_str());
+  printf("    key name  : %s\n", m.key_name().c_str());
+  printf("    signature : ");
+  print_bytes((int)m.signature().size(), (byte*)m.signature().data());
+  printf("    signer    : %s\n", m.signer_name().c_str());
 }
 
 void print_rsa_public_parameters_message(rsa_public_parameters_message& m) {
-  printf("    modulus     :"); print_bytes((int)m.modulus().size(), (byte*)m.modulus().data());
-  printf("    e           :"); print_bytes((int)m.e().size(), (byte*)m.e().data());
+  printf("    modulus   : "); print_bytes((int)m.modulus().size(), (byte*)m.modulus().data());
+  printf("    e         : "); print_bytes((int)m.e().size(), (byte*)m.e().data());
 }
 
 void print_ecc_public_parameters_message(ecc_public_parameters_message& m) {
@@ -1006,11 +1013,11 @@ void print_ecc_private_parameters_message(ecc_private_parameters_message& m) {
 
 void print_hmac_parameters_message(hmac_parameters_message& m) {
   if (m.has_algorithm())
-    printf("hmac algorithm  : %s\n", m.algorithm().c_str());
+    printf("hmac algorithm: %s\n", m.algorithm().c_str());
   if (m.has_size())
-    printf("hmac key size   : %d\n", m.size());
+    printf("hmac key size : %d\n", m.size());
   if (m.has_secret()) {
-    printf("hmac secret     : ");
+    printf("hmac secret   : ");
     print_bytes((int)m.secret().size(), (byte*)m.secret().data());
   }
 }
@@ -1020,19 +1027,19 @@ void print_key_message(key_message& m) {
     return;
   printf("%s key\n", m.family_type().c_str());
   if (m.has_algorithm_type())
-    printf("  Algorithm     : %s\n", m.algorithm_type().c_str());
+    printf("  Algorithm   : %s\n", m.algorithm_type().c_str());
   if (m.has_key_name())
-    printf("  Key name      : %s\n", m.key_name().c_str());
+    printf("  Key name    : %s\n", m.key_name().c_str());
   if (m.has_key_size())
-    printf("  Key size      : %d bits\n", m.key_size());
+    printf("  Key size    : %d bits\n", m.key_size());
   if (m.has_algorithm_type())
-    printf("  Purpose       : %s\n", m.purpose().c_str());
+    printf("  Purpose     : %s\n", m.purpose().c_str());
   if (m.has_notbefore())
-    printf("  Not before    : %s\n", m.notbefore().c_str());
+    printf("  Not before  : %s\n", m.notbefore().c_str());
   if (m.has_notafter())
-    printf("  Not after     : %s\n", m.notafter().c_str());
+    printf("  Not after   : %s\n", m.notafter().c_str());
   if (m.has_secret()) {
-    printf("  Secret        : "); print_bytes((int)m.secret().size(),
+    printf("  Secret      : "); print_bytes((int)m.secret().size(),
                                 (byte*)m.secret().data());
   }
   if (m.has_rsa_pub()) {
@@ -1167,13 +1174,13 @@ void print_crypto_signature_message(crypto_signature_message& m) {
 
 void print_certificate_name_message(certificate_name_message& m) {
   if (m.has_name_type()) 
-    printf("    type         : %s, ", m.name_type().c_str());
+    printf("    type      : %s, ", m.name_type().c_str());
   if (m.has_name_value()) 
-    printf("    name         : %s\n", m.name_value().c_str());
+    printf(" name       : %s\n", m.name_value().c_str());
 }
 
 void print_algorithm_message(certificate_algorithm_message& am) {
-  printf("    algorithm name : %s\n", am.algorithm_name().c_str());
+  printf("    algorithm : %s\n", am.algorithm_name().c_str());
   if (strcmp(am.algorithm_name().c_str(), "rsa") == 0 ||
       strcmp(am.algorithm_name().c_str(), "rsa-1024-sha-256-pkcs") == 0 ||
       strcmp(am.algorithm_name().c_str(), "rsa-2048-sha-256-pkcs") == 0) {
@@ -1189,32 +1196,32 @@ void print_algorithm_message(certificate_algorithm_message& am) {
 
 void print_certificate_body(certificate_body_message& cbm) {
   if (cbm.has_version()) {
-    printf("  Version       : %s\n", cbm.version().c_str());
+    printf("  Version     : %s\n", cbm.version().c_str());
   }
   if (cbm.has_subject()) {
     certificate_name_message* sn = cbm.mutable_subject();
-    printf("  Subject       : \n");
+    printf("  Subject     : \n");
     print_certificate_name_message(*sn);
   }
   if (cbm.has_subject_key()) {
-    printf("  Subject key: \n");
+    printf("  Subject key : \n");
     certificate_algorithm_message* sk = cbm.mutable_subject_key();
     print_algorithm_message(*sk);
   }
   if (cbm.has_purpose()) {
-    printf(" Purpose     : %s\n", cbm.purpose().c_str());
+    printf(" Purpose      : %s\n", cbm.purpose().c_str());
   }
   if (cbm.has_not_before()) {
-    printf(" Not before  : %s\n", cbm.not_before().c_str());
+    printf(" Not before   : %s\n", cbm.not_before().c_str());
   }
   if (cbm.has_not_after()) {
-    printf(" Not after   : %s\n", cbm.not_after().c_str());
+    printf(" Not after    : %s\n", cbm.not_after().c_str());
   }
   if (cbm.has_revocation_address()) {
-    printf(" Revocation  : %s\n", cbm.revocation_address().c_str());
+    printf(" Revocation   : %s\n", cbm.revocation_address().c_str());
   }
   if (cbm.has_date_signed()) {
-    printf(" Date signed : %s\n", cbm.date_signed().c_str());
+    printf(" Date signed  : %s\n", cbm.date_signed().c_str());
   }
 }
 
@@ -1235,6 +1242,6 @@ void print_certificate_message(certificate_message& m) {
     certificate_algorithm_message* ik = m.mutable_signing_key();
     print_algorithm_message(*ik);
   }
-  printf("  Signature     : ");
+  printf("  Signature   : ");
   print_bytes((int)m.signature().size(), (byte*)m.signature().data());
 }
