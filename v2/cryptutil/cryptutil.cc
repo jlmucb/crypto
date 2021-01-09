@@ -1115,7 +1115,7 @@ int main(int an, char** av) {
       int size_out = size_in + 3 * scheme.get_block_size() + scheme.get_mac_size();
       byte out[size_out];
       printf("\n");
-      printf("Plain (%d)      : ", size_in);
+      printf("Plain (%d)    : ", size_in);
       print_bytes(size_in, in);
       printf("\n");
       if (!scheme.encrypt_message(size_in, in, size_out, out)) {
@@ -1125,14 +1125,14 @@ int main(int an, char** av) {
       }
       file_util out_file;
       out_file.write_file(FLAGS_output_file.c_str(), scheme.get_total_bytes_output(), out);
-      printf("Encrypted (%d)    : ", scheme.get_total_bytes_output());
+      printf("Encrypted (%d) : ", scheme.get_total_bytes_output());
       print_bytes(scheme.get_total_bytes_output(), out);
       printf("\n");
     } else {
       int size_out = size_in;
       byte out[size_out];
       printf("\n");
-      printf("Cipher (%d)       : ", size_in);
+      printf("Cipher (%d)  : ", size_in);
       print_bytes(size_in, in);
       printf("\n");
       if (!scheme.decrypt_message(size_in, in, size_out, out)) {
@@ -1142,7 +1142,7 @@ int main(int an, char** av) {
       }
       file_util out_file;
       out_file.write_file(FLAGS_output_file.c_str(), scheme.get_bytes_encrypted(), out);
-      printf("Decrypted (%d)  : ", scheme.get_bytes_encrypted());
+      printf("Decrypted (%d): ", scheme.get_bytes_encrypted());
       print_bytes(scheme.get_bytes_encrypted(), out);
       printf("\n");
     }

@@ -1140,24 +1140,24 @@ void print_key_message(key_message& m) {
 }
 
 void print_scheme_message(scheme_message& m) {
-  printf("Scheme: ");
+  printf("Scheme:\n");
   if (m.has_scheme_type()) {
-    printf("scheme           : %s\n", m.scheme_type().c_str());
+    printf("scheme        : %s\n", m.scheme_type().c_str());
   }
   if (m.has_scheme_instance_identifier()) {
-    printf("scheme identifier: %s\n", m.scheme_instance_identifier().c_str());
+    printf("scheme id     : %s\n", m.scheme_instance_identifier().c_str());
   }
   if (m.has_mode()) {
-    printf("mode: %s\n", m.mode().c_str());
+    printf("mode          : %s\n", m.mode().c_str());
   }
   if (m.has_pad()) {
     printf("pad: %s\n", m.pad().c_str());
   }
   if (m.has_notbefore()) {
-    printf("not before       : %s\n", m.notbefore().c_str());
+    printf("not before    : %s\n", m.notbefore().c_str());
   }
   if (m.has_notafter()) {
-    printf("not after        : %s\n", m.notafter().c_str());
+    printf("not after     : %s\n", m.notafter().c_str());
   }
   if (m.has_encryption_key()) {
     key_message* km = m.mutable_encryption_key();
