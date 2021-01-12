@@ -1123,33 +1123,33 @@ void print_key_message(key_message& m) {
     if (pub->has_base_point()) {
       point_message* pt= pub->mutable_base_point();
       if (pt->has_x()) {
-        printf("  base x     : ");
+        printf("  base x      : ");
         print_bytes((int)pt->x().size(), (byte*)pt->x().data());
       }
       if (pt->has_y()) {
-        printf("  base y     : ");
+        printf("  base y      : ");
         print_bytes((int)pt->y().size(), (byte*)pt->y().data());
       }
     }
     if (pub->has_public_point()) {
       point_message* pt= pub->mutable_public_point();
       if (pt->has_x()) {
-        printf("  public x   : ");
+        printf("  public x    : ");
         print_bytes((int)pt->x().size(), (byte*)pt->x().data());
       }
       if (pt->has_y()) {
-        printf("  public y   : ");
+        printf("  public y    : ");
         print_bytes((int)pt->y().size(), (byte*)pt->y().data());
       }
     }
     if (pub->has_order_of_base_point()) {
-      printf("  order base   : ");
+      printf("  order base    : ");
       print_bytes((int)pub->order_of_base_point().size(), (byte*)pub->order_of_base_point().data());
     }
   }
 
   if (m.has_ecc_priv() && (int)m.ecc_priv().private_multiplier().size() > 0) {
-    printf("  private key    : ");
+    printf("  private key     : ");
     print_bytes((int)m.ecc_priv().private_multiplier().size(), (byte*)m.ecc_priv().private_multiplier().data());
   }
 }
