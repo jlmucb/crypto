@@ -260,6 +260,9 @@ bool time_increment_test() {
     t2.print_time();
     printf("\n");
   }
+  if ((t1.year_ + 5) != t2.year_) {
+    return false;
+  }
   return true;
 }
 
