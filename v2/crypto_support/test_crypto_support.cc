@@ -349,6 +349,8 @@ bool symmetric_key_test() {
     printf("\nrecovered\n");
     print_key_message(nm);
   }
+  if (!nm.has_key_name() || strcmp("test_key", nm.key_name().c_str()) != 0)
+    return false;
   return true;
 }
 
@@ -390,6 +392,8 @@ bool rsa_key_test() {
     return false;
   if (FLAGS_print_all)
     print_key_message(*km);
+  if (!km->has_rsa_pub())
+    return false;
   return true;
 }
 
@@ -450,6 +454,8 @@ bool ecc_key_test() {
     return false;
   if (FLAGS_print_all)
     print_key_message(*km);
+  if (!km->has_ecc_pub())
+    return false;
 
   return true;
 }
