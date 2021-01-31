@@ -24,7 +24,7 @@ int main(int an, char** av) {
     q0 = .05;
     for (int j = 0; j < 10; j++) {
       r0 = p0 * (1.0 - q0) + (1.0 - p0) * q0;
-      printf("    H(%4.2lf)= %8.5lf, H(%4.2lf)= %8.5lf, sum: %8.4lf, xored entropy: H(%4.2lf)= %8.5lf\n",
+      printf("    H(%4.2lf)= %7.5lf, H(%4.2lf)= %7.5lf, sum: %6.4lf; xored entropy: H(%6.4lf)= %7.5lf\n",
         p0, H(p0), q0, H(q0), H(p0) + H(q0), r0, H(r0));
       q0 += d;
     }
