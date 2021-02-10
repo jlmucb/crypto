@@ -26,6 +26,12 @@ DEFINE_string(password, "", "Password");
 DEFINE_string(site, "www.nyt.com", "site url");
 const int iter = 100;
 
+char bytes_to_char(byte b) {
+  if (b < 0x20)
+    return 'x';
+  b &= 0x7f;
+  return (char) b;
+}
 
 // pwvault utility takes salt, password and site name and produces a password for the site
 int main(int an, char** av) {
@@ -60,6 +66,12 @@ int main(int an, char** av) {
     print_bytes(out_size, out);
     printf("\n");
   }
+
+  printf("Derived password: ");
+  for (int i = 0; i < out_size; i++) {
+    printf("%c", bytes_to_char(out[i]));
+  }
+  printf("\n");
 
   close_crypto();
   printf("\n");
