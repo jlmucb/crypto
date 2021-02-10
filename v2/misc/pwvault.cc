@@ -21,15 +21,16 @@
 #include "pbkdf.h"
 
 DEFINE_bool(debug, false, "Debug");
+DEFINE_string(length, "14", "password length");
 DEFINE_string(salt, "59a65c58b793ef", "Salt even number of hex digits");
 DEFINE_string(password, "", "Password");
 DEFINE_string(site, "www.nyt.com", "site url");
 const int iter = 100;
 
 char bytes_to_char(byte b) {
-  if (b < 0x20)
-    return 'x';
   b &= 0x7f;
+  if (b < 0x20 || b == 0x127)
+    return 'x';
   return (char) b;
 }
 
@@ -48,7 +49,9 @@ int main(int an, char** av) {
     return 1;
   }
 
-  int out_size = 14;
+  int pw_size = 14;
+  sscanf(FLAGS_length.c_str(), "%d", &pw_size);
+  int out_size = pw_size;
   byte out[out_size];
   memset(out, 0, out_size);
   if (!pbkdf2(password_and_site.c_str(), salt_bytes.size(), (byte*)salt_bytes.data(), iter, out_size, out)) {
