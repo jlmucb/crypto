@@ -27,14 +27,48 @@ DEFINE_string(password, "", "Password");
 DEFINE_string(site, "www.nyt.com", "site url");
 const int iter = 100;
 
+char map_c[256] = {
+  '1', '2', '3', '4', '5', '6', '7', '8', 
+  '9', '0', '-', '_', 'q', 'w', 'e', 'r', 
+  't', 'y', 'u', 'i', 'o', 'p', 'a', 's', 
+  'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z',
+  'x', 'c', 'v', 'b', 'n', 'm', '.', '!',
+  '$', '%', '*', '+', 'Q', 'W', 'E', 'R',
+  'T', 'Y', 'U', 'I', 'O', 'P', 'A', 'S',
+  'D', 'F', 'G', 'H', 'J', 'K', 'L', 'Z', 
+  'X', 'C', 'V', 'B', 'N', 'M', '1', '2', 
+  '3', '4', '5', '6', '7', '8', '9', '0',
+  '-', '_', 'q', 'w', 'e', 'r', 't', 'y', 
+  'u', 'i', 'o', 'p', 'a', 's', 'd', 'f',
+  'g', 'h', 'j', 'k', 'l', 'z', 'x', 'c', 
+  'v', 'b', 'n', 'm', '.', '!', '$', '%', 
+  '*', '+', 'Q', 'W', 'E', 'R', 'T', 'Y',
+  'U', 'I', 'O', 'P', 'A', 'S', 'D', 'F',
+  'G', 'H', 'J', 'K', 'L', 'Z', 'X', 'C',
+  'V', 'B', 'N', 'M', '1', '2', '3', '4',
+  '5', '6', '7', '8', '9', '0', '-', '_',
+  'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 
+  'o', 'p', 'a', 's', 'd', 'f', 'g', 'h',
+  'j', 'k', 'l', 'z', 'x', 'c', 'v', 'b',
+  'n', 'm', '.', '!', '$', '%', '*', '+', 
+  'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I',
+  'O', 'P', 'A', 'S', 'D', 'F', 'G', 'H',
+  'J', 'K', 'L', 'Z', 'X', 'C', 'V', 'B',
+  'N', 'M', '1', '2', '3', '4', '5', '6',
+  '7', '8', '9', '0', 'q', 'w', 'e', 'r',
+  't', 'y', 'u', 'i', 'o', 'p', 'a', 's',
+  'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z',
+  'x', 'c', 'v', 'b', 'n', 'm', '.', '!',
+  '$', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U'
+  };
+
 char bytes_to_char(byte b) {
-  b &= 0x7f;
-  if (b < 0x20 || b == 0x127)
-    return 'x';
-  return (char) b;
+  return map_c[b];
 }
 
 // pwvault utility takes salt, password and site name and produces a password for the site
+// Usage: ./pwvault.exe --password="my voice" --site="www.google.com"\ 
+//        --salt="bb59a65c58b793ef" --debug=true --length="16"
 int main(int an, char** av) {
   gflags::ParseCommandLineFlags(&an, &av, true);
   if (!init_crypto()) {
