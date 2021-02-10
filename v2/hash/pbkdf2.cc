@@ -49,11 +49,13 @@ bool pbkdf2(const char* pass, int saltLen, byte* salt, int iter, int out_size,
   byte t_out[hmac_sha256::MACBYTESIZE];
   byte* next_out = out;
 
-  if (saltLen > (int)(hmac_sha256::MACBYTESIZE - sizeof(i)))
-    saltLen = hmac_sha256::MACBYTESIZE - sizeof(i);
+  memset(t, 0, hmac_sha256::BLOCKBYTESIZE);
+  memset(u, 0, hmac_sha256::MACBYTESIZE);
+  if (saltLen > (int)(hmac_sha256::MACBYTESIZE - sizeof(int)))
+    saltLen = hmac_sha256::MACBYTESIZE - sizeof(int);
   memcpy(u, salt, saltLen);
   for (i = 0; i < n; i++) {
-    memcpy(&u[saltLen], (byte*)&i, sizeof(i));
+    memcpy(&u[saltLen], (byte*)&i, sizeof(int));
     memset(t, 0, hmac_sha256::BLOCKBYTESIZE);
     for (j = 0; j < iter; j++) {
       hmac.init(k, (byte*)pass);
