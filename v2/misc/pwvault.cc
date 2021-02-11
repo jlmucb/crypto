@@ -97,8 +97,8 @@ int main(int an, char** av) {
     printf("password: %s\n", FLAGS_password.c_str());
     printf("site: %s\n", FLAGS_site.c_str());
     printf("salt: ");
-    printf("password_and_site: %s\n", password_and_site.c_str());
     print_bytes((int)salt_bytes.size(), (byte*)salt_bytes.data());
+    printf("password_and_site: %s\n", password_and_site.c_str());
     printf("out bytes: ");
     print_bytes(out_size, out);
     printf("\n");
