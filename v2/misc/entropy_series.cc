@@ -57,10 +57,7 @@ int main(int an, char** av) {
     last = current;
     difference = difference & 0x00000000000000ffULL;
     diffs[i] = (uint32_t) difference;
-    if (FLAGS_debug) {
-      printf("%d: %u\n", i, (uint32_t)difference);
-    }
-    write(fd, &difference, sizeof(uint64_t));
+    // write(fd, &difference, sizeof(uint64_t));
   }
   close(fd);
 
