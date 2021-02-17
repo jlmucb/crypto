@@ -50,15 +50,18 @@ int main(int an, char** av) {
   uint64_t difference= 0ULL;
 
   uint32_t diffs[num_samples];
+  int nbins = 1<<4;
+  uint64_t mask = 0x00fULL;
+
   for (int i = 0; i < num_samples; i++) {
     usleep((uint32_t)interval);
     current = read_rdtsc();
     difference = current - last;
     last = current;
-    difference = difference & 0x00000000000000ffULL;
+    difference = difference & mask;
     diffs[i] = (uint32_t) difference;
-    // write(fd, &difference, sizeof(uint64_t));
   }
+  write(fd, diffs, num_samples * sizeof(uint32_t));
   close(fd);
 
   uint64_t sum = 0ULL;
@@ -76,7 +79,6 @@ int main(int an, char** av) {
   double sigma = sqrt(var);
   printf("mean: %8.3lf, variance: %8.3lf, sigma: %8.3lf\n", mean, var, sigma);
 
-  int nbins = 1<<8;
   int bins[nbins];
   for(int i = 0; i < nbins; i++) {
     bins[i]= 0;
@@ -89,14 +91,23 @@ int main(int an, char** av) {
 
   double p;
   double shannon_ent = 0.0;
+  double renyi_ent = 0.0;
+  double min_ent = 0.0;
   for(int i = 0; i < nbins; i++) {
     if (bins[i] == 0)
       continue;
     p = ((double) bins[i]) / ((double) num_samples);
     shannon_ent += p * log(p);
+    renyi_ent += p * p;
+    if (p > min_ent)
+      min_ent = p;
   }
   shannon_ent = - shannon_ent / log(2.0);
-  printf("nbins: %d, Shannon entropy: %8.4lf\n", nbins, shannon_ent);
+  renyi_ent = -log(renyi_ent) / log(2.0);
+  printf("nbins: %d, Shannon entropy : %6.3lf, Renyi entropy: %6.3lf, Min entropy: %6.3lf\n",
+         nbins, shannon_ent, renyi_ent, min_ent);
+  double normal_dist_ent = (.5 * (1.0 + log(2.0 * var * 3.14159))) / log(2.0);
+  printf("Normal distribution estimate: %8.3lf\n", normal_dist_ent);
 
   close_crypto();
   printf("\n");
