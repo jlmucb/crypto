@@ -28,7 +28,7 @@ def main(argv=sys.argv):
   sys.stdout.write("\nNumber of bins: " + str(nbins) + ", number of samples: ")
   print(num_samples)
 
-  title= 'frequency bins ' + str(num_samples) + ' samples'
+  title= 'frequency bins, ' + str(num_samples) + ' samples'
   xlabel='difference'
   ylabel='relative freq'
 
@@ -53,8 +53,8 @@ def main(argv=sys.argv):
     ylist.append(rel_bins[i])
 
   left = -1
-  right = 16
-  top = 1
+  right = 64
+  top = .25
   bottom = 0
 
   plt.title(title)
