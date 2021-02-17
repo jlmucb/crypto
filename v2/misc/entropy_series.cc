@@ -105,6 +105,7 @@ int main(int an, char** av) {
   }
   shannon_ent = - shannon_ent / log(2.0);
   renyi_ent = -log(renyi_ent) / log(2.0);
+  min_ent = -log(min_ent) / log(2.0);
   printf("nbins: %d, Shannon entropy : %6.3lf, Renyi entropy: %6.3lf, Min entropy: %6.3lf\n",
          nbins, shannon_ent, renyi_ent, min_ent);
   double normal_dist_ent = (.5 * (1.0 + log(2.0 * var * 3.14159))) / log(2.0);
