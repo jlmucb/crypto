@@ -29,7 +29,7 @@ def main(argv=sys.argv):
   print(num_samples)
 
   title= 'frequency bins ' + str(num_samples) + ' samples'
-  xlabel='differnce'
+  xlabel='difference'
   ylabel='relative freq'
 
   xlist = []
