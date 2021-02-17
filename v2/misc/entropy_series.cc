@@ -51,16 +51,17 @@ int main(int an, char** av) {
 
   uint32_t diffs[num_samples];
   int nbins = 1<<4;
-  uint64_t mask = 0x00fULL;
+  uint64_t mask = 0x001fULL;
 
   for (int i = 0; i < num_samples; i++) {
     usleep((uint32_t)interval);
     current = read_rdtsc();
     difference = current - last;
     last = current;
-    difference = difference & mask;
+    difference = (difference & mask) / 2;
     diffs[i] = (uint32_t) difference;
   }
+  write(fd, &nbins, sizeof(int32_t));
   write(fd, diffs, num_samples * sizeof(uint32_t));
   close(fd);
 
