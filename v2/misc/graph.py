@@ -16,37 +16,25 @@ def main(argv=sys.argv):
   import struct
   file_length_in_bytes = os.path.getsize(inputfile)
   f = open(inputfile, mode='rb')
-  L = []
+  bins = []
+  num_samples = 0
   a = struct.unpack("i",f.read(4))
   nbins = a[0]
-  num_samples = (file_length_in_bytes/4) - 1
-  for t in range (0, num_samples):
+  for t in range (0, nbins):
     x = struct.unpack("i",f.read(4))
-    L.append(x[0])
+    bins.append(x[0])
+    num_samples = num_samples + x[0]
   f.close
 
   sys.stdout.write("\nNumber of bins: " + str(nbins) + ", number of samples: ")
   print(num_samples)
 
-  title= 'frequency bins, ' + str(num_samples) + ' samples'
-  xlabel='difference'
-  ylabel='relative freq'
-
-  xlist = []
-  ylist = []
-
-  bins = []
-
-  for i in range (0, nbins):
-    bins.append(0)
-
-  for l in range (0, len(L)):
-    i = L[l]
-    bins[i] = bins[i] + 1
-
   rel_bins = []
   for i in range (0, len(bins)):
     rel_bins.append(float(bins[i]/float(num_samples)))
+
+  xlist = []
+  ylist = []
 
   for i in range (0, len(rel_bins)):
     xlist.append(i)
@@ -56,6 +44,10 @@ def main(argv=sys.argv):
   right = 64
   top = .25
   bottom = 0
+
+  title= 'frequency bins, ' + str(num_samples) + ' samples'
+  xlabel='difference'
+  ylabel='relative freq'
 
   plt.title(title)
   plt.xlabel(xlabel)

@@ -106,8 +106,18 @@ double calculate_variance(int num_samples, uint32_t* data, double mean) {
   return sum / (((double) num_samples) - 1);
 }
 
-bool bin_conditional_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins, int base_bin) {
-  return false;
+bool bin_conditional_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins, uint32_t base_bin) {
+  for(int i = 0; i < nbins; i++) {
+    bins[i]= 0;
+  }
+  for (int i = 0; i < (num_samples - 1); i++) {
+    if ((int)data[i] >= nbins)
+      continue;
+    if (data[i] != base_bin)
+      continue;
+    bins[data[i + 1]]++;
+  }
+  return true;
 }
 
 bool bin_raw_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins) {
@@ -197,9 +207,11 @@ int main(int an, char** av) {
     return 1;
   }
 
-  printf("\nCollected differences:\n");
-  print_hex_uint32_array(num_samples, diffs);
-  printf("\n");
+  if (FLAGS_debug) {
+    printf("\nCollected differences:\n");
+    print_hex_uint32_array(num_samples, diffs);
+    printf("\n");
+  }
 
   if (!write_data(FLAGS_output_file, num_samples, diffs)) {
     printf("Can't write data\n");
@@ -240,6 +252,31 @@ int main(int an, char** av) {
     printf("Can't write graph data\n");
     return 1;
   }
+
+  int num_conditional_samples = 0;
+  uint32_t base_bin = 2;
+  uint32_t cond_bins[nbins];
+  if (!bin_conditional_data(num_samples, diffs, nbins, cond_bins, base_bin)) {
+    printf("Can't get conditional bins\n");
+    return 1;
+  }
+  for (int i = 0; i < nbins; i++)
+    num_conditional_samples += cond_bins[i];
+
+  printf("\nconditional bins based on %u:\n", base_bin);
+  print_uint32_array(nbins, cond_bins);
+  printf("\n");
+
+  double conditional_shannon_entropy = 0.0;
+  double conditional_renyi_entropy = 0.0;
+  double conditional_min_entropy = 0.0;
+  if (!calculate_entropies(num_conditional_samples, nbins, cond_bins, &conditional_shannon_entropy,
+        &conditional_renyi_entropy, &conditional_min_entropy)) {
+    printf("Can't calculate entropies\n");
+    return 1;
+  }
+  printf("conditional shannon entropy: %5.3lf,  conditional renyi entropy: %5.3lf, conditional min entropy: %5.3lf\n", 
+        conditional_shannon_entropy, conditional_renyi_entropy, conditional_min_entropy);
 
   close_crypto();
   printf("\ndone\n");
