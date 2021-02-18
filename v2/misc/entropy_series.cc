@@ -24,6 +24,154 @@ DEFINE_bool(debug, false, "Debug");
 DEFINE_string(num_samples, "1000", "number of samples");
 DEFINE_string(interval, "1000", "interval in us");
 DEFINE_string(output_file, "tick_difference_output.bin", "output file");
+DEFINE_string(graph_file, "graph.bin", "graph output file");
+
+void print_hex_uint32_array(int n, uint32_t* data) {
+  int i;
+  for (i = 0; i < n; i++) {
+    printf("%04x ", data[i]);
+    if ((i%8) == 7)
+      printf("\n");
+  }
+  if ((i%8) != 0)
+     printf("\n");
+}
+
+void print_uint32_array(int n, uint32_t* data) {
+  int i;
+  for (i = 0; i < n; i++) {
+    printf("%04d ", data[i]);
+    if ((i%8) == 7)
+      printf("\n");
+  }
+  if ((i%8) != 0)
+     printf("\n");
+}
+
+bool collect_difference_samples(int num_samples, uint32_t* data,
+            uint32_t interval, int num_bits, int divisor) {
+  uint64_t mask = 0ULL;
+  for (int i = 0; i < num_bits; i++) {
+    mask = (mask << 1) | 1ULL;
+  }
+
+  uint64_t last = read_rdtsc();
+  uint64_t current = 0ULL;
+  uint64_t difference= 0ULL;
+
+  for (int i = 0; i < num_samples; i++) {
+    usleep((uint32_t)interval);
+    current = read_rdtsc();
+    difference = current - last;
+    last = current;
+    difference = (difference / divisor) & mask;
+    data[i] = (uint32_t) difference;
+  }
+  return true;
+}
+
+bool write_graph_data(string file_name, int nbins, uint32_t* bins) {
+  int fd = creat(file_name.c_str(), S_IRWXU | S_IRWXG);
+  if (fd < 0) {
+    printf("Can't create %s\n", file_name.c_str());
+    return false;
+  }
+  if (write(fd, (const void*)&nbins, (size_t)sizeof(int)) < 0)
+    return false;
+  if (write(fd, bins, (size_t)(nbins* (int)sizeof(uint32_t))) < 0)
+    return false;
+  close(fd);
+  return true;
+}
+
+double calculate_mean(int num_samples, uint32_t* data) {
+  uint64_t sum = 0ULL;
+
+  for (int i = 0; i < num_samples; i++) {
+    sum += (uint64_t) data[i];
+  }
+  double mean = ((double)sum) / ((double)num_samples);
+  return mean;
+}
+
+double calculate_variance(int num_samples, uint32_t* data, double mean) {
+  double var = 0.0;
+  double sum = 0;
+  double t = 0.0;
+
+  for (int i = 0; i < num_samples; i++) {
+    t = mean - (double)data[i];
+    sum += t * t;
+  }
+  return sum / (((double) num_samples) - 1);
+}
+
+bool bin_conditional_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins, int base_bin) {
+  return false;
+}
+
+bool bin_raw_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins) {
+  for(int i = 0; i < nbins; i++) {
+    bins[i]= 0;
+  }
+  for (int i = 0; i < num_samples; i++) {
+    if ((int)data[i] >= nbins)
+      continue;
+    bins[data[i]]++;
+  }
+  return true;
+}
+
+bool calculate_entropies(int num_samples, int nbins, uint32_t* bins, double* shannon_entropy,
+  double* renyi_entropy, double* min_entropy) {
+  double shannon = 0.0;
+  double renyi = 0.0;
+  double max = 0.0;
+  double p;
+  for(int i = 0; i < nbins; i++) {
+    if (bins[i] == 0)
+      continue;
+    p = ((double) bins[i]) / ((double) num_samples);
+    shannon += p * log(p);
+    renyi += p * p;
+    if (p > max)
+      max = p;
+  }
+  *shannon_entropy = - shannon / log(2.0);
+  *renyi_entropy = -log(renyi) / log(2.0);
+  *min_entropy = -log(max) / log(2.0);
+  return max;
+}
+
+bool write_data(string file_name, int num_samples, uint32_t* data) {
+  int fd = creat(file_name.c_str(), S_IRWXU | S_IRWXG);
+  if (fd < 0) {
+    printf("Can't create %s\n", file_name.c_str());
+    return false;
+  }
+  if (write(fd, (const void*)&num_samples, (size_t)sizeof(int)) < 0)
+    return false;
+  if (write(fd, data, (size_t)(num_samples * (int)sizeof(uint32_t))) < 0)
+    return false;
+  close(fd);
+  return true;
+}
+
+bool read_data(string file_name, int* num_samples, uint32_t** data) {
+  int fd = open(file_name.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
+  if (fd < 0) {
+    printf("Can't file_name%s\n", file_name.c_str());
+    return false;
+  }
+  if (((int)read(fd, num_samples, sizeof(int))) < ((int)sizeof(int)))
+    return false;
+  *data = new uint32_t[*num_samples];
+  int n = (*num_samples) * (int)sizeof(uint32_t);
+  if ((int)read(fd, *data, n) < n)
+    return false;
+  close(fd);
+  return true;
+}
 
 // entropy series generates time series differences
 int main(int an, char** av) {
@@ -39,79 +187,61 @@ int main(int an, char** av) {
   uint64_t num_ticks_per_sec = calibrate_rdtsc();
   printf("interval: %d us, number of samples: %d, number of ticks per second: %lu\n", 
     interval, num_samples, num_ticks_per_sec);
-  int fd = creat(FLAGS_output_file.c_str(), S_IRWXU | S_IRWXG);
-  if (fd < 0) {
-    printf("Can't create %s\n", FLAGS_output_file.c_str());
+
+  int num_bits = 6;
+  int divisor = 2;
+  uint32_t diffs[num_samples];
+  if (!collect_difference_samples(num_samples, diffs,
+            interval, num_bits, divisor)) {
+    printf("Can't collect samples\n");
     return 1;
   }
 
-  uint64_t last = read_rdtsc();
-  uint64_t current = 0ULL;
-  uint64_t difference= 0ULL;
+  printf("\nCollected differences:\n");
+  print_hex_uint32_array(num_samples, diffs);
+  printf("\n");
 
-  uint32_t diffs[num_samples];
-  int nbins = 1<<6;
-  uint64_t mask = 0x03fULL;
+  if (!write_data(FLAGS_output_file, num_samples, diffs)) {
+    printf("Can't write data\n");
+    return 1;
+  }
 
-  for (int i = 0; i < num_samples; i++) {
-    usleep((uint32_t)interval);
-    current = read_rdtsc();
-    difference = current - last;
-    last = current;
-    difference = (difference / 2) & mask;
-    diffs[i] = (uint32_t) difference;
-  }
-  write(fd, &nbins, sizeof(int32_t));
-  write(fd, diffs, num_samples * sizeof(uint32_t));
-  close(fd);
-
-  uint64_t sum = 0ULL;
-  for (int i = 0; i < num_samples; i++) {
-    sum += (uint64_t) diffs[i];
-  }
-  double mean = ((double)sum) / ((double)num_samples);
-  double t;
-  double var = 0.0;
-  for (int i = 0; i < num_samples; i++) {
-    t = mean - (double) diffs[i];
-    var += t * t;
-  }
-  var /= (double) (num_samples - 1);
+  double mean = calculate_mean(num_samples, diffs);
+  double var = calculate_variance(num_samples, diffs, mean);
   double sigma = sqrt(var);
   printf("mean: %8.3lf, variance: %8.3lf, sigma: %8.3lf\n", mean, var, sigma);
 
-  int bins[nbins];
-  for(int i = 0; i < nbins; i++) {
-    bins[i]= 0;
-  }
-  for (int i = 0; i < num_samples; i++) {
-    if (diffs[i] >= nbins)
-      continue;
-    bins[diffs[i]]++;
+  int nbins = 1<<6;
+  uint32_t bins[nbins];
+  if (!bin_raw_data(num_samples, diffs, nbins, bins)) {
+    printf("Can't bin data\n");
+    return 1;
   }
 
-  double p;
-  double shannon_ent = 0.0;
-  double renyi_ent = 0.0;
-  double min_ent = 0.0;
-  for(int i = 0; i < nbins; i++) {
-    if (bins[i] == 0)
-      continue;
-    p = ((double) bins[i]) / ((double) num_samples);
-    shannon_ent += p * log(p);
-    renyi_ent += p * p;
-    if (p > min_ent)
-      min_ent = p;
+  printf("\nbins:\n");
+  print_uint32_array(nbins, bins);
+  printf("\n");
+
+  double shannon_entropy = 0.0;
+  double renyi_entropy = 0.0;
+  double min_entropy = 0.0;
+  if (!calculate_entropies(num_samples, nbins, bins, &shannon_entropy,
+        &renyi_entropy, &min_entropy)) {
+    printf("Can't calculate entropies\n");
+    return 1;
   }
-  shannon_ent = - shannon_ent / log(2.0);
-  renyi_ent = -log(renyi_ent) / log(2.0);
-  min_ent = -log(min_ent) / log(2.0);
-  printf("nbins: %d, Shannon entropy : %6.3lf, Renyi entropy: %6.3lf, Min entropy: %6.3lf\n",
-         nbins, shannon_ent, renyi_ent, min_ent);
+  printf("shannon entropy: %5.3lf,  renyi entropy: %5.3lf, min entropy: %5.3lf\n", 
+        shannon_entropy, renyi_entropy, min_entropy);
+
   double normal_dist_ent = (.5 * (1.0 + log(2.0 * var * 3.14159))) / log(2.0);
   printf("Normal distribution estimate: %8.3lf\n", normal_dist_ent);
 
+  if (!write_graph_data(FLAGS_graph_file, nbins, bins)) {
+    printf("Can't write graph data\n");
+    return 1;
+  }
+
   close_crypto();
-  printf("\n");
+  printf("\ndone\n");
   return 0;
 }
