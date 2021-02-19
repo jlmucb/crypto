@@ -100,7 +100,7 @@ int main(int an, char** av) {
   printf("shannon entropy: %5.3lf, renyi entropy: %5.3lf, min entropy: %5.3lf\n", 
         shannon_entropy, renyi_entropy, min_entropy);
 
-  double normal_dist_ent = (.5 * (1.0 + log(2.0 * var * 3.14159))) / log(2.0);
+  double normal_dist_ent = (.5 * (1.0 + log(2.0 * var * pi))) / log(2.0);
   printf("Normal distribution estimate: %8.3lf\n", normal_dist_ent);
 #if 0
   //correction

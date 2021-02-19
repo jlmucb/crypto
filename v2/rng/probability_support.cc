@@ -557,8 +557,6 @@ bool chi_squared_test(int n, byte* x, int num_values, double* p, double* chi_val
   return true;
 }
 
-const double pi = 3.141592653589793;
-
 bool complex_fourier_sum(int n, int k, double* x, double* real, double* im) {
   double real_total = 0.0;
   double im_total = 0.0;

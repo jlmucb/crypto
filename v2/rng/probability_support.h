@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <math.h>
 
+const double pi = 3.141592653589793;
 void print_hex_uint32_array(int n, uint32_t* data);
 void print_uint32_array(int n, uint32_t* data);
 bool collect_difference_samples(int num_samples, uint32_t* data,
