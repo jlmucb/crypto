@@ -130,7 +130,7 @@ int main(int an, char** av) {
         printf("Can't calculate entropies\n");
         return 1;
       }
-      printf("Conditional entropies, prior: %2u, shannon: %5.3lf, renyi: %5.3lf, min: %5.3lf\n", 
+      printf("Conditional entropy, prior: %2u, shannon: %5.3lf, renyi: %5.3lf, min: %5.3lf\n", 
             base_bin, conditional_shannon_entropy, conditional_renyi_entropy, conditional_min_entropy);
     }
   }
