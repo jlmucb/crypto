@@ -102,6 +102,14 @@ int main(int an, char** av) {
 
   double normal_dist_ent = (.5 * (1.0 + log(2.0 * var * 3.14159))) / log(2.0);
   printf("Normal distribution estimate: %8.3lf\n", normal_dist_ent);
+#if 0
+  //correction
+  double s1 = sigma * 1.20;
+  double a1 = erf(-mean / s1);
+  double a2 = erf((((double)nbins) - mean) / s1);
+  double a3= (fabs(a1) + a2) / 2.0;
+  printf("a1: %8.5lf, a2: %8.5lf, a3: %8.5lf  %8.5lf\n", a1, a2, a3, a3 * normal_dist_ent);
+#endif
   printf("\n");
 
   if (!write_graph_data(FLAGS_graph_file, nbins, bins)) {
