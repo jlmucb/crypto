@@ -52,7 +52,7 @@ PROTO=protoc
 AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
-dobj=	$(O)/entropy_series.o $(O)/support.pb.o $(O)/crypto_support.o
+dobj=	$(O)/entropy_series.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/entropy_support.o
 
 all:	entropy_series.exe
 clean:
@@ -68,6 +68,10 @@ entropy_series.exe: $(dobj)
 $(O)/entropy_series.o: $(S)/entropy_series.cc
 	@echo "compiling entropy_series.cc"
 	$(CC) $(CFLAGS) -c -o $(O)/entropy_series.o $(S)/entropy_series.cc
+
+$(O)/entropy_support.o: $(S)/entropy_support.cc
+	@echo "compiling entropy_support.cc"
+	$(CC) $(CFLAGS) -c -o $(O)/entropy_support.o $(S)/entropy_support.cc
 
 $(O)/support.pb.o: $(S_SUPPORT)/support.pb.cc $(S_SUPPORT)/support.pb.h
 	@echo "compiling support.pb.cc"
