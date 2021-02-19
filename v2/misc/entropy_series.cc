@@ -26,6 +26,8 @@ DEFINE_bool(do_conditional, false, "Analyze conditional entropy");
 DEFINE_bool(print_bins, false, "Print bins");
 DEFINE_string(num_samples, "1000", "number of samples");
 DEFINE_string(interval, "1000", "interval in us");
+DEFINE_string(divisor, "2", "divisor");
+DEFINE_string(num_bits, "6", "number of bits");
 DEFINE_string(output_file, "tick_difference_output.bin", "output file");
 DEFINE_string(graph_file, "graph.bin", "graph output file");
 
@@ -38,11 +40,16 @@ int main(int an, char** av) {
   }
 
   int interval, num_samples;
-  sscanf(FLAGS_interval.c_str(), "%d", &interval);
-  sscanf(FLAGS_num_samples.c_str(), "%d", &num_samples);
-  uint64_t num_ticks_per_sec = calibrate_rdtsc();
   int num_bits = 6;
   int divisor = 2;
+
+  sscanf(FLAGS_interval.c_str(), "%d", &interval);
+  sscanf(FLAGS_num_samples.c_str(), "%d", &num_samples);
+  sscanf(FLAGS_divisor.c_str(), "%d", &divisor);
+  sscanf(FLAGS_num_bits.c_str(), "%d", &num_bits);
+  uint64_t num_ticks_per_sec = calibrate_rdtsc();
+
+
   printf("\ninterval: %d us, samples: %d, ticks/second: %lu, num_bits: %d, bins: %d, divisor: %d\n", 
     interval, num_samples, num_ticks_per_sec, num_bits, 1<<num_bits, divisor);
 
@@ -69,7 +76,7 @@ int main(int an, char** av) {
   double sigma = sqrt(var);
   printf("mean: %8.3lf, variance: %8.3lf, sigma: %8.3lf\n", mean, var, sigma);
 
-  int nbins = 1<<6;
+  int nbins = 1<<num_bits;
   uint32_t bins[nbins];
   if (!bin_raw_data(num_samples, diffs, nbins, bins)) {
     printf("Can't bin data\n");
