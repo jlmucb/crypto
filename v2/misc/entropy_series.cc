@@ -41,11 +41,11 @@ int main(int an, char** av) {
   sscanf(FLAGS_interval.c_str(), "%d", &interval);
   sscanf(FLAGS_num_samples.c_str(), "%d", &num_samples);
   uint64_t num_ticks_per_sec = calibrate_rdtsc();
-  printf("\ninterval: %d us, number of samples: %d, number of ticks per second: %lu\n", 
-    interval, num_samples, num_ticks_per_sec);
-
   int num_bits = 6;
   int divisor = 2;
+  printf("\ninterval: %d us, samples: %d, ticks/second: %lu, num_bits: %d, bins: %d, divisor: %d\n", 
+    interval, num_samples, num_ticks_per_sec, num_bits, 1<<num_bits, divisor);
+
   uint32_t diffs[num_samples];
   if (!collect_difference_samples(num_samples, diffs,
             interval, num_bits, divisor)) {
