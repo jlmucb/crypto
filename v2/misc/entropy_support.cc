@@ -56,7 +56,7 @@ bool collect_difference_samples(int num_samples, uint32_t* data,
     current = read_rdtsc();
     difference = current - last;
     last = current;
-    difference = (difference / divisor) & mask;
+    difference = (difference / ((uint64_t)divisor)) & mask;
     data[i] = (uint32_t) difference;
   }
   return true;
