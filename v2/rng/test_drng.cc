@@ -18,6 +18,7 @@
 #include "support.pb.h"
 #include "crypto_names.h"
 #include "drng.h"
+#include "probability_support.h"
 #include "aes.h"
 
 

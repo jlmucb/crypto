@@ -46,7 +46,7 @@ AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=   $(O)/test_drng.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
-	$(O)/hash.o $(O)/sha256.o $(O)/drng.o $(O)/lz77.o $(O)/min_entropy.o
+	$(O)/hash.o $(O)/sha256.o $(O)/drng.o $(O)/lz77.o $(O)/probability_support.o
 
 all:    test_drng.exe
 clean:
@@ -94,6 +94,6 @@ $(O)/lz77.o: $(S)/lz77.cc
 	@echo "compiling lz77.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/lz77.o $(S)/lz77.cc
 
-$(O)/min_entropy.o: $(S)/min_entropy.cc
-	@echo "compiling min_entropy.cc"
-	$(CC) $(CFLAGS) -c $(I) -o $(O)/min_entropy.o $(S)/min_entropy.cc
+$(O)/probability_support.o: $(S)/probability_support.cc
+	@echo "compiling probability_support.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/probability_support.o $(S)/probability_support.cc

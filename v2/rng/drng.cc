@@ -17,19 +17,8 @@
 #include "crypto_support.h"
 #include "support.pb.h"
 #include "crypto_names.h"
+#include "probability_support.h"
 #include "drng.h"
-
-void zero_uint32_array(int l, uint32_t* n) {
-  for (int i = 0; i < l; i++) {
-    n[i] = 0;
-  }
-}
-
-void print_uint64(int n, uint64_t* x) {
-  for (int i = 0; i < n; i++) {
-    printf("%016lx ", x[i]);
-  }
-}
 
 // Note:  Mixers assume big endian so reverse bytes should
 // be invoked before and after any call to the addition stuff.

@@ -56,6 +56,7 @@ public:
             byte* add_in_bits);
 };
 
+#if 0
 double lg(double x);
 bool bits_to_byte(int n_bit_bytes, byte* all_bits_in_byte,
                   int n_one_bit_per_byte, byte* one_bit_per_byte);
@@ -75,6 +76,7 @@ double excursion_test(int n, byte* s);
 bool chi_squared_test(int n, byte* x, int num_values, double* p, double* chi_value);
 bool periodicity_test(int n, byte* s, int lag, int* result);
 bool compression_test(int n, byte* s, int* compressed);
+#endif
 #endif
 
 
