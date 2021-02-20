@@ -22,6 +22,7 @@
 const double pi = 3.141592653589793;
 void print_hex_uint32_array(int n, uint32_t* data);
 void print_uint32_array(int n, uint32_t* data);
+void print_int16_array(int n, int16_t* data);
 bool collect_difference_samples(int num_samples, uint32_t* data,
             uint32_t interval, int num_bits, int divisor);
 bool write_graph_data(string file_name, int nbins, uint32_t* bins);
@@ -33,6 +34,10 @@ bool calculate_entropies(int num_samples, int nbins, uint32_t* bins, double* sha
   double* renyi_entropy, double* min_entropy);
 bool write_data(string file_name, int num_samples, uint32_t* data);
 bool read_data(string file_name, int* num_samples, uint32_t** data);
+bool bin_signed_data(int num_samples, int16_t* data, int nbins, uint32_t* bins);
+double calculate_signed_mean(int num_samples, int16_t* data);
+double calculate_signed_variance(int num_samples, int16_t* data, double mean);
+bool calculate_second_differences(int num_samples, uint32_t* old_data, int16_t* new_data);
 
 void zero_uint32_array(int l, uint32_t* n);
 double lg(double x);

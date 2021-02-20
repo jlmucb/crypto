@@ -30,6 +30,18 @@ void print_uint64(int n, uint64_t* x) {
   }
 }
 
+void print_int16_array(int n, int16_t* x) {
+  int i;
+
+  for (i = 0; i < n; i++) {
+    printf("%03d ", x[i]);
+    if ((i%8) == 7)
+      printf("\n");
+  }
+  if ((i%8) != 0)
+     printf("\n");
+}
+
 void print_hex_uint32_array(int n, uint32_t* data) {
   int i;
   for (i = 0; i < n; i++) {
@@ -109,6 +121,16 @@ bool collect_difference_samples(int num_samples, uint32_t* data,
   return true;
 }
 
+bool calculate_second_differences(int num_samples, uint32_t* old_data, int16_t* new_data) {
+  int16_t last = (int32_t)old_data[0];
+
+  for (int i = 1; i < num_samples; i++) {
+    new_data[i - 1] = ((int16_t)old_data[i]) - last;
+    last = ((int16_t)old_data[i]);
+  }
+  return true;
+}
+
 bool write_graph_data(string file_name, int nbins, uint32_t* bins) {
   int fd = creat(file_name.c_str(), S_IRWXU | S_IRWXG);
   if (fd < 0) {
@@ -145,6 +167,28 @@ double calculate_variance(int num_samples, uint32_t* data, double mean) {
   return sum / (((double) num_samples) - 1);
 }
 
+double calculate_signed_mean(int num_samples, int16_t* data) {
+  uint64_t sum = 0ULL;
+
+  for (int i = 0; i < num_samples; i++) {
+    sum += (uint64_t) data[i];
+  }
+  double mean = ((double)sum) / ((double)num_samples);
+  return mean;
+}
+
+double calculate_signed_variance(int num_samples, int16_t* data, double mean) {
+  double var = 0.0;
+  double sum = 0;
+  double t = 0.0;
+
+  for (int i = 0; i < num_samples; i++) {
+    t = mean - ((double)data[i]);
+    sum += t * t;
+  }
+  return sum / (((double) num_samples) - 1);
+}
+
 bool bin_conditional_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins, uint32_t base_bin) {
   for(int i = 0; i < nbins; i++) {
     bins[i]= 0;
@@ -160,6 +204,18 @@ bool bin_conditional_data(int num_samples, uint32_t* data, int nbins, uint32_t* 
 }
 
 bool bin_raw_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins) {
+  for(int i = 0; i < nbins; i++) {
+    bins[i]= 0;
+  }
+  for (int i = 0; i < num_samples; i++) {
+    if ((int)data[i] >= nbins)
+      continue;
+    bins[data[i]]++;
+  }
+  return true;
+}
+
+bool bin_signed_data(int num_samples, int16_t* data, int nbins, uint32_t* bins) {
   for(int i = 0; i < nbins; i++) {
     bins[i]= 0;
   }

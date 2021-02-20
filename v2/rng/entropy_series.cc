@@ -30,6 +30,7 @@ DEFINE_string(divisor, "2", "divisor");
 DEFINE_string(num_bits, "6", "number of bits");
 DEFINE_string(output_file, "tick_difference_output.bin", "output file");
 DEFINE_string(graph_file, "graph.bin", "graph output file");
+DEFINE_string(second_graph_file, "graph2.bin", "second graph output file");
 
 // entropy series generates time series differences
 int main(int an, char** av) {
@@ -113,6 +114,40 @@ int main(int an, char** av) {
   printf("\n");
 
   if (!write_graph_data(FLAGS_graph_file, nbins, bins)) {
+    printf("Can't write graph data\n");
+    return 1;
+  }
+
+  int16_t diffs2[num_samples];
+  if (!calculate_second_differences(num_samples, diffs, diffs2)) {
+    printf("Can't calculate second differences\n");
+    return 1;
+  }
+
+  if (FLAGS_print_bins) {
+    printf("Second differences\n");
+    print_int16_array(num_samples, diffs2);
+    printf("\n");
+  }
+
+  double mean2 = calculate_signed_mean(num_samples - 1, diffs2);
+  double var2 = calculate_signed_variance(num_samples - 1, diffs2, mean2);
+  double sigma2 = sqrt(var2);
+  printf("Second differnces, mean: %5.3lf, variance: %6.3lf, sigma: %6.3lf\n", mean2, var2, sigma2);
+  uint32_t signed_bins[2 * nbins];
+  zero_uint32_array(2 * nbins, signed_bins);
+  for (int i = 0; i < (num_samples - 1); i++) {
+    signed_bins[diffs2[i] + (1<<num_bits) - 1]++;
+  }
+  double second_shannon_entropy, second_renyi_entropy, second_min_entropy;
+  if (!calculate_entropies(num_samples - 1, 2 * nbins, signed_bins, &second_shannon_entropy,
+          &second_renyi_entropy, &second_min_entropy)) {
+    printf("Can't calculate second entropies\n");
+    return 1;
+  }
+  printf("Second shannon entropy: %5.3lf, second renyi entropy: %5.3lf, second min entropy: %5.3lf\n\n", 
+        second_shannon_entropy, second_renyi_entropy, second_min_entropy);
+  if (!write_graph_data(FLAGS_second_graph_file, 2* nbins, signed_bins)) {
     printf("Can't write graph data\n");
     return 1;
   }

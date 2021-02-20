@@ -41,7 +41,7 @@ def main(argv=sys.argv):
     ylist.append(rel_bins[i])
 
   left = -1
-  right = 64
+  right = nbins
   top = .25
   bottom = 0
 
