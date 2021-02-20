@@ -50,9 +50,9 @@ void big_add(int size_n1, uint64_t* n1, int size_n2, uint64_t* n2,
   carry = t >> 32;
   }
 #if 0
-  printf("n1: "); print_uint64(size_n1, n1); printf("\n");
-  printf("n2: "); print_uint64(size_n2, n2); printf("\n");
-  printf("out: "); print_uint64(size_out, out); printf("\n");
+  printf("n1: "); print_uint64_array(size_n1, n1); printf("\n");
+  printf("n2: "); print_uint64_array(size_n2, n2); printf("\n");
+  printf("out: "); print_uint64_array(size_out, out); printf("\n");
   printf("\n");
 #endif
 }
@@ -61,7 +61,7 @@ void big_add_one(int size_n, uint64_t* n) {
   uint64_t carry = 1;
 
 #if 0
-  printf("big_add_one, in : "); print_uint64(size_n, n); printf("\n");
+  printf("big_add_one, in : "); print_uint64_array(size_n, n); printf("\n");
 #endif
   for (int i = 0; i < size_n; i++) {
     if (carry != 0) {
@@ -77,7 +77,7 @@ void big_add_one(int size_n, uint64_t* n) {
   }
 
 #if 0
-  printf("big_add_one, out: "); print_uint64(size_n, n); printf("\n");
+  printf("big_add_one, out: "); print_uint64_array(size_n, n); printf("\n");
 #endif
 }
 

@@ -24,10 +24,16 @@ void zero_uint32_array(int l, uint32_t* n) {
   }
 }
 
-void print_uint64(int n, uint64_t* x) {
-  for (int i = 0; i < n; i++) {
+void print_uint64_array(int n, uint64_t* x) {
+  int i;
+
+  for (i = 0; i < n; i++) {
     printf("%016lx ", x[i]);
+    if ((i%4) == 3)
+      printf("\n");
   }
+  if ((i%4) == 3)
+  printf("\n");
 }
 
 void print_int16_array(int n, int16_t* x) {
