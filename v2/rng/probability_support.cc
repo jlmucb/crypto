@@ -128,7 +128,8 @@ double shannon_entropy(int n, double* p) {
   double sum = 0.0;
 
   for (int i = 0; i < n; i++) {
-    sum += -p[i] * lg(p[i]);
+    if (p[i] > 0.0)
+      sum += -p[i] * lg(p[i]);
   }
   return sum;
 }

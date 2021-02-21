@@ -30,8 +30,8 @@ bool test_bins() {
 bool test_probability_calculations() {
 
   double x[16] = {
-    1, 2, 3, 4, 5, 6, 7, 8, 9,
-    10, 11, 12, 13, 14, 15, 16,
+    0, 1,  2,  3,  4,  5,  6,  7,
+    8, 9, 10, 11, 12, 13, 14, 15,
   };
   double a = 1/16.0;
   double p[16] = {
@@ -40,17 +40,17 @@ bool test_probability_calculations() {
   };
 
   int n = 16;
+
+  double p_xy[n * n];
+  for (int i = 0; i < (n * n); i++)
+    p_xy[i]= a * a;
+
   if (FLAGS_print_all) {
     printf("x:\n");
     print_double_array(n, x);
     printf("p:\n");
     print_double_array(n, p);
   }
-
-  double p_xy[n * n];
-  for (int i = 0; i < (n * n); i++)
-    p_xy[i]= a * a;
-
   double mean = expected_value(n, p, x);
   double var = variance(n, mean, p, x);
   if (FLAGS_print_all) {
@@ -59,6 +59,8 @@ bool test_probability_calculations() {
   double sh_ent= shannon_entropy(n, p);
   double re_ent= renyi_entropy(n, p);
   double min_ent = min_entropy(n, p);
+  printf("shannon: %8.4lf, renyi: %8.4lf, min: %8.4lf\n", sh_ent, re_ent, min_ent);
+  printf("\n");
 
   if (FLAGS_print_all) {
     printf("p_xy:\n");
@@ -71,10 +73,36 @@ bool test_probability_calculations() {
   }
   printf("\n");
 
-  printf("shannon: %8.4lf, renyi: %8.4lf, min: %8.4lf\n", sh_ent, re_ent, min_ent);
   double cov = covariance(n, n, mean, x, mean, x, p_xy);
   double rho = correlate(n, n, mean, sqrt(var), x, mean, sqrt(var), x, p_xy);
   printf("covariance: %8.4lf, correlation: %8.4lf\n", cov, rho);
+  printf("\n");
+
+  double b = 2.0 * p[0];
+  for (int i = 0; i < n; i++) {
+    if (i >= 8) {
+      if ((i%2) == 0)
+        p[i] = 0.0;
+      else
+        p[i] = b;
+    }
+  }
+  if (FLAGS_print_all) {
+    printf("x:\n");
+    print_double_array(n, x);
+    printf("p:\n");
+    print_double_array(n, p);
+  }
+  mean = expected_value(n, p, x);
+  var = variance(n, mean, p, x);
+  if (FLAGS_print_all) {
+    printf("mean: %8.4lf, variance: %8.4lf\n", mean, var);
+  }
+  sh_ent= shannon_entropy(n, p);
+  re_ent= renyi_entropy(n, p);
+  min_ent = min_entropy(n, p);
+  printf("shannon: %8.4lf, renyi: %8.4lf, min: %8.4lf\n", sh_ent, re_ent, min_ent);
+  printf("\n");
 
   return true;
 }
