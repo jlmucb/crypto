@@ -124,6 +124,66 @@ bool read_data(string file_name, int* num_samples, uint32_t** data) {
   return true;
 }
 
+bool collect_difference_samples(int num_samples, uint32_t* data,
+            uint32_t interval, int num_bits, int divisor) {
+  uint64_t mask = 0ULL;
+  for (int i = 0; i < num_bits; i++) {
+    mask = (mask << 1) | 1ULL;
+  }
+
+  uint64_t last = read_rdtsc();
+  uint64_t current = 0ULL;
+  uint64_t difference= 0ULL;
+
+  for (int i = 0; i < num_samples; i++) {
+    usleep((uint32_t)interval);
+    current = read_rdtsc();
+    difference = current - last;
+    last = current;
+    difference = (difference / ((uint64_t)divisor)) & mask;
+    data[i] = (uint32_t) difference;
+  }
+  return true;
+}
+
+bool bin_conditional_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins, uint32_t base_bin) {
+  for(int i = 0; i < nbins; i++) {
+    bins[i]= 0;
+  }
+  for (int i = 0; i < (num_samples - 1); i++) {
+    if ((int)data[i] >= nbins)
+      continue;
+    if (data[i] != base_bin)
+      continue;
+    bins[data[i + 1]]++;
+  }
+  return true;
+}
+
+bool bin_raw_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins) {
+  for(int i = 0; i < nbins; i++) {
+    bins[i]= 0;
+  }
+  for (int i = 0; i < num_samples; i++) {
+    if ((int)data[i] >= nbins)
+      continue;
+    bins[data[i]]++;
+  }
+  return true;
+}
+
+bool bin_signed_data(int num_samples, int16_t* data, int nbins, uint32_t* bins) {
+  for(int i = 0; i < nbins; i++) {
+    bins[i]= 0;
+  }
+  for (int i = 0; i < num_samples; i++) {
+    if ((int)data[i] >= nbins)
+      continue;
+    bins[data[i]]++;
+  }
+  return true;
+}
+
 double lg(double x) {
   return log(x) / log (2.0);
 }
@@ -228,38 +288,6 @@ bool byte_to_bits(int n_one_bit_per_byte, byte* one_bit_per_byte,
   return true;
 }
 
-bool collect_difference_samples(int num_samples, uint32_t* data,
-            uint32_t interval, int num_bits, int divisor) {
-  uint64_t mask = 0ULL;
-  for (int i = 0; i < num_bits; i++) {
-    mask = (mask << 1) | 1ULL;
-  }
-
-  uint64_t last = read_rdtsc();
-  uint64_t current = 0ULL;
-  uint64_t difference= 0ULL;
-
-  for (int i = 0; i < num_samples; i++) {
-    usleep((uint32_t)interval);
-    current = read_rdtsc();
-    difference = current - last;
-    last = current;
-    difference = (difference / ((uint64_t)divisor)) & mask;
-    data[i] = (uint32_t) difference;
-  }
-  return true;
-}
-
-bool calculate_second_differences(int num_samples, uint32_t* old_data, int16_t* new_data) {
-  int16_t last = (int32_t)old_data[0];
-
-  for (int i = 1; i < num_samples; i++) {
-    new_data[i - 1] = ((int16_t)old_data[i]) - last;
-    last = ((int16_t)old_data[i]);
-  }
-  return true;
-}
-
 bool write_graph_data(string file_name, int nbins, uint32_t* bins) {
   int fd = creat(file_name.c_str(), S_IRWXU | S_IRWXG);
   if (fd < 0) {
@@ -271,6 +299,16 @@ bool write_graph_data(string file_name, int nbins, uint32_t* bins) {
   if (write(fd, bins, (size_t)(nbins* (int)sizeof(uint32_t))) < 0)
     return false;
   close(fd);
+  return true;
+}
+
+bool calculate_second_differences(int num_samples, uint32_t* old_data, int16_t* new_data) {
+  int16_t last = (int32_t)old_data[0];
+
+  for (int i = 1; i < num_samples; i++) {
+    new_data[i - 1] = ((int16_t)old_data[i]) - last;
+    last = ((int16_t)old_data[i]);
+  }
   return true;
 }
 
@@ -317,45 +355,6 @@ double calculate_int32_variance(int num_samples, int16_t* data, double mean) {
   }
   return sum / (((double) num_samples) - 1);
 }
-
-bool bin_conditional_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins, uint32_t base_bin) {
-  for(int i = 0; i < nbins; i++) {
-    bins[i]= 0;
-  }
-  for (int i = 0; i < (num_samples - 1); i++) {
-    if ((int)data[i] >= nbins)
-      continue;
-    if (data[i] != base_bin)
-      continue;
-    bins[data[i + 1]]++;
-  }
-  return true;
-}
-
-bool bin_raw_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins) {
-  for(int i = 0; i < nbins; i++) {
-    bins[i]= 0;
-  }
-  for (int i = 0; i < num_samples; i++) {
-    if ((int)data[i] >= nbins)
-      continue;
-    bins[data[i]]++;
-  }
-  return true;
-}
-
-bool bin_signed_data(int num_samples, int16_t* data, int nbins, uint32_t* bins) {
-  for(int i = 0; i < nbins; i++) {
-    bins[i]= 0;
-  }
-  for (int i = 0; i < num_samples; i++) {
-    if ((int)data[i] >= nbins)
-      continue;
-    bins[data[i]]++;
-  }
-  return true;
-}
-
 bool calculate_bin_entropies(int num_samples, int nbins, uint32_t* bins, double* shannon_entropy,
   double* renyi_entropy, double* min_entropy) {
   double shannon = 0.0;
