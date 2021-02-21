@@ -47,6 +47,10 @@ bool test_probability_calculations() {
     print_double_array(n, p);
   }
 
+  double p_xy[n * n];
+  for (int i = 0; i < (n * n); i++)
+    p_xy[i]= a * a;
+
   double mean = expected_value(n, p, x);
   double var = variance(n, mean, p, x);
   if (FLAGS_print_all) {
@@ -55,9 +59,22 @@ bool test_probability_calculations() {
   double sh_ent= shannon_entropy(n, p);
   double re_ent= renyi_entropy(n, p);
   double min_ent = min_entropy(n, p);
+
+  if (FLAGS_print_all) {
+    printf("p_xy:\n");
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < n; j++) {
+        printf("%5.3lf ", p_xy[index(n,n,i,j)]);
+      }
+      printf("\n");
+    }
+  }
+  printf("\n");
+
   printf("shannon: %8.4lf, renyi: %8.4lf, min: %8.4lf\n", sh_ent, re_ent, min_ent);
-  // double covariance(int n, int m, double mean_x, double* x, double mean_y, double* y, double* p_xy) {
-  // double correlate(int n, int m, double mean_x, double sigma_x, double* x, double mean_y, double sigma_y, double* y, double* p_xy) {
+  double cov = covariance(n, n, mean, x, mean, x, p_xy);
+  double rho = correlate(n, n, mean, sqrt(var), x, mean, sqrt(var), x, p_xy);
+  printf("covariance: %8.4lf, correlation: %8.4lf\n", cov, rho);
 
   return true;
 }

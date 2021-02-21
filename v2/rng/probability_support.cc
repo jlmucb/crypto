@@ -108,7 +108,7 @@ double covariance(int n, int m, double mean_x, double* x, double mean_y, double*
 
   for (int i = 0; i < n; i++) {
     t1 = x[i] - mean_x;
-    for (int j = 0; i < m; i++) {
+    for (int j = 0; j < m; j++) {
       t2 = y[i] - mean_y;
       sum += p_xy[index(n, m, i, j)] * t1 * t2;
     }
