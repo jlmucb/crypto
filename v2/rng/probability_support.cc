@@ -90,7 +90,7 @@ double variance(int n, double mean, double* p, double* x) {
   return sum;
 }
 
-double correlate(int n, int m, double mean_x, double* x, double mean_y, double* y, double* p_xy) {
+double covariance(int n, int m, double mean_x, double* x, double mean_y, double* y, double* p_xy) {
   double sum = 0.0;
   double t1, t2;
 
@@ -102,6 +102,10 @@ double correlate(int n, int m, double mean_x, double* x, double mean_y, double* 
     }
   }
   return sum;
+}
+
+double correlate(int n, int m, double mean_x, double sigma_x, double* x, double mean_y, double sigma_y, double* y, double* p_xy) {
+  return covariance(n, m, mean_x, x, mean_y, y, p_xy) / (sigma_x * sigma_y);
 }
 
 double lg(double x) {
@@ -215,7 +219,7 @@ bool write_graph_data(string file_name, int nbins, uint32_t* bins) {
   return true;
 }
 
-double calculate_bin_mean(int num_samples, uint32_t* data) {
+double calculate_uint32_mean(int num_samples, uint32_t* data) {
   uint64_t sum = 0ULL;
 
   for (int i = 0; i < num_samples; i++) {
@@ -225,7 +229,7 @@ double calculate_bin_mean(int num_samples, uint32_t* data) {
   return mean;
 }
 
-double calculate_bin_variance(int num_samples, uint32_t* data, double mean) {
+double calculate_uint32_variance(int num_samples, uint32_t* data, double mean) {
   double var = 0.0;
   double sum = 0;
   double t = 0.0;
@@ -237,7 +241,7 @@ double calculate_bin_variance(int num_samples, uint32_t* data, double mean) {
   return sum / (((double) num_samples) - 1);
 }
 
-double calculate_signed_mean(int num_samples, int16_t* data) {
+double calculate_int32_mean(int num_samples, int16_t* data) {
   uint64_t sum = 0ULL;
 
   for (int i = 0; i < num_samples; i++) {
@@ -247,7 +251,7 @@ double calculate_signed_mean(int num_samples, int16_t* data) {
   return mean;
 }
 
-double calculate_signed_variance(int num_samples, int16_t* data, double mean) {
+double calculate_int32_variance(int num_samples, int16_t* data, double mean) {
   double var = 0.0;
   double sum = 0;
   double t = 0.0;
@@ -297,7 +301,7 @@ bool bin_signed_data(int num_samples, int16_t* data, int nbins, uint32_t* bins) 
   return true;
 }
 
-bool calculate_entropies(int num_samples, int nbins, uint32_t* bins, double* shannon_entropy,
+bool calculate_bin_entropies(int num_samples, int nbins, uint32_t* bins, double* shannon_entropy,
   double* renyi_entropy, double* min_entropy) {
   double shannon = 0.0;
   double renyi = 0.0;

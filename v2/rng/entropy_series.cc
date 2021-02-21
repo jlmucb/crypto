@@ -72,8 +72,8 @@ int main(int an, char** av) {
     return 1;
   }
 
-  double mean = calculate_bin_mean(num_samples, diffs);
-  double var = calculate_bin_variance(num_samples, diffs, mean);
+  double mean = calculate_uint32_mean(num_samples, diffs);
+  double var = calculate_uint32_variance(num_samples, diffs, mean);
   double sigma = sqrt(var);
   printf("mean: %8.3lf, variance: %8.3lf, sigma: %8.3lf\n", mean, var, sigma);
 
@@ -130,8 +130,8 @@ int main(int an, char** av) {
     printf("\n");
   }
 
-  double mean2 = calculate_signed_mean(num_samples - 1, diffs2);
-  double var2 = calculate_signed_variance(num_samples - 1, diffs2, mean2);
+  double mean2 = calculate_int32_mean(num_samples - 1, diffs2);
+  double var2 = calculate_int32_variance(num_samples - 1, diffs2, mean2);
   double sigma2 = sqrt(var2);
   printf("Second differnces, mean: %5.3lf, variance: %6.3lf, sigma: %6.3lf\n", mean2, var2, sigma2);
   uint32_t signed_bins[2 * nbins];

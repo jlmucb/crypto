@@ -20,24 +20,28 @@
 #include <math.h>
 
 const double pi = 3.141592653589793;
+
 void print_hex_uint32_array(int n, uint32_t* data);
 void print_uint32_array(int n, uint32_t* data);
 void print_int16_array(int n, int16_t* data);
+
 bool collect_difference_samples(int num_samples, uint32_t* data,
             uint32_t interval, int num_bits, int divisor);
 bool write_graph_data(string file_name, int nbins, uint32_t* bins);
-double calculate_bin_mean(int num_samples, uint32_t* data);
-double calculate_bin_variance(int num_samples, uint32_t* data, double mean);
 bool bin_conditional_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins, uint32_t base_bin);
 bool bin_raw_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins);
-bool calculate_bin_entropies(int num_samples, int nbins, uint32_t* bins, double* shannon_entropy,
-  double* renyi_entropy, double* min_entropy);
 bool write_data(string file_name, int num_samples, uint32_t* data);
 bool read_data(string file_name, int* num_samples, uint32_t** data);
-bool bin_signed_data(int num_samples, int16_t* data, int nbins, uint32_t* bins);
-double calculate_signed_mean(int num_samples, int16_t* data);
-double calculate_signed_variance(int num_samples, int16_t* data, double mean);
+bool bin_int32_data(int num_samples, int16_t* data, int nbins, uint32_t* bins);
+
+double calculate_uint32_mean(int num_samples, uint32_t* data);
+double calculate_uint32_variance(int num_samples, uint32_t* data, double mean);
+double calculate_int32_mean(int num_samples, int16_t* data);
+double calculate_int32_variance(int num_samples, int16_t* data, double mean);
 bool calculate_second_differences(int num_samples, uint32_t* old_data, int16_t* new_data);
+
+bool calculate_bin_entropies(int num_samples, int nbins, uint32_t* bins, double* shannon_entropy,
+  double* renyi_entropy, double* min_entropy);
 
 void zero_uint32_array(int l, uint32_t* n);
 double lg(double x);
@@ -45,6 +49,7 @@ bool bits_to_byte(int n_bit_bytes, byte* all_bits_in_byte,
                   int n_one_bit_per_byte, byte* one_bit_per_byte);
 bool byte_to_bits(int n_one_bit_per_byte, byte* one_bit_per_byte,
                   int n_bit_bytes, byte* all_bits_in_byte);
+
 double most_common_value_entropy(int largest_possible_sample,
           int num_samples, byte* samples);
 double byte_markov_sequence_probability(int seq_len, byte* seq,
@@ -52,6 +57,7 @@ double byte_markov_sequence_probability(int seq_len, byte* seq,
 double byte_markov_entropy(int num_samples, byte* samples);
 double byte_shannon_entropy(int largest_possible_sample,
         int num_samples, byte* samples);
+
 bool real_dft(int n, double* data, double* transform);
 bool runs_test(int n, byte* s, int* number_of_runs, double* mu, double* sigma);
 bool berlekamp_massy(int n, byte* s, int* L);
@@ -65,7 +71,10 @@ inline int index(int n, int m, int i, int j) {
 }
 double expected_value(int n, double* p, double* x);
 double variance(int n, double mean, double* p, double* x);
-double correlate(int n, int m, double mean_x, double* x, double mean_y, double* y, double* p_xy);
+double covariance(int n, int m, double mean_x, double* x,
+                 double mean_y, double* y, double* p_xy);
+double correlate(int n, int m, double mean_x, double sigma_x, double* x,
+                 double mean_y, double sigma_y, double* y, double* p_xy);
 double shannon_entropy(int n, double* p);
 double renyi_entropy(int n, double* p);
 double min_entropy(int n, double* p);
