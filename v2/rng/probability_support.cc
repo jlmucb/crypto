@@ -315,6 +315,9 @@ bool byte_to_bits(int n_one_bit_per_byte, byte* one_bit_per_byte,
   return true;
 }
 
+//  File format:
+//    num_bins (int)
+//    num_bins uint32_t values consisting of the size of the bin
 bool write_graph_data(string file_name, int nbins, uint32_t* bins) {
   int fd = creat(file_name.c_str(), S_IRWXU | S_IRWXG);
   if (fd < 0) {
@@ -326,6 +329,28 @@ bool write_graph_data(string file_name, int nbins, uint32_t* bins) {
   if (write(fd, bins, (size_t)(nbins* (int)sizeof(uint32_t))) < 0)
     return false;
   close(fd);
+  return true;
+}
+
+//  File format:
+//    num_points (int)
+//    num_points pair of doubles consisting of x adn y coordinates
+bool write_general_graph_data(string file_name, int n, double* x, double* y) {
+  int fd = creat(file_name.c_str(), S_IRWXU | S_IRWXG);
+  if (fd < 0) {
+    printf("Can't create %s\n", file_name.c_str());
+    return false;
+  }
+  if (write(fd, (const void*)&n, (size_t)sizeof(int)) < 0)
+    return false;
+  for (int i = 0; i < n; i++) {
+    if (write(fd, (const void*)&x[i], (size_t)(sizeof(double))) < 0)
+      return false;
+    if (write(fd, (const void*)&y[i], (size_t)(sizeof(double))) < 0)
+      return false;
+  }
+  close(fd);
+  return true;
   return true;
 }
 

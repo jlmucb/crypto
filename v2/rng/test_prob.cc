@@ -24,11 +24,6 @@
 DEFINE_bool(print_all, false, "print flag");
 
 /*
-  void print_hex_uint32_array(int n, uint32_t* data);
-  void print_uint32_array(int n, uint32_t* data);
-  void print_int16_array(int n, int16_t* data);
-  void print_double_array(int n, double* data);
-
   bool collect_difference_samples(int num_samples, uint32_t* data,
               uint32_t interval, int num_bits, int divisor);
   bool bin_conditional_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins, uint32_t base_bin);
@@ -41,6 +36,8 @@ DEFINE_bool(print_all, false, "print flag");
   bool calculate_marginal_probability(int n, int m, int var_num, double* p_xy, double* p)
 
   bool write_graph_data(string file_name, int nbins, uint32_t* bins);
+  bool write_general_graph_data(string file_name, int n, double* x, double* y);
+
   double calculate_uint32_mean(int num_samples, uint32_t* data);
   double calculate_uint32_variance(int num_samples, uint32_t* data, double mean);
   double calculate_int32_mean(int num_samples, int16_t* data);
