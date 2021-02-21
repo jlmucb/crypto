@@ -48,6 +48,18 @@ void print_int16_array(int n, int16_t* x) {
      printf("\n");
 }
 
+void print_double_array(int n, double* data) {
+  int i;
+
+  for (i = 0; i < n; i++) {
+    printf("%8.4lf ", data[i]);
+    if ((i%8) == 7)
+      printf("\n");
+  }
+  if ((i%8) != 0)
+     printf("\n");
+}
+
 void print_hex_uint32_array(int n, uint32_t* data) {
   int i;
   for (i = 0; i < n; i++) {
@@ -116,7 +128,7 @@ double shannon_entropy(int n, double* p) {
   double sum = 0.0;
 
   for (int i = 0; i < n; i++) {
-    sum += p[i] * lg(p[i]);
+    sum += -p[i] * lg(p[i]);
   }
   return sum;
 }
@@ -127,11 +139,11 @@ double renyi_entropy(int n, double* p) {
   for (int i = 0; i < n; i++) {
     sum += p[i] * p[i];
   }
-  return lg(sum);
+  return -lg(sum);
 }
 
 double min_entropy(int n, double* p) {
-  int max = 0.0;
+  double max = 0.0;
 
   for (int i = 0; i < n; i++) {
     if (p[i] > max)
@@ -139,7 +151,7 @@ double min_entropy(int n, double* p) {
   }
   if (max <= 0.0)
     return 0.0;
-  return lg(max);
+  return -lg(max);
 }
 
 bool bits_to_byte(int n_bit_bytes, byte* all_bits_in_byte,

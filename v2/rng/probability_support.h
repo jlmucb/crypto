@@ -24,6 +24,7 @@ const double pi = 3.141592653589793;
 void print_hex_uint32_array(int n, uint32_t* data);
 void print_uint32_array(int n, uint32_t* data);
 void print_int16_array(int n, int16_t* data);
+void print_double_array(int n, double* data);
 
 bool collect_difference_samples(int num_samples, uint32_t* data,
             uint32_t interval, int num_bits, int divisor);
