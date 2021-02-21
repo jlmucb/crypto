@@ -24,6 +24,18 @@ void zero_uint32_array(int l, uint32_t* n) {
   }
 }
 
+void zero_int16_array(int l, int16_t* n) {
+  for (int i = 0; i < l; i++) {
+    n[i] = 0;
+  }
+}
+
+void zero_double_array(int l, double* n) {
+  for (int i = 0; i < l; i++) {
+    n[i] = 0.0;
+  }
+}
+
 void print_uint64_array(int n, uint64_t* x) {
   int i;
 
@@ -82,6 +94,40 @@ void print_uint32_array(int n, uint32_t* data) {
      printf("\n");
 }
 
+bool write_data(string file_name, int num_samples, uint32_t* data) {
+  int fd = creat(file_name.c_str(), S_IRWXU | S_IRWXG);
+  if (fd < 0) {
+    printf("Can't create %s\n", file_name.c_str());
+    return false;
+  }
+  if (write(fd, (const void*)&num_samples, (size_t)sizeof(int)) < 0)
+    return false;
+  if (write(fd, data, (size_t)(num_samples * (int)sizeof(uint32_t))) < 0)
+    return false;
+  close(fd);
+  return true;
+}
+
+bool read_data(string file_name, int* num_samples, uint32_t** data) {
+  int fd = open(file_name.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
+  if (fd < 0) {
+    printf("Can't file_name%s\n", file_name.c_str());
+    return false;
+  }
+  if (((int)read(fd, num_samples, sizeof(int))) < ((int)sizeof(int)))
+    return false;
+  *data = new uint32_t[*num_samples];
+  int n = (*num_samples) * (int)sizeof(uint32_t);
+  if ((int)read(fd, *data, n) < n)
+    return false;
+  close(fd);
+  return true;
+}
+
+double lg(double x) {
+  return log(x) / log (2.0);
+}
+
 double expected_value(int n, double* p, double* x) {
   double sum = 0.0;
 
@@ -118,10 +164,6 @@ double covariance(int n, int m, double mean_x, double* x, double mean_y, double*
 
 double correlate(int n, int m, double mean_x, double sigma_x, double* x, double mean_y, double sigma_y, double* y, double* p_xy) {
   return covariance(n, m, mean_x, x, mean_y, y, p_xy) / (sigma_x * sigma_y);
-}
-
-double lg(double x) {
-  return log(x) / log (2.0);
 }
 
 double shannon_entropy(int n, double* p) {
@@ -333,36 +375,6 @@ bool calculate_bin_entropies(int num_samples, int nbins, uint32_t* bins, double*
   *renyi_entropy = -log(renyi) / log(2.0);
   *min_entropy = -log(max) / log(2.0);
   return max;
-}
-
-bool write_data(string file_name, int num_samples, uint32_t* data) {
-  int fd = creat(file_name.c_str(), S_IRWXU | S_IRWXG);
-  if (fd < 0) {
-    printf("Can't create %s\n", file_name.c_str());
-    return false;
-  }
-  if (write(fd, (const void*)&num_samples, (size_t)sizeof(int)) < 0)
-    return false;
-  if (write(fd, data, (size_t)(num_samples * (int)sizeof(uint32_t))) < 0)
-    return false;
-  close(fd);
-  return true;
-}
-
-bool read_data(string file_name, int* num_samples, uint32_t** data) {
-  int fd = open(file_name.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
-  if (fd < 0) {
-    printf("Can't file_name%s\n", file_name.c_str());
-    return false;
-  }
-  if (((int)read(fd, num_samples, sizeof(int))) < ((int)sizeof(int)))
-    return false;
-  *data = new uint32_t[*num_samples];
-  int n = (*num_samples) * (int)sizeof(uint32_t);
-  if ((int)read(fd, *data, n) < n)
-    return false;
-  close(fd);
-  return true;
 }
 
 // IID tests:

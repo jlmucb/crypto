@@ -90,6 +90,24 @@ int main(int an, char** av) {
     printf("\n");
   }
 
+#if 0
+  printf("test calcs\n");
+  double pp[nbins], xx[nbins];
+  for (int i = 0; i < nbins; i++) {
+    xx[i] = (double) i;
+    pp[i] = ((double)bins[i]) / ((double)num_samples);
+  }
+
+  double test_mean = expected_value(nbins, pp, xx);
+  double test_var = variance(nbins, test_mean, pp, xx);
+  double test_shannon = shannon_entropy(nbins, pp);
+  double test_renyi = renyi_entropy(nbins, pp);
+  double test_min = min_entropy(nbins, pp);
+  printf("test_mean: %8.4lf, test_variance: %8.4lf, test_shannon: %8.4lf, test_renyi: %8.4lf, test_min: %8.4lf\n",
+      test_mean, test_var, test_shannon, test_renyi, test_min);
+
+#endif
+
   double shannon_entropy = 0.0;
   double renyi_entropy = 0.0;
   double min_entropy = 0.0;
