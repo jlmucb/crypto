@@ -208,6 +208,33 @@ double variance(int n, double mean, double* p, double* x) {
   return sum;
 }
 
+bool calculate_marginal_probability(int n, int m, int var_num, double* p_xy, double* p) {
+  // First var
+  //    p[i] = sum_j^m p_xy[index(n,m,i,j)], i = 0, 1, ..., n - 1
+  // Second var
+  //    p[i] = sum_j^n p_xy[index(n,m,j,i)], i = 0, 1, ..., m - 1
+
+  double sum;
+  if (var_num == 0) {
+    for (int i = 0; i < n; i++) {
+      sum = 0.0;
+      for (int j = 0; j < m; j++) {
+        sum += p_xy[index(n, m, i, j)];
+      }
+      p[i] = sum;
+    }
+  } else {
+    for (int i = 0; i < m; i++) {
+      sum = 0.0;
+      for (int j = 0; j < n; j++) {
+        sum += p_xy[index(n, m, j, i)];
+      }
+      p[i] = sum;
+    }
+  }
+  return true;
+}
+
 double covariance(int n, int m, double mean_x, double* x, double mean_y, double* y, double* p_xy) {
   double sum = 0.0;
   double t1, t2;

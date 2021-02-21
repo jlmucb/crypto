@@ -41,17 +41,6 @@ bool bin_int32_data(int num_samples, int16_t* data, int nbins, uint32_t* bins);
 bool write_data(string file_name, int num_samples, uint32_t* data);
 bool read_data(string file_name, int* num_samples, uint32_t** data);
 
-bool write_graph_data(string file_name, int nbins, uint32_t* bins);
-
-double calculate_uint32_mean(int num_samples, uint32_t* data);
-double calculate_uint32_variance(int num_samples, uint32_t* data, double mean);
-double calculate_int32_mean(int num_samples, int16_t* data);
-double calculate_int32_variance(int num_samples, int16_t* data, double mean);
-bool calculate_second_differences(int num_samples, uint32_t* old_data, int16_t* new_data);
-
-bool calculate_bin_entropies(int num_samples, int nbins, uint32_t* bins, double* shannon_entropy,
-  double* renyi_entropy, double* min_entropy);
-
 bool bits_to_byte(int n_bit_bytes, byte* all_bits_in_byte,
                   int n_one_bit_per_byte, byte* one_bit_per_byte);
 bool byte_to_bits(int n_one_bit_per_byte, byte* one_bit_per_byte,
@@ -66,10 +55,22 @@ double min_entropy(int n, double* p);
 inline int index(int n, int m, int i, int j) {
   return m * i + j;
 }
+bool calculate_marginal_probability(int n, int m, int var_num, double* p_xy, double* p);
 double covariance(int n, int m, double mean_x, double* x,
                  double mean_y, double* y, double* p_xy);
 double correlate(int n, int m, double mean_x, double sigma_x, double* x,
                  double mean_y, double sigma_y, double* y, double* p_xy);
+
+bool write_graph_data(string file_name, int nbins, uint32_t* bins);
+
+double calculate_uint32_mean(int num_samples, uint32_t* data);
+double calculate_uint32_variance(int num_samples, uint32_t* data, double mean);
+double calculate_int32_mean(int num_samples, int16_t* data);
+double calculate_int32_variance(int num_samples, int16_t* data, double mean);
+bool calculate_second_differences(int num_samples, uint32_t* old_data, int16_t* new_data);
+
+bool calculate_bin_entropies(int num_samples, int nbins, uint32_t* bins, double* shannon_entropy,
+  double* renyi_entropy, double* min_entropy);
 
 double most_common_value_entropy(int largest_possible_sample,
           int num_samples, byte* samples);
