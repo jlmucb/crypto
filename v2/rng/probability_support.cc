@@ -94,6 +94,13 @@ void print_uint32_array(int n, uint32_t* data) {
      printf("\n");
 }
 
+bool uint32_to_bytes(int n, uint32_t* in, byte* out) {
+  for (int i = 0; i < n; i++) {
+    out[i] = (byte) (in[i] & 0xff);
+  }
+  return true;
+}
+
 bool write_data(string file_name, int num_samples, uint32_t* data) {
   int fd = creat(file_name.c_str(), S_IRWXU | S_IRWXG);
   if (fd < 0) {

@@ -41,6 +41,8 @@ bool bin_int32_data(int num_samples, int16_t* data, int nbins, uint32_t* bins);
 bool write_data(string file_name, int num_samples, uint32_t* data);
 bool read_data(string file_name, int* num_samples, uint32_t** data);
 
+bool uint32_to_bytes(int n, uint32_t* in, byte* out);
+
 bool bits_to_byte(int n_bit_bytes, byte* all_bits_in_byte,
                   int n_one_bit_per_byte, byte* one_bit_per_byte);
 bool byte_to_bits(int n_one_bit_per_byte, byte* one_bit_per_byte,
