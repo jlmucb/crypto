@@ -68,7 +68,27 @@ DEFINE_bool(print_all, false, "print flag");
   bool compression_test(int n, byte* s, int* compressed);
 */
 
+bool test_sampling() {
+  return true;
+}
+
+bool test_graph() {
+  return true;
+}
+
+bool test_io() {
+  return true;
+}
+
+bool test_conversion() {
+  return true;
+}
+
 bool test_bins() {
+  return true;
+}
+
+bool test_statistical_tests() {
   return true;
 }
 
@@ -152,12 +172,26 @@ bool test_probability_calculations() {
   return true;
 }
 
-TEST (test_bins, test_bins) {
+TEST(sampling, test_sampling) {
+  EXPECT_TRUE(test_sampling());
+}
+TEST(graph, test_graph) {
+  EXPECT_TRUE(test_graph());
+}
+TEST(io, test_io) {
+  EXPECT_TRUE(test_io());
+}
+TEST(conversion, test_conversion) {
+  EXPECT_TRUE(test_conversion());
+}
+TEST (bins, test_bins) {
   EXPECT_TRUE(test_bins());
 }
-
 TEST (probability, test_probability_calculations) {
   EXPECT_TRUE(test_probability_calculations());
+}
+TEST(statistics, test_statistical_tests) {
+  EXPECT_TRUE(test_statistical_tests());
 }
 
 // entropy series generates time series differences
