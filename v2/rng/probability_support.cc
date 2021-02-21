@@ -70,8 +70,72 @@ void print_uint32_array(int n, uint32_t* data) {
      printf("\n");
 }
 
+double expected_value(int n, double* p, double* x) {
+  double sum = 0.0;
+
+  for (int i = 0; i < n; i++) {
+    sum += p[i] * x[i];
+  }
+  return sum;
+}
+
+double variance(int n, double mean, double* p, double* x) {
+  double sum = 0.0;
+  double t;
+
+  for (int i = 0; i < n; i++) {
+    t = x[i] - mean;
+    sum += p[i] * t * t;
+  }
+  return sum;
+}
+
+double correlate(int n, int m, double mean_x, double* x, double mean_y, double* y, double* p_xy) {
+  double sum = 0.0;
+  double t1, t2;
+
+  for (int i = 0; i < n; i++) {
+    t1 = x[i] - mean_x;
+    for (int j = 0; i < m; i++) {
+      t2 = y[i] - mean_y;
+      sum += p_xy[index(n, m, i, j)] * t1 * t2;
+    }
+  }
+  return sum;
+}
+
 double lg(double x) {
   return log(x) / log (2.0);
+}
+
+double shannon_entropy(int n, double* p) {
+  double sum = 0.0;
+
+  for (int i = 0; i < n; i++) {
+    sum += p[i] * lg(p[i]);
+  }
+  return sum;
+}
+
+double renyi_entropy(int n, double* p) {
+  double sum = 0.0;
+
+  for (int i = 0; i < n; i++) {
+    sum += p[i] * p[i];
+  }
+  return lg(sum);
+}
+
+double min_entropy(int n, double* p) {
+  int max = 0.0;
+
+  for (int i = 0; i < n; i++) {
+    if (p[i] > max)
+      max = p[i];
+  }
+  if (max <= 0.0)
+    return 0.0;
+  return lg(max);
 }
 
 bool bits_to_byte(int n_bit_bytes, byte* all_bits_in_byte,
@@ -151,7 +215,7 @@ bool write_graph_data(string file_name, int nbins, uint32_t* bins) {
   return true;
 }
 
-double calculate_mean(int num_samples, uint32_t* data) {
+double calculate_bin_mean(int num_samples, uint32_t* data) {
   uint64_t sum = 0ULL;
 
   for (int i = 0; i < num_samples; i++) {
@@ -161,7 +225,7 @@ double calculate_mean(int num_samples, uint32_t* data) {
   return mean;
 }
 
-double calculate_variance(int num_samples, uint32_t* data, double mean) {
+double calculate_bin_variance(int num_samples, uint32_t* data, double mean) {
   double var = 0.0;
   double sum = 0;
   double t = 0.0;
@@ -361,7 +425,7 @@ double most_common_value_entropy(int largest_possible_sample, int num_samples, b
   return -lg(p_u);
 }
 
-double markov_sequence_probability(int seq_len, byte* seq,
+double byte_markov_sequence_probability(int seq_len, byte* seq,
   double p_0, double p_1,
   double p_00, double p_01, double p_10, double p_11) {
   double p = 0.0;
@@ -386,7 +450,7 @@ double markov_sequence_probability(int seq_len, byte* seq,
 }
 
 // samples are bytes containing 1 bit
-double markov_entropy(int num_samples, byte* samples) {
+double byte_markov_entropy(int num_samples, byte* samples) {
   int n_zero = 0;
   int n_one= 0;
   int n_00 = 0;
@@ -449,7 +513,7 @@ double markov_entropy(int num_samples, byte* samples) {
       printf("bad conversion\n");
       return -1;
     }
-    probs[(int) b] = markov_sequence_probability(seq_len, seq, p_0, p_1,
+    probs[(int) b] = byte_markov_sequence_probability(seq_len, seq, p_0, p_1,
         p_00, p_01, p_10, p_11);
   }
 
@@ -467,7 +531,7 @@ double markov_entropy(int num_samples, byte* samples) {
 }
 
 // samples are  integers 0, 1, ..., largest_possible_sample
-double shannon_entropy(int largest_possible_sample, int num_samples, byte* samples) {
+double byte_shannon_entropy(int largest_possible_sample, int num_samples, byte* samples) {
   int sample_index = largest_possible_sample + 1;
   double v[sample_index];
   for (int i = 0; i < sample_index; i++)

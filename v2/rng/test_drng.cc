@@ -100,7 +100,7 @@ bool test_markov() {
       printf("bad conversion\n");
       return false;
     }
-    probs[(int) b] = markov_sequence_probability(seq_len, seq, p_0, p_1,
+    probs[(int) b] = byte_markov_sequence_probability(seq_len, seq, p_0, p_1,
         p_00, p_01, p_10, p_11);
   }
 
@@ -127,7 +127,7 @@ bool test_markov() {
       printf("bad conversion\n");
       return false;
     }
-    probs[(int) b] = markov_sequence_probability(seq_len, seq, p_0, p_1,
+    probs[(int) b] = byte_markov_sequence_probability(seq_len, seq, p_0, p_1,
         p_00, p_01, p_10, p_11);
   }
 
@@ -159,12 +159,12 @@ bool test_entropy() {
   print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
   printf("\n");
 
-  double s_ent = shannon_entropy(255,
+  double s_ent = byte_shannon_entropy(255,
         num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
   printf("Shannon entropy: %lf\n", s_ent);
   double min_ent = most_common_value_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
   printf("Min entropy: %lf\n", min_ent);
-  double mark_ent = markov_entropy(num_bits_to_test, one_bit_per_byte);
+  double mark_ent = byte_markov_entropy(num_bits_to_test, one_bit_per_byte);
   printf("Markov entropy: %lf\n", mark_ent);
   printf("\n");
 
@@ -179,11 +179,11 @@ bool test_entropy() {
   print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
   printf("\n");
 
-  s_ent = shannon_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
+  s_ent = byte_shannon_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
   printf("Shannon entropy: %lf\n", s_ent);
   min_ent = most_common_value_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
   printf("Min entropy: %lf\n", min_ent);
-  mark_ent = markov_entropy(num_bits_to_test, one_bit_per_byte);
+  mark_ent = byte_markov_entropy(num_bits_to_test, one_bit_per_byte);
   printf("Markov entropy: %lf\n", mark_ent);
   printf("\n");
 

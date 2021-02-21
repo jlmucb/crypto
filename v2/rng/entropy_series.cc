@@ -72,8 +72,8 @@ int main(int an, char** av) {
     return 1;
   }
 
-  double mean = calculate_mean(num_samples, diffs);
-  double var = calculate_variance(num_samples, diffs, mean);
+  double mean = calculate_bin_mean(num_samples, diffs);
+  double var = calculate_bin_variance(num_samples, diffs, mean);
   double sigma = sqrt(var);
   printf("mean: %8.3lf, variance: %8.3lf, sigma: %8.3lf\n", mean, var, sigma);
 
@@ -93,7 +93,7 @@ int main(int an, char** av) {
   double shannon_entropy = 0.0;
   double renyi_entropy = 0.0;
   double min_entropy = 0.0;
-  if (!calculate_entropies(num_samples, nbins, bins, &shannon_entropy,
+  if (!calculate_bin_entropies(num_samples, nbins, bins, &shannon_entropy,
         &renyi_entropy, &min_entropy)) {
     printf("Can't calculate entropies\n");
     return 1;
@@ -140,7 +140,7 @@ int main(int an, char** av) {
     signed_bins[diffs2[i] + (1<<num_bits) - 1]++;
   }
   double second_shannon_entropy, second_renyi_entropy, second_min_entropy;
-  if (!calculate_entropies(num_samples - 1, 2 * nbins, signed_bins, &second_shannon_entropy,
+  if (!calculate_bin_entropies(num_samples - 1, 2 * nbins, signed_bins, &second_shannon_entropy,
           &second_renyi_entropy, &second_min_entropy)) {
     printf("Can't calculate second entropies\n");
     return 1;
@@ -175,7 +175,7 @@ int main(int an, char** av) {
       double conditional_shannon_entropy = 0.0;
       double conditional_renyi_entropy = 0.0;
       double conditional_min_entropy = 0.0;
-      if (!calculate_entropies(num_conditional_samples, nbins, cond_bins, &conditional_shannon_entropy,
+      if (!calculate_bin_entropies(num_conditional_samples, nbins, cond_bins, &conditional_shannon_entropy,
             &conditional_renyi_entropy, &conditional_min_entropy)) {
         printf("Can't calculate entropies\n");
         return 1;

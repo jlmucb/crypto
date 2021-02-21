@@ -26,11 +26,11 @@ void print_int16_array(int n, int16_t* data);
 bool collect_difference_samples(int num_samples, uint32_t* data,
             uint32_t interval, int num_bits, int divisor);
 bool write_graph_data(string file_name, int nbins, uint32_t* bins);
-double calculate_mean(int num_samples, uint32_t* data);
-double calculate_variance(int num_samples, uint32_t* data, double mean);
+double calculate_bin_mean(int num_samples, uint32_t* data);
+double calculate_bin_variance(int num_samples, uint32_t* data, double mean);
 bool bin_conditional_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins, uint32_t base_bin);
 bool bin_raw_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins);
-bool calculate_entropies(int num_samples, int nbins, uint32_t* bins, double* shannon_entropy,
+bool calculate_bin_entropies(int num_samples, int nbins, uint32_t* bins, double* shannon_entropy,
   double* renyi_entropy, double* min_entropy);
 bool write_data(string file_name, int num_samples, uint32_t* data);
 bool read_data(string file_name, int* num_samples, uint32_t** data);
@@ -47,10 +47,10 @@ bool byte_to_bits(int n_one_bit_per_byte, byte* one_bit_per_byte,
                   int n_bit_bytes, byte* all_bits_in_byte);
 double most_common_value_entropy(int largest_possible_sample,
           int num_samples, byte* samples);
-double markov_sequence_probability(int seq_len, byte* seq,
+double byte_markov_sequence_probability(int seq_len, byte* seq,
   double p_0, double p_1, double p_00, double p_01, double p_10, double p_11);
-double markov_entropy(int num_samples, byte* samples);
-double shannon_entropy(int largest_possible_sample,
+double byte_markov_entropy(int num_samples, byte* samples);
+double byte_shannon_entropy(int largest_possible_sample,
         int num_samples, byte* samples);
 bool real_dft(int n, double* data, double* transform);
 bool runs_test(int n, byte* s, int* number_of_runs, double* mu, double* sigma);
@@ -59,5 +59,15 @@ double excursion_test(int n, byte* s);
 bool chi_squared_test(int n, byte* x, int num_values, double* p, double* chi_value);
 bool periodicity_test(int n, byte* s, int lag, int* result);
 bool compression_test(int n, byte* s, int* compressed);
+
+inline int index(int n, int m, int i, int j) {
+  return m * i + j;
+}
+double expected_value(int n, double* p, double* x);
+double variance(int n, double mean, double* p, double* x);
+double correlate(int n, int m, double mean_x, double* x, double mean_y, double* y, double* p_xy);
+double shannon_entropy(int n, double* p);
+double renyi_entropy(int n, double* p);
+double min_entropy(int n, double* p);
 #endif
 
