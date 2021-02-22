@@ -318,33 +318,49 @@ double min_entropy(int n, double* p) {
   return -lg(max);
 }
 
-bool bits_to_byte(int n_bit_bytes, byte* all_bits_in_byte,
-                  int n_one_bit_per_byte, byte* one_bit_per_byte) {
-  if ((NBITSINBYTE * n_bit_bytes) > n_one_bit_per_byte)
+void print_bits(int n, byte* x) {
+  int i;
+
+  for (i = 0; i < n; i++) {
+    printf("%1x", x[i]);
+    if ((i%8) == 7)
+      printf(" ");
+    if ((i%64) == 63)
+      printf("\n");
+  }
+  if ((i%64) != 0)
+     printf("\n");
+}
+
+bool bits_to_byte(int num_bits, byte* in,
+                  int num_bytes, byte* out) {
+  if (num_bytes < ((num_bits + NBITSINBYTE - 1) / NBITSINBYTE))
     return false;
+
   byte b;
-  for (int i = 0; i < n_bit_bytes; i++) {
-    b = all_bits_in_byte[i];
-    for (int j = 0; j < NBITSINBYTE; j++) {
-      one_bit_per_byte[NBITSINBYTE * i + j] = b & 0x1;
-      b >>= 1;
+  for (int i = 0; i < num_bits; i += NBITSINBYTE) {
+    b = 0;
+    for (int j = (NBITSINBYTE - 1); j >= 0; j--) {
+      b = (b << 1) | in[i + j];
     }
+    out[i / NBITSINBYTE] = b;
   }
   return true;
 }
 
-bool byte_to_bits(int n_one_bit_per_byte, byte* one_bit_per_byte,
-                  int n_bit_bytes, byte* all_bits_in_byte) {
-  if (((n_one_bit_per_byte + NBITSINBYTE - 1) / NBITSINBYTE) > n_one_bit_per_byte)
+// take array of bytes and turn it into an array of one bit/byte
+bool byte_to_bits(int num_bytes, byte* in,
+                  int num_bits, byte* out) {
+  if (num_bits < ((num_bytes + NBITSINBYTE - 1) / NBITSINBYTE) * NBITSINBYTE)
     return false;
+
   byte b;
-  for (int i = 0; i < n_one_bit_per_byte; i+= NBITSINBYTE) {
-    b = 0;
+  for (int i = 0; i < num_bytes; i++) {
+    b = in[i];
     for (int j = 0; j < NBITSINBYTE; j++) {
-      b <<= 1;
-      b |= one_bit_per_byte[NBITSINBYTE * i + j];
+      out[NBITSINBYTE * i + j] = (b & 0x01);
+      b =  (b >> 1);
     }
-    all_bits_in_byte[i / NBITSINBYTE] = b;
   }
   return true;
 }
@@ -623,7 +639,7 @@ double byte_markov_entropy(int num_samples, byte* samples) {
   double probs[num_seq];
 
   for (uint32_t b = 0; b < num_seq; b++) {
-    if (!bits_to_byte(seq_len / NBITSINBYTE, (byte*)&b, seq_len, seq)) {
+    if (!byte_to_bits(seq_len / NBITSINBYTE, (byte*)&b, seq_len, seq)) {
       printf("bad conversion\n");
       return -1;
     }

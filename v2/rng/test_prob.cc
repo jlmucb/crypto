@@ -86,10 +86,38 @@ bool test_graph() {
 }
 
 bool test_conversion() {
-  // bool bits_to_byte(int n_bit_bytes, byte* all_bits_in_byte,
-  //                   int n_one_bit_per_byte, byte* one_bit_per_byte);
-  // bool byte_to_bits(int n_one_bit_per_byte, byte* one_bit_per_byte,
-  //                   int n_bit_bytes, byte* all_bits_in_byte);
+  int num_bytes = 256;
+  int num_bits = NBITSINBYTE * num_bytes;
+  byte bytes_in[num_bytes];
+  byte bits[num_bits];
+  byte bytes_out[num_bytes];
+
+  zero_byte_array(num_bytes, bytes_in);
+  zero_byte_array(num_bytes, bytes_out);
+  zero_byte_array(num_bits, bits);
+
+  for (int i = 0; i < num_bytes; i++)
+    bytes_in[i] = (i & 0xff);
+
+  if (!byte_to_bits(num_bytes, bytes_in, num_bits, bits)) {
+    return false;
+  }
+  if (!bits_to_byte(num_bits, bits, num_bytes, bytes_out)) {
+    return false;
+  }
+
+  if (FLAGS_print_all) {
+    printf("bytes in:\n");
+    print_bytes(num_bytes, bytes_in);
+    printf("\nbits:\n");
+    print_bits(num_bits, bits);
+    printf("\nbytes out:\n");
+    print_bytes(num_bytes, bytes_out);
+    printf("\n");
+  }
+  if (memcmp(bytes_in, bytes_out, num_bytes) != 0)
+    return false;
+
   return true;
 }
 

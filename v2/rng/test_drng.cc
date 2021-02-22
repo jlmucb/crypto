@@ -96,7 +96,7 @@ bool test_markov() {
   double total_prob = 0.0;
 
   for (byte b = 0; b <= 15; b++) {
-    if (!bits_to_byte(1, &b, 8, seq)) {
+    if (!byte_to_bits(1, &b, 8, seq)) {
       printf("bad conversion\n");
       return false;
     }
@@ -123,7 +123,7 @@ bool test_markov() {
   p_10 = .25;
   p_11 = .75;
   for (byte b = 0; b <= 15; b++) {
-    if (!bits_to_byte(1, &b, 8, seq)) {
+    if (!byte_to_bits(1, &b, 8, seq)) {
       printf("bad conversion\n");
       return false;
     }
@@ -199,8 +199,7 @@ bool test_runs() {
   memset(all_bits_in_byte, 0, num_bits_to_test / NBITSINBYTE);
 
   crypto_get_random_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  if (!bits_to_byte(num_bits_to_test / NBITSINBYTE, all_bits_in_byte,
-                  num_bits_to_test, one_bit_per_byte)) {
+  if (!byte_to_bits(num_bits_to_test / NBITSINBYTE, all_bits_in_byte, num_bits_to_test, one_bit_per_byte)) {
     printf("bad conversion\n");
     return false;
   }
@@ -324,8 +323,7 @@ bool test_chi_squared_test() {
   memset(all_bits_in_byte, 0, num_bits_to_test / NBITSINBYTE);
 
   crypto_get_random_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  if (!bits_to_byte(num_bits_to_test / NBITSINBYTE, all_bits_in_byte,
-                  num_bits_to_test, one_bit_per_byte)) {
+  if (!byte_to_bits(num_bits_to_test / NBITSINBYTE, all_bits_in_byte, num_bits_to_test, one_bit_per_byte)) {
     printf("bad conversion\n");
     return false;
   }
