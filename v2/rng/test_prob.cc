@@ -121,28 +121,75 @@ bool test_bins() {
   }
   double mean = expected_value(nbins, p, x);
   double var = variance(nbins, mean, p, x);
+  double shannon_ent = shannon_entropy(nbins, p);
   if (FLAGS_print_all) {
-    printf("mean: %8.4lf, variance: %8.4lf\n", mean, var);
+    printf("mean: %8.4lf, variance: %8.4lf, entropy: %8.4lf\n", mean, var, shannon_ent);
   }
   return true;
 }
 
 bool test_statistical_tests() {
+  int num_samples = 1000;
+  int interval = 100;
+  int divisor = 2;
+  int num_bits = 6;
+  uint32_t data_uint32[num_samples];
+  byte data_byte[num_samples];
 
-  // double most_common_value_entropy(int largest_possible_sample,
-  //           int num_samples, byte* samples);
+  zero_uint32_array(num_samples, data_uint32);
+  zero_byte_array(num_samples, data_byte);
+  if (!collect_difference_samples(num_samples, data_uint32, interval, num_bits, divisor)) {
+    return false;
+  }
+  if (!uint32_to_bytes(num_samples, data_uint32, data_byte)) {
+    printf("Can't convert uint32 to bytes\n");
+    return false;
+  }
+  double ent = byte_shannon_entropy(63, num_samples, data_byte);
+  if (FLAGS_print_all) {
+    printf("Byte entropy: %8.4lf\n", ent);
+  }
+
+
+  double mcv_ent = most_common_value_entropy(64, num_samples, data_byte);
+  printf("most common ent: %8.4lf\n", mcv_ent);
+
+  int num_runs = 0;
+  double mu = 0.0;
+  double sig = 0.0;
+  if (!runs_test(num_samples, data_byte, &num_runs, &mu, &sig)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("runs test, mu: %8.4lf, sig: %8.4lf\n", mu, sig);
+  }
+  double markov_ent = byte_markov_entropy(num_samples, data_byte);
+  if (FLAGS_print_all) {
+    printf("markov_ent: %8.4lf, sig: %8.4lf\n", mu, sig);
+  }
+  int result = 0;
+  int lag = 5;
+  if (!periodicity_test(num_samples, data_byte, lag, &result)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("Periodicity result: %d\n", result);
+  }
+
+#if 0
+  int compressed = 0;
+  if (!compression_test(num_samples, data_byte, &compressed)) {
+    return false;
+  }
+  printf("Compressed size: %d\n", compressed);
+#endif
+  
   // double byte_markov_sequence_probability(int seq_len, byte* seq,
-  //   double p_0, double p_1, double p_00, double p_01, double p_10, double p_11);
-  // double byte_markov_entropy(int num_samples, byte* samples);
-  // double byte_shannon_entropy(int largest_possible_sample,
-  //         int num_samples, byte* samples);
+  //        double p_0, double p_1, double p_00, double p_01, double p_10, double p_11);
   // bool real_dft(int n, double* data, double* transform);
-  // bool runs_test(int n, byte* s, int* number_of_runs, double* mu, double* sigma);
   // bool berlekamp_massy(int n, byte* s, int* L);
   // double excursion_test(int n, byte* s);
   // bool chi_squared_test(int n, byte* x, int num_values, double* p, double* chi_value);
-  // bool periodicity_test(int n, byte* s, int lag, int* result);
-  // bool compression_test(int n, byte* s, int* compressed);
   return true;
 }
 
