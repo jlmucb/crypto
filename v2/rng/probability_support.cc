@@ -867,7 +867,7 @@ bool periodicity_test(int n, byte* s, int lag, int* result) {
 extern uint32_t lz77_compress (uint8_t *uncompressed_text, uint32_t uncompressed_size,
          uint8_t *compressed_text);
 bool compression_test(int n, byte* s, int* compressed) {
-  byte compressed_bytes[n];
+  byte compressed_bytes[2 * n];
   *compressed = lz77_compress (s, n, compressed_bytes);
   return true;
 }

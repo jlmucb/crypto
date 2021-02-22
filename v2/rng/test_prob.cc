@@ -176,13 +176,11 @@ bool test_statistical_tests() {
     printf("Periodicity result: %d\n", result);
   }
 
-#if 0
-  int compressed = 0;
-  if (!compression_test(num_samples, data_byte, &compressed)) {
+  int size = 0;
+  if (!compression_test(num_samples, data_byte, &size)) {
     return false;
   }
-  printf("Compressed size: %d\n", compressed);
-#endif
+  printf("Original size: %d, compressed size: %d\n", num_samples, size);
   
   // double byte_markov_sequence_probability(int seq_len, byte* seq,
   //        double p_0, double p_1, double p_00, double p_01, double p_10, double p_11);
