@@ -805,9 +805,9 @@ bool chi_squared_test(int n, byte* x, int num_values, double* p, double* chi_val
   }
 
   double chi_squared = 0.0;
-
+  double x_n = (double)n;
   for (int i = 0; i < num_values; i++) {
-      chi_squared += (((double)count[(int)x[i]]) - ((double)n) * p[i]) / (((double)n) * p[i]);
+      chi_squared += (((double)count[(int)x[i]]) - (x_n * p[i])) / (x_n * p[i]);
   }
   *chi_value = chi_squared;
   return true;

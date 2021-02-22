@@ -215,7 +215,24 @@ bool test_statistical_tests() {
   // bool real_dft(int n, double* data, double* transform);
   // bool berlekamp_massy(int n, byte* s, int* L);
   // double excursion_test(int n, byte* s);
-  // bool chi_squared_test(int n, byte* x, int num_values, double* p, double* chi_value);
+
+
+  int n = 256; 
+  byte values[n];
+  int nbins = 16;
+  double p[nbins];
+
+  for (int i = 0; i < n; i++) {
+      values[i] = (byte) (i % 16);
+  }
+  for (int i = 0; i < nbins; i++)
+    p[i] = 1.0 / ((double)nbins);
+  double chi_value = 0.0;
+
+  if (!chi_squared_test(n, values, nbins, p, &chi_value)) {
+    return false;
+  }
+  printf("Chi value: %8.4lf\n", chi_value);
   return true;
 }
 
