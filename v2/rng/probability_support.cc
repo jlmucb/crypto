@@ -34,7 +34,6 @@ void zero_double_array(int l, double* n) {
   for (int i = 0; i < l; i++) {
     n[i] = 0.0;
   }
-
 }
 
 void zero_byte_array(int l, byte* n) {
@@ -171,6 +170,14 @@ bool collect_difference_samples(int num_samples, uint32_t* data,
     data[i] = (uint32_t) difference;
   }
   return true;
+}
+
+int bin_population(int nbins, uint32_t* bins) {
+  int total = 0;
+
+  for (int i = 0; i < nbins; i++)
+    total += bins[i];
+  return total;
 }
 
 bool bin_conditional_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins, uint32_t base_bin) {

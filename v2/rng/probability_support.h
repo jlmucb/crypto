@@ -35,6 +35,8 @@ void print_double_array(int n, double* data);
 
 bool collect_difference_samples(int num_samples, uint32_t* data,
             uint32_t interval, int num_bits, int divisor);
+
+int bin_population(int nbins, uint32_t* bins);
 bool bin_conditional_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins, uint32_t base_bin);
 bool bin_raw_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins);
 bool bin_int32_data(int num_samples, int16_t* data, int nbins, uint32_t* bins);

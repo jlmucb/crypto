@@ -94,9 +94,36 @@ bool test_conversion() {
 }
 
 bool test_bins() {
-  // bool bin_conditional_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins, uint32_t base_bin);
-  // bool bin_raw_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins);
-  // bool bin_int32_data(int num_samples, int16_t* data, int nbins, uint32_t* bins);
+  int num_samples = 100;
+  uint32_t data[num_samples];
+  zero_uint32_array(num_samples, data);
+  int nbins = 64;
+  uint32_t bins[nbins];
+
+  for (int i = 0; i < num_samples; i++) {
+    data[i] = i % 37;
+  }
+
+  if (!bin_raw_data(num_samples, data, nbins, bins)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("bins:\n");
+    print_uint32_array(nbins, bins);
+  }
+
+  int total = bin_population(nbins, bins);
+  double x[nbins];
+  double p[nbins];
+  for (int i = 0; i < nbins; i++) {
+    x[i] = (double) bins[i];
+    p[i] = ((double) bins[i]) / ((double)total);
+  }
+  double mean = expected_value(nbins, p, x);
+  double var = variance(nbins, mean, p, x);
+  if (FLAGS_print_all) {
+    printf("mean: %8.4lf, variance: %8.4lf\n", mean, var);
+  }
   return true;
 }
 
