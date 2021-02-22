@@ -34,6 +34,13 @@ void zero_double_array(int l, double* n) {
   for (int i = 0; i < l; i++) {
     n[i] = 0.0;
   }
+
+}
+
+void zero_byte_array(int l, byte* n) {
+  for (int i = 0; i < l; i++) {
+    n[i] = 0;
+  }
 }
 
 void print_uint64_array(int n, uint64_t* x) {
@@ -102,31 +109,44 @@ bool uint32_to_bytes(int n, uint32_t* in, byte* out) {
 }
 
 bool write_data(string file_name, int num_samples, uint32_t* data) {
-  int fd = creat(file_name.c_str(), S_IRWXU | S_IRWXG);
+  int fd = open(file_name.c_str(), O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   if (fd < 0) {
     printf("Can't create %s\n", file_name.c_str());
     return false;
   }
-  if (write(fd, (const void*)&num_samples, (size_t)sizeof(int)) < 0)
+  if (write(fd, (const void*)&num_samples, (int)sizeof(int)) <= 0) {
+    printf("Can't write size\n");
     return false;
-  if (write(fd, data, (size_t)(num_samples * (int)sizeof(uint32_t))) < 0)
+  }
+  int n = num_samples * ((int)sizeof(uint32_t));
+  if (write(fd, (const void*)data, n) <= 0) {
+    printf("Can't write data\n");
     return false;
+  }
   close(fd);
   return true;
 }
 
 bool read_data(string file_name, int* num_samples, uint32_t** data) {
-  int fd = open(file_name.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
+  int fd = open(file_name.c_str(), O_RDONLY, 0644);
   if (fd < 0) {
-    printf("Can't file_name%s\n", file_name.c_str());
+    printf("Can't open file_name %s\n", file_name.c_str());
     return false;
   }
-  if (((int)read(fd, num_samples, sizeof(int))) < ((int)sizeof(int)))
+  if ((read(fd, (void*)num_samples, sizeof(int))) <= 0) {
+    printf("Can't read size\n");
     return false;
+  }
   *data = new uint32_t[*num_samples];
-  int n = (*num_samples) * (int)sizeof(uint32_t);
-  if ((int)read(fd, *data, n) < n)
+  if (*data == nullptr) {
+    printf("data allocation fails\n");
     return false;
+  }
+  int n = (*num_samples) * (int)sizeof(uint32_t);
+  if (read(fd, (void*)(*data), n) <= 0) {
+    printf("Can't read data\n");
+    return false;
+  }
   close(fd);
   return true;
 }
@@ -326,7 +346,7 @@ bool byte_to_bits(int n_one_bit_per_byte, byte* one_bit_per_byte,
 //    num_bins (int)
 //    num_bins uint32_t values consisting of the size of the bin
 bool write_graph_data(string file_name, int nbins, uint32_t* bins) {
-  int fd = creat(file_name.c_str(), S_IRWXU | S_IRWXG);
+  int fd = open(file_name.c_str(), O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   if (fd < 0) {
     printf("Can't create %s\n", file_name.c_str());
     return false;

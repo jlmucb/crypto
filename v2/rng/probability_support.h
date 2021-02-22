@@ -26,6 +26,7 @@ double lg(double x);
 void zero_uint32_array(int l, uint32_t* n);
 void zero_int16_array(int l, int16_t* n);
 void zero_double_array(int l, double* n);
+void zero_byte_array(int l, byte* n);
 
 void print_hex_uint32_array(int n, uint32_t* data);
 void print_uint32_array(int n, uint32_t* data);

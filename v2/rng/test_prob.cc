@@ -33,20 +33,55 @@ bool test_targeted_sampling() {
 }
 
 bool test_sampling() {
-  // bool collect_difference_samples(int num_samples, uint32_t* data,
-  //             uint32_t interval, int num_bits, int divisor);
+  int num_samples = 1000;
+  int interval = 100;
+  int divisor = 2;
+  int num_bits = 6;
+  uint32_t data_uint32[num_samples];
+  byte data_byte[num_samples];
+
+  zero_uint32_array(num_samples, data_uint32);
+  zero_byte_array(num_samples, data_byte);
+  if (!collect_difference_samples(num_samples, data_uint32, interval, num_bits, divisor)) {
+    return false;
+  }
+  if (!uint32_to_bytes(num_samples, data_uint32, data_byte)) {
+    printf("Can't convert uint32 to bytes\n");
+    return false;
+  }
+  double ent = byte_shannon_entropy(64, num_samples, data_byte);
+  if (FLAGS_print_all) {
+    printf("Byte entropy: %8.4lf\n", ent);
+  }
+  if (ent < 5.0)
+    return false;
+
+  string file_name("test_data");
+  if (!write_data(file_name, num_samples, data_uint32)) {
+    printf("Can't write file\n");
+    return false;
+  }
+  int new_samples = 0;
+  uint32_t* new_data = nullptr;
+  if(!read_data(file_name, &new_samples, &new_data)) {
+    printf("Can't read data\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("Written: %d, read: %d\n", num_samples, new_samples);
+  }
+  if (num_samples != new_samples)
+    return false;
+  if (memcmp((void*)data_uint32, (void*)new_data, new_samples * sizeof(uint32_t)) != 0)
+    return false;
+  delete []new_data;
+  new_data = nullptr;
   return true;
 }
 
 bool test_graph() {
   // bool write_graph_data(string file_name, int nbins, uint32_t* bins);
   // bool write_general_graph_data(string file_name, int n, double* x, double* y);
-  return true;
-}
-
-bool test_io() {
-  // bool write_data(string file_name, int num_samples, uint32_t* data);
-  // bool read_data(string file_name, int* num_samples, uint32_t** data);
   return true;
 }
 
@@ -183,9 +218,6 @@ TEST(sampling, test_sampling) {
 }
 TEST(graph, test_graph) {
   EXPECT_TRUE(test_graph());
-}
-TEST(io, test_io) {
-  EXPECT_TRUE(test_io());
 }
 TEST(conversion, test_conversion) {
   EXPECT_TRUE(test_conversion());
