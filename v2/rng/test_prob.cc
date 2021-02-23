@@ -235,8 +235,9 @@ bool test_statistical_tests() {
   //        double p_0, double p_1, double p_00, double p_01, double p_10, double p_11);
   // bool real_dft(int n, double* data, double* transform);
   // bool berlekamp_massy(int n, byte* s, int* L);
-  // double excursion_test(int n, byte* s);
 
+  double excursion = excursion_test(num_samples, data_byte);
+  printf("Excursion: %8.4lf\n", excursion);
 
   int n = 256; 
   byte values[n];

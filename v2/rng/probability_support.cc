@@ -783,9 +783,7 @@ double excursion_test(int n, byte* x) {
 
   for (int i = 0; i < n; i++) {
     s = sum(i + 1, x);
-    t = s - ((double)(i + 1)) * av;
-    if (t < 0.0)
-      t = -t;
+    t = fabs(s - (((double)(i + 1)) * av));
     // printf("i: %d, n: %d, sum: %7.2lf, av: %7.2lf, t: %7.2lf\n", i, n, s, av, t);
     if (t > largest_excursion)
       largest_excursion = t;
