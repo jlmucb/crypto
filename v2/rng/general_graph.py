@@ -49,7 +49,7 @@ def main(argv=sys.argv):
       y_max = y[t]
   f.close
 
-  sys.stdout.write("\nNumber of points: " + str(num_points) + "\n")
+  sys.stdout.write("\nNumber of points: " + str(num_points) + "[" + str(x_min) + ", " + str(x_max) + ", "  + str(y_min) + ", " + str(y_max)  + "]\n")
 
   for i in range (0, num_points):
     sys.stdout.write("  (" + str(x[i]) + ", " + str(y[i]) + ")\n")

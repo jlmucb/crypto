@@ -95,9 +95,9 @@ bool test_graph() {
   double x[num_points];
   double y[num_points];
 
-  for (int i = 0; i < nbins; i++) {
+  for (int i = 0; i < num_points; i++) {
     x[i] = (double) i;
-    y[i] = (double) (10 * i);
+    y[i] = (double) (i * i);
   }
   if (!write_general_graph_data(file2, num_points, x, y)) {
     return false;
