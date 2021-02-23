@@ -80,8 +80,29 @@ bool test_sampling() {
 }
 
 bool test_graph() {
-  // bool write_graph_data(string file_name, int nbins, uint32_t* bins);
-  // bool write_general_graph_data(string file_name, int n, double* x, double* y);
+  int nbins = 16;
+  uint32_t bins[nbins];
+
+  string file1("test_graph_1");
+  for (int i = 0; i < nbins; i++)
+    bins[i] = 10 * i;
+  if(!write_graph_data(file1, nbins, bins)) {
+    return false;
+  }
+
+  string file2("test_graph_2");
+  int num_points = 32;
+  double x[num_points];
+  double y[num_points];
+
+  for (int i = 0; i < nbins; i++) {
+    x[i] = (double) i;
+    y[i] = (double) (10 * i);
+  }
+  if (!write_general_graph_data(file2, num_points, x, y)) {
+    return false;
+  }
+
   return true;
 }
 
