@@ -251,10 +251,23 @@ bool test_statistical_tests() {
     p[i] = 1.0 / ((double)nbins);
   double chi_value = 0.0;
 
+  int v = 10;
+  double lower = chi_critical_lower(v, 0.10);
+  double upper = chi_critical_upper(v, 0.95);
+  printf("chi upper critical %d, %lf: %8.5lf; chi lower critical %d, %lf: %8.5lf\n",
+        v, .95, upper, v, .10, lower);
+  if (fabs(upper - 18.307) > .001)
+    return false;
+  if (fabs(lower - 4.865) > .001)
+    return false;
+
   if (!chi_squared_test(n, values, nbins, p, &chi_value)) {
     return false;
   }
-  printf("Chi value: %8.4lf\n", chi_value);
+  int nu_sample = nbins - 1;
+  lower = chi_critical_lower(nu_sample, 0.10);
+  upper = chi_critical_upper(nu_sample, 0.95);
+  printf("Chi value: %8.4lf, upper confidence: %8.5lf, lower confidence: %8.5lf\n", chi_value, upper, lower);
   return true;
 }
 

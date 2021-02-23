@@ -94,5 +94,8 @@ double excursion_test(int n, byte* s);
 bool chi_squared_test(int n, byte* x, int num_values, double* p, double* chi_value);
 bool periodicity_test(int n, byte* s, int lag, int* result);
 bool compression_test(int n, byte* s, int* compressed);
+
+double chi_critical_upper(int v, double confidence);
+double chi_critical_lower(int v, double confidence);
 #endif
 
