@@ -401,7 +401,6 @@ bool write_general_graph_data(string file_name, int n, double* x, double* y) {
   }
   close(fd);
   return true;
-  return true;
 }
 
 bool calculate_second_differences(int num_samples, uint32_t* old_data, int16_t* new_data) {
@@ -627,7 +626,7 @@ double byte_markov_entropy(int num_samples, byte* samples) {
     p_11 = 0.0;
   }
 
-#if 1
+#if 0
   printf("P(0): %lf, P(1): %lf\n", p_0, p_1);
   printf("P(0|0): %lf, P(1|0): %lf, P(0|1): %lf, P(1|1): %lf\n", 
     p_00, p_01, p_10, p_11);
@@ -652,7 +651,7 @@ double byte_markov_entropy(int num_samples, byte* samples) {
     return 0.0;
   double p_max = probs[i_max];
   double min_e = -lg(p_max) / ((double) seq_len) ;
-#if 1
+#if 0
   printf("p_max: %lf, min_e: %lf\n", p_max, min_e);
 #endif
   if (min_e > 1.0)
