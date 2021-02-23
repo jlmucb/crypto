@@ -369,7 +369,8 @@ bool byte_to_bits(int num_bytes, byte* in,
 //    num_bins (int)
 //    num_bins uint32_t values consisting of the size of the bin
 bool write_graph_data(string file_name, int nbins, uint32_t* bins) {
-  int fd = open(file_name.c_str(), O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+  int fd = open(file_name.c_str(), O_WRONLY  | O_CREAT | O_TRUNC,
+                S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   if (fd < 0) {
     printf("Can't create %s\n", file_name.c_str());
     return false;
@@ -384,7 +385,7 @@ bool write_graph_data(string file_name, int nbins, uint32_t* bins) {
 
 //  File format:
 //    num_points (int)
-//    num_points pair of doubles consisting of x adn y coordinates
+//    num_points pair of doubles consisting of x and y coordinates
 bool write_general_graph_data(string file_name, int n, double* x, double* y) {
   int fd = creat(file_name.c_str(), S_IRWXU | S_IRWXG);
   if (fd < 0) {
@@ -456,6 +457,7 @@ double calculate_int32_variance(int num_samples, int16_t* data, double mean) {
   }
   return sum / (((double) num_samples) - 1);
 }
+
 bool calculate_bin_entropies(int num_samples, int nbins, uint32_t* bins, double* shannon_entropy,
   double* renyi_entropy, double* min_entropy) {
   double shannon = 0.0;
