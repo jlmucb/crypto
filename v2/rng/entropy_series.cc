@@ -84,6 +84,35 @@ int main(int an, char** av) {
     return 1;
   }
 
+  printf("Chi squared test on differences:\n");
+  byte values[num_samples];
+  zero_byte_array(num_samples, values);
+  if (uint32_to_bytes(num_samples, diffs, values)) {
+
+    // flat distribution
+    double p[num_samples];
+    for (int i = 0; i < nbins; i++)
+      p[i] = 1.0 / ((double)nbins);
+
+    printf("\nchi bins, %8.4lf:\n", p[0]);
+    print_uint32_array(nbins, bins);
+    printf("\n");
+
+    double chi_value = 0.0;
+    if (!chi_squared_test(num_samples, values, nbins, p, &chi_value)) {
+      return false;
+    }
+    int nu_sample = nbins - 1;
+    double confidence = .10;
+    double lower = chi_critical_lower(nu_sample, confidence);
+    if (lower > 0) {
+      if (chi_value > lower)  // reject
+        printf("REJECT at %4.2lf, Chi value: %8.4lf, lower confidence: %8.5lf\n", confidence, chi_value, lower);
+      else
+        printf("ACCEPT at %4.2lf, Chi value: %8.4lf, lower confidence: %8.5lf\n", confidence, chi_value, lower);
+    }
+  }
+
   if (FLAGS_print_bins) {
     printf("\nbins:\n");
     print_uint32_array(nbins, bins);

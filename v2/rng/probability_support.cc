@@ -108,18 +108,19 @@ bool uint32_to_bytes(int n, uint32_t* in, byte* out) {
 }
 
 bool write_data(string file_name, int num_samples, uint32_t* data) {
-  int fd = open(file_name.c_str(), O_WRONLY|O_CREAT|O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+  int fd = open(file_name.c_str(), O_WRONLY | O_CREAT | O_TRUNC,
+                S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   if (fd < 0) {
     printf("Can't create %s\n", file_name.c_str());
     return false;
   }
   if (write(fd, (const void*)&num_samples, (int)sizeof(int)) <= 0) {
-    printf("Can't write size\n");
+    printf("Can't write size in write_data\n");
     return false;
   }
   int n = num_samples * ((int)sizeof(uint32_t));
   if (write(fd, (const void*)data, n) <= 0) {
-    printf("Can't write data\n");
+    printf("Can't write data in write_data\n");
     return false;
   }
   close(fd);
@@ -387,7 +388,8 @@ bool write_graph_data(string file_name, int nbins, uint32_t* bins) {
 //    num_points (int)
 //    num_points pair of doubles consisting of x and y coordinates
 bool write_general_graph_data(string file_name, int n, double* x, double* y) {
-  int fd = creat(file_name.c_str(), S_IRWXU | S_IRWXG);
+  int fd = open(file_name.c_str(), O_WRONLY  | O_CREAT | O_TRUNC,
+                S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   if (fd < 0) {
     printf("Can't create %s\n", file_name.c_str());
     return false;
@@ -476,7 +478,7 @@ bool calculate_bin_entropies(int num_samples, int nbins, uint32_t* bins, double*
   *shannon_entropy = - shannon / log(2.0);
   *renyi_entropy = -log(renyi) / log(2.0);
   *min_entropy = -log(max) / log(2.0);
-  return max;
+  return true;
 }
 
 // IID tests:
@@ -805,8 +807,10 @@ bool chi_squared_test(int n, byte* x, int num_values, double* p, double* chi_val
 
   double chi_squared = 0.0;
   double x_n = (double)n;
+  double t;
   for (int i = 0; i < num_values; i++) {
-      chi_squared += (((double)count[(int)x[i]]) - (x_n * p[i])) / (x_n * p[i]);
+    t = ((double)count[(int)x[i]]) - (x_n * p[i]);
+    chi_squared += (t * t) / (x_n * p[i]);
   }
   *chi_value = chi_squared;
   return true;
