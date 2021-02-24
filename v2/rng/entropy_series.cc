@@ -116,7 +116,7 @@ int main(int an, char** av) {
 
     double chi_value = 0.0;
     if (!chi_squared_test(num_samples, values, nbins, p, &chi_value)) {
-      return false;
+      return 1;
     }
     int nu_sample = nbins - 1;
     double upper = chi_critical_upper(nu_sample, 1.0 - significance_level);
