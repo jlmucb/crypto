@@ -55,6 +55,7 @@ int main(int an, char** av) {
     interval, num_samples, num_ticks_per_sec, num_bits, 1<<num_bits, divisor);
 
   uint32_t diffs[num_samples];
+  zero_uint32_array(num_samples, diffs);
   if (!collect_difference_samples(num_samples, diffs,
             interval, num_bits, divisor)) {
     printf("Can't collect samples\n");
@@ -79,6 +80,7 @@ int main(int an, char** av) {
 
   int nbins = 1<<num_bits;
   uint32_t bins[nbins];
+  zero_uint32_array(nbins, bins);
   if (!bin_raw_data(num_samples, diffs, nbins, bins)) {
     printf("Can't bin data\n");
     return 1;
@@ -160,12 +162,14 @@ int main(int an, char** av) {
 #endif
   printf("\n");
 
+printf("Writing %d bins\n", nbins);
   if (!write_graph_data(FLAGS_graph_file, nbins, bins)) {
     printf("Can't write graph data\n");
     return 1;
   }
 
   int16_t diffs2[num_samples];
+  zero_int16_array(num_samples, diffs2);
   if (!calculate_second_differences(num_samples, diffs, diffs2)) {
     printf("Can't calculate second differences\n");
     return 1;
@@ -177,12 +181,13 @@ int main(int an, char** av) {
     printf("\n");
   }
 
-  double mean2 = calculate_int32_mean(num_samples - 1, diffs2);
-  double var2 = calculate_int32_variance(num_samples - 1, diffs2, mean2);
+  double mean2 = calculate_int16_mean(num_samples - 1, diffs2);
+  double var2 = calculate_int16_variance(num_samples - 1, diffs2, mean2);
   double sigma2 = sqrt(var2);
-  printf("Second differnces, mean: %5.3lf, variance: %6.3lf, sigma: %6.3lf\n", mean2, var2, sigma2);
+  printf("Second differences, mean: %5.3lf, variance: %6.3lf, sigma: %6.3lf\n", mean2, var2, sigma2);
   uint32_t signed_bins[2 * nbins];
   zero_uint32_array(2 * nbins, signed_bins);
+
   for (int i = 0; i < (num_samples - 1); i++) {
     signed_bins[diffs2[i] + (1<<num_bits) - 1]++;
   }

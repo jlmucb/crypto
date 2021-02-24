@@ -16,10 +16,14 @@ def main(argv=sys.argv):
   import struct
   file_length_in_bytes = os.path.getsize(inputfile)
   f = open(inputfile, mode='rb')
+
   bins = []
   num_samples = 0
+
   a = struct.unpack("i",f.read(4))
   nbins = a[0]
+  print("num_bins: ", nbins);
+
   for t in range (0, nbins):
     x = struct.unpack("i",f.read(4))
     bins.append(x[0])
@@ -30,8 +34,12 @@ def main(argv=sys.argv):
   print(num_samples)
 
   rel_bins = []
+  max = 0;
   for i in range (0, len(bins)):
-    rel_bins.append(float(bins[i]/float(num_samples)))
+    t = float(bins[i])/float(num_samples)
+    rel_bins.append(t)
+    if (t > max):
+      max = t
 
   xlist = []
   ylist = []
@@ -42,7 +50,7 @@ def main(argv=sys.argv):
 
   left = -1
   right = nbins
-  top = .25
+  top = 2 * max
   bottom = 0
 
   title= 'frequency bins, ' + str(num_samples) + ' samples'

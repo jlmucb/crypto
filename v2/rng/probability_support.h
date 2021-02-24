@@ -39,7 +39,7 @@ bool collect_difference_samples(int num_samples, uint32_t* data,
 int bin_population(int nbins, uint32_t* bins);
 bool bin_conditional_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins, uint32_t base_bin);
 bool bin_raw_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins);
-bool bin_int32_data(int num_samples, int16_t* data, int nbins, uint32_t* bins);
+bool bin_int16_data(int num_samples, int16_t* data, int nbins, uint32_t* bins);
 
 bool write_data(string file_name, int num_samples, uint32_t* data);
 bool read_data(string file_name, int* num_samples, uint32_t** data);
@@ -72,8 +72,8 @@ bool write_general_graph_data(string file_name, int n, double* x, double* y);
 
 double calculate_uint32_mean(int num_samples, uint32_t* data);
 double calculate_uint32_variance(int num_samples, uint32_t* data, double mean);
-double calculate_int32_mean(int num_samples, int16_t* data);
-double calculate_int32_variance(int num_samples, int16_t* data, double mean);
+double calculate_int16_mean(int num_samples, int16_t* data);
+double calculate_int16_variance(int num_samples, int16_t* data, double mean);
 bool calculate_second_differences(int num_samples, uint32_t* old_data, int16_t* new_data);
 
 bool calculate_bin_entropies(int num_samples, int nbins, uint32_t* bins, double* shannon_entropy,

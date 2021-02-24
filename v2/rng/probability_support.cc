@@ -438,17 +438,17 @@ double calculate_uint32_variance(int num_samples, uint32_t* data, double mean) {
   return sum / (((double) num_samples) - 1);
 }
 
-double calculate_int32_mean(int num_samples, int16_t* data) {
-  uint64_t sum = 0ULL;
+double calculate_int16_mean(int num_samples, int16_t* data) {
+  int64_t sum = 0ULL;
 
   for (int i = 0; i < num_samples; i++) {
-    sum += (uint64_t) data[i];
+    sum += (int64_t) data[i];
   }
   double mean = ((double)sum) / ((double)num_samples);
   return mean;
 }
 
-double calculate_int32_variance(int num_samples, int16_t* data, double mean) {
+double calculate_int16_variance(int num_samples, int16_t* data, double mean) {
   double var = 0.0;
   double sum = 0;
   double t = 0.0;
