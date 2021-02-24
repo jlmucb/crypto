@@ -115,14 +115,14 @@ int main(int an, char** av) {
       return false;
     }
     int nu_sample = nbins - 1;
-    double confidence = .10;
-    double lower = chi_critical_lower(nu_sample, confidence);
-    if (lower > 0) {
-      if (chi_value > lower)  // reject
-        printf("REJECT at %4.2lf, Chi value: %8.4lf, lower confidence: %8.5lf\n", confidence, chi_value, lower);
-      else
-        printf("ACCEPT at %4.2lf, Chi value: %8.4lf, lower confidence: %8.5lf\n", confidence, chi_value, lower);
-    }
+    double significance_level = .10;
+    double upper = chi_critical_upper(nu_sample, 1.0 - significance_level);
+    if (chi_value > upper)  // reject
+      printf("REJECT at %4.2lf, Chi value: %8.4lf, upper: %8.5lf\n",
+        significance_level, chi_value, upper);
+    else
+      printf("ACCEPT at %4.2lf, Chi value: %8.4lf, upper: %8.5lf\n",
+        significance_level, chi_value, upper);
   }
 
   if (FLAGS_print_bins) {
