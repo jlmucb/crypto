@@ -25,11 +25,12 @@ DEFINE_bool(print_all, false, "print flag");
 DEFINE_bool(debug, false, "debug flag");
 
 bool test_targeted_sampling() {
-  // double calculate_uint32_mean(int num_samples, uint32_t* data);
-  // double calculate_uint32_variance(int num_samples, uint32_t* data, double mean);
-  // double calculate_int16_mean(int num_samples, int16_t* data);
-  // double calculate_int16_variance(int num_samples, int16_t* data, double mean);
-  // bool calculate_second_differences(int num_samples, uint32_t* old_data, int16_t* new_data);
+  // These are particular to entropy_series:
+  //    double calculate_uint32_mean(int num_samples, uint32_t* data);
+  //    double calculate_uint32_variance(int num_samples, uint32_t* data, double mean);
+  //    double calculate_int16_mean(int num_samples, int16_t* data);
+  //    double calculate_int16_variance(int num_samples, int16_t* data, double mean);
+  //    bool calculate_second_differences(int num_samples, uint32_t* old_data, int16_t* new_data);
   return true;
 }
 

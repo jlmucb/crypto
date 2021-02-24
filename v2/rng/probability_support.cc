@@ -1,5 +1,4 @@
 // Copyright 2014-2020 John Manferdelli, All Rights Reserved.
-//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -97,6 +96,20 @@ void print_uint32_array(int n, uint32_t* data) {
       printf("\n");
   }
   if ((i%8) != 0)
+     printf("\n");
+}
+
+void print_bits(int n, byte* x) {
+  int i;
+
+  for (i = 0; i < n; i++) {
+    printf("%1x", x[i]);
+    if ((i%8) == 7)
+      printf(" ");
+    if ((i%64) == 63)
+      printf("\n");
+  }
+  if ((i%64) != 0)
      printf("\n");
 }
 
@@ -319,20 +332,6 @@ double min_entropy(int n, double* p) {
   return -lg(max);
 }
 
-void print_bits(int n, byte* x) {
-  int i;
-
-  for (i = 0; i < n; i++) {
-    printf("%1x", x[i]);
-    if ((i%8) == 7)
-      printf(" ");
-    if ((i%64) == 63)
-      printf("\n");
-  }
-  if ((i%64) != 0)
-     printf("\n");
-}
-
 bool bits_to_byte(int num_bits, byte* in,
                   int num_bytes, byte* out) {
   if (num_bytes < ((num_bits + NBITSINBYTE - 1) / NBITSINBYTE))
@@ -403,81 +402,6 @@ bool write_general_graph_data(string file_name, int n, double* x, double* y) {
       return false;
   }
   close(fd);
-  return true;
-}
-
-bool calculate_second_differences(int num_samples, uint32_t* old_data, int16_t* new_data) {
-  int16_t last = (int32_t)old_data[0];
-
-  for (int i = 1; i < num_samples; i++) {
-    new_data[i - 1] = ((int16_t)old_data[i]) - last;
-    last = ((int16_t)old_data[i]);
-  }
-  return true;
-}
-
-double calculate_uint32_mean(int num_samples, uint32_t* data) {
-  uint64_t sum = 0ULL;
-
-  for (int i = 0; i < num_samples; i++) {
-    sum += (uint64_t) data[i];
-  }
-  double mean = ((double)sum) / ((double)num_samples);
-  return mean;
-}
-
-double calculate_uint32_variance(int num_samples, uint32_t* data, double mean) {
-  double var = 0.0;
-  double sum = 0;
-  double t = 0.0;
-
-  for (int i = 0; i < num_samples; i++) {
-    t = mean - (double)data[i];
-    sum += t * t;
-  }
-  return sum / (((double) num_samples) - 1);
-}
-
-double calculate_int16_mean(int num_samples, int16_t* data) {
-  int64_t sum = 0ULL;
-
-  for (int i = 0; i < num_samples; i++) {
-    sum += (int64_t) data[i];
-  }
-  double mean = ((double)sum) / ((double)num_samples);
-  return mean;
-}
-
-double calculate_int16_variance(int num_samples, int16_t* data, double mean) {
-  double var = 0.0;
-  double sum = 0;
-  double t = 0.0;
-
-  for (int i = 0; i < num_samples; i++) {
-    t = mean - ((double)data[i]);
-    sum += t * t;
-  }
-  return sum / (((double) num_samples) - 1);
-}
-
-bool calculate_bin_entropies(int num_samples, int nbins, uint32_t* bins, double* shannon_entropy,
-  double* renyi_entropy, double* min_entropy) {
-  double shannon = 0.0;
-  double renyi = 0.0;
-  double max = 0.0;
-  double p;
-  for(int i = 0; i < nbins; i++) {
-    if (bins[i] == 0)
-      continue;
-    p = ((double) bins[i]) / ((double) num_samples);
-    shannon += p * log(p);
-    renyi += p * p;
-    if (p > max)
-      max = p;
-  }
-  *shannon_entropy = - shannon / log(2.0);
-  *renyi_entropy = -log(renyi) / log(2.0);
-  *min_entropy = -log(max) / log(2.0);
   return true;
 }
 
@@ -1147,3 +1071,79 @@ double chi_critical_lower(int v, double confidence) {
   return lower_table[index(100, num_levels, v, col)];
 }
 
+// These routines are entropy_series specific
+
+bool calculate_second_differences(int num_samples, uint32_t* old_data, int16_t* new_data) {
+  int16_t last = (int32_t)old_data[0];
+
+  for (int i = 1; i < num_samples; i++) {
+    new_data[i - 1] = ((int16_t)old_data[i]) - last;
+    last = ((int16_t)old_data[i]);
+  }
+  return true;
+}
+
+double calculate_uint32_mean(int num_samples, uint32_t* data) {
+  uint64_t sum = 0ULL;
+
+  for (int i = 0; i < num_samples; i++) {
+    sum += (uint64_t) data[i];
+  }
+  double mean = ((double)sum) / ((double)num_samples);
+  return mean;
+}
+
+double calculate_uint32_variance(int num_samples, uint32_t* data, double mean) {
+  double var = 0.0;
+  double sum = 0;
+  double t = 0.0;
+
+  for (int i = 0; i < num_samples; i++) {
+    t = mean - (double)data[i];
+    sum += t * t;
+  }
+  return sum / (((double) num_samples) - 1);
+}
+
+double calculate_int16_mean(int num_samples, int16_t* data) {
+  int64_t sum = 0ULL;
+
+  for (int i = 0; i < num_samples; i++) {
+    sum += (int64_t) data[i];
+  }
+  double mean = ((double)sum) / ((double)num_samples);
+  return mean;
+}
+
+double calculate_int16_variance(int num_samples, int16_t* data, double mean) {
+  double var = 0.0;
+  double sum = 0;
+  double t = 0.0;
+
+  for (int i = 0; i < num_samples; i++) {
+    t = mean - ((double)data[i]);
+    sum += t * t;
+  }
+  return sum / (((double) num_samples) - 1);
+}
+
+bool calculate_bin_entropies(int num_samples, int nbins, uint32_t* bins, double* shannon_entropy,
+  double* renyi_entropy, double* min_entropy) {
+  double shannon = 0.0;
+  double renyi = 0.0;
+  double max = 0.0;
+  double p;
+  for(int i = 0; i < nbins; i++) {
+    if (bins[i] == 0)
+      continue;
+    p = ((double) bins[i]) / ((double) num_samples);
+    shannon += p * log(p);
+    renyi += p * p;
+    if (p > max)
+      max = p;
+  }
+  *shannon_entropy = - shannon / log(2.0);
+  *renyi_entropy = -log(renyi) / log(2.0);
+  *min_entropy = -log(max) / log(2.0);
+  return true;
+}
