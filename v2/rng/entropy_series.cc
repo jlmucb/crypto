@@ -84,7 +84,7 @@ int main(int an, char** av) {
     return 1;
   }
 
-  printf("Chi squared test on differences:\n");
+  printf("\nChi squared test on differences:\n");
   byte values[num_samples];
   zero_byte_array(num_samples, values);
   if (uint32_to_bytes(num_samples, diffs, values)) {
@@ -94,7 +94,7 @@ int main(int an, char** av) {
     for (int i = 0; i < nbins; i++)
       p[i] = 1.0 / ((double)nbins);
 
-    printf("\nchi bins, %8.4lf:\n", p[0]);
+    printf("chi bins, %8.4lf:\n", p[0]);
     print_uint32_array(nbins, bins);
     printf("\n");
 
@@ -204,7 +204,7 @@ int main(int an, char** av) {
     int num_conditional_samples = 0;
     uint32_t cond_bins[nbins];
 
-    for (base_bin = 0; base_bin < 64; base_bin++) {
+    for (base_bin = 0; base_bin < nbins; base_bin++) {
       num_conditional_samples = 0;
       if (!bin_conditional_data(num_samples, diffs, nbins, cond_bins, base_bin)) {
         printf("Can't get conditional bins\n");
