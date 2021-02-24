@@ -86,6 +86,16 @@ int main(int an, char** av) {
     return 1;
   }
 
+  if (true) {
+    printf("bin frequencies:\n");
+    for (int i = 0; i < nbins; i++) {
+      printf("%5.3lf ", ((double)bins[i]) / ((double)num_samples));
+      if ((i%8) == 7)
+        printf("\n");
+    }
+    printf("\n");
+  }
+
   printf("\nChi squared test on differences:\n");
   byte values[num_samples];
   zero_byte_array(num_samples, values);
