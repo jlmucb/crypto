@@ -22,12 +22,13 @@
 #include "probability_support.h"
 
 DEFINE_bool(print_all, false, "print flag");
+DEFINE_bool(debug, false, "debug flag");
 
 bool test_targeted_sampling() {
   // double calculate_uint32_mean(int num_samples, uint32_t* data);
   // double calculate_uint32_variance(int num_samples, uint32_t* data, double mean);
-  // double calculate_int32_mean(int num_samples, int16_t* data);
-  // double calculate_int32_variance(int num_samples, int16_t* data, double mean);
+  // double calculate_int16_mean(int num_samples, int16_t* data);
+  // double calculate_int16_variance(int num_samples, int16_t* data, double mean);
   // bool calculate_second_differences(int num_samples, uint32_t* old_data, int16_t* new_data);
   return true;
 }
@@ -127,7 +128,7 @@ bool test_conversion() {
     return false;
   }
 
-  if (FLAGS_print_all) {
+  if (FLAGS_debug) {
     printf("bytes in:\n");
     print_bytes(num_bytes, bytes_in);
     printf("\nbits:\n");
@@ -201,7 +202,7 @@ bool test_statistical_tests() {
 
 
   double mcv_ent = most_common_value_entropy(64, num_samples, data_byte);
-  printf("most common ent: %8.4lf\n", mcv_ent);
+  printf("Most common ent: %8.4lf\n", mcv_ent);
 
   int num_runs = 0;
   double mu = 0.0;
@@ -210,11 +211,11 @@ bool test_statistical_tests() {
     return false;
   }
   if (FLAGS_print_all) {
-    printf("runs test, mu: %8.4lf, sig: %8.4lf\n", mu, sig);
+    printf("Runs test, mu: %8.4lf, sig: %8.4lf\n", mu, sig);
   }
   double markov_ent = byte_markov_entropy(num_samples, data_byte);
   if (FLAGS_print_all) {
-    printf("markov_ent: %8.4lf, sig: %8.4lf\n", mu, sig);
+    printf("Markov entropy: %8.4lf\n", markov_ent);
   }
   int result = 0;
   int lag = 5;
@@ -229,7 +230,9 @@ bool test_statistical_tests() {
   if (!compression_test(num_samples, data_byte, &size)) {
     return false;
   }
-  printf("Original size: %d, compressed size: %d\n", num_samples, size);
+  if (FLAGS_print_all) {
+    printf("Compression test, Original size: %d, compressed size: %d\n", num_samples, size);
+  }
   
   // double byte_markov_sequence_probability(int seq_len, byte* seq,
   //        double p_0, double p_1, double p_00, double p_01, double p_10, double p_11);
@@ -237,18 +240,25 @@ bool test_statistical_tests() {
   // bool berlekamp_massy(int n, byte* s, int* L);
 
   double excursion = excursion_test(num_samples, data_byte);
-  printf("Excursion: %8.4lf\n", excursion);
+  if (FLAGS_print_all) {
+    printf("Excursion test: %8.4lf\n", excursion);
+  }
 
   int n = 256; 
   byte values[n];
   int nbins = 16;
   double p[nbins];
 
+  double epsilon = .003;
   for (int i = 0; i < n; i++) {
       values[i] = (byte) (i % 16);
   }
-  for (int i = 0; i < nbins; i++)
-    p[i] = 1.0 / ((double)nbins);
+  for (int i = 0; i < nbins; i++) {
+    if ((i%2) == 0)
+      p[i] = 1.0 / ((double)nbins) + epsilon;
+    else
+      p[i] = 1.0 / ((double)nbins) - epsilon;
+  }
   double chi_value = 0.0;
 
   int v = 10;
@@ -264,11 +274,11 @@ bool test_statistical_tests() {
   }
   int nu_sample = nbins - 1;
   double confidence = 0.10;
-  lower = chi_critical_lower(nu_sample, confidence);
-  if (chi_value > lower)  // reject
-    printf("REJECT at %4.2lf, Chi value: %8.4lf, lower confidence: %8.5lf\n", confidence, chi_value, lower);
+  upper = chi_critical_upper(nu_sample, 1.0 - confidence);
+  if (chi_value > upper)  // reject
+    printf("REJECT at %4.2lf, Chi value: %8.4lf, upper confidence: %8.5lf\n", confidence, chi_value, upper);
   else
-    printf("ACCEPT at %4.2lf, Chi value: %8.4lf, lower confidence: %8.5lf\n", confidence, chi_value, lower);
+    printf("ACCEPT at %4.2lf, Chi value: %8.4lf, upper confidence: %8.5lf\n", confidence, chi_value, upper);
   return true;
 }
 
@@ -318,7 +328,7 @@ bool test_probability_calculations() {
   if (fabs(min_ent - 4.000) > .001)
     return false;
 
-  if (FLAGS_print_all) {
+  if (FLAGS_debug) {
     printf("p_xy:\n");
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < n; j++) {
@@ -327,7 +337,6 @@ bool test_probability_calculations() {
       printf("\n");
     }
   }
-  printf("\n");
 
   double cov = covariance(n, n, mean, x, mean, x, p_xy);
   double rho = correlate(n, n, mean, sqrt(var), x, mean, sqrt(var), x, p_xy);
@@ -360,7 +369,12 @@ bool test_probability_calculations() {
   printf("shannon: %8.4lf, renyi: %8.4lf, min: %8.4lf\n", sh_ent, re_ent, min_ent);
   printf("\n");
 
-  // bool calculate_marginal_probability(int n, int m, int var_num, double* p_xy, double* p)
+  double q[n];
+  if (!calculate_marginal_probability(n, n, 0, p_xy, q)) {
+    return false;
+  }
+  printf("Marginal probabilities:\n");
+  print_double_array(n, q);
 
   return true;
 }

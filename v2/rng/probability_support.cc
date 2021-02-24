@@ -655,9 +655,7 @@ double byte_markov_entropy(int num_samples, byte* samples) {
     return 0.0;
   double p_max = probs[i_max];
   double min_e = -lg(p_max) / ((double) seq_len) ;
-#if 0
-  printf("p_max: %lf, min_e: %lf\n", p_max, min_e);
-#endif
+
   if (min_e > 1.0)
     min_e = 1.0;
   return min_e;
