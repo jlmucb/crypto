@@ -31,6 +31,7 @@ DEFINE_string(num_bits, "6", "number of bits");
 DEFINE_string(output_file, "tick_difference_output.bin", "output file");
 DEFINE_string(graph_file, "graph.bin", "graph output file");
 DEFINE_string(second_graph_file, "graph2.bin", "second graph output file");
+DEFINE_string(significance_level, "0.05", "significance level for chi tests");
 
 // entropy series generates time series differences
 int main(int an, char** av) {
@@ -43,11 +44,14 @@ int main(int an, char** av) {
   int interval, num_samples;
   int num_bits = 6;
   int divisor = 2;
+  double significance_level = 0.05;
 
   sscanf(FLAGS_interval.c_str(), "%d", &interval);
   sscanf(FLAGS_num_samples.c_str(), "%d", &num_samples);
   sscanf(FLAGS_divisor.c_str(), "%d", &divisor);
   sscanf(FLAGS_num_bits.c_str(), "%d", &num_bits);
+  sscanf(FLAGS_significance_level.c_str(), "%lf", &significance_level);
+
   uint64_t num_ticks_per_sec = calibrate_rdtsc();
 
 
@@ -115,7 +119,6 @@ int main(int an, char** av) {
       return false;
     }
     int nu_sample = nbins - 1;
-    double significance_level = .10;
     double upper = chi_critical_upper(nu_sample, 1.0 - significance_level);
     if (chi_value > upper)  // reject
       printf("REJECT at %4.2lf, Chi value: %8.4lf, upper: %8.5lf\n",
