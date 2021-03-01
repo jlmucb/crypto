@@ -47,10 +47,10 @@ bool read_data(string file_name, int* num_samples, uint32_t** data);
 bool uint32_to_bytes(int n, uint32_t* in, byte* out);
 
 void print_bits(int n, byte* x);
-bool bits_to_byte(int n_bit_bytes, byte* all_bits_in_byte, int bits_per_byte,
-                  int n_one_bit_per_byte, byte* one_bit_per_byte);
-bool byte_to_bits(int n_one_bit_per_byte, byte* one_bit_per_byte, int bits_per_byte,
-                  int n_bit_bytes, byte* all_bits_in_byte);
+bool byte_to_bits(int num_bytes, byte* in, int bits_per_byte,
+                  int num_bits, byte* out);
+bool bits_to_byte(int num_bits, byte* in, int bits_per_byte,
+             int num_bytes, byte* out);
 
 double expected_value(int n, double* p, double* x);
 double variance(int n, double mean, double* p, double* x);

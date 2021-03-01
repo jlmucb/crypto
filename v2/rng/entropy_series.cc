@@ -126,6 +126,33 @@ int main(int an, char** av) {
     else
       printf("ACCEPT at %4.2lf, Chi value: %8.4lf, upper: %8.5lf\n",
         significance_level, chi_value, upper);
+
+    // bitstring estimate
+    int num_bit_samples = num_bits * num_samples;
+    byte the_bits[num_bit_samples];
+    if (!byte_to_bits(num_samples, values, num_bits,
+                  num_bit_samples, the_bits)) {
+      printf("Can't convert to bits\n");
+      return false;
+    }
+    int num0 = 0;
+    int num1 = 0;
+    for (int i = 0; i < num_bit_samples; i++) {
+      if (the_bits[i] == 0)
+        num0++;
+      else
+        num1++;
+    }
+    double p_bin[2];
+    p_bin[0] = ((double) num0) / ((double) num_bit_samples);
+    p_bin[1] = ((double) num1) / ((double) num_bit_samples);
+
+    double bit_string_shannon_entropy = shannon_entropy(2, p_bin);
+    double bit_string_renyi_entropy = renyi_entropy(2, p_bin);
+    double bit_string_min_entropy = min_entropy(2, p_bin);
+    printf("\n%7.5lf, %7.5lf\n", p_bin[0], p_bin[1]);
+    printf("Bit sting entropies, shannon: %6.4lf, renyi: %6.4lf, min: %6.4lf\n",
+           bit_string_shannon_entropy, bit_string_renyi_entropy, bit_string_min_entropy);
   }
 
   if (FLAGS_print_bins) {
