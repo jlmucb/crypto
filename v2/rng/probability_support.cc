@@ -23,6 +23,12 @@ void zero_uint32_array(int l, uint32_t* n) {
   }
 }
 
+void zero_int_array(int l, int* n) {
+  for (int i = 0; i < l; i++) {
+    n[i] = 0;
+  }
+}
+
 void zero_int16_array(int l, int16_t* n) {
   for (int i = 0; i < l; i++) {
     n[i] = 0;
@@ -1069,6 +1075,76 @@ double chi_critical_lower(int v, double confidence) {
     return -1.0;
 
   return lower_table[index(100, num_levels, v, col)];
+}
+
+int64_t factorial(int n) {
+  if (n ==0)
+    return 1;
+  int64_t x = 1LL;
+
+  for(int i = 2; i <= n; i++) {
+    x *= (int64_t)i;
+  }
+  return x;
+}
+
+int64_t choose(int n, int k) {
+  int m;
+  if ((n - k) > k)
+    m = n - k;
+  else
+    m = k;
+
+  int64_t num = 1LL;
+  for (int j = (m + 1); j <= n; j++)
+    num *= (int64_t) j;
+  int64_t den = factorial(n - m);
+  
+  return num / den;
+}
+
+byte most_common_byte(int num_samples, byte* values) {
+  int count[256];
+
+  zero_int_array(256, count);
+  for (int i = 0; i < num_samples; i++)
+    count[(int)values[i]]++;
+
+  int max_index = 0;
+  int max_value = 0;
+  for (int i = 0; i < 256; i++) {
+    if (count[i] > max_value) {
+      max_index = i;
+      max_value = count[i];
+    }
+  }
+  return max_index;
+}
+
+// return true if test passes
+// Todo: fix this test
+bool binomial_test(int num_samples, byte* values,
+      byte most_common_value, double p, double alpha) {
+  int count = 0;
+
+  for (int i = 0; i < num_samples; i++) {
+    if (values[i] == most_common_value)
+      count++;
+  }
+
+  const int test_n = 100;
+  double residual_prob = 0.0;
+  for (int i = count; i <= test_n; i++) {
+     residual_prob += ((double)choose(test_n, i)) * 
+                      pow(p, (double)i) *
+                      pow(1 - p, (double)(test_n - i));
+  }
+
+printf("num_samples: %d, p: %8.4lf, most common value: %d, count: %d, residual: %8.5lf\n",
+       num_samples, p, most_common_value, count, residual_prob);
+  if (residual_prob >= alpha)
+    return true;
+  return false;
 }
 
 // These routines are entropy_series specific

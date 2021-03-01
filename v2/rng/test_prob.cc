@@ -201,6 +201,31 @@ bool test_statistical_tests() {
     printf("Byte entropy: %8.4lf\n", ent);
   }
 
+  int64_t t1 = factorial(5);
+  int64_t t2 = choose(10, 5);
+  if (t1 != 120LL)
+    return false;
+  if (t2 != 252LL)
+    return false;
+
+#if 0
+  int tmp_num_samples = 256;
+  byte most_common = most_common_byte(tmp_num_samples, data_byte);
+  double p_test =  1.0 / ((double)(1 << num_bits));
+  double alpha = .01;
+
+  if (FLAGS_print_all) {
+    printf("samples:\n");
+    print_bytes(tmp_num_samples, data_byte);
+    printf("\n");
+  }
+
+  if (binomial_test(tmp_num_samples, data_byte, most_common, p_test, alpha)) {
+    printf("binary test succeeds, mcv: %x\n", most_common);
+  } else {
+    printf("binary test fails, mcv: %x\n", most_common);
+  }
+#endif
 
   double mcv_ent = most_common_value_entropy(64, num_samples, data_byte);
   printf("Most common ent: %8.4lf\n", mcv_ent);

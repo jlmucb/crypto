@@ -27,6 +27,7 @@ void zero_uint32_array(int l, uint32_t* n);
 void zero_int16_array(int l, int16_t* n);
 void zero_double_array(int l, double* n);
 void zero_byte_array(int l, byte* n);
+void zero_int_array(int l, int* n);
 
 void print_hex_uint32_array(int n, uint32_t* data);
 void print_uint32_array(int n, uint32_t* data);
@@ -69,6 +70,13 @@ double correlate(int n, int m, double mean_x, double sigma_x, double* x,
 
 bool write_graph_data(string file_name, int nbins, uint32_t* bins);
 bool write_general_graph_data(string file_name, int n, double* x, double* y);
+
+int64_t factorial(int n);
+int64_t choose(int n, int k);
+byte most_common_byte(int num_samples, byte* values);
+
+bool binomial_test(int num_samples, byte* values,
+      byte most_common_value, double p, double alpha);
 
 double calculate_uint32_mean(int num_samples, uint32_t* data);
 double calculate_uint32_variance(int num_samples, uint32_t* data, double mean);
