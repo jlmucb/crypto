@@ -122,10 +122,10 @@ bool test_conversion() {
   for (int i = 0; i < num_bytes; i++)
     bytes_in[i] = (i & 0xff);
 
-  if (!byte_to_bits(num_bytes, bytes_in, num_bits, bits)) {
+  if (!byte_to_bits(num_bytes, bytes_in, NBITSINBYTE, num_bits, bits)) {
     return false;
   }
-  if (!bits_to_byte(num_bits, bits, num_bytes, bytes_out)) {
+  if (!bits_to_byte(num_bits, bits, NBITSINBYTE, num_bytes, bytes_out)) {
     return false;
   }
 

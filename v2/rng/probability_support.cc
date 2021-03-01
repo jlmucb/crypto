@@ -332,33 +332,33 @@ double min_entropy(int n, double* p) {
   return -lg(max);
 }
 
-bool bits_to_byte(int num_bits, byte* in,
+bool bits_to_byte(int num_bits, byte* in, int bits_per_byte,
                   int num_bytes, byte* out) {
-  if (num_bytes < ((num_bits + NBITSINBYTE - 1) / NBITSINBYTE))
+  if (num_bytes < ((num_bits + bits_per_byte - 1) / bits_per_byte))
     return false;
 
   byte b;
-  for (int i = 0; i < num_bits; i += NBITSINBYTE) {
+  for (int i = 0; i < num_bits; i += bits_per_byte) {
     b = 0;
-    for (int j = (NBITSINBYTE - 1); j >= 0; j--) {
+    for (int j = (bits_per_byte - 1); j >= 0; j--) {
       b = (b << 1) | in[i + j];
     }
-    out[i / NBITSINBYTE] = b;
+    out[i / bits_per_byte] = b;
   }
   return true;
 }
 
 // take array of bytes and turn it into an array of one bit/byte
-bool byte_to_bits(int num_bytes, byte* in,
+bool byte_to_bits(int num_bytes, byte* in, int bits_per_byte,
                   int num_bits, byte* out) {
-  if (num_bits < ((num_bytes + NBITSINBYTE - 1) / NBITSINBYTE) * NBITSINBYTE)
+  if (num_bits < ((num_bytes + bits_per_byte - 1) / bits_per_byte) * bits_per_byte)
     return false;
 
   byte b;
   for (int i = 0; i < num_bytes; i++) {
     b = in[i];
-    for (int j = 0; j < NBITSINBYTE; j++) {
-      out[NBITSINBYTE * i + j] = (b & 0x01);
+    for (int j = 0; j < bits_per_byte; j++) {
+      out[bits_per_byte * i + j] = (b & 0x01);
       b =  (b >> 1);
     }
   }
@@ -566,7 +566,7 @@ double byte_markov_entropy(int num_samples, byte* samples) {
   double probs[num_seq];
 
   for (uint32_t b = 0; b < num_seq; b++) {
-    if (!byte_to_bits(seq_len / NBITSINBYTE, (byte*)&b, seq_len, seq)) {
+    if (!byte_to_bits(seq_len / NBITSINBYTE, (byte*)&b, NBITSINBYTE, seq_len, seq)) {
       printf("bad conversion\n");
       return -1;
     }
