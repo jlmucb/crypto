@@ -133,7 +133,7 @@ int main(int an, char** av) {
     if (!byte_to_bits(num_samples, values, num_bits,
                   num_bit_samples, the_bits)) {
       printf("Can't convert to bits\n");
-      return false;
+      return 1;
     }
     int num0 = 0;
     int num1 = 0;
