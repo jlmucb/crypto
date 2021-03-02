@@ -219,10 +219,11 @@ bool test_statistical_tests() {
     printf("\n");
   }
 
-  if (binomial_test(tmp_num_samples, data_byte, most_common, p_test, alpha)) {
-    printf("binomial test succeeds, mcv: %x\n", most_common);
+  double residual = 0.0;
+  if (binomial_test(tmp_num_samples, data_byte, most_common, p_test, alpha, &residual)) {
+    printf("Binomial test succeeds, mcv: %x, residual: %lf\n", most_common, residual);
   } else {
-    printf("binomial test fails, mcv: %x\n", most_common);
+    printf("Binomial test fails, mcv: %x, residual: %lf\n", most_common, residual);
   }
 
   double mcv_ent = most_common_value_entropy(64, num_samples, data_byte);

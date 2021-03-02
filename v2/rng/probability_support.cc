@@ -571,7 +571,7 @@ double byte_markov_entropy(int num_samples, byte* samples) {
   int num_seq = 1 << seq_len;
   double probs[num_seq];
 
-  for (uint32_t b = 0; b < num_seq; b++) {
+  for (uint32_t b = 0; b < (uint32_t)num_seq; b++) {
     if (!byte_to_bits(seq_len / NBITSINBYTE, (byte*)&b, NBITSINBYTE, seq_len, seq)) {
       printf("bad conversion\n");
       return -1;
@@ -1143,36 +1143,32 @@ byte most_common_byte(int num_samples, byte* values) {
 }
 
 // return true if test passes
-// Todo: fix this test
-bool binomial_test(int n, byte* values,
-      byte most_common_value, double p, double alpha) {
+bool binomial_test(int n, byte* values, byte success_value,
+        double p, double alpha, double* residual) {
   int count = 0;
 
   for (int i = 0; i < n; i++) {
-    if (values[i] == most_common_value)
+    if (values[i] == success_value)
       count++;
   }
 
   double residual_prob = 0.0;
   for (int k = 0; k < count; k++) {
     double t2 = pow(p, (double)k);
-    double t3 = pow(1 - p, (double)(n - k));
+    double t3 = pow(1.0 - p, (double)(n - k));
     if (t2 != 0.0 && t3 != 0.0) {
       double t1 = choose(n, k);
       residual_prob += t1 * t2 * t3;
-#if 0
-printf("n: %d, k: %d, p: %lf, choose: %lf, p^k: %lf, (1-p)^(n-k): %lf\n",
-        n, k, p, t1, t2, t3);
-#endif
     }
   }
   residual_prob = 1.0 - residual_prob;
 
-#if 1
-printf("n: %d, p: %lf, p * n: %8.4lf, most common value: %d, count: %d, residual: %8.5lf, alpha: %lf\n",
-       n, p, p * ((double)n), most_common_value, count, residual_prob, alpha);
+#if 0
+printf("n: %d, p: %lf, p * n: %8.4lf, success value: %d, count: %d, residual: %8.5lf, alpha: %lf\n",
+       n, p, p * ((double)n), success_value, count, residual_prob, alpha);
 #endif
-  if (residual_prob > alpha)
+  *residual = residual_prob;
+  if (*residual > alpha)
     return true;
   return false;
 }

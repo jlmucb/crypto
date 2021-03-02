@@ -77,7 +77,7 @@ double choose(int n, int k);
 byte most_common_byte(int num_samples, byte* values);
 
 bool binomial_test(int num_samples, byte* values,
-      byte most_common_value, double p, double alpha);
+      byte success_value, double p, double alpha, double* residual);
 
 double calculate_uint32_mean(int num_samples, uint32_t* data);
 double calculate_uint32_variance(int num_samples, uint32_t* data, double mean);
