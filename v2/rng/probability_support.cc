@@ -126,6 +126,24 @@ bool uint32_to_bytes(int n, uint32_t* in, byte* out) {
   return true;
 }
 
+// get uniform random value between 0 and n - 1
+int non_binary_random(uint32_t n) {
+  int m = (int)lg((double)n);
+  int num_bytes = (m + NBITSINBYTE - 1) / NBITSINBYTE;
+  int l = (1 << (NBITSINBYTE * num_bytes)) / n;
+  uint32_t throw_away = l * n;
+  int result;
+
+  uint32_t bin_rand = 0;
+  for (;;) {
+    if (crypto_get_random_bytes(num_bytes, (byte*) &bin_rand) < 0)
+      return -1;
+    if (bin_rand < throw_away)
+      return bin_rand % n;
+  }
+  return -1;
+}
+
 bool write_data(string file_name, int num_samples, uint32_t* data) {
   int fd = open(file_name.c_str(), O_WRONLY | O_CREAT | O_TRUNC,
                 S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -215,6 +233,18 @@ bool bin_conditional_data(int num_samples, uint32_t* data, int nbins, uint32_t* 
 }
 
 bool bin_raw_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins) {
+  for(int i = 0; i < nbins; i++) {
+    bins[i]= 0;
+  }
+  for (int i = 0; i < num_samples; i++) {
+    if ((int)data[i] >= nbins)
+      continue;
+    bins[data[i]]++;
+  }
+  return true;
+}
+
+bool bin_raw_byte_data(int num_samples, byte* data, int nbins, byte* bins) {
   for(int i = 0; i < nbins; i++) {
     bins[i]= 0;
   }
@@ -1111,7 +1141,7 @@ double choose(int n, int k) {
     int64_t den = factorial(n - m);
     return ((double)num) / ((double)den);
   }
-  if (k < 20) {
+  if (k < 50) {
     long double x = 1.0;
     for (int i = n; i > (n-k); i--)
       x *= ((double)i);
@@ -1157,16 +1187,31 @@ bool binomial_test(int n, byte* values, byte success_value,
     double t2 = pow(p, (double)k);
     double t3 = pow(1.0 - p, (double)(n - k));
     if (t2 != 0.0 && t3 != 0.0) {
-      double t1 = choose(n, k);
-      residual_prob += t1 * t2 * t3;
+      double t1;
+      if (k < (n-k))
+        t1 = choose(n, k);
+      else
+        t1 = choose(n, n-k);
+      double prod;
+#if 0
+      prod = t1 * t2 * t3;
+      printf("k: %d, n: %d, n choose k: %lf, p^k: %lf, (1 - p)^(n-k): %lf, product: %lf\n", k, n, t1, t2, t3, t1*t2*t3);
+#endif
+      if (t1 < 0.0)
+        continue;
+      prod = t1 * t2 * t3;
+      if (prod < 0.0 || prod > 1.0)
+        continue;
+      residual_prob += prod;
     }
   }
-  residual_prob = 1.0 - residual_prob;
 
 #if 0
-printf("n: %d, p: %lf, p * n: %8.4lf, success value: %d, count: %d, residual: %8.5lf, alpha: %lf\n",
-       n, p, p * ((double)n), success_value, count, residual_prob, alpha);
+  printf("n: %d, p: %lf, p * n: %8.4lf, success value: %d, count: %d, residual: %8.5lf, alpha: %lf\n",
+        n, p, p * ((double)n), success_value, count, residual_prob, alpha);
 #endif
+
+  residual_prob = 1.0 - residual_prob;
   *residual = residual_prob;
   if (*residual > alpha)
     return true;

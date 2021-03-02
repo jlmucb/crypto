@@ -41,6 +41,7 @@ bool collect_difference_samples(int num_samples, uint32_t* data,
 int bin_population(int nbins, uint32_t* bins);
 bool bin_conditional_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins, uint32_t base_bin);
 bool bin_raw_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins);
+bool bin_raw_byte_data(int num_samples, byte* data, int nbins, byte* bins);
 bool bin_int16_data(int num_samples, int16_t* data, int nbins, uint32_t* bins);
 
 bool write_data(string file_name, int num_samples, uint32_t* data);
@@ -59,6 +60,7 @@ double variance(int n, double mean, double* p, double* x);
 double shannon_entropy(int n, double* p);
 double renyi_entropy(int n, double* p);
 double min_entropy(int n, double* p);
+int non_binary_random(uint32_t n);
 
 inline int index(int n, int m, int i, int j) {
   return m * i + j;

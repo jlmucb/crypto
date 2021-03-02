@@ -187,6 +187,42 @@ bool test_statistical_tests() {
   uint32_t data_uint32[num_samples];
   byte data_byte[num_samples];
 
+  double residual = 0.0;
+  double alpha = .01;
+#if 1
+  int num_rolls = 64;
+  byte dice_roll[num_rolls];
+  byte success = 1;
+  double p_roll = 1.0 / 6.0;
+
+  int r;
+  for(int i = 0; i < num_rolls; i++) {
+    r = non_binary_random(6);
+    if (r < 0)
+      return false;
+    dice_roll[i] = (byte)r;
+  }
+  byte roll_count[6];
+  if (!bin_raw_byte_data(num_rolls, dice_roll, 6, roll_count)) {
+    printf("Can't bin dice data\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("\nDice rolls:\n");
+    print_bytes(num_rolls, dice_roll);
+    printf("\ncounts, p * num_rolls= %lf:\n", p_roll * ((double)num_rolls));
+    for (int i = 0; i < 6; i++) {
+      printf("%d: %d, ", i, roll_count[i]);
+    }
+    printf("\n");
+  }
+  if (binomial_test(num_rolls, dice_roll, success, p_roll, alpha, &residual)) {
+    printf("Binomial test for dice succeeds, success: %d, residual: %lf\n", success, residual);
+  } else {
+    printf("Binomial test for dice fails, success: %d, residual: %lf\n", success, residual);
+  }
+#endif
+
   zero_uint32_array(num_samples, data_uint32);
   zero_byte_array(num_samples, data_byte);
   if (!collect_difference_samples(num_samples, data_uint32, interval, num_bits, divisor)) {
@@ -211,7 +247,7 @@ bool test_statistical_tests() {
   int tmp_num_samples = 256;
   byte most_common = most_common_byte(tmp_num_samples, data_byte);
   double p_test =  1.0 / ((double)(1 << num_bits));
-  double alpha = .01;
+  alpha = .01;
 
   if (FLAGS_print_all) {
     printf("samples:\n");
@@ -219,7 +255,7 @@ bool test_statistical_tests() {
     printf("\n");
   }
 
-  double residual = 0.0;
+  residual = 0.0;
   if (binomial_test(tmp_num_samples, data_byte, most_common, p_test, alpha, &residual)) {
     printf("Binomial test succeeds, mcv: %x, residual: %lf\n", most_common, residual);
   } else {
