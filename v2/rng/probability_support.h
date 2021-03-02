@@ -20,6 +20,7 @@
 #include <math.h>
 
 const double pi = 3.141592653589793;
+const double e = 2.718281828459054;
 
 double lg(double x);
 
@@ -71,8 +72,8 @@ double correlate(int n, int m, double mean_x, double sigma_x, double* x,
 bool write_graph_data(string file_name, int nbins, uint32_t* bins);
 bool write_general_graph_data(string file_name, int n, double* x, double* y);
 
-int64_t factorial(int n);
-int64_t choose(int n, int k);
+double factorial(int n);
+double choose(int n, int k);
 byte most_common_byte(int num_samples, byte* values);
 
 bool binomial_test(int num_samples, byte* values,

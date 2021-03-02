@@ -1077,30 +1077,51 @@ double chi_critical_lower(int v, double confidence) {
   return lower_table[index(100, num_levels, v, col)];
 }
 
-int64_t factorial(int n) {
+double factorial(int n) {
   if (n ==0)
-    return 1;
-  int64_t x = 1LL;
+    return 1.0;
 
-  for(int i = 2; i <= n; i++) {
-    x *= (int64_t)i;
+  if (n < 25) {
+    int64_t x = 1LL;
+
+    for(int i = 2; i <= n; i++) {
+      x *= (int64_t)i;
+    }
+    return (double)x;
   }
+
+  double x = sqrt(2.0 * pi * ((double) n)) * pow(((double)n) / e, (double)n);
   return x;
 }
 
-int64_t choose(int n, int k) {
-  int m;
-  if ((n - k) > k)
-    m = n - k;
-  else
-    m = k;
+double choose(int n, int k) {
 
-  int64_t num = 1LL;
-  for (int j = (m + 1); j <= n; j++)
-    num *= (int64_t) j;
-  int64_t den = factorial(n - m);
-  
-  return num / den;
+  if (k == 0)
+    return 1.0;
+  if (n < 50) {
+    int m;
+    if ((n - k) > k)
+      m = n - k;
+    else
+      m = k;
+
+    int64_t num = 1LL;
+    for (int j = (m + 1); j <= n; j++)
+      num *= (int64_t) j;
+    int64_t den = factorial(n - m);
+    return ((double)num) / ((double)den);
+  }
+  if (k < 20) {
+    long double x = 1.0;
+    for (int i = n; i > (n-k); i--)
+      x *= ((double)i);
+    double y = factorial(k);
+    return x / y ;
+  }
+  long double x = factorial(n);
+  long double y = factorial(k);
+  long double z = factorial(n - k);
+  return x / (y * z);
 }
 
 byte most_common_byte(int num_samples, byte* values) {
@@ -1123,26 +1144,35 @@ byte most_common_byte(int num_samples, byte* values) {
 
 // return true if test passes
 // Todo: fix this test
-bool binomial_test(int num_samples, byte* values,
+bool binomial_test(int n, byte* values,
       byte most_common_value, double p, double alpha) {
   int count = 0;
 
-  for (int i = 0; i < num_samples; i++) {
+  for (int i = 0; i < n; i++) {
     if (values[i] == most_common_value)
       count++;
   }
 
-  const int test_n = 100;
   double residual_prob = 0.0;
-  for (int i = count; i <= test_n; i++) {
-     residual_prob += ((double)choose(test_n, i)) * 
-                      pow(p, (double)i) *
-                      pow(1 - p, (double)(test_n - i));
+  for (int k = 0; k < count; k++) {
+    double t2 = pow(p, (double)k);
+    double t3 = pow(1 - p, (double)(n - k));
+    if (t2 != 0.0 && t3 != 0.0) {
+      double t1 = choose(n, k);
+      residual_prob += t1 * t2 * t3;
+#if 0
+printf("n: %d, k: %d, p: %lf, choose: %lf, p^k: %lf, (1-p)^(n-k): %lf\n",
+        n, k, p, t1, t2, t3);
+#endif
+    }
   }
+  residual_prob = 1.0 - residual_prob;
 
-printf("num_samples: %d, p: %8.4lf, most common value: %d, count: %d, residual: %8.5lf\n",
-       num_samples, p, most_common_value, count, residual_prob);
-  if (residual_prob >= alpha)
+#if 1
+printf("n: %d, p: %lf, p * n: %8.4lf, most common value: %d, count: %d, residual: %8.5lf, alpha: %lf\n",
+       n, p, p * ((double)n), most_common_value, count, residual_prob, alpha);
+#endif
+  if (residual_prob > alpha)
     return true;
   return false;
 }
