@@ -487,7 +487,7 @@ bool write_general_graph_data(string file_name, int n, double* x, double* y) {
 int critical_value_binomial(int n, double p, double alpha) {
   double total = 0.0;
 
-  for (int i = 0; i < n; i++) {
+  for (int i = 0; i <= n; i++) {
     if (alpha > (1.0 - total))
       return i;
     total +=  binomial_term(n, i, p);
@@ -1209,10 +1209,6 @@ double binomial_term(int n, int k, double p) {
 
   double prod;
   double t1 = choose(n, k);
-#if 0
-  prod = t1 * t2 * t3;
-  printf("k: %d, n: %d, n choose k: %lf, p^k: %lf, (1 - p)^(n-k): %lf, product: %lf\n", k, n, t1, t2, t3, t1*t2*t3);
-#endif
   if (t1 < 0.0)
     return 0.0;
   prod = t1 * t2 * t3;

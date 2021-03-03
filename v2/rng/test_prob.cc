@@ -183,22 +183,12 @@ bool test_bins() {
 
 bool test_health_tests() {
 
-  int num = 100;
-  double entropy_estimate = 4.0;
-  double alpha = .05;
-  double p = pow(2.0, -entropy_estimate);
-
-  int critical_value = critical_value_binomial(num, p, alpha);
-  printf("\nCritical value, samples: %d, entropy estimate: %lf, alpha: %lf, critical_value: %d\n",
-        num, entropy_estimate, alpha, critical_value);
-
   if (FLAGS_print_all)
     printf("\nHealth tests\n");
 
   int num_samples = 512;
   byte data[num_samples];
   zero_byte_array(num_samples, data);
-  entropy_estimate = 5.0;
   if (crypto_get_random_bytes(num_samples, data) <= 0) {
     printf("Can't generate samples\n");
     return false;
@@ -224,11 +214,30 @@ bool test_binomial(double alpha) {
   if (FLAGS_print_all)
     printf("\nBinomial test\n");
 
-  double p = 1.0 / 6.0;
-  double residual = 0.0;
+  // dice
+  double p;
+  int num = 60;
+  double alpha1;
+  int critical_value;
 
+  printf("\n");
+  for (int i = 0; i < 4; i++) {
+    p = (1.0 / 25.0) * ((double) (i + 1));
+    for (int j = 0; j < 5; j++) {
+      alpha1 = .01 * ((double) (j + 1));
+      critical_value = critical_value_binomial(num, p, alpha1);
+      printf("Critical value, samples: %d, p: %lf, alpha: %lf, critical_value: %d\n",
+            num, p, alpha1, critical_value);
+    }
+  }
+  printf("\n");
+
+  // dice
+  p = 1.0 / 6.0;
+  alpha = .05;
   int num_rolls = 48;
   byte dice_roll[num_rolls];
+  double residual = 0.0;
 
   int r;
   for(int i = 0; i < num_rolls; i++) {
