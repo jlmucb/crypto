@@ -181,12 +181,29 @@ bool test_bins() {
   return true;
 }
 
+bool test_health_tests() {
+
+  int num = 100;
+  double entropy_estimate = 4.0;
+  double alpha = .05;
+  int critical_value = critical_value_binomial(num, entropy_estimate, alpha);
+  printf("Critical value, samples: %d, entropy estimate: %lf, alpha: %lf, critical_value: %d\n",
+        num, entropy_estimate, alpha, critical_value);
+
+  // bool adaptive_proportion_test(int n, byte* samples, double entropy_estimate, double alpha);
+  // bool repetition_test(int n, byte* samples, double entropy_estimate, double alpha)
+  return true;
+}
+
 bool test_binomial(double alpha) {
 
-  printf("\nBinomial test\n");
+  if (FLAGS_print_all)
+    printf("\nBinomial test\n");
+
+  double p = 1.0 / 6.0;
   double residual = 0.0;
 
-  int num_rolls = 36;
+  int num_rolls = 48;
   byte dice_roll[num_rolls];
 
   int r;
@@ -203,7 +220,6 @@ bool test_binomial(double alpha) {
     return false;
   }
 
-  double p = 1.0 / 6.0;
   double freq[6];
   for (int i = 0; i < 6; i++) {
     freq[i] = ((double)roll_count[i]) / ((double) num_rolls);
@@ -304,7 +320,7 @@ bool test_statistical_tests() {
   }
 
   double mcv_ent = most_common_value_entropy(64, num_samples, data_byte);
-  printf("Most common ent: %8.4lf\n", mcv_ent);
+  printf("\nMost common ent: %8.4lf\n", mcv_ent);
 
   int num_runs = 0;
   double mu = 0.0;
@@ -313,19 +329,21 @@ bool test_statistical_tests() {
     return false;
   }
   if (FLAGS_print_all) {
-    printf("Runs test, mu: %8.4lf, sig: %8.4lf\n", mu, sig);
+    printf("\nRuns test, mu: %8.4lf, sig: %8.4lf\n", mu, sig);
   }
+
   double markov_ent = byte_markov_entropy(num_samples, data_byte);
   if (FLAGS_print_all) {
-    printf("Markov entropy: %8.4lf\n", markov_ent);
+    printf("\nMarkov entropy: %8.4lf\n", markov_ent);
   }
+
   int result = 0;
   int lag = 5;
   if (!periodicity_test(num_samples, data_byte, lag, &result)) {
     return false;
   }
   if (FLAGS_print_all) {
-    printf("Periodicity result: %d\n", result);
+    printf("\nPeriodicity result: %d\n", result);
   }
 
   int size = 0;
@@ -333,17 +351,12 @@ bool test_statistical_tests() {
     return false;
   }
   if (FLAGS_print_all) {
-    printf("Compression test, Original size: %d, compressed size: %d\n", num_samples, size);
+    printf("\nCompression test, Original size: %d, compressed size: %d\n", num_samples, size);
   }
-  
-  // double byte_markov_sequence_probability(int seq_len, byte* seq,
-  //        double p_0, double p_1, double p_00, double p_01, double p_10, double p_11);
-  // bool real_dft(int n, double* data, double* transform);
-  // bool berlekamp_massy(int n, byte* s, int* L);
 
   double excursion = excursion_test(num_samples, data_byte);
   if (FLAGS_print_all) {
-    printf("Excursion test: %8.4lf\n", excursion);
+    printf("\nExcursion test: %8.4lf\n", excursion);
   }
 
   int n = 256; 
@@ -371,6 +384,7 @@ bool test_statistical_tests() {
   if (fabs(lower - 4.865) > .001)
     return false;
 
+  printf("\nChi test\n");
   if (!chi_squared_test(n, values, nbins, p, &chi_value)) {
     return false;
   }
@@ -381,6 +395,12 @@ bool test_statistical_tests() {
     printf("REJECT at %4.2lf, Chi value: %8.4lf, upper confidence: %8.5lf\n", confidence, chi_value, upper);
   else
     printf("ACCEPT at %4.2lf, Chi value: %8.4lf, upper confidence: %8.5lf\n", confidence, chi_value, upper);
+ 
+  // Later 
+  //    double byte_markov_sequence_probability(int seq_len, byte* seq,
+  //        double p_0, double p_1, double p_00, double p_01, double p_10, double p_11);
+  //    bool real_dft(int n, double* data, double* transform);
+  //    bool berlekamp_massy(int n, byte* s, int* L);
   return true;
 }
 
@@ -496,6 +516,9 @@ TEST (bins, test_bins) {
 }
 TEST (probability, test_probability_calculations) {
   EXPECT_TRUE(test_probability_calculations());
+}
+TEST (health, test_health_tests) {
+  EXPECT_TRUE(test_health_tests());
 }
 TEST (binomial, test_binomial) {
   EXPECT_TRUE(test_binomial(0.01));

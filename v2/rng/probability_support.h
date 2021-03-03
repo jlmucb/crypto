@@ -74,10 +74,16 @@ double correlate(int n, int m, double mean_x, double sigma_x, double* x,
 bool write_graph_data(string file_name, int nbins, uint32_t* bins);
 bool write_general_graph_data(string file_name, int n, double* x, double* y);
 
+byte most_common_byte(int num_samples, byte* values);
+
 double factorial(int n);
 double choose(int n, int k);
-byte most_common_byte(int num_samples, byte* values);
 double binomial_term(int n, int k, double p);
+
+int critical_value_binomial(int n, double entropy_estimate, double alpha);
+bool adaptive_proportion_test(int n, byte* samples, double entropy_estimate, double alpha);
+bool repetition_test(int n, byte* samples, double entropy_estimate, double alpha);
+
 bool binomial_test(int num_samples, byte* values,
       byte success_value, double p, double alpha, double* residual);
 

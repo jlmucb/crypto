@@ -484,6 +484,50 @@ bool write_general_graph_data(string file_name, int n, double* x, double* y) {
 //  Find p_max = most likely 128 bit sequence
 //    min_e = min(-lg(p_max), 1)
 
+int critical_value_binomial(int n, double entropy_estimate, double alpha) {
+  double total = 0.0;
+  double p = pow(2.0, -entropy_estimate);
+
+  for (int i = 0; i < n; i++) {
+    if (alpha > (1.0 - total))
+      return i;
+    total +=  binomial_term(n, i, p);
+  }
+  return n;
+}
+
+// n should be 1024 for binary data and 512 for non-binary data
+bool adaptive_proportion_test(int n, byte* samples, double entropy_estimate, double alpha) {
+  int cutoff = critical_value_binomial(n, entropy_estimate, alpha);
+  int count = 0;
+
+  byte s = samples[0];
+  for (int i = 0; i < n; i++) {
+    if (s == samples[i])
+      count++;
+  }
+
+  if (count > cutoff)
+    return false;
+  return true;
+}
+
+// Pr(count >= cutoff) < alpha
+bool repetition_test(int n, byte* samples, double entropy_estimate, double alpha) {
+  int cutoff = 1 + (int)((-lg(alpha) / entropy_estimate) + 0.9);
+  byte s = samples[0];
+  int count = 0;
+
+  for (int i = 0; i < n; i++) {
+    if (s == samples[i])
+      count++;
+  }
+
+  if (count > cutoff)
+    return false;
+  return true;
+}
+
 int largest_value_index(int n, double* v) {
   int m = 0;
   double largest = v[0];
