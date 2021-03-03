@@ -54,10 +54,12 @@ def main(argv=sys.argv):
   for i in range (0, num_points):
     sys.stdout.write("  (" + str(x[i]) + ", " + str(y[i]) + ")\n")
 
-  left = x_min
-  right = x_max
-  top = y_max
-  bottom = y_min
+  range_x = x_max - x_min
+  range_y = y_max - y_min
+  left = x_min - .05 * range_x
+  right = x_max + .05 * range_x
+  top = y_max  + .05 * range_y
+  bottom = y_min - .05 * range_y
 
   title= 'graph, ' + str(num_points) + ' points'
   xlabel='x'
