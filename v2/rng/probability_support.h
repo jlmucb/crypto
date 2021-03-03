@@ -77,7 +77,7 @@ bool write_general_graph_data(string file_name, int n, double* x, double* y);
 double factorial(int n);
 double choose(int n, int k);
 byte most_common_byte(int num_samples, byte* values);
-
+double binomial_term(int n, int k, double p);
 bool binomial_test(int num_samples, byte* values,
       byte success_value, double p, double alpha, double* residual);
 

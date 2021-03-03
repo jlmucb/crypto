@@ -1125,33 +1125,18 @@ double factorial(int n) {
 }
 
 double choose(int n, int k) {
+  if ((n - k) < k)
+    k = n - k;
+  // now k <= (n-k)
 
   if (k == 0)
     return 1.0;
-  if (n < 50) {
-    int m;
-    if ((n - k) > k)
-      m = n - k;
-    else
-      m = k;
+  long double x = 1.0;
+  for (int i = n; i > (n-k); i--)
+    x *= ((double)i);
+  double y = factorial(k);
 
-    int64_t num = 1LL;
-    for (int j = (m + 1); j <= n; j++)
-      num *= (int64_t) j;
-    int64_t den = factorial(n - m);
-    return ((double)num) / ((double)den);
-  }
-  if (k < 50) {
-    long double x = 1.0;
-    for (int i = n; i > (n-k); i--)
-      x *= ((double)i);
-    double y = factorial(k);
-    return x / y ;
-  }
-  long double x = factorial(n);
-  long double y = factorial(k);
-  long double z = factorial(n - k);
-  return x / (y * z);
+  return x / y ;
 }
 
 byte most_common_byte(int num_samples, byte* values) {
@@ -1172,6 +1157,26 @@ byte most_common_byte(int num_samples, byte* values) {
   return max_index;
 }
 
+double binomial_term(int n, int k, double p) {
+  double t2 = pow(p, (double)k);
+  double t3 = pow(1.0 - p, (double)(n - k));
+  if (t2 == 0.0 || t3 == 0.0)
+    return 0.0;
+
+  double prod;
+  double t1 = choose(n, k);
+#if 0
+  prod = t1 * t2 * t3;
+  printf("k: %d, n: %d, n choose k: %lf, p^k: %lf, (1 - p)^(n-k): %lf, product: %lf\n", k, n, t1, t2, t3, t1*t2*t3);
+#endif
+  if (t1 < 0.0)
+    return 0.0;
+  prod = t1 * t2 * t3;
+  if (prod < 0.0 || prod > 1.0)
+    return 0.0;
+  return prod;
+}
+
 // return true if test passes
 bool binomial_test(int n, byte* values, byte success_value,
         double p, double alpha, double* residual) {
@@ -1184,26 +1189,7 @@ bool binomial_test(int n, byte* values, byte success_value,
 
   double residual_prob = 0.0;
   for (int k = 0; k < count; k++) {
-    double t2 = pow(p, (double)k);
-    double t3 = pow(1.0 - p, (double)(n - k));
-    if (t2 != 0.0 && t3 != 0.0) {
-      double t1;
-      if (k < (n-k))
-        t1 = choose(n, k);
-      else
-        t1 = choose(n, n-k);
-      double prod;
-#if 0
-      prod = t1 * t2 * t3;
-      printf("k: %d, n: %d, n choose k: %lf, p^k: %lf, (1 - p)^(n-k): %lf, product: %lf\n", k, n, t1, t2, t3, t1*t2*t3);
-#endif
-      if (t1 < 0.0)
-        continue;
-      prod = t1 * t2 * t3;
-      if (prod < 0.0 || prod > 1.0)
-        continue;
-      residual_prob += prod;
-    }
+    residual_prob += binomial_term(n, k, p);
   }
 
 #if 0

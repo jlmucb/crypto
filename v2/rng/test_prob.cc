@@ -23,6 +23,11 @@
 
 DEFINE_bool(print_all, false, "print flag");
 DEFINE_bool(debug, false, "debug flag");
+DEFINE_string(bin_freq_file_name, "Dice_freq.bin", "binomial frequency graph file");
+DEFINE_string(binomial_terms_file_name, "binomial_terms.bin", "binomial frequency graph file");
+DEFINE_string(entropy_sample_file_name, "entropy_sample_file.bin", "entropy sample file graph file");
+DEFINE_string(graph_file_1, "test_graph_1.bin", "graph file 1");
+DEFINE_string(graph_file_2, "test_graph_2.bin", "graph file 2");
 
 bool test_targeted_sampling() {
   // These are particular to entropy_series:
@@ -58,14 +63,13 @@ bool test_sampling() {
   if (ent < 5.0)
     return false;
 
-  string file_name("test_data");
-  if (!write_data(file_name, num_samples, data_uint32)) {
+  if (!write_data(FLAGS_entropy_sample_file_name, num_samples, data_uint32)) {
     printf("Can't write file\n");
     return false;
   }
   int new_samples = 0;
   uint32_t* new_data = nullptr;
-  if(!read_data(file_name, &new_samples, &new_data)) {
+  if(!read_data(FLAGS_entropy_sample_file_name, &new_samples, &new_data)) {
     printf("Can't read data\n");
     return false;
   }
@@ -85,14 +89,12 @@ bool test_graph() {
   int nbins = 16;
   uint32_t bins[nbins];
 
-  string file1("test_graph_1");
   for (int i = 0; i < nbins; i++)
     bins[i] = 10 * i;
-  if(!write_graph_data(file1, nbins, bins)) {
+  if(!write_graph_data(FLAGS_graph_file_1, nbins, bins)) {
     return false;
   }
 
-  string file2("test_graph_2");
   int num_points = 32;
   double x[num_points];
   double y[num_points];
@@ -101,7 +103,7 @@ bool test_graph() {
     x[i] = (double) i;
     y[i] = (double) (i * i);
   }
-  if (!write_general_graph_data(file2, num_points, x, y)) {
+  if (!write_general_graph_data(FLAGS_graph_file_2, num_points, x, y)) {
     return false;
   }
 
@@ -179,21 +181,13 @@ bool test_bins() {
   return true;
 }
 
-bool test_statistical_tests() {
-  int num_samples = 1000;
-  int interval = 100;
-  int divisor = 2;
-  int num_bits = 6;
-  uint32_t data_uint32[num_samples];
-  byte data_byte[num_samples];
+bool test_binomial(double alpha) {
 
+  printf("\nBinomial test\n");
   double residual = 0.0;
-  double alpha = .01;
-#if 1
-  int num_rolls = 64;
+
+  int num_rolls = 36;
   byte dice_roll[num_rolls];
-  byte success = 1;
-  double p_roll = 1.0 / 6.0;
 
   int r;
   for(int i = 0; i < num_rolls; i++) {
@@ -202,26 +196,72 @@ bool test_statistical_tests() {
       return false;
     dice_roll[i] = (byte)r;
   }
+
   byte roll_count[6];
   if (!bin_raw_byte_data(num_rolls, dice_roll, 6, roll_count)) {
     printf("Can't bin dice data\n");
     return false;
   }
+
+  double p = 1.0 / 6.0;
+  double freq[6];
+  for (int i = 0; i < 6; i++) {
+    freq[i] = ((double)roll_count[i]) / ((double) num_rolls);
+  }
+
   if (FLAGS_print_all) {
     printf("\nDice rolls:\n");
     print_bytes(num_rolls, dice_roll);
-    printf("\ncounts, p * num_rolls= %lf:\n", p_roll * ((double)num_rolls));
+    printf("\ncounts, expected frequency: %lf, expected count: %lf\n", p, p * ((double)num_rolls));
     for (int i = 0; i < 6; i++) {
-      printf("%d: %d, ", i, roll_count[i]);
+      printf("%d: %d, %5.3lf; ", i, roll_count[i], freq[i]);
     }
     printf("\n");
   }
-  if (binomial_test(num_rolls, dice_roll, success, p_roll, alpha, &residual)) {
+
+  // Graph frequencies and binomial terms
+  double x[num_rolls + 1];
+  double y[num_rolls + 1];
+
+  zero_double_array(num_rolls, x);
+  zero_double_array(num_rolls, y);
+  for (int i = 0; i < 6; i++) {
+    x[i] = (double)(i + 1);
+    y[i] = freq[i];
+  }
+  if (!write_general_graph_data(FLAGS_bin_freq_file_name, 6, x, y)) {
+    printf("Can't write dice frequency file\n");
+    return false;
+  }
+
+  zero_double_array(num_rolls + 1, x);
+  zero_double_array(num_rolls + 1, y);
+  for (int i = 0; i < (num_rolls + 1); i++) {
+    x[i] = (double)i;
+    y[i] = binomial_term(num_rolls, i, p);
+  }
+  if (!write_general_graph_data(FLAGS_binomial_terms_file_name, num_rolls + 1, x, y)) {
+    printf("Can't write dice binomial file\n");
+    return false;
+  }
+
+  byte success = 1;
+  if (binomial_test(num_rolls, dice_roll, success, p, alpha, &residual)) {
     printf("Binomial test for dice succeeds, success: %d, residual: %lf\n", success, residual);
   } else {
     printf("Binomial test for dice fails, success: %d, residual: %lf\n", success, residual);
   }
-#endif
+  printf("\n");
+  return true;
+}
+
+bool test_statistical_tests() {
+  int num_samples = 1000;
+  int interval = 100;
+  int divisor = 2;
+  int num_bits = 6;
+  uint32_t data_uint32[num_samples];
+  byte data_byte[num_samples];
 
   zero_uint32_array(num_samples, data_uint32);
   zero_byte_array(num_samples, data_byte);
@@ -244,6 +284,8 @@ bool test_statistical_tests() {
   if (t2 != 252.0)
     return false;
 
+  double residual = 0.0;
+  double alpha = .01;
   int tmp_num_samples = 256;
   byte most_common = most_common_byte(tmp_num_samples, data_byte);
   double p_test =  1.0 / ((double)(1 << num_bits));
@@ -255,7 +297,6 @@ bool test_statistical_tests() {
     printf("\n");
   }
 
-  residual = 0.0;
   if (binomial_test(tmp_num_samples, data_byte, most_common, p_test, alpha, &residual)) {
     printf("Binomial test succeeds, mcv: %x, residual: %lf\n", most_common, residual);
   } else {
@@ -455,6 +496,9 @@ TEST (bins, test_bins) {
 }
 TEST (probability, test_probability_calculations) {
   EXPECT_TRUE(test_probability_calculations());
+}
+TEST (binomial, test_binomial) {
+  EXPECT_TRUE(test_binomial(0.01));
 }
 TEST(statistics, test_statistical_tests) {
   EXPECT_TRUE(test_statistical_tests());
