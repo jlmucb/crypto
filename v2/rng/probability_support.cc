@@ -497,7 +497,8 @@ int critical_value_binomial(int n, double p, double alpha) {
 
 // n should be 1024 for binary data and 512 for non-binary data
 bool adaptive_proportion_test(int n, byte* samples, double entropy_estimate, double alpha) {
-  int cutoff = critical_value_binomial(n, entropy_estimate, alpha);
+  double p = pow(2, -entropy_estimate);
+  int cutoff = critical_value_binomial(n, p, alpha);
   int count = 0;
 
   byte s = samples[0];
@@ -513,7 +514,7 @@ bool adaptive_proportion_test(int n, byte* samples, double entropy_estimate, dou
 
 // Pr(count >= cutoff) < alpha
 bool repetition_test(int n, byte* samples, double entropy_estimate, double alpha) {
-  int cutoff = 1 + (int)((-lg(alpha) / entropy_estimate) + 0.9);
+  int cutoff = 1 + (int)(((-lg(alpha) / entropy_estimate)) + 0.9);
   byte s = samples[0];
   int count = 0;
 

@@ -204,13 +204,13 @@ bool test_health_tests() {
     return false;
   }
 
-  if (adaptive_proportion_test(num_samples, data, entropy_estimate, alpha)) {
+  if (adaptive_proportion_test(num_samples, data, 3.0, .01)) {
     printf("adaptive_proportion_test succeeds\n");
   } else {
     printf("adaptive_proportion_test fails\n");
   }
 
-  if (repetition_test(num_samples, data, entropy_estimate, alpha)) {
+  if (repetition_test(num_samples, data, 4.0, 1.0 / 1000000.0)) {
     printf("repetition test succeeds\n");
   } else {
     printf("repetition test fails\n");
