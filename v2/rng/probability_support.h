@@ -80,7 +80,7 @@ double factorial(int n);
 double choose(int n, int k);
 double binomial_term(int n, int k, double p);
 
-int critical_value_binomial(int n, double entropy_estimate, double alpha);
+int critical_value_binomial(int n, double p, double alpha);
 bool adaptive_proportion_test(int n, byte* samples, double entropy_estimate, double alpha);
 bool repetition_test(int n, byte* samples, double entropy_estimate, double alpha);
 

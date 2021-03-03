@@ -484,9 +484,8 @@ bool write_general_graph_data(string file_name, int n, double* x, double* y) {
 //  Find p_max = most likely 128 bit sequence
 //    min_e = min(-lg(p_max), 1)
 
-int critical_value_binomial(int n, double entropy_estimate, double alpha) {
+int critical_value_binomial(int n, double p, double alpha) {
   double total = 0.0;
-  double p = pow(2.0, -entropy_estimate);
 
   for (int i = 0; i < n; i++) {
     if (alpha > (1.0 - total))

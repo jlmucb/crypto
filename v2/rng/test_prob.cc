@@ -186,12 +186,36 @@ bool test_health_tests() {
   int num = 100;
   double entropy_estimate = 4.0;
   double alpha = .05;
-  int critical_value = critical_value_binomial(num, entropy_estimate, alpha);
-  printf("Critical value, samples: %d, entropy estimate: %lf, alpha: %lf, critical_value: %d\n",
+  double p = pow(2.0, -entropy_estimate);
+
+  int critical_value = critical_value_binomial(num, p, alpha);
+  printf("\nCritical value, samples: %d, entropy estimate: %lf, alpha: %lf, critical_value: %d\n",
         num, entropy_estimate, alpha, critical_value);
 
-  // bool adaptive_proportion_test(int n, byte* samples, double entropy_estimate, double alpha);
-  // bool repetition_test(int n, byte* samples, double entropy_estimate, double alpha)
+  if (FLAGS_print_all)
+    printf("\nHealth tests\n");
+
+  int num_samples = 512;
+  byte data[num_samples];
+  zero_byte_array(num_samples, data);
+  entropy_estimate = 5.0;
+  if (crypto_get_random_bytes(num_samples, data) <= 0) {
+    printf("Can't generate samples\n");
+    return false;
+  }
+
+  if (adaptive_proportion_test(num_samples, data, entropy_estimate, alpha)) {
+    printf("adaptive_proportion_test succeeds\n");
+  } else {
+    printf("adaptive_proportion_test fails\n");
+  }
+
+  if (repetition_test(num_samples, data, entropy_estimate, alpha)) {
+    printf("repetition test succeeds\n");
+  } else {
+    printf("repetition test fails\n");
+  }
+  printf("\n");
   return true;
 }
 
