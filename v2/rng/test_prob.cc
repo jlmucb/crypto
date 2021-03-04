@@ -214,6 +214,19 @@ bool test_binomial(double alpha) {
   if (FLAGS_print_all)
     printf("\nBinomial test\n");
 
+  double a1 = binomial_term(10, 4, .25);
+  double a2 = fast_binomial_term(10, 4, .25);
+  if (fabs(a1-a2) > .00001)
+    return false;
+  a1 = binomial_term(10, 0, .25);
+  a2 = fast_binomial_term(10, 0, .25);
+  if (fabs(a1-a2) > .00001)
+    return false;
+  a1 = binomial_term(20, 5, .25);
+  a2 = fast_binomial_term(20, 5, .25);
+  if (fabs(a1-a2) > .00001)
+    return false;
+
   // dice
   double p;
   int num = 60;
@@ -287,7 +300,7 @@ bool test_binomial(double alpha) {
   zero_double_array(num_rolls + 1, y);
   for (int i = 0; i < (num_rolls + 1); i++) {
     x[i] = (double)i;
-    y[i] = binomial_term(num_rolls, i, p);
+    y[i] = fast_binomial_term(num_rolls, i, p);
   }
   if (!write_general_graph_data(FLAGS_binomial_terms_file_name, num_rolls + 1, x, y)) {
     printf("Can't write dice binomial file\n");
@@ -343,7 +356,6 @@ bool test_statistical_tests() {
   if (FLAGS_print_all) {
     printf("samples:\n");
     print_bytes(tmp_num_samples, data_byte);
-    printf("\n");
   }
 
   if (binomial_test(tmp_num_samples, data_byte, most_common, p_test, alpha, &residual)) {

@@ -79,6 +79,7 @@ byte most_common_byte(int num_samples, byte* values);
 double factorial(int n);
 double choose(int n, int k);
 double binomial_term(int n, int k, double p);
+double fast_binomial_term(int n, int k, double p);
 
 int critical_value_binomial(int n, double p, double alpha);
 bool adaptive_proportion_test(int n, byte* samples, double entropy_estimate, double alpha);

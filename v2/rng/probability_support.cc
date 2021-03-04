@@ -490,7 +490,7 @@ int critical_value_binomial(int n, double p, double alpha) {
   for (int i = 0; i <= n; i++) {
     if (alpha > (1.0 - total))
       return i;
-    total +=  binomial_term(n, i, p);
+    total +=  fast_binomial_term(n, i, p);
   }
   return n;
 }
@@ -1201,6 +1201,26 @@ byte most_common_byte(int num_samples, byte* values) {
   return max_index;
 }
 
+double fast_binomial_term(int n, int k, double p) {
+  if (k > (n - k)) {
+    k = n - k;
+    p = 1.0 - p;
+  }
+
+  // now k <= n-k
+  double prod = 1.0;
+  double q = 1.0 - p;
+  double t = p * q;
+  int i;
+  for (i = 0; i < k; i++) {
+    prod *= (t * ((double)(n - i))) / ((double)(i + 1)) ;
+  }
+  for(; i < (n-k); i++) {
+    prod *= q;
+  }
+  return prod; 
+}
+
 double binomial_term(int n, int k, double p) {
   double t2 = pow(p, (double)k);
   double t3 = pow(1.0 - p, (double)(n - k));
@@ -1229,13 +1249,8 @@ bool binomial_test(int n, byte* values, byte success_value,
 
   double residual_prob = 0.0;
   for (int k = 0; k < count; k++) {
-    residual_prob += binomial_term(n, k, p);
+    residual_prob += fast_binomial_term(n, k, p);
   }
-
-#if 0
-  printf("n: %d, p: %lf, p * n: %8.4lf, success value: %d, count: %d, residual: %8.5lf, alpha: %lf\n",
-        n, p, p * ((double)n), success_value, count, residual_prob, alpha);
-#endif
 
   residual_prob = 1.0 - residual_prob;
   *residual = residual_prob;
