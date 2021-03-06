@@ -9,7 +9,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// File: drng.cc
+// File: entropy_collection.cc
 
 #include <gtest/gtest.h>
 #include <gflags/gflags.h>
@@ -85,12 +85,14 @@ bool entropy_collection::health_check() {
   return true;
 }
 
+#if 0
 void entropy_collection::hash(int byte_size_in, byte* in, byte* out) {
   hash_obj_.init();
   hash_obj_.add_to_hash(byte_size_in, in);
   hash_obj_.finalize();
   hash_obj_.get_digest(hash_byte_output_size_, out);
 }
+#endif
 
 void entropy_collection::hash_df(int byte_size_in, byte* in, int bit_size_out, byte* out) {
   memset(out, 0, hash_byte_output_size_);
@@ -195,16 +197,24 @@ void entropy_collection::set_policy(int n_ent, int byte_pool_size, int reseed_in
   reseed_interval_ = reseed_interval;
 }
 
-double entropy_collection::calculate_mixed_entropy_amount(double ent) {
-  return current_entropy_in_pool_ + ent;
+// nw = width (256 for our hash)
+// n_in input to conditioner
+// n_out output
+// p_h = 2^(-ent) p_l= (1-p_h)/(2^current_ent - 1)
+double conditioned_entropy_estimate(double h_in, int nw, int n_in, int n_out) {
+  return h_in;
 }
 
 void entropy_collection::add_entropy(int size_bytes, byte* bits, double ent) {
-  if ((size_bytes + current_size_pool_) >= MAXPOOL_SIZE)
-    return;
-  memcpy(&pool_[current_size_pool_], bits, size_bytes);
-  current_size_pool_ += size_bytes;
-  current_entropy_in_pool_ = calculate_mixed_entropy_amount(ent);
+  if ((size_bytes + current_size_pool_) <= MAXPOOL_SIZE) {
+    memcpy(&pool_[current_size_pool_], bits, size_bytes);
+    current_size_pool_ += size_bytes;
+    current_entropy_in_pool_ += ent;
+  }
+#if 0
+conditioned_entropy_estimate(ent, NBITSINBYTE * sha256::DIGESTBYTESIZE,
+         NBITSINBYTE * size_bytes, pool_size_);
+#endif
 }
 
 double entropy_collection::entropy_estimate() {

@@ -42,7 +42,6 @@ public:
   ~entropy_collection();
 
   double entropy_estimate();
-  double calculate_mixed_entropy_amount(double ent);
   void set_policy(int n_ent, int byte_pool_size, int reseed_interval);
   void add_entropy(int size_bytes, byte* bits, double ent);
   bool health_check();
