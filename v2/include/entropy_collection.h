@@ -23,32 +23,19 @@ class entropy_collection {
   enum {MAXPOOL_SIZE = 4096};
 public:
   bool initialized_;
-  int reseed_ctr_;
-  int reseed_interval_;
-  int num_ent_bits_required_;
+  double entropy_per_sample_;
   double current_entropy_in_pool_;
   int current_size_pool_;
-  int pool_size_;
-  int hash_byte_output_size_;
-  int seed_len_bits_;
-  int seed_len_bytes_;
   byte pool_[MAXPOOL_SIZE];
-  byte C_[64];
-  byte V_[64];
 
   entropy_collection();
   ~entropy_collection();
 
   double entropy_estimate();
-  void set_policy(int n_ent, int byte_pool_size, int reseed_interval);
-  void add_entropy(int size_bytes, byte* bits, double ent);
+  void set_policy(int byte_pool_size, double entropy_per_sample);
+  bool append_samples(int num_samples, byte* samples);
   bool health_check();
-  bool init(int size_nonce, byte* nonce, int size_personalization,
-            byte* personalization);
-  bool reseed();
-  void hash_gen(int num_requested_bits, byte* out);
-  bool generate(int num_bits_needed, byte* out, int n_add_in_bits,
-            byte* add_in_bits);
+  bool empty_pool(int* size_of_pool, byte* pool, double* ent);
 };
 #endif
 

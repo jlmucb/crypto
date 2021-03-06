@@ -18,12 +18,12 @@
 #include "sha256.h"
 
 
-// Hash mixer
+// Hash drng
 class hash_drng {
   bool initialized_;
   int reseed_ctr_;
   int reseed_interval_;
-  double current_state_entropy_;
+  double current_entropy_;
   int hash_byte_output_size_;
   int seed_len_bits_;
   int seed_len_bytes_;
@@ -39,6 +39,7 @@ class hash_drng {
   bool init(int size_nonce, byte* nonce, int size_personalization,
             byte* personalization, int entropy_width, byte* entropy,
             double ent);
+  void mix_new_entropy(int entropy_width, byte* entropy, double ent);
   void hash_gen(int num_requested_bits, byte* out);
   bool generate_random_bits(int num_bits_needed, byte* out,
           int n_add_in_bits, byte* add_in_bits);

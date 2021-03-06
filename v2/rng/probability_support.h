@@ -61,6 +61,7 @@ double shannon_entropy(int n, double* p);
 double renyi_entropy(int n, double* p);
 double min_entropy(int n, double* p);
 int non_binary_random(uint32_t n);
+double conditioned_entropy_estimate(double h_in, int nw, int n_in, int n_out);
 
 inline int index(int n, int m, int i, int j) {
   return m * i + j;

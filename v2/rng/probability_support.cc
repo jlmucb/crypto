@@ -441,6 +441,18 @@ bool write_general_graph_data(string file_name, int n, double* x, double* y) {
   return true;
 }
 
+// nw = width (256 for our hash)
+// n_in input to conditioner
+// n_out output
+// s = 2^(-ent) p_l= (1-p_h)/(2^current_ent - 1)
+// n = min(n_out, nw)
+// u = 2^(n_in-n) + sqrt(2nln(2)2^(n_in-n))
+// return -lg(max(s, u)
+double conditioned_entropy_estimate(double h_in, int nw, int n_in, int n_out) {
+  return h_in;
+}
+
+
 // IID tests:
 //    Adaptive proportion test
 //    Permutation test
