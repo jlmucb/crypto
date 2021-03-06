@@ -32,6 +32,8 @@ public:
   entropy_collection();
   ~entropy_collection();
 
+  int current_pool_size() {return current_size_pool_;};
+  int max_pool_size() {return pool_size_;};
   double entropy_estimate();
   void set_policy(double entropy_per_sample);
   bool append_samples(int num_samples, byte* samples);
