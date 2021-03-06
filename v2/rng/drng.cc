@@ -163,7 +163,7 @@ void hash_drng::hash_gen(int num_requested_bits, byte* out) {
 hash_drng::hash_drng() {
   initialized_= false;
   reseed_ctr_ = 0;
-  num_entropy_bits_present_ = 0;
+  current_entropy_in_pool_= 0;
   num_ent_bits_required_ = 0;
   current_size_pool_ = 0;
   pool_size_ = 0;
@@ -177,7 +177,7 @@ hash_drng::hash_drng() {
 hash_drng::~hash_drng() {
   initialized_= false;
   reseed_ctr_ = 0;
-  num_entropy_bits_present_ = 0;
+  current_entropy_in_pool_= 0;
   num_ent_bits_required_ = 0;
   current_size_pool_ = 0;
   pool_size_ = 0;
@@ -195,16 +195,20 @@ void hash_drng::set_policy(int n_ent, int byte_pool_size, int reseed_interval) {
   reseed_interval_ = reseed_interval;
 }
 
-void hash_drng::add_entropy(int size_bytes, byte* bits, int ent) {
+double hash_drng::calculate_mixed_entropy_amount(double ent) {
+  return current_entropy_in_pool_ + ent;
+}
+
+void hash_drng::add_entropy(int size_bytes, byte* bits, double ent) {
   if ((size_bytes + current_size_pool_) >= MAXPOOL_SIZE)
     return;
   memcpy(&pool_[current_size_pool_], bits, size_bytes);
   current_size_pool_ += size_bytes;
-  current_entropy_in_pool_ += ent;
+  current_entropy_in_pool_ = calculate_mixed_entropy_amount(ent);
 }
 
-int hash_drng::entropy_estimate() {
-  return num_entropy_bits_present_;
+double hash_drng::entropy_estimate() {
+  return current_entropy_in_pool_;
 }
 
 bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization, byte* personalization) {
@@ -222,7 +226,6 @@ bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization, byte
   memset(seed_material, 0, seed_material_size);
   memcpy(&seed_material[1], V_, seed_len_bytes_);
   hash_df(seed_len_bytes_ + 1, seed_material, seed_len_bits_, C_);
-  num_entropy_bits_present_ = current_entropy_in_pool_;
   current_entropy_in_pool_= 0;
   current_size_pool_ = 0;
   initialized_= true;
@@ -251,7 +254,6 @@ bool hash_drng::reseed() {
   memset(seed_material, 0, seed_material_size);
   memcpy(&seed_material[1], V_, seed_len_bytes_);
   hash_df(seed_len_bytes_ + 1, seed_material, seed_len_bits_, C_);
-  num_entropy_bits_present_ = current_entropy_in_pool_;
   current_entropy_in_pool_= 0;
   current_size_pool_ = 0;
   initialized_= true;
@@ -267,7 +269,7 @@ bool hash_drng::generate(int num_bits_needed, byte* out, int size_add_in_bits,
             byte* add_in_bits) {
   if (reseed_ctr_ > reseed_interval_)
     reseed();
-  if (num_entropy_bits_present_ < num_ent_bits_required_)
+  if (current_entropy_in_pool_ < num_ent_bits_required_)
     return false;
   int add_in_byte_size = (size_add_in_bits + NBITSINBYTE - 1) / NBITSINBYTE;
 

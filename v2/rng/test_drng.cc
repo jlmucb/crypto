@@ -53,9 +53,8 @@ bool test_ctr_drng() {
     printf("initialized_: %d\n", obj.initialized_);
     printf("reseed_ctr_: %d\n", obj.reseed_ctr_);
     printf("int reseed_interval: %d\n", obj.reseed_interval_);
-    printf("num_entropy_bits_present: %d\n", obj.num_entropy_bits_present_);
     printf("num_ent_bits_required: %d\n", obj.num_ent_bits_required_);
-    printf("current_entropy_in_pool: %d\n", obj.current_entropy_in_pool_);
+    printf("current_entropy_in_pool: %f\n", obj.current_entropy_in_pool_);
     printf("current_size_pool: %d\n", obj.current_size_pool_);
     printf("pool_size_: %d\n", obj.pool_size_);
     printf("hash_byte_output_size: %d\n", obj.hash_byte_output_size_);
