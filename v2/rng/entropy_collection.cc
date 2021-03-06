@@ -18,6 +18,7 @@
 #include "support.pb.h"
 #include "crypto_names.h"
 #include "probability_support.h"
+#include "hash_df.h"
 #include "entropy_collection.h"
 
 // Note:  Mixers assume big endian so reverse bytes should
@@ -79,87 +80,6 @@ void big_add_one(int size_n, uint64_t* n) {
 #if 0
   printf("big_add_one, out: "); print_uint64_array(size_n, n); printf("\n");
 #endif
-}
-
-bool entropy_collection::health_check() {
-  return true;
-}
-
-#if 0
-void entropy_collection::hash(int byte_size_in, byte* in, byte* out) {
-  hash_obj_.init();
-  hash_obj_.add_to_hash(byte_size_in, in);
-  hash_obj_.finalize();
-  hash_obj_.get_digest(hash_byte_output_size_, out);
-}
-#endif
-
-void entropy_collection::hash_df(int byte_size_in, byte* in, int bit_size_out, byte* out) {
-  memset(out, 0, hash_byte_output_size_);
-  int byte_size_out = (bit_size_out + NBITSINBYTE - 1) / NBITSINBYTE;
-  int l = byte_size_out / hash_byte_output_size_;
-  int bytes_so_far = 0;
-  byte extra_out[hash_byte_output_size_];
-  byte ctr = 1;
-
-  for (int i = 0; i < l; i++) {
-    hash_obj_.init();
-    hash_obj_.add_to_hash(1, &ctr);
-    hash_obj_.add_to_hash(sizeof(int), (byte*)&bit_size_out);
-    hash_obj_.add_to_hash(byte_size_in, in);
-    hash_obj_.finalize();
-    hash_obj_.get_digest(hash_byte_output_size_, &out[bytes_so_far]);
-    bytes_so_far += hash_byte_output_size_;
-    ctr++;
-  }
-  // partial block --- avoid overflow
-  if (bytes_so_far < byte_size_out) {
-    hash_obj_.init();
-    hash_obj_.add_to_hash(1, &ctr);
-    hash_obj_.add_to_hash(sizeof(int), (byte*)&bit_size_out);
-    hash_obj_.add_to_hash(byte_size_in, in);
-    hash_obj_.finalize();
-    hash_obj_.get_digest(hash_byte_output_size_, extra_out);
-    int n = 0;
-    while (byte_size_out > bytes_so_far) {
-      out[bytes_so_far] = extra_out[n++];
-    bytes_so_far++;
-    }
-  }
-}
-
-void entropy_collection::hash_gen(int num_requested_bits, byte* out) {
-  int size_output_bytes = (num_requested_bits + NBITSINBYTE - 1) / NBITSINBYTE;
-  int m = size_output_bytes / hash_byte_output_size_;
-  byte data[seed_len_bytes_ + 1];  // to fill to uint64_t boundary
-  memset(data, 0, seed_len_bytes_ + 1);
-  memcpy(data, V_, seed_len_bytes_);
-  int bytes_so_far = 0;
-  byte extra_out[hash_byte_output_size_];
-  memset(extra_out, 0, hash_byte_output_size_);
-
-  for (int i = 0; i < m; i++) {
-    hash_obj_.init();
-    hash_obj_.add_to_hash(seed_len_bytes_, data);
-    hash_obj_.finalize();
-    hash_obj_.get_digest(hash_byte_output_size_, &out[bytes_so_far]);
-    bytes_so_far += hash_byte_output_size_;
-    reverse_bytes_in_place(55, data);
-    big_add_one(7, (uint64_t*)data);
-    reverse_bytes_in_place(55, data);
-  }
-  // partial block --- avoid overflow
-  if (bytes_so_far < size_output_bytes) {
-    hash_obj_.init();
-    hash_obj_.add_to_hash(seed_len_bytes_, data);
-    hash_obj_.finalize();
-    hash_obj_.get_digest(hash_byte_output_size_, extra_out);
-    int n = 0;
-    while (size_output_bytes > bytes_so_far) {
-      out[bytes_so_far] = extra_out[n++];
-      bytes_so_far++;
-      }
-  }
 }
 
 entropy_collection::entropy_collection() {
@@ -273,6 +193,44 @@ bool entropy_collection::reseed() {
   printf("reseed C initial: ");print_bytes(55, C_); printf("\n");
 #endif
   return initialized_;
+}
+
+bool entropy_collection::health_check() {
+  return true;
+}
+
+void entropy_collection::hash_gen(int num_requested_bits, byte* out) {
+  int size_output_bytes = (num_requested_bits + NBITSINBYTE - 1) / NBITSINBYTE;
+  int m = size_output_bytes / hash_byte_output_size_;
+  byte data[seed_len_bytes_ + 1];  // to fill to uint64_t boundary
+  memset(data, 0, seed_len_bytes_ + 1);
+  memcpy(data, V_, seed_len_bytes_);
+  int bytes_so_far = 0;
+  byte extra_out[hash_byte_output_size_];
+  memset(extra_out, 0, hash_byte_output_size_);
+
+  for (int i = 0; i < m; i++) {
+    hash_obj_.init();
+    hash_obj_.add_to_hash(seed_len_bytes_, data);
+    hash_obj_.finalize();
+    hash_obj_.get_digest(hash_byte_output_size_, &out[bytes_so_far]);
+    bytes_so_far += hash_byte_output_size_;
+    reverse_bytes_in_place(55, data);
+    big_add_one(7, (uint64_t*)data);
+    reverse_bytes_in_place(55, data);
+  }
+  // partial block --- avoid overflow
+  if (bytes_so_far < size_output_bytes) {
+    hash_obj_.init();
+    hash_obj_.add_to_hash(seed_len_bytes_, data);
+    hash_obj_.finalize();
+    hash_obj_.get_digest(hash_byte_output_size_, extra_out);
+    int n = 0;
+    while (size_output_bytes > bytes_so_far) {
+      out[bytes_so_far] = extra_out[n++];
+      bytes_so_far++;
+      }
+  }
 }
 
 bool entropy_collection::generate(int num_bits_needed, byte* out, int size_add_in_bits,

@@ -46,7 +46,8 @@ AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=   $(O)/test_entropy_collection.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
-	$(O)/hash.o $(O)/sha256.o $(O)/entropy_collection.o $(O)/lz77.o $(O)/probability_support.o
+	$(O)/hash.o $(O)/sha256.o $(O)/hash_df.o $(O)/entropy_collection.o $(O)/lz77.o \
+	$(O)/probability_support.o
 
 all:    test_entropy_collection.exe
 clean:
@@ -85,6 +86,10 @@ $(O)/hash.o: $(S_HASH)/hash.cc
 $(O)/sha256.o: $(S_HASH)/sha256.cc
 	@echo "compiling sha256.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/sha256.o $(S_HASH)/sha256.cc
+
+$(O)/hash_df.o: hash_df.cc
+	@echo "compiling hash_df.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/hash_df.o hash_df.cc
 
 $(O)/entropy_collection.o: $(S)/entropy_collection.cc
 	@echo "compiling entropy_collection.cc"

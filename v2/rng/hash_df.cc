@@ -1,4 +1,4 @@
-/ Copyright 2020 John Manferdelli, All Rights Reserved.
+// Copyright 2020 John Manferdelli, All Rights Reserved.
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -16,7 +16,7 @@
 #include "hash_df.h"
 
 void hash_all(int byte_size_in, byte* in, byte* out) {
-  sha256.h hash_obj;
+  sha256 hash_obj;
 
   hash_obj.init();
   hash_obj.add_to_hash(byte_size_in, in);
@@ -25,7 +25,7 @@ void hash_all(int byte_size_in, byte* in, byte* out) {
 }
 
 void hash_df(int byte_size_in, byte* in, int bit_size_out, byte* out) {
-  sha256.h hash_obj;
+  sha256 hash_obj;
 
   memset(out, 0, sha256::DIGESTBYTESIZE);
   int byte_size_out = (bit_size_out + NBITSINBYTE - 1) / NBITSINBYTE;
@@ -40,7 +40,7 @@ void hash_df(int byte_size_in, byte* in, int bit_size_out, byte* out) {
     hash_obj.add_to_hash(sizeof(int), (byte*)&bit_size_out);
     hash_obj.add_to_hash(byte_size_in, in);
     hash_obj.finalize();
-    hash_obj.get_digest(hash_byte_output_size_, &out[bytes_so_far]);
+    hash_obj.get_digest(sha256::DIGESTBYTESIZE, &out[bytes_so_far]);
     bytes_so_far += sha256::DIGESTBYTESIZE;
     ctr++;
   }
