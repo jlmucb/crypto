@@ -40,17 +40,53 @@ int main(int an, char** av) {
   the_rng.raw_entropy_.set_policy(FLAGS_entropy_per_sample);
 
   // append some samples
-  // bool append_samples(int num_samples, byte* samples);
+  int num_samples = 300;
+  byte samples[num_samples];
+  if (crypto_get_random_bytes(num_samples, samples) < 0) {
+    printf("Can't get crypto bytes\n");
+    return 1;
+  }
+  if (!the_rng.raw_entropy_.append_samples(num_samples, samples)) {
+    printf("append samples failed\n");
+    return 1;
+  }
+
   // check entropy of pool
+
   // test health
   // bool health_check();
 
   // empty pool and init DBRNG
-  // bool empty_pool(int* size_of_pool, byte* pool, double* ent);
+  int size_init_pool = num_samples;
+  byte init_pool[num_samples];
+  double ent_in_pool= 0.0;
+  if (!the_rng.raw_entropy_.empty_pool(&size_init_pool, init_pool, &ent_in_pool)) {
+    printf("Can't empty pool\n");
+    return 1;
+  }
+  int size_nonce = 0;
+  int size_personalization = 0;
+  if (!the_rng.drng_.init(size_nonce, nullptr, size_personalization,
+            nullptr, size_init_pool, init_pool, ent_in_pool)) {
+    printf("Can't init drng\n");
+    return 1;
+  }
 
   // mix in some more entropy
+  // the_rng.drng_.mix_new_entropy(int entropy_width, byte* entropy, double ent);
 
   // generate some numbers
+  int num_bits_needed = 256;
+  byte out[32];
+  if (!the_rng.drng_.generate_random_bits(num_bits_needed, out, 0, nullptr)) {
+    printf("Can't get bits\n");
+    return 1;
+  }
+
+  if (FLAGS_print_all) {
+    printf("\nBits from drng:\n");
+    print_bytes(num_bits_needed / NBITSINBYTE, out);
+  }
 
   close_crypto();
   printf("\n");

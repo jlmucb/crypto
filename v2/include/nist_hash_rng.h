@@ -23,14 +23,13 @@ public:
   entropy_collection raw_entropy_;
   hash_drng drng_;
   int reseed_interval_;
-  int reseed_ctr_;
   int required_entropy_to_extract_;
 
   nist_hash_rng();
   ~nist_hash_rng();
 
   int reseed_interval() {return reseed_interval_;}
-  int reseed_ctr() {return reseed_ctr_;}
+  int reseed_ctr() {if (drng_.initialized_) return drng_.reseed_ctr_; return -1;}
   int required_entropy_to_extract() {return required_entropy_to_extract_;}
 
   bool initialize(int entropy_per_sample, double required_entropy_to_extract);
