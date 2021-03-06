@@ -9,7 +9,7 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License
-#    File: test_drng.mak
+#    File: test_entropy_collection.mak
 
 
 ifndef SRC_DIR
@@ -45,26 +45,26 @@ PROTO=protoc
 AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
-dobj=   $(O)/test_drng.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
-	$(O)/hash.o $(O)/sha256.o $(O)/drng.o $(O)/lz77.o $(O)/probability_support.o
+dobj=   $(O)/test_entropy_collection.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
+	$(O)/hash.o $(O)/sha256.o $(O)/entropy_collection.o $(O)/lz77.o $(O)/probability_support.o
 
-all:    test_drng.exe
+all:    test_entropy_collection.exe
 clean:
 	@echo "removing object files"
 	rm $(O)/*.o
 	@echo "removing executable file"
-	rm $(EXE_DIR)/test_drng.exe
+	rm $(EXE_DIR)/test_entropy_collection.exe
 
-test_drng.exe: $(dobj) 
+test_entropy_collection.exe: $(dobj) 
 	@echo "linking executable files"
-	$(LINK) -o $(EXE_DIR)/test_drng.exe $(dobj) $(LDFLAGS)
+	$(LINK) -o $(EXE_DIR)/test_entropy_collection.exe $(dobj) $(LDFLAGS)
 
 $(S_SUPPORT)/support.pb.cc $(S_SUPPORT)/support.pb.h: $(S_SUPPORT)/support.proto
 	$(PROTO) -I=$(S) --cpp_out=$(S_SUPPORT) $(S_SUPPORT)/support.proto
 
-$(O)/test_drng.o: $(S)/test_drng.cc
-	@echo "compiling test_drng.cc"
-	$(CC) $(CFLAGS) -c $(I) -o $(O)/test_drng.o $(S)/test_drng.cc
+$(O)/test_entropy_collection.o: $(S)/test_entropy_collection.cc
+	@echo "compiling test_entropy_collection.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/test_entropy_collection.o $(S)/test_entropy_collection.cc
 
 $(O)/support.pb.o: $(S_SUPPORT)/support.pb.cc $(S_SUPPORT)/support.pb.h
 	@echo "compiling support.pb.cc"
@@ -86,9 +86,9 @@ $(O)/sha256.o: $(S_HASH)/sha256.cc
 	@echo "compiling sha256.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/sha256.o $(S_HASH)/sha256.cc
 
-$(O)/drng.o: $(S)/drng.cc
-	@echo "compiling drng.cc"
-	$(CC) $(CFLAGS) -c $(I) -o $(O)/drng.o $(S)/drng.cc
+$(O)/entropy_collection.o: $(S)/entropy_collection.cc
+	@echo "compiling entropy_collection.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/entropy_collection.o $(S)/entropy_collection.cc
 
 $(O)/lz77.o: $(S)/lz77.cc
 	@echo "compiling lz77.cc"

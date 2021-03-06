@@ -18,7 +18,7 @@
 #include "support.pb.h"
 #include "crypto_names.h"
 #include "probability_support.h"
-#include "drng.h"
+#include "entropy_collection.h"
 
 // Note:  Mixers assume big endian so reverse bytes should
 // be invoked before and after any call to the addition stuff.
@@ -81,18 +81,18 @@ void big_add_one(int size_n, uint64_t* n) {
 #endif
 }
 
-bool hash_drng::health_check() {
+bool entropy_collection::health_check() {
   return true;
 }
 
-void hash_drng::hash(int byte_size_in, byte* in, byte* out) {
+void entropy_collection::hash(int byte_size_in, byte* in, byte* out) {
   hash_obj_.init();
   hash_obj_.add_to_hash(byte_size_in, in);
   hash_obj_.finalize();
   hash_obj_.get_digest(hash_byte_output_size_, out);
 }
 
-void hash_drng::hash_df(int byte_size_in, byte* in, int bit_size_out, byte* out) {
+void entropy_collection::hash_df(int byte_size_in, byte* in, int bit_size_out, byte* out) {
   memset(out, 0, hash_byte_output_size_);
   int byte_size_out = (bit_size_out + NBITSINBYTE - 1) / NBITSINBYTE;
   int l = byte_size_out / hash_byte_output_size_;
@@ -126,7 +126,7 @@ void hash_drng::hash_df(int byte_size_in, byte* in, int bit_size_out, byte* out)
   }
 }
 
-void hash_drng::hash_gen(int num_requested_bits, byte* out) {
+void entropy_collection::hash_gen(int num_requested_bits, byte* out) {
   int size_output_bytes = (num_requested_bits + NBITSINBYTE - 1) / NBITSINBYTE;
   int m = size_output_bytes / hash_byte_output_size_;
   byte data[seed_len_bytes_ + 1];  // to fill to uint64_t boundary
@@ -160,7 +160,7 @@ void hash_drng::hash_gen(int num_requested_bits, byte* out) {
   }
 }
 
-hash_drng::hash_drng() {
+entropy_collection::entropy_collection() {
   initialized_= false;
   reseed_ctr_ = 0;
   current_entropy_in_pool_= 0;
@@ -174,7 +174,7 @@ hash_drng::hash_drng() {
   seed_len_bytes_ = seed_len_bits_ / NBITSINBYTE;;
 }
 
-hash_drng::~hash_drng() {
+entropy_collection::~entropy_collection() {
   initialized_= false;
   reseed_ctr_ = 0;
   current_entropy_in_pool_= 0;
@@ -186,7 +186,7 @@ hash_drng::~hash_drng() {
   memset(V_, 0, 64);
 }
 
-void hash_drng::set_policy(int n_ent, int byte_pool_size, int reseed_interval) {
+void entropy_collection::set_policy(int n_ent, int byte_pool_size, int reseed_interval) {
   num_ent_bits_required_ = n_ent;
   if (byte_pool_size > MAXPOOL_SIZE * NBITSINBYTE)
     pool_size_ = MAXPOOL_SIZE;
@@ -195,11 +195,11 @@ void hash_drng::set_policy(int n_ent, int byte_pool_size, int reseed_interval) {
   reseed_interval_ = reseed_interval;
 }
 
-double hash_drng::calculate_mixed_entropy_amount(double ent) {
+double entropy_collection::calculate_mixed_entropy_amount(double ent) {
   return current_entropy_in_pool_ + ent;
 }
 
-void hash_drng::add_entropy(int size_bytes, byte* bits, double ent) {
+void entropy_collection::add_entropy(int size_bytes, byte* bits, double ent) {
   if ((size_bytes + current_size_pool_) >= MAXPOOL_SIZE)
     return;
   memcpy(&pool_[current_size_pool_], bits, size_bytes);
@@ -207,11 +207,11 @@ void hash_drng::add_entropy(int size_bytes, byte* bits, double ent) {
   current_entropy_in_pool_ = calculate_mixed_entropy_amount(ent);
 }
 
-double hash_drng::entropy_estimate() {
+double entropy_collection::entropy_estimate() {
   return current_entropy_in_pool_;
 }
 
-bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization, byte* personalization) {
+bool entropy_collection::init(int size_nonce, byte* nonce, int size_personalization, byte* personalization) {
   reseed_ctr_ = 0;
   if (num_ent_bits_required_ > current_entropy_in_pool_)
     return false;
@@ -237,7 +237,7 @@ bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization, byte
   return initialized_;
 }
 
-bool hash_drng::reseed() {
+bool entropy_collection::reseed() {
   reseed_ctr_ = 0;
   if (num_ent_bits_required_ > current_entropy_in_pool_)
     return false;
@@ -265,7 +265,7 @@ bool hash_drng::reseed() {
   return initialized_;
 }
 
-bool hash_drng::generate(int num_bits_needed, byte* out, int size_add_in_bits,
+bool entropy_collection::generate(int num_bits_needed, byte* out, int size_add_in_bits,
             byte* add_in_bits) {
   if (reseed_ctr_ > reseed_interval_)
     reseed();

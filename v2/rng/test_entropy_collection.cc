@@ -17,7 +17,7 @@
 #include "crypto_support.h"
 #include "support.pb.h"
 #include "crypto_names.h"
-#include "drng.h"
+#include "entropy_collection.h"
 #include "probability_support.h"
 #include "aes.h"
 
@@ -31,7 +31,7 @@ bool test_ctr_drng() {
   memset(ent_bytes, 0, 512);
   memset(bytes_out, 0, 512);
  
-  hash_drng obj;
+  entropy_collection obj;
   obj.set_policy(256, 1024, 200);
 
   for(int i = 0; i < 512; i++)
