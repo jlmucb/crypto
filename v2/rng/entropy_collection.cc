@@ -208,12 +208,13 @@ void entropy_collection::hash_gen(int num_requested_bits, byte* out) {
   int bytes_so_far = 0;
   byte extra_out[hash_byte_output_size_];
   memset(extra_out, 0, hash_byte_output_size_);
+  sha256 hash_obj;
 
   for (int i = 0; i < m; i++) {
-    hash_obj_.init();
-    hash_obj_.add_to_hash(seed_len_bytes_, data);
-    hash_obj_.finalize();
-    hash_obj_.get_digest(hash_byte_output_size_, &out[bytes_so_far]);
+    hash_obj.init();
+    hash_obj.add_to_hash(seed_len_bytes_, data);
+    hash_obj.finalize();
+    hash_obj.get_digest(hash_byte_output_size_, &out[bytes_so_far]);
     bytes_so_far += hash_byte_output_size_;
     reverse_bytes_in_place(55, data);
     big_add_one(7, (uint64_t*)data);
@@ -221,10 +222,10 @@ void entropy_collection::hash_gen(int num_requested_bits, byte* out) {
   }
   // partial block --- avoid overflow
   if (bytes_so_far < size_output_bytes) {
-    hash_obj_.init();
-    hash_obj_.add_to_hash(seed_len_bytes_, data);
-    hash_obj_.finalize();
-    hash_obj_.get_digest(hash_byte_output_size_, extra_out);
+    hash_obj.init();
+    hash_obj.add_to_hash(seed_len_bytes_, data);
+    hash_obj.finalize();
+    hash_obj.get_digest(hash_byte_output_size_, extra_out);
     int n = 0;
     while (size_output_bytes > bytes_so_far) {
       out[bytes_so_far] = extra_out[n++];
@@ -235,6 +236,8 @@ void entropy_collection::hash_gen(int num_requested_bits, byte* out) {
 
 bool entropy_collection::generate(int num_bits_needed, byte* out, int size_add_in_bits,
             byte* add_in_bits) {
+  sha256 hash_obj;
+
   if (reseed_ctr_ > reseed_interval_)
     reseed();
   if (current_entropy_in_pool_ < num_ent_bits_required_)
@@ -246,12 +249,12 @@ bool entropy_collection::generate(int num_bits_needed, byte* out, int size_add_i
     byte w[hash_byte_output_size_];
     memset(w, 0, hash_byte_output_size_);
     byte two = 0x02;
-    hash_obj_.init();
-    hash_obj_.add_to_hash(1, &two);
-    hash_obj_.add_to_hash(seed_len_bytes_, V_);
-    hash_obj_.add_to_hash(add_in_byte_size, add_in_bits);
-    hash_obj_.finalize();
-    hash_obj_.get_digest(hash_byte_output_size_, w);
+    hash_obj.init();
+    hash_obj.add_to_hash(1, &two);
+    hash_obj.add_to_hash(seed_len_bytes_, V_);
+    hash_obj.add_to_hash(add_in_byte_size, add_in_bits);
+    hash_obj.finalize();
+    hash_obj.get_digest(hash_byte_output_size_, w);
 
     // V+= w mod 2^seedlen
     reverse_bytes_in_place(55, V_);
@@ -269,11 +272,11 @@ bool entropy_collection::generate(int num_bits_needed, byte* out, int size_add_i
   byte H[hash_byte_output_size_];
   memset(H, 0, hash_byte_output_size_);
   byte three = 0x03;
-  hash_obj_.init();
-  hash_obj_.add_to_hash(1, &three);
-  hash_obj_.add_to_hash(seed_len_bytes_, V_);
-  hash_obj_.finalize();
-  hash_obj_.get_digest(hash_byte_output_size_, H);
+  hash_obj.init();
+  hash_obj.add_to_hash(1, &three);
+  hash_obj.add_to_hash(seed_len_bytes_, V_);
+  hash_obj.finalize();
+  hash_obj.get_digest(hash_byte_output_size_, H);
 
 #if 0
   printf("H: ");print_bytes(32, H);printf("\n");

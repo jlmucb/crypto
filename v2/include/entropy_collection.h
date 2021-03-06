@@ -36,8 +36,6 @@ public:
   byte C_[64];
   byte V_[64];
 
-  sha256 hash_obj_;
-
   entropy_collection();
   ~entropy_collection();
 
