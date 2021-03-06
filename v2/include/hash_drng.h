@@ -20,9 +20,9 @@
 
 // Hash drng
 class hash_drng {
+public:
   bool initialized_;
   int reseed_ctr_;
-  int reseed_interval_;
   double current_entropy_;
   int hash_byte_output_size_;
   int seed_len_bits_;
@@ -33,8 +33,7 @@ class hash_drng {
   hash_drng();
   ~hash_drng();
 
-  void set_policy(int reseed_interval);
-  bool reseed();
+  int get_reseed_counter() {return reseed_ctr_;};
   double current_entropy();
   bool init(int size_nonce, byte* nonce, int size_personalization,
             byte* personalization, int entropy_width, byte* entropy,

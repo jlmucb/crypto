@@ -9,7 +9,7 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License
-#    File: test_entropy_collection.mak
+#    File: test_rng.mak
 
 
 ifndef SRC_DIR
@@ -45,27 +45,35 @@ PROTO=protoc
 AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
-dobj=   $(O)/test_entropy_collection.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
-	$(O)/hash.o $(O)/sha256.o $(O)/hash_df.o $(O)/entropy_collection.o $(O)/lz77.o \
-	$(O)/probability_support.o
+dobj=   $(O)/test_rng.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
+	$(O)/hash.o $(O)/sha256.o $(O)/hash_df.o $(O)/entropy_collection.o  \
+	$(O)/lz77.o $(O)/probability_support.o $(O)/nist_hash_rng.o $(O)/hash_drng.o
 
-all:    test_entropy_collection.exe
+all:    test_rng.exe
 clean:
 	@echo "removing object files"
 	rm $(O)/*.o
 	@echo "removing executable file"
-	rm $(EXE_DIR)/test_entropy_collection.exe
+	rm $(EXE_DIR)/test_rng.exe
 
-test_entropy_collection.exe: $(dobj) 
+test_rng.exe: $(dobj) 
 	@echo "linking executable files"
-	$(LINK) -o $(EXE_DIR)/test_entropy_collection.exe $(dobj) $(LDFLAGS)
+	$(LINK) -o $(EXE_DIR)/test_rng.exe $(dobj) $(LDFLAGS)
 
 $(S_SUPPORT)/support.pb.cc $(S_SUPPORT)/support.pb.h: $(S_SUPPORT)/support.proto
 	$(PROTO) -I=$(S) --cpp_out=$(S_SUPPORT) $(S_SUPPORT)/support.proto
 
-$(O)/test_entropy_collection.o: $(S)/test_entropy_collection.cc
-	@echo "compiling test_entropy_collection.cc"
-	$(CC) $(CFLAGS) -c $(I) -o $(O)/test_entropy_collection.o $(S)/test_entropy_collection.cc
+$(O)/test_rng.o: $(S)/test_rng.cc
+	@echo "compiling test_rng.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/test_rng.o $(S)/test_rng.cc
+
+$(O)/nist_hash_rng.o: $(S)/nist_hash_rng.cc
+	@echo "compiling nist_hash_rng.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/nist_hash_rng.o $(S)/nist_hash_rng.cc
+
+$(O)/hash_drng.o: $(S)/hash_drng.cc
+	@echo "compiling hash_drng.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/hash_drng.o $(S)/hash_drng.cc
 
 $(O)/support.pb.o: $(S_SUPPORT)/support.pb.cc $(S_SUPPORT)/support.pb.h
 	@echo "compiling support.pb.cc"

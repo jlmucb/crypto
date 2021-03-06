@@ -35,10 +35,6 @@ bool nist_hash_rng::collect_samples(int num_samples, byte* samples) {
   return true;
 }
 
-bool nist_hash_rng::initialize_collector() {
-  return true;
-}
-
 bool nist_hash_rng::initialize_drng() {
   return true;
 }
@@ -54,3 +50,8 @@ int nist_hash_rng::extract_random_number(int num_bits, byte* rn) {
 bool nist_hash_rng::reseed() {
   return true;
 }
+
+bool nist_hash_rng::restart_test(int num_samples, byte* samples) {
+  return true;
+}
+

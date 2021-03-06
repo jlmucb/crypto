@@ -41,6 +41,8 @@ public:
   int extract_random_number(int num_bits, byte* rn);
 
   bool reseed();
+  bool restart_test(int num_samples, byte* samples);
+};
 #endif
 
 

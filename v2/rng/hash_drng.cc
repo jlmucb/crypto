@@ -15,6 +15,7 @@
 #include "crypto_support.h"
 #include "probability_support.h"
 #include "hash_df.h"
+#include "hash_drng.h"
 
 // Note:  Mixers assume big endian so reverse bytes should
 // be invoked before and after any call to the addition stuff.
@@ -81,38 +82,21 @@ hash_drng::hash_drng() {
   initialized_= false;
   reseed_ctr_ = 0;
   hash_byte_output_size_ = sha256::DIGESTBYTESIZE;
-  memset(pool_, 0, MAXPOOL_SIZE);
-  reseed_interval_ = 100;
   seed_len_bits_ = 440;  // we're using sha256
   seed_len_bytes_ = seed_len_bits_ / NBITSINBYTE;;
-  current_state_entropy_ = 0;
+  current_entropy_ = 0;
 }
 
 hash_drng::~hash_drng() {
   initialized_= false;
   reseed_ctr_ = 0;
-  current_state_entropy_ = 0;
+  current_entropy_ = 0;
   memset(C_, 0, 64);
   memset(V_, 0, 64);
 }
 
-void hash_drng::set_policy(int reseed_interval) {
-  reseed_interval_ = reseed_interval;
-}
-
-// nw = width (256 for our hash)
-// n_in input to conditioner
-// n_out output
-// s = 2^(-ent) p_l= (1-p_h)/(2^current_ent - 1)
-// n = min(n_out, nw)
-// u = 2^(n_in-n) + sqrt(2nln(2)2^(n_in-n))
-// return -lg(max(s, u)
-double conditioned_entropy_estimate(double h_in, int nw, int n_in, int n_out) {
-  return h_in;
-}
-
-double hash_drng::current_state_entropy() {
-  return current_state_entropy_;
+double hash_drng::current_entropy() {
+  return current_entropy_;
 }
 
 void mix_new_entropy(int entropy_width, byte* entropy, double ent) {
@@ -133,7 +117,7 @@ bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization,
   memset(seed_material, 0, seed_material_size);
   memcpy(&seed_material[1], V_, seed_len_bytes_);
   hash_df(seed_len_bytes_ + 1, seed_material, seed_len_bits_, C_);
-  current_state_entropy_ = ent;
+  current_entropy_ = ent;
   reseed_ctr_ = 1;
 #if 0
   printf("V initial: ");print_bytes(55, V_); printf("\n");
@@ -143,6 +127,7 @@ bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization,
   return initialized_;
 }
 
+#if 0
 bool hash_drng::reseed() {
   reseed_ctr_ = 0;
   if (num_ent_bits_required_ > current_entropy_in_pool_)
@@ -170,6 +155,7 @@ bool hash_drng::reseed() {
 #endif
   return initialized_;
 }
+#endif
 
 void hash_drng::hash_gen(int num_requested_bits, byte* out) {
   int size_output_bytes = (num_requested_bits + NBITSINBYTE - 1) / NBITSINBYTE;
@@ -210,10 +196,6 @@ bool hash_drng::generate_random_bits(int num_bits_needed, byte* out, int size_ad
             byte* add_in_bits) {
   sha256 hash_obj;
 
-  if (reseed_ctr_ > reseed_interval_)
-    reseed();
-  if (current_entropy_in_pool_ < num_ent_bits_required_)
-    return false;
   int add_in_byte_size = (size_add_in_bits + NBITSINBYTE - 1) / NBITSINBYTE;
 
   if (size_add_in_bits > 0) {

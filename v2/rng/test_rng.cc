@@ -21,8 +21,8 @@
 #include "nist_hash_rng.h"
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
-DEFINE_int(pool_size, 4096, "pool size");
-DEFINE_int(entropy_per_sample, 2, "entropy per sample");
+DEFINE_int32(pool_size, 4096, "pool size");
+DEFINE_int32(entropy_per_sample, 2, "entropy per sample");
 DEFINE_double(entropy_required, 256, "entropy required");
 
 nist_hash_rng the_rng;
@@ -30,7 +30,6 @@ nist_hash_rng the_rng;
 int main(int an, char** av) {
   gflags::ParseCommandLineFlags(&an, &av, true);
   an = 1;
-  ::testing::InitGoogleTest(&an, av);
 
   init_crypto();
 
@@ -38,7 +37,7 @@ int main(int an, char** av) {
     printf("RNG init failed\n");
     return 1;
   }
-  the_rng.set_policy(FLAGS_pool_size, FLAGS_entropy_per_sample);
+  the_rng.raw_entropy_.set_policy(FLAGS_entropy_per_sample);
 
   // append some samples
   // bool append_samples(int num_samples, byte* samples);

@@ -26,13 +26,14 @@ public:
   double entropy_per_sample_;
   double current_entropy_in_pool_;
   int current_size_pool_;
+  int pool_size_;
   byte pool_[MAXPOOL_SIZE];
 
   entropy_collection();
   ~entropy_collection();
 
   double entropy_estimate();
-  void set_policy(int byte_pool_size, double entropy_per_sample);
+  void set_policy(double entropy_per_sample);
   bool append_samples(int num_samples, byte* samples);
   bool health_check();
   bool empty_pool(int* size_of_pool, byte* pool, double* ent);
