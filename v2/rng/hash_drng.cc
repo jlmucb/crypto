@@ -9,17 +9,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// File: entropy_collection.cc
+// File: hash_drng.cc
 
-#include <gtest/gtest.h>
-#include <gflags/gflags.h>
 #include <stdio.h>
 #include "crypto_support.h"
-#include "support.pb.h"
-#include "crypto_names.h"
 #include "probability_support.h"
 #include "hash_df.h"
-#include "entropy_collection.h"
 
 // Note:  Mixers assume big endian so reverse bytes should
 // be invoked before and after any call to the addition stuff.
@@ -82,38 +77,26 @@ void big_add_one(int size_n, uint64_t* n) {
 #endif
 }
 
-entropy_collection::entropy_collection() {
+hash_drng::hash_drng() {
   initialized_= false;
   reseed_ctr_ = 0;
-  current_entropy_in_pool_= 0;
-  num_ent_bits_required_ = 0;
-  current_size_pool_ = 0;
-  pool_size_ = 0;
   hash_byte_output_size_ = sha256::DIGESTBYTESIZE;
   memset(pool_, 0, MAXPOOL_SIZE);
   reseed_interval_ = 100;
   seed_len_bits_ = 440;  // we're using sha256
   seed_len_bytes_ = seed_len_bits_ / NBITSINBYTE;;
+  current_state_entropy_ = 0;
 }
 
-entropy_collection::~entropy_collection() {
+hash_drng::~hash_drng() {
   initialized_= false;
   reseed_ctr_ = 0;
-  current_entropy_in_pool_= 0;
-  num_ent_bits_required_ = 0;
-  current_size_pool_ = 0;
-  pool_size_ = 0;
-  memset(pool_, 0, MAXPOOL_SIZE);
+  current_state_entropy_ = 0;
   memset(C_, 0, 64);
   memset(V_, 0, 64);
 }
 
-void entropy_collection::set_policy(int n_ent, int byte_pool_size, int reseed_interval) {
-  num_ent_bits_required_ = n_ent;
-  if (byte_pool_size > MAXPOOL_SIZE * NBITSINBYTE)
-    pool_size_ = MAXPOOL_SIZE;
-  else
-    pool_size_ = byte_pool_size;
+void hash_drng::set_policy(int reseed_interval) {
   reseed_interval_ = reseed_interval;
 }
 
@@ -128,30 +111,18 @@ double conditioned_entropy_estimate(double h_in, int nw, int n_in, int n_out) {
   return h_in;
 }
 
-void entropy_collection::add_entropy(int size_bytes, byte* bits, double ent) {
-  if ((size_bytes + current_size_pool_) <= MAXPOOL_SIZE) {
-    memcpy(&pool_[current_size_pool_], bits, size_bytes);
-    current_size_pool_ += size_bytes;
-    current_entropy_in_pool_ += ent;
-  }
-#if 0
-conditioned_entropy_estimate(ent, NBITSINBYTE * sha256::DIGESTBYTESIZE,
-         NBITSINBYTE * size_bytes, pool_size_);
-#endif
+double hash_drng::current_state_entropy() {
+  return current_state_entropy_;
 }
 
-double entropy_collection::entropy_estimate() {
-  return current_entropy_in_pool_;
-}
-
-bool entropy_collection::init(int size_nonce, byte* nonce, int size_personalization, byte* personalization) {
+bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization,
+      byte* personalization, int entropy_width, byte* material, double ent) {
   reseed_ctr_ = 0;
-  if (num_ent_bits_required_ > current_entropy_in_pool_)
-    return false;
-  int seed_material_size = current_size_pool_ + size_nonce + size_personalization;
+  int seed_material_size = entropy_width + size_nonce + size_personalization;
+
   byte seed_material[seed_material_size];
   memset(seed_material, 0, seed_material_size);
-  memcpy(seed_material, pool_, current_size_pool_);
+  memcpy(seed_material, material, entropy_width);
 #if 0
   printf("init, seed material: "); print_bytes(seed_material_size, seed_material);printf("\n");
 #endif
@@ -159,18 +130,17 @@ bool entropy_collection::init(int size_nonce, byte* nonce, int size_personalizat
   memset(seed_material, 0, seed_material_size);
   memcpy(&seed_material[1], V_, seed_len_bytes_);
   hash_df(seed_len_bytes_ + 1, seed_material, seed_len_bits_, C_);
-  current_entropy_in_pool_= 0;
-  current_size_pool_ = 0;
-  initialized_= true;
+  current_state_entropy_ = ent;
   reseed_ctr_ = 1;
 #if 0
   printf("V initial: ");print_bytes(55, V_); printf("\n");
   printf("C initial: ");print_bytes(55, C_); printf("\n");
 #endif
+  initialized_= true;
   return initialized_;
 }
 
-bool entropy_collection::reseed() {
+bool hash_drng::reseed() {
   reseed_ctr_ = 0;
   if (num_ent_bits_required_ > current_entropy_in_pool_)
     return false;
@@ -198,11 +168,7 @@ bool entropy_collection::reseed() {
   return initialized_;
 }
 
-bool entropy_collection::health_check() {
-  return true;
-}
-
-void entropy_collection::hash_gen(int num_requested_bits, byte* out) {
+void hash_drng::hash_gen(int num_requested_bits, byte* out) {
   int size_output_bytes = (num_requested_bits + NBITSINBYTE - 1) / NBITSINBYTE;
   int m = size_output_bytes / hash_byte_output_size_;
   byte data[seed_len_bytes_ + 1];  // to fill to uint64_t boundary
@@ -237,7 +203,7 @@ void entropy_collection::hash_gen(int num_requested_bits, byte* out) {
   }
 }
 
-bool entropy_collection::generate(int num_bits_needed, byte* out, int size_add_in_bits,
+bool hash_drng::generate_random_bits(int num_bits_needed, byte* out, int size_add_in_bits,
             byte* add_in_bits) {
   sha256 hash_obj;
 
