@@ -19,7 +19,7 @@
 
 // Hash mixer
 class entropy_collection {
-  enum {MAXPOOL_SIZE = 4096};
+  enum {MAXPOOL_SIZE = 300};
 public:
   bool initialized_;
   double entropy_per_sample_;
