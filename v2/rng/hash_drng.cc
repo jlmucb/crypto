@@ -127,36 +127,6 @@ bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization,
   return initialized_;
 }
 
-#if 0
-bool hash_drng::reseed() {
-  reseed_ctr_ = 0;
-  if (num_ent_bits_required_ > current_entropy_in_pool_)
-    return false;
-  int seed_material_size = 1 + current_size_pool_ + seed_len_bytes_;
-  byte seed_material[seed_material_size];
-  memset(seed_material, 0, seed_material_size);
-  seed_material[0] = 0x01;
-  memcpy(&seed_material[1], V_, seed_len_bytes_);
-  memcpy(&seed_material[1 + seed_len_bytes_], pool_, current_size_pool_);
-#if 0
-  printf("init, seed material: "); print_bytes(seed_material_size, seed_material);printf("\n");
-#endif
-  hash_df(seed_material_size, seed_material, seed_len_bits_, V_);
-  memset(seed_material, 0, seed_material_size);
-  memcpy(&seed_material[1], V_, seed_len_bytes_);
-  hash_df(seed_len_bytes_ + 1, seed_material, seed_len_bits_, C_);
-  current_entropy_in_pool_= 0;
-  current_size_pool_ = 0;
-  initialized_= true;
-  reseed_ctr_ = 1;
-#if 0
-  printf("reseed V initial: ");print_bytes(55, V_); printf("\n");
-  printf("reseed C initial: ");print_bytes(55, C_); printf("\n");
-#endif
-  return initialized_;
-}
-#endif
-
 void hash_drng::hash_gen(int num_requested_bits, byte* out) {
   int size_output_bytes = (num_requested_bits + NBITSINBYTE - 1) / NBITSINBYTE;
   int m = size_output_bytes / hash_byte_output_size_;

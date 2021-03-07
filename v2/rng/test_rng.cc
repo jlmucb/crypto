@@ -78,6 +78,11 @@ int main(int an, char** av) {
   // generate some numbers
   int num_bits_needed = 256;
   byte out[32];
+  if (the_rng.reseed_ctr() >= the_rng.reseed_interval()) {
+    // shouldn't happen
+    printf("Reseed so fast?\n");
+    return 1;
+  }
   if (!the_rng.drng_.generate_random_bits(num_bits_needed, out, 0, nullptr)) {
     printf("Can't get bits\n");
     return 1;
