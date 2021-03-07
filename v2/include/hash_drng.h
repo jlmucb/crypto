@@ -38,7 +38,6 @@ public:
   bool init(int size_nonce, byte* nonce, int size_personalization,
             byte* personalization, int entropy_width, byte* entropy,
             double ent);
-  void mix_new_entropy(int entropy_width, byte* entropy, double ent);
   void hash_gen(int num_requested_bits, byte* out);
   bool generate_random_bits(int num_bits_needed, byte* out,
           int n_add_in_bits, byte* add_in_bits);

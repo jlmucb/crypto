@@ -25,6 +25,7 @@
 entropy_collection::entropy_collection() {
   current_entropy_in_pool_= 0;
   current_size_pool_ = 0;
+  pool_size_ = MAXPOOL_SIZE;
   memset(pool_, 0, MAXPOOL_SIZE);
   memset(compressed_entropy_, 0, sha256::DIGESTBYTESIZE);
   compressed_entropy_flag_ = false;
@@ -71,8 +72,9 @@ bool entropy_collection::add_samples(int num_samples, byte* samples) {
     left_over = num_samples - fits;
   }
 
-  if (!append_samples(fits, samples))
+  if (!append_samples(fits, samples)) {
     return false;
+  }
 
   if (current_size_pool_ >= pool_size_) {
     sha256 obj;
@@ -101,8 +103,10 @@ bool entropy_collection::health_check() {
 }
 
 bool entropy_collection::empty_pool(int* size_of_output, byte* data, double* ent) {
-  if (*size_of_output < current_size_pool_)
+  if (*size_of_output < current_size_pool_) {
+    printf("output too small, size of data:  %d, size of pool: %d\n", *size_of_output, current_size_pool_);
     return false;
+  }
   memcpy(data, pool_, current_size_pool_);
 
   if (compressed_entropy_flag_) {

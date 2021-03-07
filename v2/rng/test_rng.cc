@@ -22,8 +22,8 @@
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 DEFINE_int32(pool_size, 4096, "pool size");
-DEFINE_int32(entropy_per_sample, 2, "entropy per sample");
-DEFINE_double(entropy_required, 256, "entropy required");
+DEFINE_double(entropy_per_sample, 2, "entropy per sample");
+DEFINE_double(entropy_required, 128, "entropy required");
 
 nist_hash_rng the_rng;
 
@@ -33,7 +33,7 @@ int main(int an, char** av) {
 
   init_crypto();
 
-  if (!the_rng.initialize(FLAGS_entropy_per_sample, FLAGS_entropy_required)) {
+  if (!the_rng.initialize(FLAGS_entropy_per_sample, FLAGS_entropy_required, 1024)) {
     printf("RNG init failed\n");
     return 1;
   }
@@ -46,7 +46,9 @@ int main(int an, char** av) {
     printf("Can't get crypto bytes\n");
     return 1;
   }
-  if (!the_rng.raw_entropy_.add_samples(num_samples, samples)) {
+
+
+  if (!the_rng.collect_samples(num_samples, samples)) {
     printf("add_samples failed\n");
     return 1;
   }
@@ -64,6 +66,8 @@ int main(int an, char** av) {
     printf("Can't empty pool\n");
     return 1;
   }
+  printf("entropy in pool: %lf\n", ent_in_pool);
+
   int size_nonce = 0;
   int size_personalization = 0;
   if (!the_rng.drng_.init(size_nonce, nullptr, size_personalization,
@@ -71,6 +75,7 @@ int main(int an, char** av) {
     printf("Can't init drng\n");
     return 1;
   }
+  printf("entropy in drng: %lf\n", the_rng.drng_.current_entropy());
 
   // mix in some more entropy
   // the_rng.drng_.mix_new_entropy(int entropy_width, byte* entropy, double ent);
@@ -83,12 +88,14 @@ int main(int an, char** av) {
     printf("Reseed so fast?\n");
     return 1;
   }
-  if (the_rng.required_entropy_to_extract() < the_rng.drng_.current_entropy()) {
+
+  printf("required entropy: %d\n", the_rng.required_entropy_to_extract());
+  if (the_rng.required_entropy_to_extract() > the_rng.drng_.current_entropy()) {
     printf("Not enough entropy\n");
     return 1;
   }
 
-  if (!the_rng.drng_.generate_random_bits(num_bits_needed, out, 0, nullptr)) {
+  if (!the_rng.extract_random_number(num_bits_needed, out)) {
     printf("Can't get bits\n");
     return 1;
   }

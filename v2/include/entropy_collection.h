@@ -1,5 +1,4 @@
 // Copyright 2020 John Manferdelli, All Rights Reserved.
-//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -28,6 +27,9 @@ public:
   int current_size_pool_;
   int pool_size_;
   byte pool_[MAXPOOL_SIZE];
+  double compressed_entropy_ent_;
+  bool compressed_entropy_flag_;
+  byte compressed_entropy_[sha256::DIGESTBYTESIZE];
 
   entropy_collection();
   ~entropy_collection();
@@ -37,6 +39,7 @@ public:
   double entropy_estimate();
   void set_policy(double entropy_per_sample);
   bool append_samples(int num_samples, byte* samples);
+  bool add_samples(int num_samples, byte* samples);
   bool health_check();
   bool empty_pool(int* size_of_pool, byte* pool, double* ent);
 };

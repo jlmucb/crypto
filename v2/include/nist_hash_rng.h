@@ -32,11 +32,10 @@ public:
   int reseed_ctr() {if (drng_.initialized_) return drng_.reseed_ctr_; return -1;}
   int required_entropy_to_extract() {return required_entropy_to_extract_;}
 
-  bool initialize(int entropy_per_sample, double required_entropy_to_extract);
+  bool initialize(int entropy_per_sample, double required_entropy_to_extract, int reseed_interval);
   bool collect_samples(int num_samples, byte* samples);
 
   bool initialize_drng();
-  bool mix_new_samples(int num_samples, byte* samples);
   int extract_random_number(int num_bits, byte* rn);
 
   bool reseed();
