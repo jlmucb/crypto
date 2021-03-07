@@ -22,8 +22,12 @@
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 DEFINE_int32(pool_size, 4096, "pool size");
-DEFINE_double(entropy_per_sample, 4, "entropy per sample");
 DEFINE_double(entropy_required, 128, "entropy required");
+
+DEFINE_int32(n_sample, 8, "sample size");               // sample size in bits (<=8)
+DEFINE_double(h_submitter, 4.0, "submitter entropy");   // per sample
+DEFINE_double(h_original, 4.0, "measured entropy");     // per sample
+DEFINE_double(h_bitstring, 0.5, "bitstring entropy");  // per bit
 
 nist_hash_rng the_rng;
 
@@ -33,11 +37,17 @@ int main(int an, char** av) {
 
   init_crypto();
 
-  if (!the_rng.initialize(FLAGS_entropy_per_sample, FLAGS_entropy_required, 1024)) {
+  double h_estimate= ((double)(FLAGS_n_sample)) * FLAGS_h_bitstring;
+  if (FLAGS_h_original < h_estimate)
+    h_estimate= FLAGS_h_original;
+  if (FLAGS_h_submitter < h_estimate)
+    h_estimate= FLAGS_h_submitter;
+
+  if (!the_rng.initialize(FLAGS_n_sample, h_estimate, FLAGS_entropy_required, 1024)) {
     printf("RNG init failed\n");
     return 1;
   }
-  the_rng.raw_entropy_.set_policy(FLAGS_entropy_per_sample);
+  the_rng.raw_entropy_.set_policy(the_rng.h_estimate_);
 
   // append some samples
   int num_samples = 100;
@@ -52,7 +62,16 @@ int main(int an, char** av) {
     return 1;
   }
 
+  // do restart tests someday
+  if (!the_rng.restart_test(num_samples, samples)) {
+    printf("restart tests failed\n");
+    return 1;
+  }
+
   // bool health_check();
+  if (!the_rng.health_test(num_samples, samples)) {
+    printf("restart test failed\n");
+  }
 
   // empty pool and init drng
   int size_init_pool = num_samples;

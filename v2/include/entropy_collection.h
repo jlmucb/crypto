@@ -40,7 +40,6 @@ public:
   void set_policy(double entropy_per_sample);
   bool append_samples(int num_samples, byte* samples);
   bool add_samples(int num_samples, byte* samples);
-  bool health_check();
   bool empty_pool(int* size_of_pool, byte* pool, double* ent);
 };
 #endif

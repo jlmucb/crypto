@@ -102,10 +102,6 @@ double entropy_collection::entropy_estimate() {
   return current_entropy_in_pool_ + compressed_entropy_ent_;
 }
 
-bool entropy_collection::health_check() {
-  return true;
-}
-
 bool entropy_collection::empty_pool(int* size_of_output, byte* data, double* ent) {
   if (*size_of_output < current_size_pool_) {
     printf("output too small, size of data:  %d, size of pool: %d\n", *size_of_output, current_size_pool_);

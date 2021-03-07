@@ -25,8 +25,10 @@ nist_hash_rng::nist_hash_rng() {
 nist_hash_rng::~nist_hash_rng() {
 }
 
-bool nist_hash_rng::initialize(int entropy_per_sample,
+bool nist_hash_rng::initialize(int n_sample, double entropy_per_sample,
       double required_entropy_to_extract, int reseed_interval) {
+  n_sample_ = n_sample;
+  h_estimate_ = entropy_per_sample;
   required_entropy_to_extract_= required_entropy_to_extract;
   reseed_interval_ = reseed_interval;
   return true;
@@ -56,6 +58,10 @@ int nist_hash_rng::extract_random_number(int num_bits, byte* rn) {
 }
 
 bool nist_hash_rng::reseed() {
+  return true;
+}
+
+bool nist_hash_rng::health_test(int num_samples, byte* samples) {
   return true;
 }
 
