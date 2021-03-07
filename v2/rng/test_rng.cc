@@ -77,9 +77,6 @@ int main(int an, char** av) {
   }
   printf("entropy in drng: %lf\n", the_rng.drng_.current_entropy());
 
-  // mix in some more entropy
-  // the_rng.drng_.mix_new_entropy(int entropy_width, byte* entropy, double ent);
-
   // generate some numbers
   int num_bits_needed = 256;
   byte out[32];
@@ -95,14 +92,17 @@ int main(int an, char** av) {
     return 1;
   }
 
-  if (!the_rng.extract_random_number(num_bits_needed, out)) {
-    printf("Can't get bits\n");
-    return 1;
-  }
+  printf("\n");
+  for (int j = 0; j < 10; j++) {
+    if (!the_rng.extract_random_number(num_bits_needed, out)) {
+      printf("Can't get bits\n");
+      return 1;
+    }
 
-  if (FLAGS_print_all) {
-    printf("\nBits from drng:\n");
-    print_bytes(num_bits_needed / NBITSINBYTE, out);
+    if (FLAGS_print_all) {
+      printf("Bits from drng: ");
+      print_bytes(num_bits_needed / NBITSINBYTE, out);
+    }
   }
 
   close_crypto();
