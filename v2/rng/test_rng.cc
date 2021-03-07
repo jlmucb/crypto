@@ -22,7 +22,7 @@
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 DEFINE_int32(pool_size, 4096, "pool size");
-DEFINE_double(entropy_per_sample, 2, "entropy per sample");
+DEFINE_double(entropy_per_sample, 4, "entropy per sample");
 DEFINE_double(entropy_required, 128, "entropy required");
 
 nist_hash_rng the_rng;
@@ -40,25 +40,21 @@ int main(int an, char** av) {
   the_rng.raw_entropy_.set_policy(FLAGS_entropy_per_sample);
 
   // append some samples
-  int num_samples = 300;
+  int num_samples = 100;
   byte samples[num_samples];
   if (crypto_get_random_bytes(num_samples, samples) < 0) {
     printf("Can't get crypto bytes\n");
     return 1;
   }
 
-
   if (!the_rng.collect_samples(num_samples, samples)) {
-    printf("add_samples failed\n");
+    printf("collect_samples failed\n");
     return 1;
   }
 
-  // check entropy of pool
-
-  // test health
   // bool health_check();
 
-  // empty pool and init DBRNG
+  // empty pool and init drng
   int size_init_pool = num_samples;
   byte init_pool[num_samples];
   double ent_in_pool= 0.0;
@@ -66,7 +62,7 @@ int main(int an, char** av) {
     printf("Can't empty pool\n");
     return 1;
   }
-  printf("entropy in pool: %lf\n", ent_in_pool);
+  printf("Entropy in pool: %lf\n", ent_in_pool);
 
   int size_nonce = 0;
   int size_personalization = 0;
@@ -75,7 +71,7 @@ int main(int an, char** av) {
     printf("Can't init drng\n");
     return 1;
   }
-  printf("entropy in drng: %lf\n", the_rng.drng_.current_entropy());
+  printf("Entropy in drng: %lf\n", the_rng.drng_.current_entropy());
 
   // generate some numbers
   int num_bits_needed = 256;
@@ -86,7 +82,7 @@ int main(int an, char** av) {
     return 1;
   }
 
-  printf("required entropy: %d\n", the_rng.required_entropy_to_extract());
+  printf("Required entropy: %d\n", the_rng.required_entropy_to_extract());
   if (the_rng.required_entropy_to_extract() > the_rng.drng_.current_entropy()) {
     printf("Not enough entropy\n");
     return 1;

@@ -442,13 +442,12 @@ bool write_general_graph_data(string file_name, int n, double* x, double* y) {
 }
 
 double conditioned_entropy_estimate(double h_in, int nw, int n_in, int n_out) {
-  // printf("conditioned_entropy_estimate, h_in: %lf, nw: %d, n_in: %d, n_out: %d\n", h_in, nw, n_in, n_out);
   double p_h = pow(2, -h_in);
   double p_l = (1 - p_h) / (pow(2, n_in) - 1.0);
   int n = n_out < nw ? n_out : nw;
   int m = n_in < n ? n_in : n;
   if (((double)m) < h_in)
-    return ((double)n);
+    return ((double)m);
   double t = 0.0;
   if ((n_in - n) > 256)
     t = 0.0;
@@ -458,6 +457,7 @@ double conditioned_entropy_estimate(double h_in, int nw, int n_in, int n_out) {
   double u = t  + sqrt(2 * t * log(2));
   double w = u * p_l;
   double x = s > w ? s : w;
+  // printf("conditioned_entropy_estimate, h_in: %lf, nw: %d, n_in: %d, n_out: %d\n", h_in, nw, n_in, n_out);
   // printf("h_in: %lf, p_h: %lf, p_l: %lf, n: %d\n", h_in, p_h, p_l, n);
   // printf("t: %lf\n", t);
   // printf("s: %lf\n", s);
