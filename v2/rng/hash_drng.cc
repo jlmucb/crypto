@@ -99,9 +99,6 @@ double hash_drng::current_entropy() {
   return current_entropy_;
 }
 
-void mix_new_entropy(int entropy_width, byte* entropy, double ent) {
-}
-
 bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization,
       byte* personalization, int entropy_width, byte* material, double ent) {
   reseed_ctr_ = 0;

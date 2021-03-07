@@ -46,8 +46,8 @@ int main(int an, char** av) {
     printf("Can't get crypto bytes\n");
     return 1;
   }
-  if (!the_rng.raw_entropy_.append_samples(num_samples, samples)) {
-    printf("append samples failed\n");
+  if (!the_rng.raw_entropy_.add_samples(num_samples, samples)) {
+    printf("add_samples failed\n");
     return 1;
   }
 
@@ -83,6 +83,11 @@ int main(int an, char** av) {
     printf("Reseed so fast?\n");
     return 1;
   }
+  if (the_rng.required_entropy_to_extract() < the_rng.drng_.current_entropy()) {
+    printf("Not enough entropy\n");
+    return 1;
+  }
+
   if (!the_rng.drng_.generate_random_bits(num_bits_needed, out, 0, nullptr)) {
     printf("Can't get bits\n");
     return 1;
