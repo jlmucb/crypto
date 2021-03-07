@@ -86,7 +86,11 @@ bool entropy_collection::add_samples(int num_samples, byte* samples) {
     obj.add_to_hash(current_size_pool_, pool_);
     obj.get_digest(sha256::DIGESTBYTESIZE, compressed_entropy_);
     compressed_entropy_flag_ = true;
-    compressed_entropy_ent_ += current_entropy_in_pool_ + ((double)fits) * entropy_per_sample_;
+    compressed_entropy_ent_ = conditioned_entropy_estimate(compressed_entropy_ent_ +
+        current_entropy_in_pool_ + ((double)fits) * entropy_per_sample_,
+        NBITSINBYTE * sha256::DIGESTBYTESIZE,
+        NBITSINBYTE * (current_entropy_in_pool_ + sha256::DIGESTBYTESIZE),
+        NBITSINBYTE * sha256::DIGESTBYTESIZE);
     current_size_pool_ = 0;
     current_entropy_in_pool_ = 0;
     append_samples(left_over, &samples[fits]);
@@ -118,7 +122,10 @@ bool entropy_collection::empty_pool(int* size_of_output, byte* data, double* ent
     *size_of_output = current_size_pool_;
   }
   
-  *ent = current_entropy_in_pool_ + compressed_entropy_ent_;
+  *ent = conditioned_entropy_estimate(compressed_entropy_ent_ + current_entropy_in_pool_,
+        NBITSINBYTE * sha256::DIGESTBYTESIZE,
+        NBITSINBYTE * (sha256::DIGESTBYTESIZE + current_entropy_in_pool_),
+        NBITSINBYTE * (*size_of_output));
   current_entropy_in_pool_= 0;
   current_size_pool_ = 0;
   compressed_entropy_ent_ = 0;

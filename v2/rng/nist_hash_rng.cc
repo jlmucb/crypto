@@ -27,7 +27,6 @@ nist_hash_rng::~nist_hash_rng() {
 
 bool nist_hash_rng::initialize(int entropy_per_sample,
       double required_entropy_to_extract, int reseed_interval) {
-printf("required_entropy_to_extract: %lf\n", required_entropy_to_extract);
   required_entropy_to_extract_= required_entropy_to_extract;
   reseed_interval_ = reseed_interval;
   return true;

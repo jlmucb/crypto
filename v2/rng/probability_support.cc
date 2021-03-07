@@ -441,15 +441,30 @@ bool write_general_graph_data(string file_name, int n, double* x, double* y) {
   return true;
 }
 
-// nw = width (256 for our hash)
-// n_in input to conditioner
-// n_out output
-// s = 2^(-ent) p_l= (1-p_h)/(2^current_ent - 1)
-// n = min(n_out, nw)
-// u = 2^(n_in-n) + sqrt(2nln(2)2^(n_in-n))
-// return -lg(max(s, u)
 double conditioned_entropy_estimate(double h_in, int nw, int n_in, int n_out) {
-  return h_in;
+  // printf("conditioned_entropy_estimate, h_in: %lf, nw: %d, n_in: %d, n_out: %d\n", h_in, nw, n_in, n_out);
+  double p_h = pow(2, -h_in);
+  double p_l = (1 - p_h) / (pow(2, n_in) - 1.0);
+  int n = n_out < nw ? n_out : nw;
+  int m = n_in < n ? n_in : n;
+  if (((double)m) < h_in)
+    return ((double)n);
+  double t = 0.0;
+  if ((n_in - n) > 256)
+    t = 0.0;
+  else
+    t = pow(2, n_in - n);
+  double s = t * p_l + p_h;
+  double u = t  + sqrt(2 * t * log(2));
+  double w = u * p_l;
+  double x = s > w ? s : w;
+  // printf("h_in: %lf, p_h: %lf, p_l: %lf, n: %d\n", h_in, p_h, p_l, n);
+  // printf("t: %lf\n", t);
+  // printf("s: %lf\n", s);
+  // printf("u: %lf\n", u);
+  // printf("w: %lf\n", w);
+  // printf("x: %lf\n", x);
+  return -lg(x);
 }
 
 
