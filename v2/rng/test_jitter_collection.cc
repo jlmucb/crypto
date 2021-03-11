@@ -25,21 +25,21 @@
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 DEFINE_string(graph_file_name, "jitter.bin", "jitter file");
 
-bool test_jitter1() {
+bool test_jitter1(int n) {
   uint64_t cpc = calibrate_rdtsc();
   printf ("%lld cpc\n", cpc);
 
   uint64_t t1, t2;
   uint32_t delta;
 
-  int num_samples = 50;
+  int num_samples = n;
   uint32_t delta_array[num_samples];
   
   for (int i = 0; i < num_samples; i++) {
     t1 = read_rdtsc();
     t2 = read_rdtsc();
     delta = t2 - t1;
-    delta_array[i] = delta;
+    delta_array[i] = delta / 2;
     // printf ("t1: %lld, t2: %lld, delta: %lld\n", t1, t2, delta);
   }
 
@@ -66,7 +66,7 @@ bool test_jitter1() {
 
 
 TEST (jitter, test_jitter) {
-  EXPECT_TRUE(test_jitter1());
+  EXPECT_TRUE(test_jitter1(100));
 }
 
 int main(int an, char** av) {
