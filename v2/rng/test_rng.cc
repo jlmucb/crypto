@@ -81,7 +81,7 @@ int main(int an, char** av) {
     printf("Can't empty pool\n");
     return 1;
   }
-  printf("Entropy in pool: %lf\n", ent_in_pool);
+  printf("Entropy in pool : %7.3lf bits\n", ent_in_pool);
 
   int size_nonce = 0;
   int size_personalization = 0;
@@ -90,7 +90,7 @@ int main(int an, char** av) {
     printf("Can't init drng\n");
     return 1;
   }
-  printf("Entropy in drng: %lf\n", the_rng.drng_.current_entropy());
+  printf("Entropy in drng : %7.3lf bits\n", the_rng.drng_.current_entropy());
 
   // generate some numbers
   int num_bits_needed = 256;
@@ -101,7 +101,7 @@ int main(int an, char** av) {
     return 1;
   }
 
-  printf("Required entropy: %d\n", the_rng.required_entropy_to_extract());
+  printf("Required entropy: %d bits\n", the_rng.required_entropy_to_extract());
   if (the_rng.required_entropy_to_extract() > the_rng.drng_.current_entropy()) {
     printf("Not enough entropy\n");
     return 1;
