@@ -25,6 +25,15 @@
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 DEFINE_string(graph_file_name, "jitter.bin", "jitter file");
 
+volatile void inline test_code(int k) {
+  volatile int  t = 0;
+
+  for (int i = 0; i < k; i++) {
+    t += i;
+  }
+  t /= 2;
+}
+
 bool test_jitter1(int n) {
   uint64_t cpc = calibrate_rdtsc();
   printf ("%lld cpc\n", cpc);
@@ -37,6 +46,7 @@ bool test_jitter1(int n) {
   
   for (int i = 0; i < num_samples; i++) {
     t1 = read_rdtsc();
+    test_code(5);
     t2 = read_rdtsc();
     delta = t2 - t1;
     delta_array[i] = delta / 2;
