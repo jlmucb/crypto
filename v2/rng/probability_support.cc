@@ -98,10 +98,10 @@ void print_uint32_array(int n, uint32_t* data) {
   int i;
   for (i = 0; i < n; i++) {
     printf("%04d ", data[i]);
-    if ((i%8) == 7)
+    if ((i%16) == 15)
       printf("\n");
   }
-  if ((i%8) != 0)
+  if ((i%16) != 0)
      printf("\n");
 }
 

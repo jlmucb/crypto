@@ -95,8 +95,8 @@ bool test_jitter1(int num_samples, int num_loops) {
       if ((i%10) == 9)
         printf("\n");
     }
-    printf("\nexpected bin: %lf\n\n", expected);
   }
+  printf("Expected bin: %lf, num loops: %d\n", expected, num_loops);
 
   double sh_ent = shannon_entropy(nbins, p);
   double ren_ent = renyi_entropy(nbins, p);
