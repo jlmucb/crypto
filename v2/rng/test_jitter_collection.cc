@@ -26,6 +26,11 @@ DEFINE_bool(print_all, false, "Print intermediate test computations");
 DEFINE_string(graph_file_name, "jitter.bin", "jitter file");
 DEFINE_int32(num_loops, 40, "number of loops in test_code");
 
+#pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
 volatile void inline test_code(int k) {
   volatile int  t = 0;
 
@@ -34,6 +39,7 @@ volatile void inline test_code(int k) {
   }
   t /= 2;
 }
+#pragma GCC pop_options
 
 bool test_jitter1(int n) {
   uint64_t cpc = calibrate_rdtsc();
