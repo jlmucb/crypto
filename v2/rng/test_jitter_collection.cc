@@ -75,41 +75,7 @@ bool test_jitter1(int num_samples, int num_loops) {
     printf("Can't bin data\n");
     return false;
   }
-  if (FLAGS_print_all) {
-    printf("bins:\n");
-    print_uint32_array(nbins, bins);
-    printf("\n");
-  }
 
-  double p[nbins];
-  double expected = 0.0;
-  for (int i = 0; i < nbins; i++) {
-    p[i] = ((double)bins[i]) / ((double) num_samples);
-    expected += p[i] * ((double) i);
-  }
-
-  if (FLAGS_print_all) {
-    printf("probabilities:\n");
-    for (int i = 0; i < nbins; i++) {
-      printf("%03d, %6.3lf; ", i, p[i]);
-      if ((i%10) == 9)
-        printf("\n");
-    }
-  }
-  printf("Expected bin: %lf, num loops: %d\n", expected, num_loops);
-
-  double sh_ent = shannon_entropy(nbins, p);
-  double ren_ent = renyi_entropy(nbins, p);
-  double min_ent = min_entropy(nbins, p);
-  printf("Samples: %d, Shannon entropy: %6.4lf, renyi entropy: %6.4lf, min_entropy: %6.4lf\n",
-          num_samples, sh_ent, ren_ent, min_ent);
-
-  double x[nbins];
-  double y[nbins];
-  for (int i = 0; i < nbins; i++) {
-    x[i] = (double) i;
-    y[i] = (double) bins[i];
-  }
 
   int upper_bin;
   int lower_bin;;
@@ -123,6 +89,48 @@ bool test_jitter1(int num_samples, int num_loops) {
   }
   lower_bin -= 5;
   upper_bin += 5;
+
+  if (FLAGS_print_all) {
+    printf("bins form %d to %d:\n", lower_bin, upper_bin);
+    print_uint32_array(upper_bin - lower_bin, &bins[lower_bin]);
+    printf("\n");
+  }
+
+  double p[nbins];
+  double expected = 0.0;
+  for (int i = 0; i < nbins; i++) {
+    p[i] = ((double)bins[i]) / ((double) num_samples);
+    expected += p[i] * ((double) i);
+  }
+
+  if (FLAGS_print_all) {
+    int k = 0;
+    printf("probabilities:\n");
+    for (int i = lower_bin;  i < upper_bin; i++) {
+      if (p[i] <= 0.0)
+        continue;
+      printf("%03d, %4.3lf;  ", i, p[i]);
+      if (((k++)%8) == 7)
+        printf("\n");
+    }
+    printf("\n\n");
+  }
+
+  double sh_ent = shannon_entropy(nbins, p);
+  double ren_ent = renyi_entropy(nbins, p);
+  double min_ent = min_entropy(nbins, p);
+  printf("Samples: %d, num_loops: %d, Expected bin: %5.3lf\n", num_samples, num_loops, expected);
+  printf("   Shannon entropy: %6.4lf, renyi entropy: %6.4lf, min_entropy: %6.4lf\n",
+          sh_ent, ren_ent, min_ent);
+  printf("   Shannon entropy/sample: %6.4lf, renyi entropy/sample: %6.4lf, min_entropy/sample: %6.4lf\n",
+          sh_ent / ((double)num_samples), ren_ent / ((double)num_samples), min_ent / ((double)num_samples));
+
+  double x[nbins];
+  double y[nbins];
+  for (int i = 0; i < nbins; i++) {
+    x[i] = (double) i;
+    y[i] = (double) bins[i];
+  }
 
   if (!write_general_graph_data(FLAGS_graph_file_name, upper_bin - lower_bin,
                                 &x[lower_bin], &y[lower_bin])) {
