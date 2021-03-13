@@ -24,7 +24,8 @@
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 DEFINE_string(graph_file_name, "jitter.bin", "jitter file");
-DEFINE_int32(num_loops, 40, "number of loops in test_code");
+DEFINE_int32(num_samples, 100, "number of samples");
+DEFINE_int32(num_loops, 5, "number of loops in test_code");
 
 #pragma GCC diagnostic ignored "-Wformat"
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
@@ -41,23 +42,31 @@ volatile void inline test_code(int k) {
 }
 #pragma GCC pop_options
 
-bool test_jitter1(int n) {
+bool test_jitter1(int num_samples, int num_loops) {
   uint64_t cpc = calibrate_rdtsc();
-  printf ("%lld cpc\n", cpc);
+
+  if (FLAGS_print_all) {
+    printf ("%lld cpc\n\n", cpc);
+  }
 
   uint64_t t1, t2;
   uint32_t delta;
 
-  int num_samples = n;
   uint32_t delta_array[num_samples];
   
   for (int i = 0; i < num_samples; i++) {
     t1 = read_rdtsc();
-    test_code(5);
+    test_code(num_loops);
     t2 = read_rdtsc();
     delta = t2 - t1;
     delta_array[i] = delta / 2;
     // printf ("t1: %lld, t2: %lld, delta: %lld\n", t1, t2, delta);
+  }
+
+  if (FLAGS_print_all) {
+    printf("delta_array:\n");
+    print_uint32_array(num_samples, delta_array);
+    printf("\n");
   }
 
   int nbins = 120;
@@ -66,6 +75,34 @@ bool test_jitter1(int n) {
     printf("Can't bin data\n");
     return false;
   }
+  if (FLAGS_print_all) {
+    printf("bins:\n");
+    print_uint32_array(nbins, bins);
+    printf("\n");
+  }
+
+  double p[nbins];
+  double expected = 0.0;
+  for (int i = 0; i < nbins; i++) {
+    p[i] = ((double)bins[i]) / ((double) num_samples);
+    expected += p[i] * ((double) i);
+  }
+
+  if (FLAGS_print_all) {
+    printf("probabilities:\n");
+    for (int i = 0; i < nbins; i++) {
+      printf("%03d, %6.3lf; ", i, p[i]);
+      if ((i%10) == 9)
+        printf("\n");
+    }
+    printf("\nexpected bin: %lf\n\n", expected);
+  }
+
+  double sh_ent = shannon_entropy(nbins, p);
+  double ren_ent = renyi_entropy(nbins, p);
+  double min_ent = min_entropy(nbins, p);
+  printf("Samples: %d, Shannon entropy: %6.4lf, renyi entropy: %6.4lf, min_entropy: %6.4lf\n",
+          num_samples, sh_ent, ren_ent, min_ent);
 
   double x[nbins];
   double y[nbins];
@@ -97,7 +134,7 @@ bool test_jitter1(int n) {
 
 
 TEST (jitter, test_jitter) {
-  EXPECT_TRUE(test_jitter1(FLAGS_num_loops));
+  EXPECT_TRUE(test_jitter1(FLAGS_num_samples, FLAGS_num_loops));
 }
 
 int main(int an, char** av) {
