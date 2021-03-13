@@ -24,6 +24,7 @@
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 DEFINE_string(graph_file_name, "jitter.bin", "jitter file");
+DEFINE_int32(num_loops, 40, "number of loops in test_code");
 
 volatile void inline test_code(int k) {
   volatile int  t = 0;
@@ -67,7 +68,21 @@ bool test_jitter1(int n) {
     y[i] = (double) bins[i];
   }
 
-  if (!write_general_graph_data(FLAGS_graph_file_name, nbins, x, y)) {
+  int upper_bin;
+  int lower_bin;;
+  for (upper_bin = (nbins - 1); upper_bin > 20; upper_bin--) {
+    if (bins[upper_bin] != 0)
+      break;
+  }
+  for (lower_bin = 0; lower_bin < upper_bin; lower_bin++) {
+    if (bins[lower_bin] != 0)
+      break;
+  }
+  lower_bin -= 5;
+  upper_bin += 5;
+
+  if (!write_general_graph_data(FLAGS_graph_file_name, upper_bin - lower_bin,
+                                &x[lower_bin], &y[lower_bin])) {
     printf("Can't write graph data\n");
     return false;
   }
@@ -76,7 +91,7 @@ bool test_jitter1(int n) {
 
 
 TEST (jitter, test_jitter) {
-  EXPECT_TRUE(test_jitter1(100));
+  EXPECT_TRUE(test_jitter1(FLAGS_num_loops));
 }
 
 int main(int an, char** av) {
