@@ -91,8 +91,8 @@ bool test_jitter1(int num_samples, int num_loops) {
   upper_bin += 5;
 
   if (FLAGS_print_all) {
-    printf("bins form %d to %d:\n", lower_bin, upper_bin);
-    print_uint32_array(upper_bin - lower_bin, &bins[lower_bin]);
+    printf("bins from %d to %d:\n", lower_bin, upper_bin);
+    print_uint32_array(1 + upper_bin - lower_bin, &bins[lower_bin]);
     printf("\n");
   }
 
