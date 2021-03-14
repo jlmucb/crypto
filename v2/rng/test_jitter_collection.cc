@@ -122,8 +122,6 @@ bool test_jitter1(int num_samples, int num_loops) {
   printf("Samples: %d, num_loops: %d, Expected bin: %5.3lf\n", num_samples, num_loops, expected);
   printf("   Shannon entropy: %6.4lf, renyi entropy: %6.4lf, min_entropy: %6.4lf\n",
           sh_ent, ren_ent, min_ent);
-  printf("   Shannon entropy/sample: %6.4lf, renyi entropy/sample: %6.4lf, min_entropy/sample: %6.4lf\n",
-          sh_ent / ((double)num_samples), ren_ent / ((double)num_samples), min_ent / ((double)num_samples));
 
   double x[nbins];
   double y[nbins];
