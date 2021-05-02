@@ -32,13 +32,24 @@ DEFINE_int32(num_loops, 5, "number of loops in test_code");
 
 #pragma GCC push_options
 #pragma GCC optimize ("O0")
-volatile void inline test_code(int k) {
+// nuc has 32Kb L1 i-cache, and 32KB L1 d-cache, should adjust to 
+// flush d cache from timet to time
+
+const int d_buf_size = 48000;
+
+volatile void inline test_code(int num_loops, int size_buf, byte* buf) {
   volatile int  t = 0;
 
-  for (int i = 0; i < k; i++) {
+#if 0
+  for (int i = 0; i < num_loops; i++) {
     t += i;
   }
   t /= 2;
+#else
+  for (int i = 0; i < num_loops; i++) {
+    buf[i * ( size_buf / num_loops)] += i;
+  }
+#endif
 }
 #pragma GCC pop_options
 
@@ -49,6 +60,7 @@ bool test_jitter1(int num_samples, int num_loops) {
     printf ("%lld cpc\n\n", cpc);
   }
 
+  byte buf[d_buf_size];
   uint64_t t1, t2;
   uint32_t delta;
 
@@ -56,7 +68,7 @@ bool test_jitter1(int num_samples, int num_loops) {
   
   for (int i = 0; i < num_samples; i++) {
     t1 = read_rdtsc();
-    test_code(num_loops);
+    test_code(num_loops, d_buf_size, buf);
     t2 = read_rdtsc();
     delta = t2 - t1;
     delta_array[i] = delta / 2;
@@ -69,26 +81,33 @@ bool test_jitter1(int num_samples, int num_loops) {
     printf("\n");
   }
 
+#if 0
   int nbins = 120;
+#else
+  int nbins = 1000;
+#endif
   uint32_t bins[nbins];
   if (!bin_raw_data(num_samples, delta_array, nbins, bins)) {
     printf("Can't bin data\n");
     return false;
   }
 
-
   int upper_bin;
-  int lower_bin;;
+  int lower_bin;
+#if 1
   for (upper_bin = (nbins - 1); upper_bin > 20; upper_bin--) {
     if (bins[upper_bin] != 0)
       break;
   }
-  for (lower_bin = 0; lower_bin < upper_bin; lower_bin++) {
+  for (lower_bin = 20; lower_bin < upper_bin; lower_bin++) {
     if (bins[lower_bin] != 0)
       break;
   }
   lower_bin -= 5;
   upper_bin += 5;
+#else
+  // adjust bins
+#endif
 
   if (FLAGS_print_all) {
     printf("bins from %d to %d:\n", lower_bin, upper_bin);
