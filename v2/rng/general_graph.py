@@ -49,7 +49,7 @@ def main(argv=sys.argv):
       y_max = y[t]
   f.close
 
-  sys.stdout.write("\nNumber of points: " + str(num_points) + "[" + str(x_min) + ", " + str(x_max) + ", "  + str(y_min) + ", " + str(y_max)  + "]\n")
+  sys.stdout.write("\nNumber of bins: " + str(num_points) + "[" + str(x_min) + ", " + str(x_max) + ", "  + str(y_min) + ", " + str(y_max)  + "]\n")
 
   for i in range (0, num_points):
     sys.stdout.write("  (" + str(x[i]) + ", " + str(y[i]) + ")\n")
@@ -61,7 +61,7 @@ def main(argv=sys.argv):
   top = y_max  + .05 * range_y
   bottom = y_min - .05 * range_y
 
-  title= 'graph, ' + str(num_points) + ' points'
+  title= 'graph, ' + str(num_points) + ' bins, min: ' + str(x_min) + ", max: " + str(x_max)
   xlabel='x'
   ylabel='y'
 
