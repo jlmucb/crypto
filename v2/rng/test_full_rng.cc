@@ -49,7 +49,7 @@ int sw_entropy(int num_samples, byte* sample) {
     t1 = read_rdtsc();
     test_code_1(11);
     t2 = read_rdtsc();
-    delta = t2 - t1;
+    delta = (t2 - t1) / 2;    // bottom bit is always 0 on some machines
     sample[i] = (byte)delta;
   }
   return num_samples;
