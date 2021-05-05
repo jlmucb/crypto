@@ -20,6 +20,7 @@
 #include "probability_support.h"
 #include "entropy_accumulate.h"
 #include "entropy_source.h"
+#include "sha256.h"
 
 
 entropy_accumulate::entropy_accumulate() {
@@ -36,7 +37,38 @@ entropy_accumulate::~entropy_accumulate() {
   memset(pool_, 0, MAXPOOL_SIZE);
 }
 
+void entropy_accumulate::mix_entropy() {
+  sha256 hash;
+  
+  hash.init();
+  hash.add_to_hash(current_size_pool_, pool_);
+  hash.finalize();
+  hash.get_digest(sha256::DIGESTBYTESIZE, pool_);
+  current_size_pool_ = sha256::DIGESTBYTESIZE;
+}
+
 bool entropy_accumulate::add_samples(int num_samples, byte* samples, double est_ent_per_byte) {
+  // copy samples into buffer, compress if we read pool size
+  int samples_remaining = num_samples;
+  int samples_used_so_far = 0;
+  int k = 0;
+
+  while (samples_remaining > 0) {
+    if (current_size_pool_ >= pool_size_)
+      mix_entropy();
+    if (current_size_pool_ >= pool_size_)
+      return false;
+    int space_left_in_pool = pool_size_ - current_size_pool_;
+    if (samples_remaining < space_left_in_pool)
+      k = samples_remaining;
+    else
+      k = space_left_in_pool;
+    memcpy(&pool_[current_size_pool_], &samples[samples_used_so_far], k);
+    samples_used_so_far += k;
+    samples_remaining -= k;
+    current_size_pool_ += k;
+    current_entropy_in_pool_ += ((double)k) * est_ent_per_byte;
+  }
   return true;
 }
 
@@ -45,5 +77,11 @@ double entropy_accumulate::entropy_estimate() {
 }
 
 bool entropy_accumulate::empty_pool(int* size_of_output, byte* data, double* ent) {
+  if (current_size_pool_ > *size_of_output)
+    return false;
+  memcpy(data, pool_, current_size_pool_);
+  *ent = entropy_estimate();
+  current_size_pool_ = 0;
+  current_entropy_in_pool_= 0.0;
   return true;
 }

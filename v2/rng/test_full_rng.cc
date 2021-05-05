@@ -87,7 +87,6 @@ int main(int an, char** av) {
   // set up drng
   // fetch random numbers
 
-
   close_crypto();
   printf("\n");
 

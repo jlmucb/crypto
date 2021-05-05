@@ -33,6 +33,7 @@ public:
   int max_pool_size() {return pool_size_;};
   double entropy_estimate();
   bool add_samples(int num_samples, byte* samples, double est_ent_per_byte);
+  void mix_entropy();
   bool empty_pool(int* size_of_pool, byte* pool, double* ent);
 };
 #endif
