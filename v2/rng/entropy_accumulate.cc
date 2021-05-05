@@ -19,27 +19,29 @@
 #include "crypto_names.h"
 #include "probability_support.h"
 #include "entropy_accumulate.h"
+#include "entropy_source.h"
 
 
 entropy_accumulate::entropy_accumulate() {
-  current_entropy_in_pool_= 0;
+  current_entropy_in_pool_= 0.0;
   current_size_pool_ = 0;
   pool_size_ = MAXPOOL_SIZE;
   memset(pool_, 0, MAXPOOL_SIZE);
 }
 
 entropy_accumulate::~entropy_accumulate() {
-  current_entropy_in_pool_= 0;
+  current_entropy_in_pool_= 0.0;
   current_size_pool_ = 0;
   pool_size_ = MAXPOOL_SIZE;
   memset(pool_, 0, MAXPOOL_SIZE);
 }
 
 bool entropy_accumulate::add_samples(int num_samples, byte* samples, double est_ent_per_byte) {
+  return true;
 }
 
 double entropy_accumulate::entropy_estimate() {
-  return ;
+  return current_entropy_in_pool_;
 }
 
 bool entropy_accumulate::empty_pool(int* size_of_output, byte* data, double* ent) {

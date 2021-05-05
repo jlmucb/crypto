@@ -45,31 +45,27 @@ PROTO=protoc
 AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
-dobj=   $(O)/test_rng.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
-	$(O)/hash.o $(O)/sha256.o $(O)/hash_df.o $(O)/entropy_collection.o  \
-	$(O)/lz77.o $(O)/probability_support.o $(O)/nist_hash_rng.o $(O)/hash_drng.o
+dobj=   $(O)/test_full_rng.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
+	$(O)/hash.o $(O)/sha256.o $(O)/hash_df.o $(O)/entropy_accumulate.o  \
+	$(O)/lz77.o $(O)/probability_support.o $(O)/hash_drng.o
 
-all:    test_rng.exe
+all:    test_full_rng.exe
 clean:
 	@echo "removing object files"
 	rm $(O)/*.o
 	@echo "removing executable file"
 	rm $(EXE_DIR)/test_rng.exe
 
-test_rng.exe: $(dobj) 
+test_full_rng.exe: $(dobj) 
 	@echo "linking executable files"
-	$(LINK) -o $(EXE_DIR)/test_rng.exe $(dobj) $(LDFLAGS)
+	$(LINK) -o $(EXE_DIR)/test_full_rng.exe $(dobj) $(LDFLAGS)
 
 $(S_SUPPORT)/support.pb.cc $(S_SUPPORT)/support.pb.h: $(S_SUPPORT)/support.proto
 	$(PROTO) -I=$(S) --cpp_out=$(S_SUPPORT) $(S_SUPPORT)/support.proto
 
-$(O)/test_rng.o: $(S)/test_rng.cc
-	@echo "compiling test_rng.cc"
-	$(CC) $(CFLAGS) -c $(I) -o $(O)/test_rng.o $(S)/test_rng.cc
-
-$(O)/nist_hash_rng.o: $(S)/nist_hash_rng.cc
-	@echo "compiling nist_hash_rng.cc"
-	$(CC) $(CFLAGS) -c $(I) -o $(O)/nist_hash_rng.o $(S)/nist_hash_rng.cc
+$(O)/test_full_rng.o: $(S)/test_full_rng.cc
+	@echo "compiling test_full_rng.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/test_full_rng.o $(S)/test_full_rng.cc
 
 $(O)/hash_drng.o: $(S)/hash_drng.cc
 	@echo "compiling hash_drng.cc"
@@ -99,9 +95,9 @@ $(O)/hash_df.o: hash_df.cc
 	@echo "compiling hash_df.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/hash_df.o hash_df.cc
 
-$(O)/entropy_collection.o: $(S)/entropy_collection.cc
-	@echo "compiling entropy_collection.cc"
-	$(CC) $(CFLAGS) -c $(I) -o $(O)/entropy_collection.o $(S)/entropy_collection.cc
+$(O)/entropy_accumulate.o: $(S)/entropy_accumulate.cc
+	@echo "compiling entropy_accumulate.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/entropy_accumulate.o $(S)/entropy_accumulate.cc
 
 $(O)/lz77.o: $(S)/lz77.cc
 	@echo "compiling lz77.cc"

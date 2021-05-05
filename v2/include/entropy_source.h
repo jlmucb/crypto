@@ -11,21 +11,25 @@
 // limitations under the License
 // File: entropy_source.h
 
-#ifndef _CRYPTO_ENTROPY_ACCUMULATE_H__
-#define _CRYPTO_ENTROPY_ACCUMULATE_H__
+#ifndef _CRYPTO_ENTROPY_SOURCE_H__
+#define _CRYPTO_ENTROPY_SOURCE_H__
 #include "crypto_support.h"
 #include "sha256.h"
 
-typedef int(*)(int, byte*) source_function;
+typedef int source_function(int, byte*);
 
 class entropy_source {
 public:
-  string source_description;
-  double ent_per_sample_byte;
-  source_function* getentropy;;
+  string source_description_;
+  double ent_per_sample_byte_;
+  source_function* getentropy_;
 
-  entropy_source();
-  ~entropy_source();
+  entropy_source(const char* description, double est, source_function pull) { 
+    source_description_.assign(description);
+    ent_per_sample_byte_ = est;
+    getentropy_ = pull;
+    };
+  ~entropy_source(){};
 
 };
 #endif
