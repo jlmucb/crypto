@@ -80,6 +80,7 @@ bool entropy_accumulate::empty_pool(int* size_of_output, byte* data, double* ent
   if (current_size_pool_ > *size_of_output)
     return false;
   memcpy(data, pool_, current_size_pool_);
+  *size_of_output = current_size_pool_;
   *ent = entropy_estimate();
   current_size_pool_ = 0;
   current_entropy_in_pool_= 0.0;

@@ -69,23 +69,59 @@ int main(int an, char** av) {
   
   memset(sample_buf, 0, size_sample_buf);
 
+  double required_entropy = 384.0;
+
   // add 384 hw bits
-  if (hw_source.getentropy_(sample_size, sample_buf) < sample_size) {
-    printf("HW RNG returned fewer bytes\n");
+  while (the_accumulator.entropy_estimate() < required_entropy) {
+    if (hw_source.getentropy_(sample_size, sample_buf) < sample_size) {
+      printf("HW RNG returned fewer bytes\n");
+    }
+    the_accumulator.add_samples(sample_size, sample_buf, hw_source.ent_per_sample_byte_);
   }
-  the_accumulator.add_samples(sample_size, sample_buf, hw_source.ent_per_sample_byte_);
-  printf("entropy in pool: %lf\n",  the_accumulator.entropy_estimate());
-  if (hw_source.getentropy_(sample_size, sample_buf) < sample_size) {
-    printf("HW RNG returned fewer bytes\n");
-  }
-  the_accumulator.add_samples(sample_size, sample_buf, hw_source.ent_per_sample_byte_);
-  printf("entropy in pool: %lf\n",  the_accumulator.entropy_estimate());
 
   // add 384 sw bits
 
-  // check the pool had the right entropy
   // set up drng
+  int seed_size= 64;
+  byte seed[64];
+  double entropy_of_seed = 0.0;
+  memset(seed, 0, seed_size);
+
+  if (!the_accumulator.empty_pool(&seed_size, seed, &entropy_of_seed)) {
+    printf("can't empty accumulator pool\n");
+    return 0;
+  }
+
+  if (entropy_of_seed < 384.0) {
+    printf("seed entropy too small\n");
+    return 0;
+  }
+  entropy_of_seed = 256.0;
+
+  if (FLAGS_print_all) {
+    printf("seed: ");
+    print_bytes(seed_size, seed);
+    printf("\n");
+  }
+
+  if (!the_drng.init(0, nullptr, 0, nullptr, seed_size, seed, entropy_of_seed)) {
+    printf("can't initialize drng\n");
+    return 0;
+  }
+
+  int size_random_numbers = 32;
+  byte random_numbers[64];
+  memset(random_numbers, 0, 64);
+
   // fetch random numbers
+  for (int j = 0; j < 10; j++) {
+    if (!the_drng.generate_random_bits(8 * size_random_numbers, random_numbers, 0, nullptr)) {
+      printf("can't generate random bits\n");
+      return 0;
+    }
+    printf("random number %d: ", j);
+    print_bytes(size_random_numbers, random_numbers);
+  }
 
   close_crypto();
   printf("\n");
