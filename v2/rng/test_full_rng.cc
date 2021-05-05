@@ -24,6 +24,37 @@ DEFINE_bool(print_all, false, "Print intermediate test computations");
 DEFINE_int32(pool_size, 4096, "pool size");
 DEFINE_double(entropy_required, 256, "entropy required");
 
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+// nuc has 32Kb L1 i-cache, and 32KB L1 d-cache, should adjust to 
+// flush d cache from timet to time
+
+volatile void inline test_code_1(int num_loops) {
+  volatile int  t = 0;
+
+  for (int i = 0; i < num_loops; i++) {
+    t += i * 6;
+  }
+  t /= 2;
+  usleep(122);
+}
+
+#pragma GCC pop_options
+
+int sw_entropy(int num_samples, byte* sample) {
+  uint64_t t1, t2;
+  uint32_t delta;
+
+  for (int i = 0; i < num_samples; i++) {
+    t1 = read_rdtsc();
+    test_code_1(11);
+    t2 = read_rdtsc();
+    delta = t2 - t1;
+    sample[i] = (byte)delta;
+  }
+  return num_samples;
+}
+
 int hw_entropy(int num_samples, byte* sample) {
   uint32_t out = 0;
   int n = 0;
@@ -44,10 +75,6 @@ int hw_entropy(int num_samples, byte* sample) {
   return n;
 }
 
-int sw_entropy(int num_samples, byte* sample) {
-  return num_samples;
-}
-
 int get_intel_rand(int n, byte* sample) {
   return n;
 }
@@ -56,10 +83,10 @@ int main(int an, char** av) {
   gflags::ParseCommandLineFlags(&an, &av, true);
   an = 1;
 
-  hash_drng the_drng;                                       // DRBG
   entropy_source hw_source("Intel RNG", 7.5, hw_entropy);   // hardware source
-  // entropy_source sw_source;                              // software source
-  entropy_accumulate the_accumulator;   // The accumulator
+  entropy_source sw_source("jitter", 1.0, sw_entropy);      // software source
+  entropy_accumulate the_accumulator;                       // The accumulator
+  hash_drng the_drng;                                       // DRBG
 
   init_crypto();
 
@@ -69,17 +96,41 @@ int main(int an, char** av) {
   
   memset(sample_buf, 0, size_sample_buf);
 
-  double required_entropy = 384.0;
+  double required_entropy = 256.0;
 
-  // add 384 hw bits
+  // add 256 hw bits
   while (the_accumulator.entropy_estimate() < required_entropy) {
     if (hw_source.getentropy_(sample_size, sample_buf) < sample_size) {
       printf("HW RNG returned fewer bytes\n");
     }
+#if 1
+    printf("HW ent: ");
+    print_bytes(sample_size, sample_buf);
+#endif
     the_accumulator.add_samples(sample_size, sample_buf, hw_source.ent_per_sample_byte_);
   }
 
+  if (FLAGS_print_all) {
+    printf("Entropy after HW: %lf\n", the_accumulator.entropy_estimate());
+  }
+
   // add 384 sw bits
+  required_entropy = 384.0;
+  sample_size = 20;
+  while (the_accumulator.entropy_estimate() < required_entropy) {
+    if (sw_source.getentropy_(sample_size, sample_buf) < sample_size) {
+      printf("SW RNG returned fewer bytes\n");
+    }
+#if 1
+    printf("SW ent: ");
+    print_bytes(sample_size, sample_buf);
+#endif
+    the_accumulator.add_samples(sample_size, sample_buf, hw_source.ent_per_sample_byte_);
+  }
+
+  if (FLAGS_print_all) {
+    printf("Entropy after SW: %lf\n", the_accumulator.entropy_estimate());
+  }
 
   // set up drng
   int seed_size= 64;
@@ -92,6 +143,10 @@ int main(int an, char** av) {
     return 0;
   }
 
+  if (FLAGS_print_all) {
+    printf("Entropy from empty pool: %lf\n", entropy_of_seed);
+  }
+
   if (entropy_of_seed < 384.0) {
     printf("seed entropy too small\n");
     return 0;
@@ -99,7 +154,7 @@ int main(int an, char** av) {
   entropy_of_seed = 256.0;
 
   if (FLAGS_print_all) {
-    printf("seed: ");
+    printf("\nseed: ");
     print_bytes(seed_size, seed);
     printf("\n");
   }
