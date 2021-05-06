@@ -17,7 +17,6 @@
 #include <stdio.h>
 
 typedef uint8_t byte;
-
 const int lane_exp = 6;
 
 inline int lane_size(int exp) {
