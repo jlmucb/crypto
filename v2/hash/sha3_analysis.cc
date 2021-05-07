@@ -15,6 +15,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 typedef uint8_t byte;
 const int lane_exp = 6;
@@ -89,6 +90,7 @@ byte column_parities(int size_lane, byte* in_state, int x, int z) {
   return parity;
 }
 
+
 // add parity of two columns to a column
 void theta_f(int size_lane, byte* in_state, byte* out_state) {
   for (int x = 0; x < 5; x++) {
@@ -157,14 +159,6 @@ void chi_f(int size_lane, byte* in_state, byte* out_state) {
   }
 }
 
-// byte rc_t[];  // rc[t] = x^t mod (x^8 + x^6 + x^5 + x^4 + 1) mod 2
-// RC(rnd,0,0,2**j -1] = rc_t[j+7*rnd];
-inline byte RC(int rnd, int x, int y, int z) {
-  // rc_t[j + 7 * rnd], 0 <= j <= lane_exp
-  // all others are 0
-  return 0;
-}
-
 #if 0
 uint64_t RoundConstants[24] = {
     (uint64_t)0x0000000000000001ULL, (uint64_t)0x0000000000008082ULL,
@@ -223,7 +217,7 @@ int positions[7] = {0, 1, 5, 7, 15, 31, 63};
 // add round constants
 void iota_f(int rnd, int size_lane, byte* in_state) {
   for (int j = 0; j < 7; j++) {
-    if (((((byte)1)<<j) & 1) != 0)
+    if (((((byte)1)<<j) & local_round_constants[rnd]) != 0)
       in_state[index(size_lane, 0, 0, positions[j])] ^= 1;
     }
 }
@@ -233,9 +227,95 @@ void init_state(int size_lane, byte* state) {
     state[i] = 0;
 }
 
+const int num_bytes_to_hash = 16;
+byte to_hash[num_bytes_to_hash] =  {
+  0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+  0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f, 0x50,
+};
+
+void print_bytes(int n, byte* in) {
+  int i;
+
+  for(i = 0; i < n; i++) {
+    printf("%02x",in[i]);
+    if ((i%32)== 31)
+      printf("\n");
+  }
+  if ((i%32) != 0)
+    printf("\n");
+}
+
+void print_state(int size_lane, byte* state_in) {
+  for (int x = 0; x < 5; x++) {
+    for (int y = 0; y < 5; y++) {
+      printf("(%d, %d): ", x, y);
+      for (int z = 0; z < size_lane; z++) {
+        printf("%1d", state_in[index(size_lane, x, y, z)]); 
+      }
+      printf("\n");
+    }
+  }
+}
+
+void keccak_f(int size_lane, byte* state_in, byte* state_out) {
+  byte state1[1600];
+  byte state2[1600];
+
+  for (int round = 0;  round < 1; round++) {
+    memset(state1, 0, 1600);
+    printf("initial state:\n");
+    print_state(size_lane, state_in);
+    theta_f(size_lane, state_in, state1);
+    printf("after theta:\n");
+    print_state(size_lane, state1);
+    memset(state2, 0, 1600);
+    rho_f(size_lane, state1, state2);
+    printf("after rho:\n");
+    print_state(size_lane, state2);
+    memset(state1, 0, 1600);
+    pi_f(size_lane, state2, state1);
+    printf("after pi:\n");
+    print_state(size_lane, state1);
+    memset(state2, 0, 1600);
+    chi_f(size_lane, state1, state2);
+    printf("after chi:\n");
+    print_state(size_lane, state2);
+    iota_f(round, size_lane, state2);
+    printf("after iota:\n");
+    print_state(size_lane, state2);
+  }
+}
+
 int main(int an, char** av) {
+  int b = state_size();
   int c = 576;
   int r = state_size() - c;
+
+  byte state_in[1600];
+  byte state_out[1600];
+  memset(state_in, 0, 1600);
+  memset(state_out, 0, 1600);
+
+  printf("Keccak b= %d, c= %d, r= %d\n", b, c, r);
+  byte in[8 * num_bytes_to_hash];
+  memset(in, 0, 8 * num_bytes_to_hash);
+  if (!bytes_to_bits(num_bytes_to_hash, to_hash, in)) {
+    printf("Cant convert to bits\n");
+    return 1;
+  }
+  printf("to hash: ");
+  print_bytes(num_bytes_to_hash, to_hash);
+  printf("\n");
+  printf("as bits: ");
+  for(int i = 0; i < 8 * num_bytes_to_hash; i++) {
+    printf("%1x", in[i]);
+  }
+  printf("\n");
+
+  int size_lane = lane_size(lane_exp);
+  memcpy(state_in, in, 8 * num_bytes_to_hash);
+  keccak_f(size_lane, state_in, state_out);
+
   return 0;
 }
 
