@@ -165,16 +165,67 @@ inline byte RC(int rnd, int x, int y, int z) {
   return 0;
 }
 
-// add round constants
-void iota_f(int rnd, int size_lane, byte* in_state, byte* out_state) {
-  for (int x = 0; x < 5; x++) {
-    for (int y = 0; y < 5; y++) {
-      for (int z = 0; z < size_lane; z++) {
-        out_state[index(size_lane, x, y, z)] =  in_state[index(size_lane, x, y, z)] ^
-          RC(rnd, x, y, z);
+#if 0
+uint64_t RoundConstants[24] = {
+    (uint64_t)0x0000000000000001ULL, (uint64_t)0x0000000000008082ULL,
+    (uint64_t)0x800000000000808aULL, (uint64_t)0x8000000080008000ULL,
+    (uint64_t)0x000000000000808bULL, (uint64_t)0x0000000080000001ULL,
+    (uint64_t)0x8000000080008081ULL, (uint64_t)0x8000000000008009ULL,
+    (uint64_t)0x000000000000008aULL, (uint64_t)0x0000000000000088ULL,
+    (uint64_t)0x0000000080008009ULL, (uint64_t)0x000000008000000aULL,
+    (uint64_t)0x000000008000808bULL, (uint64_t)0x800000000000008bULL,
+    (uint64_t)0x8000000000008089ULL, (uint64_t)0x8000000000008003ULL,
+    (uint64_t)0x8000000000008002ULL, (uint64_t)0x8000000000000080ULL,
+    (uint64_t)0x000000000000800aULL, (uint64_t)0x800000008000000aULL,
+    (uint64_t)0x8000000080008081ULL, (uint64_t)0x8000000000008080ULL,
+    (uint64_t)0x0000000080000001ULL, (uint64_t)0x8000000080008008ULL};
+
+void print_round_constants() {
+  uint64_t  a;
+  byte b = 0;
+  int positions[7] = {0, 1, 3, 7, 15, 31, 63};
+  byte local_round_constants[24];
+
+  for (int i = 0; i < 24; i++) {
+    a = RoundConstants[i];
+    printf("round %02d: ", i);
+    for (int j = 0; j < 64; j++) {
+      if (a&1ULL)
+        printf("%d ", j);
+      a >>= 1ULL;
+    }
+    printf("\n");
+    b = 0; 
+    a = RoundConstants[i];
+    for (int j = 0; j < 7; j++) {
+      if (((((uint64_t) 1) << positions[j]) & a) != 0) {
+        b |= ((byte)1) << j;
       }
     }
+    local_round_constants[i] = b;
+    printf("rk_word[%d] = 0x%02x\n", i, b);
   }
+
+  printf("\nlocal_round_constants[24] = {");
+  for (int i = 0; i < 24; i++) {
+    printf("%02x, ", local_round_constants[i]);
+  }
+  printf("\n}\n");
+}
+#endif
+
+byte local_round_constants[24] = {
+  0x01, 0x1a, 0x5e, 0x70, 0x1f, 0x21, 0x79, 0x55,
+  0x0e, 0x0c, 0x35, 0x26, 0x3f, 0x4f, 0x5d, 0x53,
+  0x52, 0x48, 0x16, 0x66, 0x79, 0x58, 0x21, 0x74
+};
+int positions[7] = {0, 1, 5, 7, 15, 31, 63};
+// add round constants
+void iota_f(int rnd, int size_lane, byte* in_state) {
+  for (int j = 0; j < 7; j++) {
+    if (((((byte)1)<<j) & 1) != 0)
+      in_state[index(size_lane, 0, 0, positions[j])] ^= 1;
+    }
 }
 
 void init_state(int size_lane, byte* state) {
@@ -183,6 +234,8 @@ void init_state(int size_lane, byte* state) {
 }
 
 int main(int an, char** av) {
+  int c = 576;
+  int r = state_size() - c;
   return 0;
 }
 
