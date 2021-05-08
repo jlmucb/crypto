@@ -87,7 +87,7 @@ byte column_parities(int size_lane, byte* in_state, int x, int z) {
   for (int y = 0; y < 5; y++) {
     parity ^= (in_state[index(size_lane, x1, y, z1)] ^ in_state[index(size_lane, x2, y, z2)]);
   }
-#if 1
+#if 0
   print_col(size_lane, x1, z1, in_state);
   print_col(size_lane, x2, z2, in_state);
   printf("parity: %d\n", parity);
@@ -103,7 +103,9 @@ void theta_f(int size_lane, byte* in_state, byte* out_state) {
       byte parity = column_parities(size_lane, in_state, x, z);
       for (int y = 0; y < 5; y++) {
         out_state[index(size_lane, x, y, z)] =  in_state[index(size_lane, x, y, z)] ^ parity;
-	printf("Before %d, %d, after: %d\n", in_state[index(size_lane, x, y, z)], parity, out_state[index(size_lane, x, y, z)]);
+#if 0
+        printf("\t(%d, %d, %d): %d\n", x, y, z, out_state[index(size_lane, x, y, z)]);
+#endif
       }
     }
   }
