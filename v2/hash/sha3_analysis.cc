@@ -286,6 +286,9 @@ void keccak_f(int size_lane, byte* state_in, byte* state_out) {
   }
 }
 
+void pad(int r, int size_in, int* pad_size, byte* pad_buf) {
+}
+
 int main(int an, char** av) {
   int b = state_size();
   int c = 576;
