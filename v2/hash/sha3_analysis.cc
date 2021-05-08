@@ -270,11 +270,13 @@ void keccak_f(int size_lane, byte* state_in, byte* state_out) {
   byte state1[1600];
   byte state2[1600];
 
-  for (int round = 0;  round < 1; round++) {
+  memcpy(state2, state_in, 1600);
+  printf("initial state:\n");
+  print_state(size_lane, state_in);
+  for (int round = 0;  round < 2; round++) {
+    printf("\nround %d\n", round);
     memset(state1, 0, 1600);
-    printf("initial state:\n");
-    print_state(size_lane, state_in);
-    theta_f(size_lane, state_in, state1);
+    theta_f(size_lane, state2, state1);
     printf("after theta:\n");
     print_state(size_lane, state1);
     memset(state2, 0, 1600);
