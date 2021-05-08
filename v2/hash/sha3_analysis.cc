@@ -84,9 +84,14 @@ byte column_parities(int size_lane, byte* in_state, int x, int z) {
   int z1 = z;
   int x2 = (x + 1) % 5;
   int z2 = (z + 1) % 5;
-  for (int y = 0; y < 4; y++) {
-    parity ^= in_state[index(size_lane, x1, y, z1)] ^ in_state[index(size_lane, x2, y, z2)];
+  for (int y = 0; y < 5; y++) {
+    parity ^= (in_state[index(size_lane, x1, y, z1)] ^ in_state[index(size_lane, x2, y, z2)]);
   }
+#if 1
+  print_col(size_lane, x1, z1, in_state);
+  print_col(size_lane, x2, z2, in_state);
+  printf("parity: %d\n", parity);
+#endif
   return parity;
 }
 
@@ -96,8 +101,10 @@ void theta_f(int size_lane, byte* in_state, byte* out_state) {
   for (int x = 0; x < 5; x++) {
     for (int z = 0; z < size_lane; z++) {
       byte parity = column_parities(size_lane, in_state, x, z);
-      for (int y = 0; y < 5; y++)
+      for (int y = 0; y < 5; y++) {
         out_state[index(size_lane, x, y, z)] =  in_state[index(size_lane, x, y, z)] ^ parity;
+	printf("Before %d, %d, after: %d\n", in_state[index(size_lane, x, y, z)], parity, out_state[index(size_lane, x, y, z)]);
+      }
     }
   }
 }
@@ -152,8 +159,8 @@ void chi_f(int size_lane, byte* in_state, byte* out_state) {
     for (int y = 0; y < 5; y++) {
       for (int z = 0; z < size_lane; z++) {
         out_state[index(size_lane, x, y, z)] =  in_state[index(size_lane, x, y, z)] ^
-          (in_state[index(size_lane, (x + 1) % 5, y, z)] ^ 1) &
-          in_state[index(size_lane, (x + 2) % 5, y, z)];
+          ((in_state[index(size_lane, (x + 1) % 5, y, z)] ^ 1) &
+          in_state[index(size_lane, (x + 2) % 5, y, z)]);
       }
     }
   }
