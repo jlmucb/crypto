@@ -77,6 +77,7 @@ void index_pair_transform(int x_in, int y_in, int* x_out, int* y_out) {
   *y_out = b;
 }
 
+//#define INTERMEDIATETHETA
 byte column_parities(int size_lane, byte* in_state, int x, int z) {
   byte parity = 0;
 
@@ -87,7 +88,7 @@ byte column_parities(int size_lane, byte* in_state, int x, int z) {
   for (int y = 0; y < 5; y++) {
     parity ^= (in_state[index(size_lane, x1, y, z1)] ^ in_state[index(size_lane, x2, y, z2)]);
   }
-#if 0
+#ifdef INTERMEDIATETHETA
   print_col(size_lane, x1, z1, in_state);
   print_col(size_lane, x2, z2, in_state);
   printf("parity: %d\n", parity);
@@ -100,13 +101,18 @@ byte column_parities(int size_lane, byte* in_state, int x, int z) {
 void theta_f(int size_lane, byte* in_state, byte* out_state) {
   for (int x = 0; x < 5; x++) {
     for (int z = 0; z < size_lane; z++) {
+#ifdef INTERMEDIATETHETA
+      printf("before, ");
+      print_col(size_lane, x, z, in_state);
+#endif
       byte parity = column_parities(size_lane, in_state, x, z);
       for (int y = 0; y < 5; y++) {
         out_state[index(size_lane, x, y, z)] =  in_state[index(size_lane, x, y, z)] ^ parity;
-#if 0
-        printf("\t(%d, %d, %d): %d\n", x, y, z, out_state[index(size_lane, x, y, z)]);
-#endif
       }
+#ifdef INTERMEDIATETHETA
+      printf("after, ");
+      print_col(size_lane, x, z, out_state);
+#endif
     }
   }
 }
@@ -120,6 +126,7 @@ void mat_mult(int a11, int a12, int a21, int a22,
   *c22 = (a21*b12 + a22*b22) % 5;
 }
 
+//#define INTERMEDIATERHO
 // rotate bits in lane by T(x,y)
 void rho_f(int size_lane, byte* in_state, byte* out_state) {
   int x1, y1;
@@ -128,9 +135,14 @@ void rho_f(int size_lane, byte* in_state, byte* out_state) {
   int c11, c12, c21, c22;
   int k;
 
-  for (int z = 0; z < size_lane; z++) {
-    for (int t = 0; t <= 24; t++) {
-      x1 = a11; y1= a21;
+  for (int t = 0; t <= 24; t++) {
+    x1 = a11; y1= a21;
+#ifdef INTERMEDIATERHO
+    printf("rho, before, t: %d, a11: %d, a12: %d, a21: %d, a22: %d, x1:%d, y1: %d\n",
+           t, a11, a12, a21, a22, x1, y1);
+    print_lane (size_lane, x1, y1, in_state);
+#endif
+    for (int z = 0; z < size_lane; z++) {
       if (t == 24) {
         x1 = 0;
         y1 = 0;
@@ -139,18 +151,29 @@ void rho_f(int size_lane, byte* in_state, byte* out_state) {
         k = (size_lane + z - ((t + 1)*(t + 2)) / 2) % size_lane;
       }
       out_state[index(size_lane, x1, y1, z)] = in_state[index(size_lane, x1, y1, k)];
-      mat_mult(a11, a12, a21, a22, 0, 1, 2, 3, &c11, &c12, &c21, &c22);
-      a11 = c11; a12 = c12; a21 = c21; a22 = c22;
+#ifdef INTERMEDIATERHO
+      printf("\tk: %d, z: %d\n", k, z);
+#endif
     }
+#ifdef INTERMEDIATERHO
+    printf("after, ");
+    print_lane (size_lane, x1, y1, out_state);
+#endif
+    mat_mult(a11, a12, a21, a22, 0, 1, 2, 3, &c11, &c12, &c21, &c22);
+    a11 = c11; a12 = c12; a21 = c21; a22 = c22;
   }
 }
 
+// #define INTERMEDIATEPI
 // reorder lanes
 void pi_f(int size_lane, byte* in_state, byte* out_state) {
   int x1, y1;
   for (int x = 0; x < 5; x++) {
     for (int y = 0; y < 5; y++) {
       index_pair_transform(x, y, &x1, &y1);
+#ifdef INTERMEDIATEPI
+    printf("x: %d, y: %d, x1: %d, y1: %d\n", x,y,x1,y1);
+#endif
       for (int z = 0; z < size_lane; z++) {
         out_state[index(size_lane, x1, y1, z)] =  in_state[index(size_lane, x1, y1, z)];
       }
@@ -158,18 +181,170 @@ void pi_f(int size_lane, byte* in_state, byte* out_state) {
   }
 }
 
+// #define INTERMEDIATECHI
 // non-linear transform of rows
 void chi_f(int size_lane, byte* in_state, byte* out_state) {
+  byte r;
+
   for (int x = 0; x < 5; x++) {
     for (int y = 0; y < 5; y++) {
       for (int z = 0; z < size_lane; z++) {
-        out_state[index(size_lane, x, y, z)] =  in_state[index(size_lane, x, y, z)] ^
-          ((in_state[index(size_lane, (x + 1) % 5, y, z)] ^ 1) &
-          in_state[index(size_lane, (x + 2) % 5, y, z)]);
+        r = (in_state[index(size_lane, (x + 1) % 5, y, z)] ^ 1) & in_state[index(size_lane, (x + 2) % 5, y, z)];
+        out_state[index(size_lane, x, y, z)] =  in_state[index(size_lane, x, y, z)] ^ r;
+#ifdef INTERMEDIATECHI
+        printf("x: %d, y: %d, z: %d, x + 1: %d, x + 2: %d, a1: %d, a2: %d, r: %d, in: %d, out: %d\n",
+           x, y, z, (x + 1) % 5, (x + 2) %5,
+           in_state[index(size_lane, (x + 1) % 5, y, z)], in_state[index(size_lane, (x + 2) % 5, y, z)],
+           r, in_state[index(size_lane, x, y, z)], out_state[index(size_lane, x, y, z)]);
+#endif
       }
     }
   }
 }
+
+byte local_round_constants[24] = {
+  0x01, 0x1a, 0x5e, 0x70, 0x1f, 0x21, 0x79, 0x55,
+  0x0e, 0x0c, 0x35, 0x26, 0x3f, 0x4f, 0x5d, 0x53,
+  0x52, 0x48, 0x16, 0x66, 0x79, 0x58, 0x21, 0x74
+};
+int positions[7] = {0, 1, 5, 7, 15, 31, 63};
+
+// #define INTERMEDIATEIOTA
+// add round constants
+void iota_f(int rnd, int size_lane, byte* in_state) {
+  for (int j = 0; j < 7; j++) {
+    if (((((byte)1)<<j) & local_round_constants[rnd]) != 0) {
+#ifdef INTERMEDIATEIOTA
+    printf("rnd: %d, (0, 0, %d) ^= 1\n",  rnd, positions[j]);
+#endif
+      in_state[index(size_lane, 0, 0, positions[j])] ^= 1;
+    }
+  }
+}
+
+void init_state(int size_lane, byte* state) {
+  for (int i = 0; i < (state_size() - 1); i++)
+    state[i] = 0;
+}
+
+const int num_bytes_to_hash = 16;
+byte to_hash[num_bytes_to_hash] =  {
+  0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+  0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f, 0x50,
+};
+
+void print_bytes(int n, byte* in) {
+  int i;
+
+  for(i = 0; i < n; i++) {
+    printf("%02x",in[i]);
+    if ((i%32)== 31)
+      printf("\n");
+  }
+  if ((i%32) != 0)
+    printf("\n");
+}
+
+void print_state(int size_lane, byte* state_in) {
+  for (int x = 0; x < 5; x++) {
+    for (int y = 0; y < 5; y++) {
+      printf("(%d, %d): ", x, y);
+      for (int z = 0; z < size_lane; z++) {
+        printf("%1d", state_in[index(size_lane, x, y, z)]); 
+      }
+      printf("\n");
+    }
+  }
+}
+
+#define INTERMEDIATE0
+#define INTERMEDIATE
+void keccak_f(int size_lane, byte* state_in, byte* state_out) {
+  byte state1[1600];
+  byte state2[1600];
+
+  memcpy(state2, state_in, 1600);
+#ifdef INTERMEDIATE0
+  printf("initial state:\n");
+  print_state(size_lane, state_in);
+#endif
+  for (int round = 0;  round < 24; round++) {
+#ifdef INTERMEDIATE
+    printf("\nround %d\n", round);
+#endif
+    memset(state1, 0, 1600);
+    theta_f(size_lane, state2, state1);
+#ifdef INTERMEDIATE
+    printf("after theta:\n");
+    print_state(size_lane, state1);
+#endif
+    memset(state2, 0, 1600);
+    rho_f(size_lane, state1, state2);
+#ifdef INTERMEDIATE
+    printf("after rho:\n");
+    print_state(size_lane, state2);
+#endif
+    memset(state1, 0, 1600);
+    pi_f(size_lane, state2, state1);
+#ifdef INTERMEDIATE
+    printf("after pi:\n");
+    print_state(size_lane, state1);
+#endif
+    memset(state2, 0, 1600);
+    chi_f(size_lane, state1, state2);
+#ifdef INTERMEDIATE
+    printf("after chi:\n");
+    print_state(size_lane, state2);
+#endif
+    iota_f(round, size_lane, state2);
+#ifdef INTERMEDIATE
+    printf("after iota:\n");
+    print_state(size_lane, state2);
+#endif
+  }
+  memcpy(state_out, state2, 1600);
+#ifdef INTERMEDIATE0
+  printf("final state:\n");
+  print_state(size_lane, state_out);
+#endif
+}
+
+void pad(int r, int size_in, int* pad_size, byte* pad_buf) {
+}
+
+int main(int an, char** av) {
+  int b = state_size();
+  int c = 576;
+  int r = state_size() - c;
+
+  byte state_in[1600];
+  byte state_out[1600];
+  memset(state_in, 0, 1600);
+  memset(state_out, 0, 1600);
+
+  printf("Keccak b= %d, c= %d, r= %d\n", b, c, r);
+  byte in[8 * num_bytes_to_hash];
+  memset(in, 0, 8 * num_bytes_to_hash);
+  if (!bytes_to_bits(num_bytes_to_hash, to_hash, in)) {
+    printf("Cant convert to bits\n");
+    return 1;
+  }
+  printf("to hash: ");
+  print_bytes(num_bytes_to_hash, to_hash);
+  printf("\n");
+  printf("as bits: ");
+  for(int i = 0; i < 8 * num_bytes_to_hash; i++) {
+    printf("%1x", in[i]);
+  }
+  printf("\n");
+
+  int size_lane = lane_size(lane_exp);
+  memcpy(state_in, in, 8 * num_bytes_to_hash);
+  keccak_f(size_lane, state_in, state_out);
+
+  return 0;
+}
+
 
 #if 0
 uint64_t RoundConstants[24] = {
@@ -219,141 +394,3 @@ void print_round_constants() {
   printf("\n}\n");
 }
 #endif
-
-byte local_round_constants[24] = {
-  0x01, 0x1a, 0x5e, 0x70, 0x1f, 0x21, 0x79, 0x55,
-  0x0e, 0x0c, 0x35, 0x26, 0x3f, 0x4f, 0x5d, 0x53,
-  0x52, 0x48, 0x16, 0x66, 0x79, 0x58, 0x21, 0x74
-};
-int positions[7] = {0, 1, 5, 7, 15, 31, 63};
-// add round constants
-void iota_f(int rnd, int size_lane, byte* in_state) {
-  for (int j = 0; j < 7; j++) {
-    if (((((byte)1)<<j) & local_round_constants[rnd]) != 0)
-      in_state[index(size_lane, 0, 0, positions[j])] ^= 1;
-    }
-}
-
-void init_state(int size_lane, byte* state) {
-  for (int i = 0; i < (state_size() - 1); i++)
-    state[i] = 0;
-}
-
-const int num_bytes_to_hash = 16;
-byte to_hash[num_bytes_to_hash] =  {
-  0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-  0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f, 0x50,
-};
-
-void print_bytes(int n, byte* in) {
-  int i;
-
-  for(i = 0; i < n; i++) {
-    printf("%02x",in[i]);
-    if ((i%32)== 31)
-      printf("\n");
-  }
-  if ((i%32) != 0)
-    printf("\n");
-}
-
-void print_state(int size_lane, byte* state_in) {
-  for (int x = 0; x < 5; x++) {
-    for (int y = 0; y < 5; y++) {
-      printf("(%d, %d): ", x, y);
-      for (int z = 0; z < size_lane; z++) {
-        printf("%1d", state_in[index(size_lane, x, y, z)]); 
-      }
-      printf("\n");
-    }
-  }
-}
-
-#define INTERMENDIATE0
-#define INTERMENDIATE
-void keccak_f(int size_lane, byte* state_in, byte* state_out) {
-  byte state1[1600];
-  byte state2[1600];
-
-  memcpy(state2, state_in, 1600);
-#ifdef INTERMENDIATE0
-  printf("initial state:\n");
-  print_state(size_lane, state_in);
-#endif
-  for (int round = 0;  round < 24; round++) {
-#ifdef INTERMENDIATE
-    printf("\nround %d\n", round);
-#endif
-    memset(state1, 0, 1600);
-    theta_f(size_lane, state2, state1);
-#ifdef INTERMENDIATE
-    printf("after theta:\n");
-    print_state(size_lane, state1);
-#endif
-    memset(state2, 0, 1600);
-    rho_f(size_lane, state1, state2);
-#ifdef INTERMENDIATE
-    printf("after rho:\n");
-    print_state(size_lane, state2);
-#endif
-    memset(state1, 0, 1600);
-    pi_f(size_lane, state2, state1);
-#ifdef INTERMENDIATE
-    printf("after pi:\n");
-    print_state(size_lane, state1);
-#endif
-    memset(state2, 0, 1600);
-    chi_f(size_lane, state1, state2);
-#ifdef INTERMENDIATE
-    printf("after chi:\n");
-    print_state(size_lane, state2);
-#endif
-    iota_f(round, size_lane, state2);
-#ifdef INTERMENDIATE
-    printf("after iota:\n");
-    print_state(size_lane, state2);
-#endif
-  }
-  memcpy(state_out, state2, 1600);
-#ifdef INTERMENDIATE0
-  printf("final state:\n");
-  print_state(size_lane, state_out);
-#endif
-}
-
-void pad(int r, int size_in, int* pad_size, byte* pad_buf) {
-}
-
-int main(int an, char** av) {
-  int b = state_size();
-  int c = 576;
-  int r = state_size() - c;
-
-  byte state_in[1600];
-  byte state_out[1600];
-  memset(state_in, 0, 1600);
-  memset(state_out, 0, 1600);
-
-  printf("Keccak b= %d, c= %d, r= %d\n", b, c, r);
-  byte in[8 * num_bytes_to_hash];
-  memset(in, 0, 8 * num_bytes_to_hash);
-  if (!bytes_to_bits(num_bytes_to_hash, to_hash, in)) {
-    printf("Cant convert to bits\n");
-    return 1;
-  }
-  printf("to hash: ");
-  print_bytes(num_bytes_to_hash, to_hash);
-  printf("\n");
-  printf("as bits: ");
-  for(int i = 0; i < 8 * num_bytes_to_hash; i++) {
-    printf("%1x", in[i]);
-  }
-  printf("\n");
-
-  int size_lane = lane_size(lane_exp);
-  memcpy(state_in, in, 8 * num_bytes_to_hash);
-  keccak_f(size_lane, state_in, state_out);
-
-  return 0;
-}
-
