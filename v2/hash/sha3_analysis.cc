@@ -129,15 +129,18 @@ void rho_f(int size_lane, byte* in_state, byte* out_state) {
   int k;
 
   for (int z = 0; z < size_lane; z++) {
-    for (int t = 0; t < 24; t++) {
+    for (int t = 0; t <= 24; t++) {
+      x1 = a11; y1= a21;
+      if (t == 24) {
+        x1 = 0;
+        y1 = 0;
+        k = z % size_lane;
+      } else {
+        k = (size_lane + z - ((t + 1)*(t + 2)) / 2) % size_lane;
+      }
+      out_state[index(size_lane, x1, y1, z)] = in_state[index(size_lane, x1, y1, k)];
       mat_mult(a11, a12, a21, a22, 0, 1, 2, 3, &c11, &c12, &c21, &c22);
       a11 = c11; a12 = c12; a21 = c21; a22 = c22;
-      x1 = a11; y1= (2*a21 + 3*a22) % 5;
-      if (x1 == 0 && y1 == 0)
-        k = z % size_lane;
-      else
-        k = (z - ((t + 1)*(t + 2)) / 2) % size_lane;
-      out_state[index(size_lane, x1, y1, z)] = in_state[index(size_lane, x1, y1, k)];
     }
   }
 }
