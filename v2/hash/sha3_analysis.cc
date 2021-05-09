@@ -134,7 +134,7 @@ void rho_f(int size_lane, byte* in_state, byte* out_state) {
       a11 = c11; a12 = c12; a21 = c21; a22 = c22;
       x1 = a11; y1= (2*a21 + 3*a22) % 5;
       if (x1 == 0 && y1 == 0)
-        k = z;
+        k = z % size_lane;
       else
         k = (z - ((t + 1)*(t + 2)) / 2) % size_lane;
       out_state[index(size_lane, x1, y1, z)] = in_state[index(size_lane, x1, y1, k)];
@@ -266,35 +266,56 @@ void print_state(int size_lane, byte* state_in) {
   }
 }
 
+#define INTERMENDIATE0
+#define INTERMENDIATE
 void keccak_f(int size_lane, byte* state_in, byte* state_out) {
   byte state1[1600];
   byte state2[1600];
 
   memcpy(state2, state_in, 1600);
+#ifdef INTERMENDIATE0
   printf("initial state:\n");
   print_state(size_lane, state_in);
-  for (int round = 0;  round < 2; round++) {
+#endif
+  for (int round = 0;  round < 24; round++) {
+#ifdef INTERMENDIATE
     printf("\nround %d\n", round);
+#endif
     memset(state1, 0, 1600);
     theta_f(size_lane, state2, state1);
+#ifdef INTERMENDIATE
     printf("after theta:\n");
     print_state(size_lane, state1);
+#endif
     memset(state2, 0, 1600);
     rho_f(size_lane, state1, state2);
+#ifdef INTERMENDIATE
     printf("after rho:\n");
     print_state(size_lane, state2);
+#endif
     memset(state1, 0, 1600);
     pi_f(size_lane, state2, state1);
+#ifdef INTERMENDIATE
     printf("after pi:\n");
     print_state(size_lane, state1);
+#endif
     memset(state2, 0, 1600);
     chi_f(size_lane, state1, state2);
+#ifdef INTERMENDIATE
     printf("after chi:\n");
     print_state(size_lane, state2);
+#endif
     iota_f(round, size_lane, state2);
+#ifdef INTERMENDIATE
     printf("after iota:\n");
     print_state(size_lane, state2);
+#endif
   }
+  memcpy(state_out, state2, 1600);
+#ifdef INTERMENDIATE0
+  printf("final state:\n");
+  print_state(size_lane, state_out);
+#endif
 }
 
 void pad(int r, int size_in, int* pad_size, byte* pad_buf) {
