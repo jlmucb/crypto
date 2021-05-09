@@ -227,12 +227,6 @@ void init_state(int size_lane, byte* state) {
     state[i] = 0;
 }
 
-const int num_bytes_to_hash = 16;
-byte to_hash[num_bytes_to_hash] =  {
-  0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-  0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f, 0x50,
-};
-
 void print_bytes(int n, byte* in) {
   int i;
 
@@ -257,90 +251,170 @@ void print_state(int size_lane, byte* state_in) {
   }
 }
 
-#define INTERMEDIATE0
-#define INTERMEDIATE
+//#define INTERMEDIATEF
 void keccak_f(int size_lane, byte* state_in, byte* state_out) {
   byte state1[1600];
   byte state2[1600];
 
   memcpy(state2, state_in, 1600);
-#ifdef INTERMEDIATE0
+#ifdef INTERMEDIATEF
   printf("initial state:\n");
   print_state(size_lane, state_in);
 #endif
   for (int round = 0;  round < 24; round++) {
-#ifdef INTERMEDIATE
+#ifdef INTERMEDIATEF
     printf("\nround %d\n", round);
 #endif
     memset(state1, 0, 1600);
     theta_f(size_lane, state2, state1);
-#ifdef INTERMEDIATE
+#ifdef INTERMEDIATEF
     printf("after theta:\n");
     print_state(size_lane, state1);
 #endif
     memset(state2, 0, 1600);
     rho_f(size_lane, state1, state2);
-#ifdef INTERMEDIATE
+#ifdef INTERMEDIATEF
     printf("after rho:\n");
     print_state(size_lane, state2);
 #endif
     memset(state1, 0, 1600);
     pi_f(size_lane, state2, state1);
-#ifdef INTERMEDIATE
+#ifdef INTERMEDIATEF
     printf("after pi:\n");
     print_state(size_lane, state1);
 #endif
     memset(state2, 0, 1600);
     chi_f(size_lane, state1, state2);
-#ifdef INTERMEDIATE
+#ifdef INTERMEDIATEF
     printf("after chi:\n");
     print_state(size_lane, state2);
 #endif
     iota_f(round, size_lane, state2);
-#ifdef INTERMEDIATE
+#ifdef INTERMEDIATEF
     printf("after iota:\n");
     print_state(size_lane, state2);
 #endif
   }
   memcpy(state_out, state2, 1600);
-#ifdef INTERMEDIATE0
+#ifdef INTERMEDIATEF
   printf("final state:\n");
   print_state(size_lane, state_out);
 #endif
 }
 
-void pad(int r, int size_in, int* pad_size, byte* pad_buf) {
+bool pad(int r, int size_in, int* pad_size, byte* pad_buf) {
+  int num_in_last_block = size_in % r;
+  int num_left;
+  if (num_in_last_block == 0)
+    num_left = r;
+  else
+    num_left = r - num_in_last_block;
+    
+  if (num_left > *pad_size)
+    return false;
+  *pad_size = num_left;
+  for (int i = 0; i < num_left; i++)
+    pad_buf[i] = 0;
+  pad_buf[0] = 1;
+  pad_buf[num_left - 1] = 1;
+  return true;
 }
+
+#define INTERMEDIATEBLOCK
+bool sponge(int b, int r, int size_lane, int num_blocks_with_pad, byte* bit_blocks, int num_bits_out, byte* bits_out) {
+  byte state_in[1600];
+  byte state_out[1600];
+  memset(state_in, 0, 1600);
+  memset(state_out, 0, 1600);
+
+  memset(bits_out, 0, num_bits_out);
+
+  int bn = 0;
+  for (bn = 0; bn < num_blocks_with_pad; bn++) {
+#ifdef INTERMEDIATEBLOCK
+    printf("Block %d: \n", bn);
+#endif
+    // xor block into state
+    for( int j = 0; j < r; j++) {
+      state_in[j] ^= bit_blocks[bn * r + j];
+    }
+#ifdef INTERMEDIATEBLOCK
+    printf("in  :\n");
+    print_state(size_lane, state_in);
+#endif
+    // xor block padded with 0
+    keccak_f(size_lane, state_in, state_out);
+#ifdef INTERMEDIATEBLOCK
+    printf("out :\n");
+    print_state(size_lane, state_out);
+    printf("\n");
+#endif
+  }
+  if (num_bits_out > r) {
+    printf("output larger than width\n");
+    return false;
+  }
+  // output num_out bytes
+  for (int i = 0; i < num_bits_out; i++)
+    bits_out[i] = state_out[i];
+  return true;
+}
+
+const int num_bytes_to_hash = 16;
+byte to_hash[num_bytes_to_hash] = {
+  0x01, 0x03, 0x02, 0x04, 0x05, 0x06, 0x07, 0x08,
+  0xa1, 0xb3, 0xc2, 0xd4, 0xe5, 0xf6, 0x97, 0xa8,
+};
 
 int main(int an, char** av) {
   int b = state_size();
   int c = 576;
   int r = state_size() - c;
 
-  byte state_in[1600];
-  byte state_out[1600];
-  memset(state_in, 0, 1600);
-  memset(state_out, 0, 1600);
-
   printf("Keccak b= %d, c= %d, r= %d\n", b, c, r);
-  byte in[8 * num_bytes_to_hash];
-  memset(in, 0, 8 * num_bytes_to_hash);
-  if (!bytes_to_bits(num_bytes_to_hash, to_hash, in)) {
+
+  byte bit_blocks[r];
+  int num_bits_out = 256;
+  byte bits_out[num_bits_out];
+  memset(bit_blocks, 0, r);
+  memset(bits_out, 0, 256);
+
+  printf("to hash: ");
+  print_bytes(num_bytes_to_hash, to_hash);
+  if (!bytes_to_bits(num_bytes_to_hash, to_hash, bit_blocks)) {
     printf("Cant convert to bits\n");
     return 1;
   }
-  printf("to hash: ");
-  print_bytes(num_bytes_to_hash, to_hash);
-  printf("\n");
-  printf("as bits: ");
+  printf("to hash as bits: ");
   for(int i = 0; i < 8 * num_bytes_to_hash; i++) {
-    printf("%1x", in[i]);
+    printf("%1x", bit_blocks[i]);
   }
   printf("\n");
 
   int size_lane = lane_size(lane_exp);
-  memcpy(state_in, in, 8 * num_bytes_to_hash);
-  keccak_f(size_lane, state_in, state_out);
+  int num_blocks_with_pad = 1;
+
+  // pad
+  int pad_size = 1024;
+  if (!pad(r, 8 * num_bytes_to_hash, &pad_size, &bit_blocks[8 * num_bytes_to_hash])) {
+    printf("pad failed\n");
+    return 1;
+  }
+  printf("pad size = %d, total: %d\n", pad_size, 8 * num_bytes_to_hash + pad_size);
+  if ((8 * num_bytes_to_hash + pad_size) != r) {
+    printf("bad padded block size\n");
+    return 1;
+  }
+  printf("padded bits to hash: ");
+  for(int i = 0; i < r; i++) {
+    printf("%1x", bit_blocks[i]);
+  }
+  printf("\n");
+
+  if (!sponge(b, r, size_lane, num_blocks_with_pad, bit_blocks, num_bits_out, bits_out)) {
+    printf("sponge failed\n");
+    return 1;
+  }
 
   return 0;
 }
