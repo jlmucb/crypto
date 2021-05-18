@@ -16,6 +16,7 @@
 #include "crypto_support.h"
 #include "sha256.h"
 
+double entropy_estimate_from_samples(int n_in, int n_out, int nw, double h_in);
 
 // Hash mixer
 class entropy_accumulate {
