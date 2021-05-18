@@ -75,6 +75,7 @@ double entropy_estimate_from_samples(int n_in, int n_out, int nw, double h_in) {
     h_out = -(log(t) / log(2.0));
   else
     h_out = -(log(w) / log(2.0));
+  // can't be larger than output
   if (h_out > ((double)n))
     h_out = (double) n;
   return h_out;
