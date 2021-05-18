@@ -47,7 +47,8 @@ void entropy_accumulate::mix_entropy() {
   current_size_pool_ = sha256::DIGESTBYTESIZE;
 }
 
-//  Change entropy update to add entropy as follows:
+//  For n_in bits or noise source, calculate output as follows:
+//    n_in is number of bits of entropy in pool, current is entropy in pool
 //    Let p_{high} = 2^{-h_{in}} and p_{low} = {\frac {1- p_{high}} {2^{n_{in}-1}}}
 //    n = min(n_{out}, nw)
 //    t= 2^{n_{in}-n}p_{low} + p_{high}
@@ -56,6 +57,25 @@ void entropy_accumulate::mix_entropy() {
 //    update is -lg(max(t,w))
 //
 // Best to use sha-3 since nw=1024 for it
+
+double entropy_estimate_from_samples(int n_in, int n_out, int nw, double h_in) {
+  double p_high = pow(2.0, -h_in);
+  double p_low = (1.0 - p_high) / (pow(2.0, (double)n_in) - 1.0);
+  int n = 0;
+  if (n_out >= nw)
+    n = n_out;
+  else
+    n = nw;
+  double t1 = pow(2.0, (double)(n_in - n));
+  double t = t1*p_low + p_high;
+  double u = t1 + sqrt(2.0 * ((double)n) * t1 * log(2));
+  double w = u * p_low;
+  if (t >= w)
+    return -(log(t) / log(2.0));
+  else
+    return -(log(w) / log(2.0));
+}
+
 bool entropy_accumulate::add_samples(int num_samples, byte* samples, double est_ent_per_byte) {
   // copy samples into buffer, compress if we read pool size
   int samples_remaining = num_samples;
@@ -76,7 +96,7 @@ bool entropy_accumulate::add_samples(int num_samples, byte* samples, double est_
     samples_used_so_far += k;
     samples_remaining -= k;
     current_size_pool_ += k;
-    current_entropy_in_pool_ += ((double)k) * est_ent_per_byte;
+    current_entropy_in_pool_ = current_entropy_in_pool_ + ((double)k) * est_ent_per_byte;
   }
   return true;
 }
