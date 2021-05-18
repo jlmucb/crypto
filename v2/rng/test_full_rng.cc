@@ -83,6 +83,29 @@ int main(int an, char** av) {
   gflags::ParseCommandLineFlags(&an, &av, true);
   an = 1;
 
+#if 1
+  int n_in = 32 * 8;
+  int nw = 256;
+  int n_out = 256;
+  double h_in = .9  * n_in;
+  double h_out;
+  h_out = entropy_estimate_from_samples(n_in, n_out, nw, h_in);
+  printf("n_in: %d, nw: %d, n_out: %d, h_in: %lf, h_out: %lf\n",
+          n_in, nw, n_out, h_in, h_out);
+
+  n_in = 64 * 8;
+  h_in = .9 * n_in;
+  h_out = entropy_estimate_from_samples(n_in, n_out, nw, h_in);
+  printf("n_in: %d, nw: %d, n_out: %d, h_in: %lf, h_out: %lf\n",
+          n_in, nw, n_out, h_in, h_out);
+
+  n_in = 128 * 8;
+  h_in = .9 * n_in;
+  h_out = entropy_estimate_from_samples(n_in, n_out, nw, h_in);
+  printf("n_in: %d, nw: %d, n_out: %d, h_in: %lf, h_out: %lf\n",
+          n_in, nw, n_out, h_in, h_out);
+#endif
+
   entropy_source hw_source("Intel RNG", 7.5, hw_entropy);   // hardware source
   entropy_source sw_source("jitter", 1.0, sw_entropy);      // software source
   entropy_accumulate the_accumulator;                       // The accumulator
