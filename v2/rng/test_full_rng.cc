@@ -165,8 +165,6 @@ int main(int an, char** av) {
     return 0;
   }
   memset(random_numbers, 0, 64);
-
-  // fetch random numbers
   printf("Hardware derived random numbers:\n");
   for (int j = 0; j < 10; j++) {
     if (!hw_drng.generate_random_bits(8 * size_random_numbers, random_numbers, 0, nullptr)) {
@@ -219,8 +217,6 @@ int main(int an, char** av) {
     return 0;
   }
   memset(random_numbers, 0, 64);
-
-  // fetch random numbers
   printf("Software derived random numbers:\n");
   for (int j = 0; j < 10; j++) {
     if (!sw_drng.generate_random_bits(8 * size_random_numbers, random_numbers, 0, nullptr)) {
@@ -230,8 +226,6 @@ int main(int an, char** av) {
     printf("  random number %d: ", j);
     print_bytes(size_random_numbers, random_numbers);
   }
-
-  // add sw bits
 
   close_crypto();
   printf("\n");
