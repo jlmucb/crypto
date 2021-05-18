@@ -47,6 +47,15 @@ void entropy_accumulate::mix_entropy() {
   current_size_pool_ = sha256::DIGESTBYTESIZE;
 }
 
+//  Change entropy update to add entropy as follows:
+//    Let p_{high} = 2^{-h_{in}} and p_{low} = {\frac {1- p_{high}} {2^{n_{in}-1}}}
+//    n = min(n_{out}, nw)
+//    t= 2^{n_{in}-n}p_{low} + p_{high}
+//    u= 2^{n_{in}-n} + sqrt{2n(2^{n_{in}-n})ln(2)}
+//    w = u p_{low}
+//    update is -lg(max(t,w))
+//
+// Best to use sha-3 since nw=1024 for it
 bool entropy_accumulate::add_samples(int num_samples, byte* samples, double est_ent_per_byte) {
   // copy samples into buffer, compress if we read pool size
   int samples_remaining = num_samples;
