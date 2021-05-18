@@ -45,6 +45,9 @@ void entropy_accumulate::mix_entropy() {
   hash.finalize();
   hash.get_digest(sha256::DIGESTBYTESIZE, pool_);
   current_size_pool_ = sha256::DIGESTBYTESIZE;
+  current_entropy_in_pool_ = entropy_estimate_from_samples(NBITSINBYTE * pool_size_,
+    NBITSINBYTE * sha256::DIGESTBYTESIZE,
+    NBITSINBYTE * sha256::DIGESTBYTESIZE, current_entropy_in_pool_);
 }
 
 //  For n_in bits or noise source, calculate output as follows:

@@ -83,7 +83,7 @@ int main(int an, char** av) {
   gflags::ParseCommandLineFlags(&an, &av, true);
   an = 1;
 
-#if 1
+#if 0
   int n_in = 32 * 8;
   int nw = 256;
   int n_out = 256;
@@ -108,98 +108,130 @@ int main(int an, char** av) {
 
   entropy_source hw_source("Intel RNG", 7.5, hw_entropy);   // hardware source
   entropy_source sw_source("jitter", 1.0, sw_entropy);      // software source
-  entropy_accumulate the_accumulator;                       // The accumulator
+  entropy_accumulate  hw_accumulator;                       // The accumulator
+  entropy_accumulate  sw_accumulator;                       // The accumulator
   hash_drng the_drng;                                       // DRBG
-
-  init_crypto();
-
-  int size_sample_buf = 128;
-  byte sample_buf[size_sample_buf];
-  int sample_size = 40;
-  
-  memset(sample_buf, 0, size_sample_buf);
-
-  double required_entropy = 256.0;
-
-  // add 256 hw bits
-  while (the_accumulator.entropy_estimate() < required_entropy) {
-    if (hw_source.getentropy_(sample_size, sample_buf) < sample_size) {
-      printf("HW RNG returned fewer bytes\n");
-    }
-#if 1
-    printf("HW ent: ");
-    print_bytes(sample_size, sample_buf);
-#endif
-    the_accumulator.add_samples(sample_size, sample_buf, hw_source.ent_per_sample_byte_);
-  }
-
-  if (FLAGS_print_all) {
-    printf("Entropy after HW: %lf\n", the_accumulator.entropy_estimate());
-  }
-
-  // add 384 sw bits
-  required_entropy = 384.0;
-  sample_size = 20;
-  while (the_accumulator.entropy_estimate() < required_entropy) {
-    if (sw_source.getentropy_(sample_size, sample_buf) < sample_size) {
-      printf("SW RNG returned fewer bytes\n");
-    }
-#if 1
-    printf("SW ent: ");
-    print_bytes(sample_size, sample_buf);
-#endif
-    the_accumulator.add_samples(sample_size, sample_buf, hw_source.ent_per_sample_byte_);
-  }
-
-  if (FLAGS_print_all) {
-    printf("Entropy after SW: %lf\n", the_accumulator.entropy_estimate());
-  }
-
-  // set up drng
+  hash_drng hw_drng;                                        // DRBG
+  hash_drng sw_drng;                                        // DRBG
+  int size_random_numbers = 32;
+  byte random_numbers[64];
   int seed_size= 64;
   byte seed[64];
   double entropy_of_seed = 0.0;
-  memset(seed, 0, seed_size);
+  int size_sample_buf = 128;
+  byte sample_buf[size_sample_buf];
+  int sample_size = 40;
+  double required_entropy = 256.0;
 
-  if (!the_accumulator.empty_pool(&seed_size, seed, &entropy_of_seed)) {
+  init_crypto();
+
+  // hw source
+  if (FLAGS_print_all) {
+    printf("\n\nHardware test\n");
+  }
+  memset(sample_buf, 0, size_sample_buf);
+  while (hw_accumulator.entropy_estimate() < required_entropy) {
+    if (hw_source.getentropy_(sample_size, sample_buf) < sample_size) {
+      printf("HW RNG returned fewer bytes\n");
+    }
+    if (FLAGS_print_all) {
+      printf("HW noise : ");
+      print_bytes(sample_size, sample_buf);
+    }
+    hw_accumulator.add_samples(sample_size, sample_buf, hw_source.ent_per_sample_byte_);
+  }
+
+  // set up drng for hw #'s
+  entropy_of_seed = 0.0;
+  memset(seed, 0, seed_size);
+  if (!hw_accumulator.empty_pool(&seed_size, seed, &entropy_of_seed)) {
     printf("can't empty accumulator pool\n");
     return 0;
   }
-
   if (FLAGS_print_all) {
     printf("Entropy from empty pool: %lf\n", entropy_of_seed);
   }
-
-  if (entropy_of_seed < 384.0) {
+  if (entropy_of_seed < required_entropy) {
     printf("seed entropy too small\n");
     return 0;
   }
-  entropy_of_seed = 256.0;
-
   if (FLAGS_print_all) {
-    printf("\nseed: ");
+    printf("seed: ");
     print_bytes(seed_size, seed);
     printf("\n");
   }
-
-  if (!the_drng.init(0, nullptr, 0, nullptr, seed_size, seed, entropy_of_seed)) {
+  if (!hw_drng.init(0, nullptr, 0, nullptr, seed_size, seed, entropy_of_seed)) {
     printf("can't initialize drng\n");
     return 0;
   }
-
-  int size_random_numbers = 32;
-  byte random_numbers[64];
   memset(random_numbers, 0, 64);
 
   // fetch random numbers
+  printf("Hardware derived random numbers:\n");
   for (int j = 0; j < 10; j++) {
-    if (!the_drng.generate_random_bits(8 * size_random_numbers, random_numbers, 0, nullptr)) {
+    if (!hw_drng.generate_random_bits(8 * size_random_numbers, random_numbers, 0, nullptr)) {
       printf("can't generate random bits\n");
       return 0;
     }
-    printf("random number %d: ", j);
+    printf("  random number %d: ", j);
     print_bytes(size_random_numbers, random_numbers);
   }
+
+  // add sw bits
+  if (FLAGS_print_all) {
+    printf("\n\nSoftware test\n");
+  }
+  memset(sample_buf, 0, size_sample_buf);
+  sample_size = 20;
+  entropy_of_seed = 0.0;
+  while (sw_accumulator.entropy_estimate() < required_entropy) {
+    if (sw_source.getentropy_(sample_size, sample_buf) < sample_size) {
+      printf("SW RNG returned fewer bytes\n");
+    }
+    if (FLAGS_print_all) {
+      printf("SW noise: ");
+      print_bytes(sample_size, sample_buf);
+    }
+    sw_accumulator.add_samples(sample_size, sample_buf, sw_source.ent_per_sample_byte_);
+  }
+
+  // set up drng for sw #'s
+  entropy_of_seed = 0.0;
+  memset(seed, 0, seed_size);
+  if (!sw_accumulator.empty_pool(&seed_size, seed, &entropy_of_seed)) {
+    printf("can't empty accumulator pool\n");
+    return 0;
+  }
+  if (FLAGS_print_all) {
+    printf("Entropy from empty pool: %lf\n", entropy_of_seed);
+  }
+  if (entropy_of_seed < required_entropy) {
+    printf("seed entropy too small\n");
+    return 0;
+  }
+  if (FLAGS_print_all) {
+    printf("seed: ");
+    print_bytes(seed_size, seed);
+    printf("\n");
+  }
+  if (!sw_drng.init(0, nullptr, 0, nullptr, seed_size, seed, entropy_of_seed)) {
+    printf("can't initialize drng\n");
+    return 0;
+  }
+  memset(random_numbers, 0, 64);
+
+  // fetch random numbers
+  printf("Software derived random numbers:\n");
+  for (int j = 0; j < 10; j++) {
+    if (!sw_drng.generate_random_bits(8 * size_random_numbers, random_numbers, 0, nullptr)) {
+      printf("can't generate random bits\n");
+      return 0;
+    }
+    printf("  random number %d: ", j);
+    print_bytes(size_random_numbers, random_numbers);
+  }
+
+  // add sw bits
 
   close_crypto();
   printf("\n");
