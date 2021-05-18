@@ -63,17 +63,21 @@ double entropy_estimate_from_samples(int n_in, int n_out, int nw, double h_in) {
   double p_low = (1.0 - p_high) / (pow(2.0, (double)n_in) - 1.0);
   int n = 0;
   if (n_out >= nw)
-    n = n_out;
-  else
     n = nw;
+  else
+    n = n_out;
   double t1 = pow(2.0, (double)(n_in - n));
   double t = t1*p_low + p_high;
   double u = t1 + sqrt(2.0 * ((double)n) * t1 * log(2));
   double w = u * p_low;
+  double h_out;
   if (t >= w)
-    return -(log(t) / log(2.0));
+    h_out = -(log(t) / log(2.0));
   else
-    return -(log(w) / log(2.0));
+    h_out = -(log(w) / log(2.0));
+  if (h_out > ((double)n))
+    h_out = (double) n;
+  return h_out;
 }
 
 bool entropy_accumulate::add_samples(int num_samples, byte* samples, double est_ent_per_byte) {
