@@ -10,7 +10,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License
-// File: entropy_collection.h
+// File: hash_drng.h
 
 #ifndef _CRYPTO_HASH_DRNG_H__
 #define _CRYPTO_HASH_DRNG_H__
