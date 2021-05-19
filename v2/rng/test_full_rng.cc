@@ -19,6 +19,7 @@
 #include "entropy_accumulate.h"
 #include "entropy_source.h"
 #include "hash_drng.h"
+#include "sha3.h"
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 DEFINE_int32(pool_size, 4096, "pool size");
@@ -27,9 +28,10 @@ DEFINE_double(entropy_required, 256, "entropy required");
 #pragma GCC push_options
 #pragma GCC optimize ("O0")
 // nuc has 32Kb L1 i-cache, and 32KB L1 d-cache, should adjust to 
-// flush d cache from timet to time
+// flush d cache from time to time
 
-volatile void inline test_code_1(int num_loops) {
+// simple example
+volatile void inline simple_jitter_block(int num_loops) {
   volatile int  t = 0;
 
   for (int i = 0; i < num_loops; i++) {
@@ -39,7 +41,27 @@ volatile void inline test_code_1(int num_loops) {
   usleep(122);
 }
 
-#pragma GCC pop_options
+// Memory access
+const int SIZE_L1 = 32<<10;  // changes on different cpus
+// size should be bigger than SIZE_L1
+volatile void inline memory_jitter_block(int num_loops, int size, byte* buf) {
+  for (int i = 0; i < num_loops; i++) {
+    for (int j = 0; j < size; i++) {
+      buf[j] += 1;
+    }
+  }
+}
+
+// hash timing
+volatile void inline hash_jitter_block(int num_loops, int size, byte* to_hash) {
+  sha3 hash_obj(1024);
+
+  for (int i = 0; i < num_loops; i++) {
+    hash_obj.init();
+    hash_obj.add_to_hash(size, to_hash);
+    hash_obj.finalize();
+  }
+}
 
 int sw_entropy(int num_samples, byte* sample) {
   uint64_t t1, t2;
@@ -47,13 +69,15 @@ int sw_entropy(int num_samples, byte* sample) {
 
   for (int i = 0; i < num_samples; i++) {
     t1 = read_rdtsc();
-    test_code_1(11);
+    simple_jitter_block(11);
     t2 = read_rdtsc();
     delta = (t2 - t1) / 2;    // bottom bit is always 0 on some machines
     sample[i] = (byte)delta;
   }
   return num_samples;
 }
+
+#pragma GCC pop_options
 
 int hw_entropy(int num_samples, byte* sample) {
   uint32_t out = 0;
