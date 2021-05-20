@@ -71,14 +71,13 @@ void apt::insert(uint32_t current_delta) {
     reset(current_delta);
 }
 
-// Stuck Test and its use as Repetition Count Test
-// The Jitter RNG uses an enhanced version of the Repetition Count Test
-// (RCT) specified in SP800-90B section 4.4.1. Instead of counting identical
+// Stuck Test is used as Repetition Count Test (RCT)
+// specified in SP800-90B section 4.4.1. Instead of counting identical
 // back-to-back values, the input to the RCT is the counting of the stuck
-// values during the generation of one Jitter RNG output block.
+// values during the generation of a noise output block.
 
 // The RCT is applied with an alpha of 2^{-30} compliant to FIPS 140-2 IG 9.8.
-// During the counting operation, the Jitter RNG always calculates the RCT
+// During the counting operation, the RNG always calculates the RCT
 // cut-off value of C. If that value exceeds the allowed cut-off value,
 // the Jitter RNG output block will be calculated completely but discarded at
 // the end. The caller of the Jitter RNG is informed with an error code.
