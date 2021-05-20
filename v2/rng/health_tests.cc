@@ -72,9 +72,8 @@ void apt::insert(uint32_t current_delta) {
 
   if (current_delta == base_) {
     count_++;
-
-  if (count_ >= APT_CUTOFF)
-      failure_ = true;
+    if (count_ >= APT_CUTOFF)
+        failure_ = true;
   }
   observations_++;
   if (observations_ >= APT_WINDOW_SIZE)
@@ -250,14 +249,15 @@ double restart_test(int m, int n, byte* a, double h_min, double alpha) {
   }
 
   double p = pow(2.0, -h_min);
-  // for sanity check only need to test highest
+  // for sanity check only need to test highest count
   t = binomial_value(m, p, highest_row_count, true);
   if (t < alpha)
     return 0.0;
   t = binomial_value(n, p, highest_col_count, true);
-
   if (t < alpha)
     return 0.0;
+  if (h_min < h_r && h_min < h_c)
+    return h_min;
   if (h_r <= h_c)
     return h_r;
   return h_c;
