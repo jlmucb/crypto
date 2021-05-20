@@ -70,14 +70,16 @@ volatile void inline simple_jitter_block_2(int num_loops, int size_buf, byte* bu
 
 // Memory access
 const int SIZE_L1 = 32<<10;  // changes on different cpus
+int mem_shift = 0;
 // size should be bigger than SIZE_L1
 volatile void inline memory_jitter_block(int num_loops, int size, byte* buf) {
+  shift++;
   int inc = size / 100;
   if (inc == 0)
     inc= 1;
   for (int i = 0; i < num_loops; i++) {
     for (int j = 0; j < size; j+=inc) {
-      buf[j] += 1;
+      buf[(shift + j) % size] += 1;
     }
   }
 }
@@ -165,7 +167,7 @@ bool test_jitter(int num_samples, int num_loops) {
       simple_jitter_block_0(num_loops);
       t2 = read_rdtsc();
       delta = t2 - t1;
-      delta_array[i] = delta / 2;
+      delta_array[i] = (delta / 2) & 0xff;
     }
   } else if (FLAGS_test_set == 1) {
     for (int i = 0; i < num_samples; i++) {
@@ -173,7 +175,7 @@ bool test_jitter(int num_samples, int num_loops) {
       simple_jitter_block_1(num_loops);
       t2 = read_rdtsc();
       delta = t2 - t1;
-      delta_array[i] = delta / 2;
+      delta_array[i] = (delta / 2) & 0xff;
     }
   } else if (FLAGS_test_set == 2) {
     for (int i = 0; i < num_samples; i++) {
@@ -181,7 +183,7 @@ bool test_jitter(int num_samples, int num_loops) {
       simple_jitter_block_2(num_loops, d_buf_size, buf);
       t2 = read_rdtsc();
       delta = t2 - t1;
-      delta_array[i] = delta / 2;
+      delta_array[i] = (delta / 2) & 0xff;
     }
   } else if (FLAGS_test_set == 3) {
     byte buf_mem[SIZE_L1];
@@ -191,7 +193,7 @@ bool test_jitter(int num_samples, int num_loops) {
       memory_jitter_block(num_loops, SIZE_L1, buf_mem);
       t2 = read_rdtsc();
       delta = t2 - t1;
-      delta_array[i] = delta / 2;
+      delta_array[i] = (delta / 2) & 0xff;
     }
   } else if (FLAGS_test_set == 4) {
     byte buf_hash[SIZE_HASH_BUF];
@@ -202,7 +204,7 @@ bool test_jitter(int num_samples, int num_loops) {
       hash_jitter_block(num_loops, SIZE_HASH_BUF, buf_hash);
       t2 = read_rdtsc();
       delta = t2 - t1;
-      delta_array[i] = delta / 2;
+      delta_array[i] = (delta / 2) & 0xff;
     }
   } else {
     printf("unknown test\n");
