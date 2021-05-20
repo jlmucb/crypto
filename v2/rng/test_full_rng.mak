@@ -47,7 +47,7 @@ LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=   $(O)/test_full_rng.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
 	$(O)/hash.o $(O)/sha256.o $(O)/hash_df.o $(O)/entropy_accumulate.o  \
-	$(O)/sha3.o $(O)/lz77.o $(O)/probability_support.o $(O)/hash_drng.o
+	$(O)/sha3.o $(O)/lz77.o $(O)/probability_support.o $(O)/hash_drng.o $(O)/health_tests.o
 
 all:    test_full_rng.exe
 clean:
@@ -66,6 +66,10 @@ $(S_SUPPORT)/support.pb.cc $(S_SUPPORT)/support.pb.h: $(S_SUPPORT)/support.proto
 $(O)/test_full_rng.o: $(S)/test_full_rng.cc
 	@echo "compiling test_full_rng.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/test_full_rng.o $(S)/test_full_rng.cc
+
+$(O)/health_tests.o: $(S)/health_tests.cc
+	@echo "compiling health_tests.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/health_tests.o $(S)/health_tests.cc
 
 $(O)/hash_drng.o: $(S)/hash_drng.cc
 	@echo "compiling hash_drng.cc"

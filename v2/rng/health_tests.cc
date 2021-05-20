@@ -145,14 +145,6 @@ int rct::stuck(uint32_t current_delta) {
   return 0;
 }
 
-// Returns n choose h p^j q^(n-j)
-double binomial_term(int j, int n, double p) {
-  double q = 1.0 - p;
-
-  return 0.0;
-}
-
-
 //  NIST restart test
 
 double binomial_value(int n, double p, int observed, bool tail_upper_direction) {
