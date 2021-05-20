@@ -20,6 +20,7 @@
 #include "entropy_collection.h"
 #include "probability_support.h"
 #include "aes.h"
+#include "sha3.h"
 
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
@@ -34,9 +35,20 @@ DEFINE_int32(test_set, 1, "test set");
 #pragma GCC push_options
 #pragma GCC optimize ("O0")
 // nuc has 32Kb L1 i-cache, and 32KB L1 d-cache, should adjust to 
-// flush d cache from timet to time
+// flush d cache from time to time
 
-volatile void inline test_code_1(int num_loops) {
+// simple example
+volatile void inline simple_jitter_block_0(int num_loops) {
+  volatile int  t = 0;
+
+  for (int i = 0; i < num_loops; i++) {
+    t += i * 6;
+  }
+  t /= 2;
+  //usleep(2);
+}
+
+volatile void inline simple_jitter_block_1(int num_loops) {
   volatile int  t = 0;
 
   for (int i = 0; i < num_loops; i++) {
@@ -45,8 +57,8 @@ volatile void inline test_code_1(int num_loops) {
   t /= 2;
 }
 
-const int d_buf_size = 64000;
-volatile void inline test_code_2(int num_loops, int size_buf, byte* buf) {
+const int d_buf_size = 64<<10;
+volatile void inline simple_jitter_block_2(int num_loops, int size_buf, byte* buf) {
   int index = size_buf / num_loops;
 
   for (int j = 0; j < 4; j++) {
@@ -56,6 +68,31 @@ volatile void inline test_code_2(int num_loops, int size_buf, byte* buf) {
   }
 }
 
+// Memory access
+const int SIZE_L1 = 32<<10;  // changes on different cpus
+// size should be bigger than SIZE_L1
+volatile void inline memory_jitter_block(int num_loops, int size, byte* buf) {
+  int inc = size / 100;
+  if (inc == 0)
+    inc= 1;
+  for (int i = 0; i < num_loops; i++) {
+    for (int j = 0; j < size; j+=inc) {
+      buf[j] += 1;
+    }
+  }
+}
+
+// hash timing
+const int SIZE_HASH_BUF = 128;
+volatile void inline hash_jitter_block(int num_loops, int size, byte* to_hash) {
+  sha3 hash_obj(1024);
+
+  for (int i = 0; i < num_loops; i++) {
+    hash_obj.init();
+    hash_obj.add_to_hash(size, to_hash);
+    hash_obj.finalize();
+  }
+}
 #pragma GCC pop_options
 
 int pick_num_bins(int num_samples,  uint32_t* delta_array) {
@@ -102,7 +139,7 @@ bool pick_bin_bounds(int num_samples, int nbins, uint32_t* bins, int* lower_bin,
   return true;
 }
 
-bool test_jitter1(int num_samples, int num_loops) {
+bool test_jitter(int num_samples, int num_loops) {
   uint64_t cpc = calibrate_rdtsc();
 
   if (FLAGS_print_all) {
@@ -112,28 +149,68 @@ bool test_jitter1(int num_samples, int num_loops) {
   uint64_t t1, t2;
   uint32_t delta;
   uint32_t delta_array[num_samples];
+
+  const char* jitter_block_description[5] = {
+    "Simple jitter test 0",
+    "Simple jitter test 1",
+    "Simple jitter test 2",
+    "Memory jitter test",
+    "Hash jitter test",
+  };
   
   byte buf[d_buf_size];
-  if (FLAGS_test_set == 1) {
+  if (FLAGS_test_set == 0) {
     for (int i = 0; i < num_samples; i++) {
       t1 = read_rdtsc();
-      test_code_1(num_loops);
+      simple_jitter_block_0(num_loops);
+      t2 = read_rdtsc();
+      delta = t2 - t1;
+      delta_array[i] = delta / 2;
+    }
+  } else if (FLAGS_test_set == 1) {
+    for (int i = 0; i < num_samples; i++) {
+      t1 = read_rdtsc();
+      simple_jitter_block_1(num_loops);
+      t2 = read_rdtsc();
+      delta = t2 - t1;
+      delta_array[i] = delta / 2;
+    }
+  } else if (FLAGS_test_set == 2) {
+    for (int i = 0; i < num_samples; i++) {
+      t1 = read_rdtsc();
+      simple_jitter_block_2(num_loops, d_buf_size, buf);
+      t2 = read_rdtsc();
+      delta = t2 - t1;
+      delta_array[i] = delta / 2;
+    }
+  } else if (FLAGS_test_set == 3) {
+    byte buf_mem[SIZE_L1];
+    memset(buf_mem, 0, SIZE_L1);
+    for (int i = 0; i < num_samples; i++) {
+      t1 = read_rdtsc();
+      memory_jitter_block(num_loops, SIZE_L1, buf_mem);
+      t2 = read_rdtsc();
+      delta = t2 - t1;
+      delta_array[i] = delta / 2;
+    }
+  } else if (FLAGS_test_set == 4) {
+    byte buf_hash[SIZE_HASH_BUF];
+    for (int i = 0; i < SIZE_HASH_BUF; i++)
+      buf_hash[i] = i;
+    for (int i = 0; i < num_samples; i++) {
+      t1 = read_rdtsc();
+      hash_jitter_block(num_loops, SIZE_HASH_BUF, buf_hash);
       t2 = read_rdtsc();
       delta = t2 - t1;
       delta_array[i] = delta / 2;
     }
   } else {
-    for (int i = 0; i < num_samples; i++) {
-      t1 = read_rdtsc();
-      test_code_2(num_loops, d_buf_size, buf);
-      t2 = read_rdtsc();
-      delta = t2 - t1;
-      delta_array[i] = delta / 2;
-    }
+    printf("unknown test\n");
+    return 1;
   }
 
   if (FLAGS_print_all) {
-    printf("test set: %d\n", FLAGS_test_set);
+    printf("test set: %s\n", jitter_block_description[FLAGS_test_set]);
     printf("delta_array:\n");
     print_uint32_array(num_samples, delta_array);
     printf("\n");
@@ -207,7 +284,7 @@ bool test_jitter1(int num_samples, int num_loops) {
 
 
 TEST (jitter, test_jitter) {
-  EXPECT_TRUE(test_jitter1(FLAGS_num_samples, FLAGS_num_loops));
+  EXPECT_TRUE(test_jitter(FLAGS_num_samples, FLAGS_num_loops));
 }
 
 int main(int an, char** av) {

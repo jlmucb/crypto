@@ -46,7 +46,7 @@ AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=   $(O)/test_jitter_collection.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
-	$(O)/lz77.o $(O)/probability_support.o
+	$(O)/hash.o $(O)/sha3.o $(O)/lz77.o $(O)/probability_support.o
 
 all:    test_jitter_collection.exe
 clean:
@@ -81,6 +81,14 @@ $(O)/crypto_names.o: $(S_SUPPORT)/crypto_names.cc
 $(O)/lz77.o: $(S)/lz77.cc
 	@echo "compiling lz77.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/lz77.o $(S)/lz77.cc
+
+$(O)/hash.o: $(S_HASH)/hash.cc
+	@echo "compiling hash.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/hash.o $(S_HASH)/hash.cc
+
+$(O)/sha3.o: $(S_HASH)/sha3.cc
+	@echo "compiling sha3.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/sha3.o $(S_HASH)/sha3.cc
 
 $(O)/probability_support.o: $(S)/probability_support.cc
 	@echo "compiling probability_support.cc"
