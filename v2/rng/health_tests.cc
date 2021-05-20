@@ -43,6 +43,10 @@
 #include <health_tests.h>
 
 apt::apt() {
+  observations_ = 0;
+  count_ = 0;
+  base_ = 0;
+  failure_ = false;
 }
 
 apt::~apt() {
@@ -80,6 +84,18 @@ void apt::insert(uint32_t current_delta) {
 // the end. The caller of the Jitter RNG is informed with an error code.
 
 // Repetition Count Test as defined in SP800-90B section 4.4.1
+
+rct::rct() {
+  count_= 0;
+  failure_ = false;
+  osr_ = MIN_OSR;
+  delta1_ = 0;
+  delta2_ = 0;
+}
+
+rct::~rct() {
+}
+
 void rct::insert(uint32_t current_delta) {
    // If we have a count less than zero, a previous RCT round identified
    // a failure. Don't overwrite it.

@@ -51,16 +51,17 @@
 typedef unsigned char byte;
 #endif
 
-#define APT_CUTOFF         325     /* Taken from SP800-90B sec 4.4.2 */
-#define APT_WINDOW_SIZE    512     /* Data window size */
-#define APT_LSB            16
+#define APT_CUTOFF         325     // Taken from SP800-90B sec 4.4.2
+#define APT_WINDOW_SIZE    512     // Data window size
+#define APT_LSB             16
 #define APT_WORD_MASK      (JENT_APT_LSB - 1)
+#define MIN_OSR             1
 class apt {
 public:
   // Adaptive Proportion Test for a significance level of 2^-30
-  int observations_;  // Number of collected observations */
-  int count_;         // APT counter */
-  uint32_t base_;     // APT base reference */
+  int observations_;  // Number of collected observations
+  int count_;         // APT counter
+  uint32_t base_;     // APT base reference
   bool failure_;
 
   apt();
