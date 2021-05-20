@@ -56,12 +56,13 @@ typedef unsigned char byte;
 #define APT_LSB             16
 #define APT_WORD_MASK      (JENT_APT_LSB - 1)
 #define MIN_OSR             1
+
 class apt {
 public:
   // Adaptive Proportion Test for a significance level of 2^-30
   int observations_;  // Number of collected observations
-  int count_;         // APT counter
-  uint32_t base_;     // APT base reference
+  int count_;         // counter
+  uint32_t base_;     // base reference
   bool failure_;
 
   apt();
@@ -73,6 +74,7 @@ public:
 
 class rct {
 public:
+  int observations_;  // Number of collected observations
   uint32_t  delta1_;
   uint32_t  delta2_;
   int osr_;
@@ -86,5 +88,6 @@ public:
   bool failed() {return failure_;};
 };
 
-int restart_test(int m, int n, byte* a, double h_min);
+double restart_test(int m, int n, byte* a, double h_min, double alpha);
+double binomial_value(int n, double p, int observed, bool tail_upper_direction);
 #endif

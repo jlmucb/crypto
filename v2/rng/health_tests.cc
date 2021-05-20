@@ -35,10 +35,9 @@
 //  OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
 //  BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 //  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-//  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-//  USE OF THIS SOFTWARE, EVEN IF NOT ADVISED OF THE POSSIBILITY OF SUCH
-//  DAMAGE.
-
+//  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+// OF THE USE OF THIS SOFTWARE, EVEN IF NOT ADVISED OF THE 
+// POSSIBILITY OF SUCH DAMAGE.
 
 #include <health_tests.h>
 
@@ -90,6 +89,7 @@ rct::rct() {
   osr_ = MIN_OSR;
   delta1_ = 0;
   delta2_ = 0;
+  observations_ = 0;
 }
 
 rct::~rct() {
@@ -98,6 +98,7 @@ rct::~rct() {
 void rct::insert(uint32_t current_delta) {
    // If we have a count less than zero, a previous RCT round identified
    // a failure. Don't overwrite it.
+  observations_++;
   if (count_ < 0)
     return;
 
@@ -143,9 +144,47 @@ int rct::stuck(uint32_t current_delta) {
   return 0;
 }
 
+// Returns n choose h p^j q^(n-j)
+double binomial_term(int j, int n, double p) {
+  double q = 1.0 - p;
 
-int restart_test(int m, int n, byte* a, double h_min) {
-  // todo
+  return 0.0;
+}
+
+
+//  NIST restart test
+
+double binomial_value(int n, double p, int observed, bool tail_upper_direction) {
+  double accum = 0.0;
+
+  if (tail_upper_direction) {
+    // upper tail
+    for (int j = observed; j < n; j++) {
+      accum += binomial_term(j, n, p);
+    }
+  } else {
+    // lower tail
+    for (int j = 0; j < observed; j++) {
+      accum += binomial_term(j, n, p);
+    }
+  }
+  return accum;
+}
+
+bool row_most_common_value(int m, int n, byte* a, byte* value, int* count) {
+  return false;
+}
+
+bool column_most_common_value(int m, int n, byte* a, byte* value, int* count) {
+  return false;
+}
+
+double restart_test(int m, int n, byte* a, double h_min, double alpha) {
+  // Todo:
+  //    a is an m x n matrix of samples
+  //    h_min is the asserted entropy
+  //    Apply binomial test to rows and columns
+  //    return value is revised entropy, 0 means failure requiring restart
   return 0;
 }
 
