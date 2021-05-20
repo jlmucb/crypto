@@ -40,6 +40,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include <health_tests.h>
+#include <probability_support.h>
 
 apt::apt() {
   observations_ = 0;
