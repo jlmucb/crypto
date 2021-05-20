@@ -164,20 +164,81 @@ double binomial_value(int n, double p, int observed, bool tail_upper_direction) 
   return accum;
 }
 
-bool row_most_common_value(int m, int n, byte* a, byte* value, int* count) {
+bool get_most_common_row_value(int m, int n, byte* a, int row, byte* value, int* count) {
+  int counts[256];
+
+  for (int i = 0; i < 256; i++)
+    counts[i] = 0;
+
+  for (int j = 0; j < n; j++) {
+    counts[(int)a[index(m, n, row, j)]]++;
+  }
   return false;
 }
 
-bool column_most_common_value(int m, int n, byte* a, byte* value, int* count) {
+bool get_most_common_col_value(int m, int n, byte* a, int col, byte* value, int* count) {
   return false;
 }
 
+//    a is an m x n matrix of samples
+//    h_min is the asserted entropy
+//    Apply binomial test to rows and columns
+//    return value is revised entropy, 0 means failure requiring restart
+//    alpha = .000005
 double restart_test(int m, int n, byte* a, double h_min, double alpha) {
-  // Todo:
-  //    a is an m x n matrix of samples
-  //    h_min is the asserted entropy
-  //    Apply binomial test to rows and columns
-  //    return value is revised entropy, 0 means failure requiring restart
-  return 0;
+  byte most_common_row_value = 0;
+  int most_common_row_count = 0;
+  byte most_common_col_value = 0;
+  int most_common_col_count = 0;
+  int highest_row = 0;
+  int highest_col = 0;
+  int highest_row_count = 0;
+  int highest_col_count = 0;
+  int row, col;
+  byte value;
+  int count = 0;
+  double h_c = h_min;
+  double h_r = h_min;
+  double h_t;
+
+  double t;
+  for (row = 0; row < m; row++) {
+    if (!get_most_common_row_value(m, n, a, row, &most_common_row_value,
+                &most_common_row_count))
+    return 0.0;
+    if (most_common_row_count > highest_row_count) {
+      highest_row_count = most_common_row_count;
+      highest_row = row;
+    }
+    h_t = ((double)most_common_row_count) / ((double) m);
+    if (h_t < h_r)
+      h_r = h_t;
+  }
+
+  for (col = 0; col < m; col++) {
+    if (!get_most_common_col_value(m, n, a, col, &most_common_col_value,
+                &most_common_col_count))
+      return 0.0;
+    if (most_common_col_count > highest_col_count) {
+      highest_col_count = most_common_col_count;
+      highest_col = col;
+    }
+    h_t = ((double)most_common_col_count) / ((double) n);
+    if (h_t < h_c)
+      h_c = h_t;
+  }
+
+  double p = pow(2.0, -h_min);
+  // for sanity check only need to test highest
+  t = binomial_value(m, p, highest_row_count, true);
+  if (t < alpha)
+    return 0.0;
+  t = binomial_value(n, p, highest_col_count, true);
+
+  if (t < alpha)
+    return 0.0;
+  if (h_r <= h_c)
+    return h_r;
+  return h_c;
 }
 
