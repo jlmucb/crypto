@@ -43,6 +43,7 @@
 #include <probability_support.h>
 
 apt::apt() {
+  initialized_ = false;
   observations_ = 0;
   count_ = 0;
   base_ = 0;
@@ -50,6 +51,10 @@ apt::apt() {
 }
 
 apt::~apt() {
+}
+
+void apt::init() {
+  initialized_ = false;
 }
 
 void apt::reset(uint32_t current_delta) {
@@ -60,6 +65,11 @@ void apt::reset(uint32_t current_delta) {
 }
 
 void apt::insert(uint32_t current_delta) {
+  if (!initialized_) {
+    initialized_ = true;
+    reset(current_delta);
+    }
+
   if (current_delta == base_) {
     count_++;
 
@@ -85,6 +95,7 @@ void apt::insert(uint32_t current_delta) {
 // Repetition Count Test as defined in SP800-90B section 4.4.1
 
 rct::rct() {
+  initialized_ = false;
   count_= 0;
   failure_ = false;
   osr_ = MIN_OSR;
@@ -96,7 +107,20 @@ rct::rct() {
 rct::~rct() {
 }
 
+void rct::init() {
+  initialized_ = false;
+  count_= 0;
+  failure_ = false;
+  osr_ = MIN_OSR;
+  delta1_ = 0;
+  delta2_ = 0;
+  observations_ = 0;
+}
+
 void rct::insert(uint32_t current_delta) {
+  if (!initialized_) {
+    initialized_ = true;
+  }
    // If we have a count less than zero, a previous RCT round identified
    // a failure. Don't overwrite it.
   observations_++;

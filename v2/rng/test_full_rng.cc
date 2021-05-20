@@ -20,6 +20,7 @@
 #include "entropy_source.h"
 #include "hash_drng.h"
 #include "sha3.h"
+#include "health_tests.h"
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 DEFINE_int32(pool_size, 4096, "pool size");
@@ -149,6 +150,8 @@ int main(int an, char** av) {
   byte sample_buf[size_sample_buf];
   int sample_size = 40;
   double required_entropy = 256.0;
+  apt apt_health;
+  rct rct_health;
 
   init_crypto();
 
@@ -157,6 +160,8 @@ int main(int an, char** av) {
     printf("\n\nHardware test\n");
   }
   memset(sample_buf, 0, size_sample_buf);
+  apt_health.init();
+  rct_health.init();
   while (hw_accumulator.entropy_estimate() < required_entropy) {
     if (hw_source.getentropy_(sample_size, sample_buf) < sample_size) {
       printf("HW RNG returned fewer bytes\n");
@@ -165,7 +170,15 @@ int main(int an, char** av) {
       printf("HW noise : ");
       print_bytes(sample_size, sample_buf);
     }
+    for (int i = 0; i < sample_size; i++) {
+      apt_health.insert((uint32_t)sample_buf[i]);
+      rct_health.insert((uint32_t)sample_buf[i]);
+    }
     hw_accumulator.add_samples(sample_size, sample_buf, hw_source.ent_per_sample_byte_);
+    if (apt_health.failed())
+      printf("apt health test failed\n");
+    if (rct_health.failed())
+      printf("rct health test failed\n");
   }
 
   // set up drng for hw #'s
@@ -207,6 +220,8 @@ int main(int an, char** av) {
     printf("\n\nSoftware test\n");
   }
   memset(sample_buf, 0, size_sample_buf);
+  apt_health.init();
+  rct_health.init();
   sample_size = 20;
   entropy_of_seed = 0.0;
   while (sw_accumulator.entropy_estimate() < required_entropy) {
@@ -218,6 +233,14 @@ int main(int an, char** av) {
       print_bytes(sample_size, sample_buf);
     }
     sw_accumulator.add_samples(sample_size, sample_buf, sw_source.ent_per_sample_byte_);
+    for (int i = 0; i < sample_size; i++) {
+      apt_health.insert((uint32_t)sample_buf[i]);
+      rct_health.insert((uint32_t)sample_buf[i]);
+    }
+    if (apt_health.failed())
+      printf("apt health test failed\n");
+    if (rct_health.failed())
+      printf("rct health test failed\n");
   }
 
   // set up drng for sw #'s

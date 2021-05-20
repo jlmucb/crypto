@@ -60,6 +60,7 @@ typedef unsigned char byte;
 class apt {
 public:
   // Adaptive Proportion Test for a significance level of 2^-30
+  bool initialized_;
   int observations_;  // Number of collected observations
   int count_;         // counter
   uint32_t base_;     // base reference
@@ -67,6 +68,7 @@ public:
 
   apt();
   ~apt();
+  void init();
   void reset(uint32_t current_delta);
   void insert(uint32_t current_delta);
   bool failed() {return failure_;};
@@ -74,6 +76,7 @@ public:
 
 class rct {
 public:
+  bool initialized_;
   int observations_;  // Number of collected observations
   uint32_t  delta1_;
   uint32_t  delta2_;
@@ -82,7 +85,7 @@ public:
   bool failure_;
   rct();
   ~rct();
-  void reset(uint32_t current_delta);
+  void init();
   void insert(uint32_t current_delta);
   int stuck(uint32_t current_delta);
   bool failed() {return failure_;};
