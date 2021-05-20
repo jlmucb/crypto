@@ -120,11 +120,10 @@ void rct::init() {
 void rct::insert(uint32_t current_delta) {
   if (!initialized_) {
     initialized_ = true;
+    count_ = 0;
   }
-   // If we have a count less than zero, a previous RCT round identified
-   // a failure. Don't overwrite it.
   observations_++;
-  if (count_ < 0)
+  if (failure_)
     return;
 
   int s = stuck(current_delta);
@@ -162,10 +161,8 @@ int rct::stuck(uint32_t current_delta) {
   delta1_ = current_delta;
   delta2_ = delta2;
   if (current_delta == 0 || delta1_ == 0 || delta2_ == 0) {
-    insert(1);
     return 1;
   } 
-  insert(0);
   return 0;
 }
 

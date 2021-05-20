@@ -174,11 +174,11 @@ int main(int an, char** av) {
       apt_health.insert((uint32_t)sample_buf[i]);
       rct_health.insert((uint32_t)sample_buf[i]);
     }
-    hw_accumulator.add_samples(sample_size, sample_buf, hw_source.ent_per_sample_byte_);
     if (apt_health.failed())
       printf("apt health test failed\n");
     if (rct_health.failed())
       printf("rct health test failed\n");
+    hw_accumulator.add_samples(sample_size, sample_buf, hw_source.ent_per_sample_byte_);
   }
 
   // set up drng for hw #'s
