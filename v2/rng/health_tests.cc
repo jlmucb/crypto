@@ -80,18 +80,10 @@ void apt::insert(uint32_t current_delta) {
     reset(current_delta);
 }
 
-// Stuck Test is used as Repetition Count Test (RCT)
-// specified in SP800-90B section 4.4.1. Instead of counting identical
-// back-to-back values, the input to the RCT is the counting of the stuck
-// values during the generation of a noise output block.
-
+// Repetition Count Test as defined in SP800-90B section 4.4.1
 // The RCT is applied with an alpha of 2^{-30} compliant to FIPS 140-2 IG 9.8.
 // During the counting operation, the RNG always calculates the RCT
-// cut-off value of C. If that value exceeds the allowed cut-off value,
-// the Jitter RNG output block will be calculated completely but discarded at
-// the end. The caller of the Jitter RNG is informed with an error code.
-
-// Repetition Count Test as defined in SP800-90B section 4.4.1
+// cut-off value of C.
 
 rct::rct() {
   initialized_ = false;
@@ -126,19 +118,15 @@ void rct::insert(uint32_t current_delta) {
     return;
 
   int s = stuck(current_delta);
-  if (s) {
+  if (s == 1) {
     count_++;
-    // The cutoff value is based on the following consideration:
+    // The cutoff value is based on
     // alpha = 2^-30 as recommended in FIPS 140-2 IG 9.8.
-    // In addition, we require an entropy value H of 1/OSR as this
+    // We require an entropy value H of 1/OSR as this
     // is the minimum entropy required to provide full entropy.
-    // Note, we collect 64 * OSR deltas for inserting them into
-    // the entropy pool which should then have (close to) 64 bits
+    // We collect 64 * OSR deltas for insertion into
+    // entropy pool which should then have (close to) 64 bits
     // of entropy.
-    // Note, count_ (which equals to value B in the pseudo
-    // code of SP800-90B section 4.4.1) starts with zero. Hence
-    // we need to subtract one from the cutoff value as calculated
-    // following SP800-90B.
     if (count_ >= (31 * osr_)) {
       count_ = 1<<30;
       failure_ = true;
@@ -148,7 +136,7 @@ void rct::insert(uint32_t current_delta) {
   }
 }
 
-// Check:
+// For RCT, check:
 //   1st derivative of the jitter measurement (time delta)
 //   2nd derivative of the jitter measurement (delta of time deltas)
 //   3rd derivative of the jitter measurement (delta of delta of time deltas)
@@ -156,12 +144,10 @@ void rct::insert(uint32_t current_delta) {
 int rct::stuck(uint32_t current_delta) {
   uint32_t delta2 = current_delta - delta1_;
   uint32_t delta3 = delta1_ - delta2_;
-
   delta1_ = current_delta;
   delta2_ = delta2;
-  if (current_delta == 0 || delta1_ == 0 || delta2_ == 0) {
+  if (current_delta == 0 || delta1_ == 0 || delta2_ == 0)
     return 1;
-  } 
   return 0;
 }
 
@@ -189,18 +175,39 @@ bool get_most_common_row_value(int m, int n, byte* a, int row, byte* value, int*
 
   for (int i = 0; i < 256; i++)
     counts[i] = 0;
-
   for (int j = 0; j < n; j++) {
     counts[(int)a[index(m, n, row, j)]]++;
   }
-  return false;
+
+  *count = 0;
+  for (int j = 0; j < 256; j++) {
+    if (counts[j] > *count)
+      *count = counts[j];
+    *value = j;
+  }
+  return true;
 }
 
 bool get_most_common_col_value(int m, int n, byte* a, int col, byte* value, int* count) {
-  return false;
+  int counts[256];
+
+  for (int i = 0; i < 256; i++)
+    counts[i] = 0;
+  for (int j = 0; j < m; j++) {
+    counts[(int)a[index(m, n, j, col)]]++;
+  }
+
+  *count = 0;
+  for (int j = 0; j < 256; j++) {
+    if (counts[j] > *count)
+      *count = counts[j];
+    *value = j;
+  }
+  return true;
 }
 
-//    a is an m x n matrix of samples
+//  Restart test
+//    a is an m x n matrix of samples (always bytes)
 //    h_min is the asserted entropy
 //    Apply binomial test to rows and columns
 //    return value is revised entropy, 0 means failure requiring restart
@@ -221,7 +228,6 @@ double restart_test(int m, int n, byte* a, double h_min, double alpha) {
   double h_r = h_min;
   double h_t;
 
-  double t;
   for (row = 0; row < m; row++) {
     if (!get_most_common_row_value(m, n, a, row, &most_common_row_value,
                 &most_common_row_count))
@@ -248,14 +254,22 @@ double restart_test(int m, int n, byte* a, double h_min, double alpha) {
       h_c = h_t;
   }
 
+  // Sanity test
+  if (h_c < (h_min / 2.0) || h_r < (h_min / 2.0))
+    return 0.0;
+
+  // Binomial test
   double p = pow(2.0, -h_min);
-  // for sanity check only need to test highest count
-  t = binomial_value(m, p, highest_row_count, true);
-  if (t < alpha)
-    return 0.0;
-  t = binomial_value(n, p, highest_col_count, true);
-  if (t < alpha)
-    return 0.0;
+  double t;
+  if (highest_row_count > highest_col_count) {
+    t = binomial_value(m, p, highest_row_count, true);
+    if (t < alpha)
+      return 0.0;
+  } else {
+    t = binomial_value(n, p, highest_col_count, true);
+    if (t < alpha)
+      return 0.0;
+  }
   if (h_min < h_r && h_min < h_c)
     return h_min;
   if (h_r <= h_c)
