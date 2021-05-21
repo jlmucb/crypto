@@ -73,13 +73,13 @@ const int SIZE_L1 = 32<<10;  // changes on different cpus
 int mem_shift = 0;
 // size should be bigger than SIZE_L1
 volatile void inline memory_jitter_block(int num_loops, int size, byte* buf) {
-  shift++;
+  mem_shift++;
   int inc = size / 100;
   if (inc == 0)
     inc= 1;
   for (int i = 0; i < num_loops; i++) {
     for (int j = 0; j < size; j+=inc) {
-      buf[(shift + j) % size] += 1;
+      buf[(mem_shift + j) % size] += 1;
     }
   }
 }
