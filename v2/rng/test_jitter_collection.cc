@@ -116,7 +116,7 @@ int pick_num_bins(int num_samples,  uint32_t* delta_array) {
   mean /= ((double) total);
   double adjusted_mean = mean - ((double)largest) / ((double) total);
 
-  printf("largest: %d, smallest: %d, total non-zero: %d, mean: %lf, adjusted mean: %lf\n",
+  printf("largest: %d, smallest: %d, non-zero: %d, mean: %5.3lf, adjusted mean: %5.3lf\n",
          largest, smallest, total, mean, adjusted_mean);
 
   int spread = (int)mean - smallest;
@@ -143,11 +143,6 @@ bool pick_bin_bounds(int num_samples, int nbins, uint32_t* bins, int* lower_bin,
 
 bool test_jitter(int num_samples, int num_loops) {
   uint64_t cpc = calibrate_rdtsc();
-
-  if (FLAGS_print_all) {
-    printf ("%lld cpc\n\n", cpc);
-  }
-
   uint64_t t1, t2;
   uint32_t delta;
   uint32_t delta_array[num_samples];
@@ -212,8 +207,8 @@ bool test_jitter(int num_samples, int num_loops) {
   }
 
   if (FLAGS_print_all) {
-    printf("test set: %s\n", jitter_block_description[FLAGS_test_set]);
-    printf("delta_array:\n");
+    printf("%s, cpc: %ld\n", jitter_block_description[FLAGS_test_set], cpc);
+    printf("\ndelta_array:\n");
     print_uint32_array(num_samples, delta_array);
     printf("\n");
   }
@@ -233,10 +228,7 @@ bool test_jitter(int num_samples, int num_loops) {
     return false;
   }
   if (FLAGS_print_all) {
-    printf("%d bins, lower %d, upper: %d\n", nbins, lower_bin, upper_bin);
-  }
-
-  if (FLAGS_print_all) {
+    printf("%d bins, lower %d, upper: %d, ", nbins, lower_bin, upper_bin);
     printf("bins from %d to %d selected:\n", lower_bin, upper_bin);
     print_uint32_array(1 + upper_bin - lower_bin, &bins[lower_bin]);
     printf("\n");
@@ -249,8 +241,17 @@ bool test_jitter(int num_samples, int num_loops) {
     expected += p[i] * ((double) i);
   }
 
+  double variance = 0.0;
+  double t= 0.0;
+  for (int i = 0; i < nbins; i++) {
+    t = ((double)i) * p[i] - expected;
+    variance += t * t * p[i];
+  }
+
   if (FLAGS_print_all) {
     int k = 0;
+    printf("Samples: %d, num_loops: %d, Expected bin: %5.3lf, deviation: %5.3lf\n", 
+    num_samples, num_loops, expected, sqrt(variance));
     printf("probabilities:\n");
     for (int i = lower_bin;  i < upper_bin; i++) {
       if (p[i] <= 0.0)
@@ -259,14 +260,13 @@ bool test_jitter(int num_samples, int num_loops) {
       if (((k++)%8) == 7)
         printf("\n");
     }
-    printf("\n\n");
+    printf("\n");
   }
 
   double sh_ent = shannon_entropy(nbins, p);
   double ren_ent = renyi_entropy(nbins, p);
   double min_ent = min_entropy(nbins, p);
-  printf("Samples: %d, num_loops: %d, Expected bin: %5.3lf\n", num_samples, num_loops, expected);
-  printf("   Shannon entropy: %6.4lf, renyi entropy: %6.4lf, min_entropy: %6.4lf\n",
+  printf("   Shannon entropy: %6.3lf, renyi entropy: %6.3lf, min_entropy: %6.3lf\n",
           sh_ent, ren_ent, min_ent);
 
   double x[nbins];
