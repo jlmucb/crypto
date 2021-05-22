@@ -24,6 +24,7 @@
 
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
+DEFINE_bool(print_all2, false, "Print delta computations");
 DEFINE_string(graph_file_name, "jitter.bin", "jitter file");
 DEFINE_int32(num_samples, 100, "number of samples");
 DEFINE_int32(num_loops, 5, "number of loops in test_code");
@@ -116,7 +117,7 @@ int pick_num_bins(int num_samples,  uint32_t* delta_array) {
   mean /= ((double) total);
   double adjusted_mean = mean - ((double)largest) / ((double) total);
 
-  printf("largest: %d, smallest: %d, non-zero: %d, mean: %5.3lf, adjusted mean: %5.3lf\n",
+  printf("largest: %d, smallest: %d, non-zero: %d, mean: %6.3lf, adjusted mean: %6.3lf\n",
          largest, smallest, total, mean, adjusted_mean);
 
   int spread = (int)mean - smallest;
@@ -208,6 +209,9 @@ bool test_jitter(int num_samples, int num_loops) {
 
   if (FLAGS_print_all) {
     printf("%s, cpc: %ld\n", jitter_block_description[FLAGS_test_set], cpc);
+  }
+
+  if (FLAGS_print_all2) {
     printf("\ndelta_array:\n");
     print_uint32_array(num_samples, delta_array);
     printf("\n");
@@ -250,13 +254,13 @@ bool test_jitter(int num_samples, int num_loops) {
 
   if (FLAGS_print_all) {
     int k = 0;
-    printf("Samples: %d, num_loops: %d, Expected bin: %5.3lf, deviation: %5.3lf\n", 
+    printf("Samples: %d, num_loops: %d, Expected bin: %6.3lf, deviation: %6.3lf\n", 
     num_samples, num_loops, expected, sqrt(variance));
     printf("probabilities:\n");
     for (int i = lower_bin;  i < upper_bin; i++) {
       if (p[i] <= 0.0)
         continue;
-      printf("%03d, %4.3lf;  ", i, p[i]);
+      printf("%3d,%4.3lf; ", i, p[i]);
       if (((k++)%8) == 7)
         printf("\n");
     }
