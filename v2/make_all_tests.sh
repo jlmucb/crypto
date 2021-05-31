@@ -20,6 +20,13 @@ make -f test_ecc.mak
 cd ../encryption_scheme
 make clean -f test_encryption_scheme.mak
 make -f test_encryption_scheme.mak
+cd ../rng
+make clean -f test_full_drng.mak
+make -f test_full_drng.mak
+make clean -f test_jitter_collection.mak
+make -f test_jitter_collection.mak
+make clean -f test_prob.mak
+make -f test_prob.mak
 cd ../cryptutil
 make clean -f cryptolib.mak
 make -f cryptolib.mak
