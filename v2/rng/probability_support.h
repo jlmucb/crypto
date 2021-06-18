@@ -44,6 +44,8 @@ bool bin_raw_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins);
 bool bin_raw_byte_data(int num_samples, byte* data, int nbins, byte* bins);
 bool bin_int16_data(int num_samples, int16_t* data, int nbins, uint32_t* bins);
 
+bool write_raw_byte_data(string file_name, int num_samples, byte* data);
+
 bool write_data(string file_name, int num_samples, uint32_t* data);
 bool read_data(string file_name, int* num_samples, uint32_t** data);
 

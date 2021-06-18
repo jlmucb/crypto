@@ -25,6 +25,7 @@
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 DEFINE_bool(print_all2, false, "Print delta computations");
+DEFINE_string(sample_file_name, "", "sample file");
 DEFINE_string(graph_file_name, "jitter.bin", "jitter file");
 DEFINE_int32(num_samples, 100, "number of samples");
 DEFINE_int32(num_loops, 5, "number of loops in test_code");
@@ -215,6 +216,15 @@ bool test_jitter(int num_samples, int num_loops) {
     printf("\ndelta_array:\n");
     print_uint32_array(num_samples, delta_array);
     printf("\n");
+  }
+
+  if (FLAGS_sample_file_name != "") {
+    byte sample_buf[num_samples];
+    for (int i = 0; i < num_samples; i++)
+      sample_buf[i] = (byte)delta_array[i];
+    if (!write_raw_byte_data(FLAGS_sample_file_name, num_samples, sample_buf)) {
+      printf("Can't write byte file\n");
+    }
   }
 
   int nbins = pick_num_bins(num_samples,  delta_array);

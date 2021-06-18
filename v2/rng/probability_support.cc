@@ -144,6 +144,21 @@ int non_binary_random(uint32_t n) {
   return -1;
 }
 
+bool write_raw_byte_data(string file_name, int num_samples, byte* data) {
+  int fd = open(file_name.c_str(), O_WRONLY | O_CREAT | O_TRUNC,
+                S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+  if (fd < 0) {
+    printf("Can't create %s\n", file_name.c_str());
+    return false;
+  }
+  if (write(fd, (const void*)data, num_samples) <= 0) {
+    printf("Can't write data in write_data\n");
+    return false;
+  }
+  close(fd);
+  return true;
+}
+
 bool write_data(string file_name, int num_samples, uint32_t* data) {
   int fd = open(file_name.c_str(), O_WRONLY | O_CREAT | O_TRUNC,
                 S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
