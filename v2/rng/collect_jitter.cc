@@ -180,11 +180,27 @@ int main(int an, char** av) {
   int num_samples = FLAGS_num_samples;
   int count[256];
   double p[256];
+  int max = 0;
+  int min = 256;
+  int max_index = 0;
+  int min_index = 0;
 
   for (int i = 0; i < 256; i++)
     count[i] = 0;
   for (int i = 0; i < num_samples; i++)
     count[sample_buf[i]]++;
+  for (int i = 0; i < 256; i++) {
+    if (count[i] == 0)
+      continue;
+    if (max < count[i]) {
+      max = count[i];
+      max_index = i;
+    }
+    if (min > count[i]) {
+      min = count[i];
+      min_index = i;
+    }
+  }
   for (int i = 0; i < 256; i++)
     p[i] = ((double) count[i]) / ((double) num_samples);
 
@@ -201,6 +217,8 @@ int main(int an, char** av) {
     variance += t * t * p[i];
   }
   double sigma = sqrt(variance);
+  printf("num samples: %d, min index: %d, min: %d, max index: %d, max: %d\n",
+    num_samples, min_index, min, max_index, max);
   printf("num samples: %d, expected: %lf, variance: %lf, sigma: %lf\n",
     num_samples, expected, variance, sigma);
 
