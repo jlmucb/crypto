@@ -95,6 +95,27 @@ volatile void inline hash_jitter_block(int num_loops, int size, byte* to_hash) {
 }
 #pragma GCC pop_options
 
+
+void print_prob(int n, double* p) {
+  int i = 0;
+  while (p[i] < 0.0002 &&  i < n)
+    i++;
+  int m = n - 1;
+  while (p[m] < 0.0002 && m >= 0)
+    m--;
+
+  int np = 0;
+  for(; i <= m; i++) {
+    printf("p[%d]= %5.3lf ", i, p[i]);
+    if (++np >= 6) {
+      printf("\n");
+      np = 0;
+    }
+  }
+  if (np > 0)
+    printf("\n");
+}
+
 int main(int an, char** av) {
   gflags::ParseCommandLineFlags(&an, &av, true);
 
@@ -203,6 +224,10 @@ int main(int an, char** av) {
   }
   for (int i = 0; i < 256; i++)
     p[i] = ((double) count[i]) / ((double) num_samples);
+
+  if (FLAGS_print_all) {
+    print_prob(256, p);
+  }
 
   double expected = 0.0;
   double t = 0.0;
