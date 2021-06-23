@@ -106,7 +106,7 @@ void print_prob(int n, double* p) {
 
   int np = 0;
   for(; i <= m; i++) {
-    printf("p[%d]= %5.3lf ", i, p[i]);
+    printf("p[%3d]= %5.3lf  ", i, p[i]);
     if (++np >= 6) {
       printf("\n");
       np = 0;
