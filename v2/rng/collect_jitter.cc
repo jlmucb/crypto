@@ -172,18 +172,20 @@ int main(int an, char** av) {
     printf("Must have sample file\n");
     return 1;
   }
- if (!write_raw_byte_data(FLAGS_sample_file_name, FLAGS_num_samples, sample_buf)) {
+  if (!write_raw_byte_data(FLAGS_sample_file_name, FLAGS_num_samples, sample_buf)) {
      printf("Can't write byte file\n");
+    return 1;
    }
 
   int num_samples = FLAGS_num_samples;
   int count[256];
   double p[256];
+
   for (int i = 0; i < 256; i++)
     count[i] = 0;
   for (int i = 0; i < num_samples; i++)
     count[sample_buf[i]]++;
-  for (int i = 0; i < num_samples; i++)
+  for (int i = 0; i < 256; i++)
     p[i] = ((double) count[i]) / ((double) num_samples);
 
   double expected = 0.0;
@@ -198,6 +200,9 @@ int main(int an, char** av) {
     t = ((double)i) * p[i] - expected;
     variance += t * t * p[i];
   }
+  double sigma = sqrt(variance);
+  printf("num samples: %d, expected: %lf, variance: %lf, sigma: %lf\n",
+    num_samples, expected, variance, sigma);
 
   double sh_ent = shannon_entropy(256, p);
   double ren_ent = renyi_entropy(256, p);
