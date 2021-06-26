@@ -201,7 +201,7 @@ bool test_jitter(int num_samples, int num_loops) {
       hash_jitter_block(num_loops, SIZE_HASH_BUF, buf_hash);
       t2 = read_rdtsc();
       delta = t2 - t1;
-      delta_array[i] = (delta / 2) & 0xff;
+      delta_array[i] = (delta / 2); // & 0xff;
     }
   } else {
     printf("unknown test\n");
@@ -210,6 +210,14 @@ bool test_jitter(int num_samples, int num_loops) {
 
   if (FLAGS_print_all) {
     printf("%s, cpc: %ld\n", jitter_block_description[FLAGS_test_set], cpc);
+    uint64_t tot = 0;
+    double av = 0;
+    for (int i = 0; i < num_samples; i++) {
+      tot += delta_array[i];
+    }
+    tot *= 2;
+    av = ((double)tot) / ((double) num_samples);
+    printf("average running time: %lf cycles\n", av);
   }
 
   if (FLAGS_print_all2) {
