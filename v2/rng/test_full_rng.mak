@@ -46,8 +46,8 @@ AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=   $(O)/test_full_rng.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
-	$(O)/hash.o $(O)/sha256.o $(O)/hash_df.o $(O)/entropy_accumulate.o  \
-	$(O)/sha3.o $(O)/lz77.o $(O)/probability_support.o $(O)/hash_drng.o $(O)/health_tests.o
+	$(O)/hash.o $(O)/sha256.o $(O)/hash_df.o $(O)/entropy_accumulate.o  $(O)/hmac_sha256.o $(O)/hmac_drng.o \
+	$(O)/sha3.o $(O)/lz77.o $(O)/probability_support.o $(O)/hash_drng.o $(O)/health_tests.o \
 
 all:    test_full_rng.exe
 clean:
@@ -91,9 +91,17 @@ $(O)/hash.o: $(S_HASH)/hash.cc
 	@echo "compiling hash.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/hash.o $(S_HASH)/hash.cc
 
+$(O)/hmac_sha256.o: $(S_HASH)/hmac_sha256.cc
+	@echo "compiling hmac_sha256.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/hmac_sha256.o $(S_HASH)/hmac_sha256.cc
+
 $(O)/sha256.o: $(S_HASH)/sha256.cc
 	@echo "compiling sha256.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/sha256.o $(S_HASH)/sha256.cc
+
+$(O)/hmac_drng.o: $(S)/hmac_drng.cc
+	@echo "compiling hmac_drng.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/hmac_drng.o $(S)/hmac_drng.cc
 
 $(O)/sha3.o: $(S_HASH)/sha3.cc
 	@echo "compiling sha3.cc"

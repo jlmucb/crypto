@@ -40,7 +40,7 @@ public:
             byte* personalization, int entropy_width, byte* entropy,
             double ent);
   bool generate(int num_bits_needed, byte* out,
-          int n_add_in_bits, byte* add_in_bits);
+          int n_add_in_bytes, byte* add_in_bytes);
 };
 #endif
 

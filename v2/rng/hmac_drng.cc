@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include "crypto_support.h"
 #include "probability_support.h"
+#include "hmac_sha256.h"
 #include "hmac_drng.h"
 
 // Note:  Mixers assume big endian so reverse bytes should
@@ -23,9 +24,6 @@
 hmac_drng::hmac_drng() {
   initialized_= false;
   reseed_ctr_ = 0;
-  hash_byte_output_size_ = sha256::DIGESTBYTESIZE;
-  seed_len_bits_ = 440;  // we're using sha256
-  seed_len_bytes_ = seed_len_bits_ / NBITSINBYTE;;
   current_entropy_ = 0;
 }
 
@@ -33,7 +31,7 @@ hmac_drng::~hmac_drng() {
   initialized_= false;
   reseed_ctr_ = 0;
   current_entropy_ = 0;
-  memset(C_, 0, 64);
+  memset(K_, 0, 64);
   memset(V_, 0, 64);
 }
 
@@ -41,19 +39,41 @@ double hmac_drng::current_entropy() {
   return current_entropy_;
 }
 
-// K= HMAC(K,V||0x00||data)
-// V = HMAC(K, V)
-// if data
-//    K= HMAC(K, V || 0x01||data);
-//    V = HMAC(K, V)
 bool hmac_drng::update(int size_data, byte* data) {
+  hmac_sha256 h;
+  int buf_size = h.MACBYTESIZE + 1 + size_data;
+  byte buf[buf_size];
+  memset(buf, 0, buf_size);
+
+  if (!h.init(h.MACBYTESIZE, K_))
+    return false;
+  int n = 0;
+  memcpy(&buf[n], V_, h.MACBYTESIZE);
+  n += h.MACBYTESIZE;
+  buf[n++] = 0;
+  memcpy(&buf[n], data, size_data);
+  h.add_to_inner_hash(buf_size, buf);
+  h.finalize();
+  h.get_hmac(h.MACBYTESIZE, K_);
+
+  if (!h.init(h.MACBYTESIZE, K_))
+    return false;
+  h.add_to_inner_hash(h.MACBYTESIZE, V_);
+  h.finalize();
+  h.get_hmac(h.MACBYTESIZE, V_);
+
+  if (size_data > 0) {
+    memcpy(buf, V_, h.MACBYTESIZE);
+    buf[h.MACBYTESIZE] = 1;
+
+    h.init(h.MACBYTESIZE, K_);
+    h.add_to_inner_hash(buf_size, buf);
+    h.finalize();
+    h.get_hmac(h.MACBYTESIZE, V_);
+  }
   return true;
 }
 
-// seed= entropy || nonce || personailzation
-// K = 0
-// V = 0101...01
-// K = Update(seed)
 bool hmac_drng::init(int size_nonce, byte* nonce, int size_personalization,
       byte* personalization, int entropy_width, byte* material, double ent) {
   reseed_ctr_ = 0;
@@ -61,25 +81,46 @@ bool hmac_drng::init(int size_nonce, byte* nonce, int size_personalization,
 
   byte seed_material[seed_material_size];
   memset(seed_material, 0, seed_material_size);
+
+  int  n = 0;
   memcpy(seed_material, material, entropy_width);
-  hash_df(seed_material_size, seed_material, seed_len_bits_, V_);
-  memset(seed_material, 0, seed_material_size);
-  memcpy(&seed_material[1], V_, seed_len_bytes_);
-  hash_df(seed_len_bytes_ + 1, seed_material, seed_len_bits_, C_);
+  n += entropy_width;
+  memcpy(&seed_material[n], nonce, size_nonce);
+  n += size_nonce; 
+  memcpy(&seed_material[n], personalization, size_personalization);
+
+  memset(K_, 0, 64);
+  memset(V_, 0, 64);
+  for (int i = 0; i < 32; i++)
+    V_[i] = 0x01;
+
+  if (!hmac_drng::update(0, nullptr))
+    return -1;
   current_entropy_ = ent;
   reseed_ctr_ = 1;
   initialized_= true;
   return initialized_;
 }
 
-// Update(data)
-// t = empty
-// while (|t| < l) {
-//    V= HMAC(K,V)
-//    t = t || V
-// Update(data)
-// return bits
-bool hmac_drng::generate(int num_bits_needed, byte* out, int size_add_in_bits,
-            byte* add_in_bits) {
+bool hmac_drng::generate(int num_bytes_needed, byte* out, int size_add_in_bytes,
+            byte* add_in_bytes) {
+  hmac_sha256 h;
+
+  update(size_add_in_bytes, add_in_bytes);
+  int n = 0;
+  int k = 0;
+  while (n < num_bytes_needed) {
+    if (!h.init(h.MACBYTESIZE, K_))
+      return false;
+    h.add_to_inner_hash(h.MACBYTESIZE, V_);
+    h.finalize();
+    h.get_hmac(h.MACBYTESIZE, V_);
+    if ((num_bytes_needed - n) >= h.MACBYTESIZE)
+      k = h.MACBYTESIZE;
+    else
+      k = num_bytes_needed - n;
+    memcpy(&out[n], V_, k);
+    n += k; 
+  }
   return true;
 }
