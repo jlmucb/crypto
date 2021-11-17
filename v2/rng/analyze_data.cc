@@ -116,9 +116,6 @@ int main(int an, char** av) {
     samples[i] &= (uint32_t)0xffff;
   }
 
-  printf("Bins:\n");
-  print_uint32_array(nbins, bins);
-
   if (!bin_raw_data(num_samples, samples, nbins, bins)) {
     printf("Can't bin data\n");
     result = 1;
