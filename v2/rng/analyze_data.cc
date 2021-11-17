@@ -24,18 +24,43 @@
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 DEFINE_string(data_file_name, "data.txt", "Data file name");
 
+int num_lines(int sz, char* txt) {
+  int num = 0;
+  for (int i = 0; i < sz; i++) {
+    if (txt[i] == '\n')
+      num++;
+  }
+  return num;
+}
 
+bool is_num(char c) {
+  return c>='0' && c <='9';
+}
 
-bool read_data_file() {
-  file_util data_file;
+bool get_values(int sz, char* txt_data, int* num_samples, byte* samples) {
+  char* front = txt_data;
+  char* back = &txt_data[sz];
+  char* next_nl = nullptr;
+  unsigned int val;
+  int k = 0;
 
-  // int read_file(const char* filename, int size, byte* buf);
+  while (front < back && k < *num_samples) {
+    next_nl = front;
+    while (*next_nl != '\n' && next_nl < back)
+      next_nl++;
 
+    if (next_nl > front && is_num(*front)) {
+      sscanf(front, "%u\n", &val);
+      samples[k++] = (byte)val;
+    }
+    front =  next_nl + 1;
+  }
+  *num_samples = k;
   return true;
 }
 
 
-bool test_markov() {
+bool markov_test() {
   const int seq_len = 4;
   byte seq[seq_len + 8];
   int num_seq = 1 << seq_len;
@@ -102,7 +127,17 @@ bool test_markov() {
   return true;
 }
 
-bool test_entropy() {
+
+#if 1
+bool estimate_entropy(int num_samples, byte* samples, double* shannon, double* min) {
+  *shannon = byte_shannon_entropy(255, num_samples, samples);
+  *min = most_common_value_entropy(255, num_samples, samples);
+  return true;
+}
+
+#else
+
+bool estimate_entropy() {
   const int num_bits_to_test = 4096;
   byte one_bit_per_byte[num_bits_to_test];
   byte all_bits_in_byte[num_bits_to_test / NBITSINBYTE];
@@ -144,8 +179,9 @@ bool test_entropy() {
 
   return true;
 }
+#endif
 
-bool test_runs() {
+bool runs_test() {
   const int num_bits_to_test = 4096;
   byte one_bit_per_byte[num_bits_to_test];
   byte all_bits_in_byte[num_bits_to_test / NBITSINBYTE];
@@ -181,43 +217,7 @@ bool test_runs() {
   return true;
 }
 
-bool test_berlekamp_massey() {
-  const int n = 128;
-  byte bits[n];
-
-  for (int i = 0; i < n; i++) {
-    bits[i] = i % 4;
-  }
-
-  int sr_size = 0;
-  if (!berlekamp_massy(n, bits, &sr_size)) {
-    return false;
-  }
-  printf("Berlekamp massy, n: %d, sr size: %d\n", n, sr_size);
-  return true;
-}
-
-bool test_excursion_test() {
-  const int num_bytes_to_test = 1024;
-  byte all_bits_in_byte[num_bytes_to_test];
-
-  memset(all_bits_in_byte, 0, num_bytes_to_test);
-  crypto_get_random_bytes(num_bytes_to_test, all_bits_in_byte);
-
-  printf("\n");
-  print_bytes(num_bytes_to_test, all_bits_in_byte);
-  printf("\n");
-
-  double largest_excursion = excursion_test(num_bytes_to_test, all_bits_in_byte);
-  if (FLAGS_print_all) {
-    printf("Excursion test, n: %d, maximum excursion: %06.2lf\n",
-           num_bytes_to_test, largest_excursion);
-  }
-  printf("\n");
-  return true;
-}
-
-bool test_periodicity_test() {
+bool periodicity_test() {
   const int n = 25;
   double data[n] = {
     0.0, 1.0, 2.0, 3.0, 4.0,
@@ -270,7 +270,7 @@ bool test_periodicity_test() {
   return true;
 }
 
-bool test_chi_squared_test() {
+bool chi_squared_test() {
   const int num_bits_to_test = 4096;
   byte one_bit_per_byte[num_bits_to_test];
   byte all_bits_in_byte[num_bits_to_test / NBITSINBYTE];
@@ -304,7 +304,7 @@ bool test_chi_squared_test() {
   return true;
 }
 
-bool test_compression_test() {
+bool compression_test() {
   const int n = 100;
   byte x[n];
   int compressed = 0;
@@ -325,22 +325,54 @@ bool test_compression_test() {
 int main(int an, char** av) {
   gflags::ParseCommandLineFlags(&an, &av, true);
   an = 1;
+  int result = 0;
 
   init_crypto();
 
   // Read data
-  file_util f;
-  if (!f.open(FLAGS_data_file_name.c_str())) {
-    printf("Can't open %s\n", FLAGS_data_file_name.c_str());
-    return 1;
+  int num_samples = 0;
+  byte* samples = nullptr;
+  double s_ent = 0;
+  double m_ent = 0;
+  {
+    file_util f;
+    if (!f.open(FLAGS_data_file_name.c_str())) {
+      printf("Can't open %s\n", FLAGS_data_file_name.c_str());
+      return 1;
+    }
+    int sz = f.bytes_in_file();
+    f.close();
+    char txt_data[sz + 1];
+    if (!f.read_file(FLAGS_data_file_name.c_str(), sz, (byte*)txt_data)) {
+      printf("Can't read %s\n", FLAGS_data_file_name.c_str());
+      return 1;
+    }
+
+  int max_num_samples = num_lines(sz, txt_data);
+  num_samples = max_num_samples;
+  samples = new byte[num_samples];
+
+    if (!get_values(sz, txt_data, &num_samples, samples)) {
+      printf("Can't get values from %s\n", FLAGS_data_file_name.c_str());
+      result = 1;
+      goto done;
+    }
   }
-  int sz = f.bytes_in_file();
-  f.close();
-  char txt_data[sz + 1];
+  printf("read %d values\n", num_samples);
 
-  // Run tests
+  if (!estimate_entropy(num_samples, samples, &s_ent, &m_ent)) {
+      printf("Can't estimate entropy\n");
+      result = 1;
+      goto done;
+  }
+  printf("%d samples, shannon entropy: %lf, min entropy: %lf\n", num_samples, s_ent, m_ent);
 
+done:
+  // clean up
+  if (samples != nullptr) {
+    delete []samples;
+  }
   close_crypto();
   printf("\n");
-  return 0;
+  return result;
 }
