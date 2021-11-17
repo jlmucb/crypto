@@ -1331,7 +1331,6 @@ double calculate_uint32_mean(int num_samples, uint32_t* data) {
   return mean;
 }
 
-// only correct if the probabilities are all equal
 double calculate_uint32_variance(int num_samples, uint32_t* data, double mean) {
   double var = 0.0;
   double sum = 0;
