@@ -68,6 +68,19 @@ bool to_general_graph(int nbins, uint32_t* bins, double* x, double* y) {
   return true;
 }
 
+bool range(int num_samples, uint32_t* samples, uint32_t* max, uint32_t* min) {
+  *min = 1>>30;
+  *max = 0;
+
+  for (int i = 0; i < num_samples; i++) {
+    if (samples[i] > *max)
+      *max = samples[i];
+    if (samples[i] < *min)
+      *min = samples[i];
+  }
+  return true;
+}
+
 
 int main(int an, char** av) {
   gflags::ParseCommandLineFlags(&an, &av, true);
@@ -104,7 +117,11 @@ int main(int an, char** av) {
       return 1;
     }
   }
-  printf("read %d values\n", num_samples);
+
+  uint32_t v_max = 0;
+  uint32_t v_min = 0;
+  range(num_samples, samples, &v_max, &v_min);
+  printf("read %d values.  max: %d, min: %d.\n", num_samples, v_max, v_min);
 
   double s_ent = 0;
   double r_ent = 0;
@@ -112,15 +129,20 @@ int main(int an, char** av) {
   double mean = calculate_uint32_mean(num_samples, samples);
   double var = calculate_uint32_variance(num_samples, samples, mean);
   double sigma = sqrt(var);
-  printf("mean: %8.3lf, variance: %8.3lf, sigma: %8.3lf\n", mean, var, sigma);
+  printf("mean: %.3lf, variance: %.3lf, sigma: %.3lf\n", mean, var, sigma);
 
   int num_bits = 8;
   int nbins = 1<<num_bits;
   uint32_t bins[nbins];
+  double prob[nbins];
+  double v[nbins];
   double x[nbins], y[nbins];
+  double corrected_variance = 0;
+  double corrected_sigma = 0;
   zero_uint32_array(nbins, bins);
   zero_double_array(nbins, x);
   zero_double_array(nbins, y);
+  zero_double_array(nbins, prob);
 
   // keep values 255 or less
   for(int i = 0; i < num_samples; i++) {
@@ -136,12 +158,28 @@ int main(int an, char** av) {
   printf("Bins:\n");
   print_uint32_array(nbins, bins);
 
+  if (!calculate_bin_probabilities(nbins, bins, prob)) {
+    printf("Can't calculate bin probabilities\n");
+    result = 1;
+    goto done;
+  }
+
+  printf("probabilities:\n");
+  print_double_array(nbins, prob);
+
+  for (int i = 0; i < nbins; i++)
+    v[i] = (double)i;
+
+  corrected_variance = variance(nbins, mean, prob, v);
+  corrected_sigma = sqrt(corrected_variance);
+  printf("Corrected variance: %.3lf, corrected sigma: %.3lf\n", corrected_variance, corrected_sigma);
+
   if (!calculate_bin_entropies(num_samples, nbins, bins, &s_ent, &r_ent, &m_ent)) {
     printf("Can't calculate bin entropies\n");
     result = 1;
     goto done;
   }
-  printf("shannon entropy: %8.3lf, renyi entropy: %8.3lf, min entropy: %8.3lf\n", s_ent, r_ent, m_ent);
+  printf("shannon entropy: %.3lf, renyi entropy: %.3lf, min entropy: %.3lf\n", s_ent, r_ent, m_ent);
 
 #if 1
   if (!to_general_graph(nbins, bins, x, y)) {

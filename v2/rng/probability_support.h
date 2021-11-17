@@ -57,6 +57,7 @@ bool byte_to_bits(int num_bytes, byte* in, int bits_per_byte,
 bool bits_to_byte(int num_bits, byte* in, int bits_per_byte,
              int num_bytes, byte* out);
 
+bool calculate_bin_probabilities(int nbins, uint32_t* bins, double* prob);
 double expected_value(int n, double* p, double* x);
 double variance(int n, double mean, double* p, double* x);
 double shannon_entropy(int n, double* p);

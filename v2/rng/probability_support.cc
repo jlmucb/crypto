@@ -307,6 +307,14 @@ double variance(int n, double mean, double* p, double* x) {
   return sum;
 }
 
+bool calculate_bin_probabilities(int nbins, uint32_t* bins, double* prob) {
+  int total = bin_population(nbins, bins);
+  for(int i = 0; i < nbins; i++) {
+    prob[i] = ((double)bins[i]) / ((double) total);
+  }
+  return true;
+}
+
 bool calculate_marginal_probability(int n, int m, int var_num, double* p_xy, double* p) {
   // First var
   //    p[i] = sum_j^m p_xy[index(n,m,i,j)], i = 0, 1, ..., n - 1
@@ -1323,6 +1331,7 @@ double calculate_uint32_mean(int num_samples, uint32_t* data) {
   return mean;
 }
 
+// only correct if the probabilities are all equal
 double calculate_uint32_variance(int num_samples, uint32_t* data, double mean) {
   double var = 0.0;
   double sum = 0;
