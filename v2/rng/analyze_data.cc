@@ -60,6 +60,14 @@ bool get_values(int sz, char* txt_data, int* num_samples, uint32_t* samples) {
   return true;
 }
 
+bool to_general_graph(int nbins, uint32_t* bins, double* x, double* y) {
+  for (int i = 0; i < nbins; i++) {
+    x[i] = (double)i;
+    y[i] = (double)bins[i];
+  }
+  return true;
+}
+
 
 int main(int an, char** av) {
   gflags::ParseCommandLineFlags(&an, &av, true);
@@ -109,7 +117,10 @@ int main(int an, char** av) {
   int num_bits = 8;
   int nbins = 1<<num_bits;
   uint32_t bins[nbins];
+  double x[nbins], y[nbins];
   zero_uint32_array(nbins, bins);
+  zero_double_array(nbins, x);
+  zero_double_array(nbins, y);
 
   // keep values 255 or less
   for(int i = 0; i < num_samples; i++) {
@@ -132,10 +143,18 @@ int main(int an, char** av) {
   }
   printf("shannon entropy: %8.3lf, renyi entropy: %8.3lf, min entropy: %8.3lf\n", s_ent, r_ent, m_ent);
 
+#if 1
+  if (!to_general_graph(nbins, bins, x, y)) {
+    printf("Can't convert to general graph format\n");
+  }
+  if (!write_general_graph_data(FLAGS_graph_file_name, nbins, x, y)) {
+    printf("Can't write graph file %s\n", FLAGS_graph_file_name.c_str());
+  }
+#else
   if (!write_graph_data(FLAGS_graph_file_name, nbins, bins)) {
     printf("Can't write graph file %s\n", FLAGS_graph_file_name.c_str());
   }
-
+#endif
 
 done:
   // clean up
