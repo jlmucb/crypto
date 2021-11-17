@@ -23,6 +23,7 @@
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 DEFINE_string(data_file_name, "data.txt", "Data file name");
+DEFINE_string(graph_file_name, "graph.bin", "Graph file name");
 
 int num_lines(int sz, char* txt) {
   int num = 0;
@@ -37,7 +38,7 @@ bool is_num(char c) {
   return c>='0' && c <='9';
 }
 
-bool get_values(int sz, char* txt_data, int* num_samples, byte* samples) {
+bool get_values(int sz, char* txt_data, int* num_samples, uint32_t* samples) {
   char* front = txt_data;
   char* back = &txt_data[sz];
   char* next_nl = nullptr;
@@ -51,273 +52,11 @@ bool get_values(int sz, char* txt_data, int* num_samples, byte* samples) {
 
     if (next_nl > front && is_num(*front)) {
       sscanf(front, "%u\n", &val);
-      samples[k++] = (byte)val;
+      samples[k++] = val;
     }
     front =  next_nl + 1;
   }
   *num_samples = k;
-  return true;
-}
-
-
-bool markov_test() {
-  const int seq_len = 4;
-  byte seq[seq_len + 8];
-  int num_seq = 1 << seq_len;
-
-  byte b;
-  double p_0 = .5;
-  double p_1 = .5;
-  double p_00 = .5;
-  double p_01 = .5;
-  double p_10 = .5;
-  double p_11 = .5;
-  double probs[num_seq];
-  double total_prob = 0.0;
-
-  for (byte b = 0; b <= 15; b++) {
-    if (!byte_to_bits(1, &b, NBITSINBYTE, 8, seq)) {
-      printf("bad conversion\n");
-      return false;
-    }
-    probs[(int) b] = byte_markov_sequence_probability(seq_len, seq, p_0, p_1,
-        p_00, p_01, p_10, p_11);
-  }
-
-  total_prob = 0.0;
-  for (int i = 0; i < num_seq; i++)
-    total_prob += probs[i];
-
-  printf("\n");
-  printf("P(0): %lf, p(1): %lf, P(0|0): %lf, P(1|0): %lf, P(1|0): %lf, P(1|1): %lf\n",
-    p_0, p_1, p_00, p_01, p_10, p_11);
-  printf("Total prob: %lf\n", total_prob);
-  for(int i = 0; i < num_seq; i++) {
-    printf("Prob(%x)= %lf ", i, probs[i]);
-    if ((i%4) == 3)
-      printf("\n");
-  }
-
-  p_00 = .75;
-  p_01 = .25;
-  p_10 = .25;
-  p_11 = .75;
-  for (byte b = 0; b <= 15; b++) {
-    if (!byte_to_bits(1, &b, NBITSINBYTE, 8, seq)) {
-      printf("bad conversion\n");
-      return false;
-    }
-    probs[(int) b] = byte_markov_sequence_probability(seq_len, seq, p_0, p_1,
-        p_00, p_01, p_10, p_11);
-  }
-
-  total_prob = 0.0;
-  for (int i = 0; i < num_seq; i++)
-    total_prob += probs[i];
-
-  printf("\n");
-  printf("P(0): %lf, p(1): %lf, P(0|0): %lf, P(1|0): %lf, P(1|0): %lf, P(1|1): %lf\n",
-    p_0, p_1, p_00, p_01, p_10, p_11);
-  printf("Total prob: %lf\n", total_prob);
-  for(int i = 0; i < num_seq; i++) {
-    printf("Prob(%x)= %lf ", i, probs[i]);
-    if ((i%4) == 3)
-      printf("\n");
-  }
-  return true;
-}
-
-
-#if 1
-bool estimate_entropy(int num_samples, byte* samples, double* shannon, double* min) {
-  *shannon = byte_shannon_entropy(255, num_samples, samples);
-  *min = most_common_value_entropy(255, num_samples, samples);
-  return true;
-}
-
-#else
-
-bool estimate_entropy() {
-  const int num_bits_to_test = 4096;
-  byte one_bit_per_byte[num_bits_to_test];
-  byte all_bits_in_byte[num_bits_to_test / NBITSINBYTE];
-
-  memset(one_bit_per_byte, 0, num_bits_to_test);
-  memset(all_bits_in_byte, 0, num_bits_to_test / NBITSINBYTE);
-
-  printf("\n");
-  print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  printf("\n");
-
-  double s_ent = byte_shannon_entropy(255,
-        num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  printf("Shannon entropy: %lf\n", s_ent);
-  double min_ent = most_common_value_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  printf("Min entropy: %lf\n", min_ent);
-  double mark_ent = byte_markov_entropy(num_bits_to_test, one_bit_per_byte);
-  printf("Markov entropy: %lf\n", mark_ent);
-  printf("\n");
-
-  crypto_get_random_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  if (!bits_to_byte(num_bits_to_test / NBITSINBYTE, all_bits_in_byte, NBITSINBYTE,
-                  num_bits_to_test, one_bit_per_byte)) {
-    printf("bad conversion\n");
-    return false;
-  }
-
-  printf("\n");
-  print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  printf("\n");
-
-  s_ent = byte_shannon_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  printf("Shannon entropy: %lf\n", s_ent);
-  min_ent = most_common_value_entropy(255, num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  printf("Min entropy: %lf\n", min_ent);
-  mark_ent = byte_markov_entropy(num_bits_to_test, one_bit_per_byte);
-  printf("Markov entropy: %lf\n", mark_ent);
-  printf("\n");
-
-  return true;
-}
-#endif
-
-bool runs_test() {
-  const int num_bits_to_test = 4096;
-  byte one_bit_per_byte[num_bits_to_test];
-  byte all_bits_in_byte[num_bits_to_test / NBITSINBYTE];
-
-  memset(one_bit_per_byte, 0, num_bits_to_test);
-  memset(all_bits_in_byte, 0, num_bits_to_test / NBITSINBYTE);
-
-  crypto_get_random_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  if (!byte_to_bits(num_bits_to_test / NBITSINBYTE, all_bits_in_byte, NBITSINBYTE,
-                    num_bits_to_test, one_bit_per_byte)) {
-    printf("bad conversion\n");
-    return false;
-  }
-
-  printf("\n");
-  print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  printf("\n");
-
-  int num_runs = 0;
-  double mu = 0.0;
-  double sigma = 0.0;
-
-  if (!runs_test(num_bits_to_test, one_bit_per_byte, &num_runs, &mu, &sigma)) {
-    printf("runs test fails\n");
-    return false;
-  }
-  if (FLAGS_print_all) {
-    printf("Runs test, n: %d, num_runs: %d, mu: %lf, sigma: %lf\n",
-           num_bits_to_test, num_runs, mu, sigma);
-  }
-
-  printf("\n");
-  return true;
-}
-
-bool periodicity_test() {
-  const int n = 25;
-  double data[n] = {
-    0.0, 1.0, 2.0, 3.0, 4.0,
-    0.0, 1.0, 2.0, 3.0, 4.0,
-    0.0, 1.0, 2.0, 3.0, 4.0,
-    0.0, 1.0, 2.0, 3.0, 4.0,
-    0.0, 1.0, 2.0, 3.0, 4.0,
-  };
-  double transform[n];
-
-  if (!real_dft(n, data, transform)) {
-    return false;
-  }
-  if (FLAGS_print_all) {
-    printf("\ndft\n");
-    printf("data     :");
-    for (int i = 0; i < n; i++)
-      printf("%5.1lf", data[i]);
-    printf("\n");
-    printf("transform:");
-    for (int i = 0; i < n; i++)
-      printf("%5.1lf", transform[i]);
-    printf("\n");
-    printf("\n");
-  }
-
-  byte x[n] = {
-    0, 1, 2, 3, 4,
-    0, 1, 2, 3, 4,
-    0, 1, 2, 3, 4,
-    0, 1, 2, 3, 4,
-    0, 1, 2, 3, 4,
-  };
-  int r = 0;
-  int lag = 1;
-  if (!periodicity_test(n, x, lag, &r)) {
-    return false;
-  }
-  if (FLAGS_print_all) {
-    print_bytes(n, x);
-    printf("period test with lag %d: %d\n", lag, r);
-  }
-  lag = 5;
-  if (!periodicity_test(n, x, lag, &r)) {
-    return false;
-  }
-  if (FLAGS_print_all) {
-    printf("period test with lag %d: %d\n", lag, r);
-  }
-  return true;
-}
-
-bool chi_squared_test() {
-  const int num_bits_to_test = 4096;
-  byte one_bit_per_byte[num_bits_to_test];
-  byte all_bits_in_byte[num_bits_to_test / NBITSINBYTE];
-
-  memset(one_bit_per_byte, 0, num_bits_to_test);
-  memset(all_bits_in_byte, 0, num_bits_to_test / NBITSINBYTE);
-
-  crypto_get_random_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  if (!byte_to_bits(num_bits_to_test / NBITSINBYTE, all_bits_in_byte, NBITSINBYTE,
-                    num_bits_to_test, one_bit_per_byte)) {
-    printf("bad conversion\n");
-    return false;
-  }
-
-  printf("\n");
-  print_bytes(num_bits_to_test / NBITSINBYTE, all_bits_in_byte);
-  printf("\n");
-
-  double chi_value= 0.0;
-  double p[2] = {0.5, 0.5};
-  if (!chi_squared_test(num_bits_to_test, one_bit_per_byte, 2, p, &chi_value)) {
-    printf("runs test fails\n");
-    return false;
-  }
-  if (FLAGS_print_all) {
-    printf("Chi squared test, n: %d, chi_squared: %lf\n",
-           num_bits_to_test, chi_value);
-  }
-
-  printf("\n");
-  return true;
-}
-
-bool compression_test() {
-  const int n = 100;
-  byte x[n];
-  int compressed = 0;
-
-  for (int j = 0; j < n; j++)
-    x[j] = j % 4;
-
-  if (!compression_test(n, x, &compressed)) {
-    return false;
-  }
-  if (FLAGS_print_all) {
-    printf("Compression test, uncompressed size: %d, compressed size: %d\n", n, compressed);
-  }
   return true;
 }
 
@@ -331,9 +70,7 @@ int main(int an, char** av) {
 
   // Read data
   int num_samples = 0;
-  byte* samples = nullptr;
-  double s_ent = 0;
-  double m_ent = 0;
+  uint32_t* samples = nullptr;
   {
     file_util f;
     if (!f.open(FLAGS_data_file_name.c_str())) {
@@ -350,22 +87,58 @@ int main(int an, char** av) {
 
   int max_num_samples = num_lines(sz, txt_data);
   num_samples = max_num_samples;
-  samples = new byte[num_samples];
+  samples = new uint32_t[num_samples];
 
     if (!get_values(sz, txt_data, &num_samples, samples)) {
       printf("Can't get values from %s\n", FLAGS_data_file_name.c_str());
       result = 1;
-      goto done;
+      delete []samples;
+      return 1;
     }
   }
   printf("read %d values\n", num_samples);
 
-  if (!estimate_entropy(num_samples, samples, &s_ent, &m_ent)) {
-      printf("Can't estimate entropy\n");
-      result = 1;
-      goto done;
+  double s_ent = 0;
+  double r_ent = 0;
+  double m_ent = 0;
+  double mean = calculate_uint32_mean(num_samples, samples);
+  double var = calculate_uint32_variance(num_samples, samples, mean);
+  double sigma = sqrt(var);
+  printf("mean: %8.3lf, variance: %8.3lf, sigma: %8.3lf\n", mean, var, sigma);
+
+  int num_bits = 8;
+  int nbins = 1<<num_bits;
+  uint32_t bins[nbins];
+  zero_uint32_array(nbins, bins);
+
+  // keep values 255 or less
+  for(int i = 0; i < num_samples; i++) {
+    samples[i] &= (uint32_t)0xffff;
   }
-  printf("%d samples, shannon entropy: %lf, min entropy: %lf\n", num_samples, s_ent, m_ent);
+
+  printf("Bins:\n");
+  print_uint32_array(nbins, bins);
+
+  if (!bin_raw_data(num_samples, samples, nbins, bins)) {
+    printf("Can't bin data\n");
+    result = 1;
+    goto done;
+  }
+
+  printf("Bins:\n");
+  print_uint32_array(nbins, bins);
+
+  if (!calculate_bin_entropies(num_samples, nbins, bins, &s_ent, &r_ent, &m_ent)) {
+    printf("Can't calculate bin entropies\n");
+    result = 1;
+    goto done;
+  }
+  printf("shannon entropy: %8.3lf, renyi entropy: %8.3lf, min entropy: %8.3lf\n", s_ent, r_ent, m_ent);
+
+  if (!write_graph_data(FLAGS_graph_file_name, nbins, bins)) {
+    printf("Can't write graph file %s\n", FLAGS_graph_file_name.c_str());
+  }
+
 
 done:
   // clean up
