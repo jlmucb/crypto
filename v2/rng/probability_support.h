@@ -114,6 +114,7 @@ bool runs_test(int n, byte* s, int* number_of_runs, double* mu, double* sigma);
 bool berlekamp_massy(int n, byte* s, int* L);
 double excursion_test(int n, byte* s);
 bool chi_squared_test(int n, byte* x, int num_values, double* p, double* chi_value);
+bool binned_chi_squared_test(int num_samples, int nbins, uint32_t* bins, double* pr, double* chi_value);
 bool periodicity_test(int n, byte* s, int lag, int* result);
 bool compression_test(int n, byte* s, int* compressed);
 

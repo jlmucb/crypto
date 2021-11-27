@@ -24,6 +24,7 @@
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 DEFINE_string(data_file_name, "data.txt", "Data file name");
 DEFINE_string(graph_file_name, "graph.bin", "Graph file name");
+DEFINE_int32(input_format, 1, "Input format");
 
 int num_lines(int sz, char* txt) {
   int num = 0;
@@ -57,6 +58,54 @@ bool get_values(int sz, char* txt_data, int* num_samples, uint32_t* samples) {
     front =  next_nl + 1;
   }
   *num_samples = k;
+  return true;
+}
+
+char* skip(char* p, char* back) {
+  while(*(p++) != ',' && p < back);
+  while(*(p++) != ',' && p < back);
+  while (*p == ' ' && p < back) p++;
+  if (p >= back)
+    return nullptr;
+  return p;
+}
+
+bool get_last_value_on_line(int sz, char* txt_data, int* num_samples, uint32_t* samples) {
+  char* front = txt_data;
+  char* back = &txt_data[sz];
+  char* next_nl = nullptr;
+  unsigned int val;
+  int k = 0;
+  char* p;
+
+  while (front < back && k < *num_samples) {
+    next_nl = front;
+    while (*next_nl != '\n' && next_nl < back)
+      next_nl++;
+
+    if (next_nl > front && (next_nl < back && (p=skip(front, next_nl)) != nullptr)) {
+      if (!is_num(*front)) {
+        front =  next_nl + 1;
+        continue;
+      }
+      sscanf(p, "%u\n", &val);
+      samples[k++] = val;
+    }
+    front =  next_nl + 1;
+  }
+  *num_samples = k;
+#if 0
+  if (FLAGS_print_all) {
+    for (int i = 0; i < k; i++) {
+      if ((i%16)==15) {
+        printf("%3d\n", samples[i]);
+      } else {
+        printf("%3d, ", samples[i]);
+      }
+    }
+    printf("\n");
+  }
+#endif
   return true;
 }
 
@@ -106,15 +155,24 @@ int main(int an, char** av) {
       return 1;
     }
 
-  int max_num_samples = num_lines(sz, txt_data);
-  num_samples = max_num_samples;
-  samples = new uint32_t[num_samples];
+    int max_num_samples = num_lines(sz, txt_data);
+    num_samples = max_num_samples;
+    samples = new uint32_t[num_samples];
 
-    if (!get_values(sz, txt_data, &num_samples, samples)) {
-      printf("Can't get values from %s\n", FLAGS_data_file_name.c_str());
-      result = 1;
-      delete []samples;
-      return 1;
+    if (FLAGS_input_format == 2) {
+      if (!get_values(sz, txt_data, &num_samples, samples)) {
+        printf("Can't get values from %s\n", FLAGS_data_file_name.c_str());
+        result = 1;
+        delete []samples;
+        return 1;
+      }
+    } else {
+      if (!get_last_value_on_line(sz, txt_data, &num_samples, samples)) {
+        printf("Can't get values from %s\n", FLAGS_data_file_name.c_str());
+        result = 1;
+        delete []samples;
+        return 1;
+      }
     }
   }
 
@@ -143,6 +201,8 @@ int main(int an, char** av) {
   zero_double_array(nbins, x);
   zero_double_array(nbins, y);
   zero_double_array(nbins, prob);
+  double pr[nbins];
+  double chi_value = 0.0;
 
   // keep values 255 or less
   for(int i = 0; i < num_samples; i++) {
@@ -193,6 +253,15 @@ int main(int an, char** av) {
     printf("Can't write graph file %s\n", FLAGS_graph_file_name.c_str());
   }
 #endif
+
+  for (int i = 0; i < nbins; i++) {
+    pr[i] = 1.0 / ((double) nbins);
+  }
+  if (!binned_chi_squared_test(num_samples, nbins, bins, pr, &chi_value)) {
+    printf("Can't do chi squared\n");
+  }
+  printf("Chi squared: %lf\n", chi_value);
+
 
 done:
   // clean up

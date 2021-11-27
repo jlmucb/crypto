@@ -848,6 +848,18 @@ double excursion_test(int n, byte* x) {
   return largest_excursion;
 }
 
+bool binned_chi_squared_test(int num_samples, int nbins, uint32_t* bins, double* pr, double* chi_value) {
+  double chi_squared = 0.0;
+  double x_n = (double)num_samples;
+  double t;
+  for (int i = 0; i < nbins; i++) {
+    t = ((double)bins[i]) - (x_n * pr[i]);
+    chi_squared += (t * t) / (x_n * pr[i]);
+  }
+  *chi_value = chi_squared;
+  return true;
+}
+
 bool chi_squared_test(int n, byte* x, int num_values, double* p, double* chi_value) {
   int count[num_values];
 
