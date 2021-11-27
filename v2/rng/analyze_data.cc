@@ -26,6 +26,14 @@ DEFINE_string(data_file_name, "data.txt", "Data file name");
 DEFINE_string(graph_file_name, "graph.bin", "Graph file name");
 DEFINE_int32(input_format, 1, "Input format");
 
+// A chi-square with large degrees of freedom, df, is approximately normal with mean df and variance 2𝜈.
+// erf(x) = 2/sqrt(pi) int_0^x exp(-t*t) dt
+// Pr(chi^2>=x)
+double chi_confidience(int df, double x) {
+  double z = (x - ((double)df)) / sqrt((double)(2*df));
+  return erf(z) / sqrt(2.0);
+}
+
 int num_lines(int sz, char* txt) {
   int num = 0;
   for (int i = 0; i < sz; i++) {
@@ -260,7 +268,12 @@ int main(int an, char** av) {
   if (!binned_chi_squared_test(num_samples, nbins, bins, pr, &chi_value)) {
     printf("Can't do chi squared\n");
   }
-  printf("Chi squared: %lf\n", chi_value);
+
+  {
+    double t_s = chi_confidience(256, chi_value);
+    printf("Chi squared: %lf, test statistic: %lf\n", chi_value, t_s);
+    printf("With this distribution, the probability that the chi-square value is larger than this is %lf\n", 1.0-t_s);
+  }
 
 
 done:
