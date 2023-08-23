@@ -43,7 +43,7 @@ CC=g++
 LINK=g++
 PROTO=protoc
 AR=ar
-LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
+LDFLAGS= -L$(LOCAL_LIB) -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=   $(O)/test_rng.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
 	$(O)/hash.o $(O)/sha256.o $(O)/hash_df.o $(O)/entropy_collection.o  \
