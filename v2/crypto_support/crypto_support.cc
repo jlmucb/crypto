@@ -441,7 +441,7 @@ bool bytes_to_base64(string& b, string* b64) {
 
 random_source::random_source() {
   initialized_ = false;
-  have_rd_rand_ = have_intel_rd_rand();
+  have_rd_rand_ = ::have_intel_rd_rand();
 }
 
 bool random_source::have_intel_rd_rand() {
