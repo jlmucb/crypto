@@ -369,7 +369,10 @@ bool encryption_scheme::finalize_encrypt(int size_final, byte* final_in,
   out += block_size_;
   *size_out -= block_size_;
   bytes_written += block_size_;
-  memset(final_block, 0, block_size_);
+
+#if 0
+printf("Final block to encrypt: "); print_bytes(block_size_, final_block); printf("\n");
+#endif
 
   // finalize and append hmac
   int_obj_.finalize();
@@ -390,19 +393,25 @@ bool encryption_scheme::finalize_decrypt(int size_final, byte* final_in,
   int bytes_written = 0;
   size_final -= get_mac_size();
 
-  if (size_final >= block_size_) {
-    if (mode_ == CTR) {
-      ctr_decrypt_step(final_in, out);
-    } else if(mode_ == CBC) {
-      cbc_decrypt_step(final_in, out);
-    } else {
-      return false;
-    }
-    out += block_size_;
-    final_in += block_size_;
-    *size_out = block_size_;
-    bytes_written += block_size_;
+  if (size_final > block_size_) {
+    printf("Wrong size_final in finalize_decrypt %d\n", size_final);
+    return false;
   }
+
+  if (mode_ == CTR) {
+    ctr_decrypt_step(final_in, out);
+  } else if(mode_ == CBC) {
+    cbc_decrypt_step(final_in, out);
+  } else {
+    return false;
+  }
+
+#if 0
+printf("Final decrypted block: ");print_bytes(block_size_, out);printf("\n");
+#endif
+
+  out += block_size_;
+  bytes_written = block_size_;
 
   // finalize and get hmac
   int_obj_.finalize();
@@ -462,8 +471,9 @@ printf("First nonce: "); print_bytes(block_size, cur_out);
 }
 
 bool encryption_scheme::decrypt_message(int size_in, byte* in, int size_out, byte* out) {
-  if (!message_info(size_in, encryption_scheme::DECRYPT))
+  if (!message_info(size_in, encryption_scheme::DECRYPT)) {
     return false;
+  }
 
   byte* cur_in = in;
   byte* cur_out = out;
@@ -478,9 +488,6 @@ bool encryption_scheme::decrypt_message(int size_in, byte* in, int size_out, byt
   cur_in += block_size;
   bytes_left -= block_size;
 
-#if 0
-printf("First nonce: "); print_bytes(block_size, in);
-#endif
   while (bytes_left > (block_size + mac_size)) {
     if (mode_ == CTR) {
         ctr_decrypt_step(cur_in, cur_out);
@@ -504,10 +511,12 @@ printf("First nonce: "); print_bytes(block_size, in);
   int additional_bytes = size_out - total_bytes_output_;
   byte computed_mac[mac_size];
   memset(computed_mac, 0, mac_size);
+
   if (!finalize_decrypt(bytes_left, cur_in, &additional_bytes, cur_out, computed_mac)) {
     printf("finalize_decrypt failed\n");
     return false;
   }
+
   total_bytes_output_ += additional_bytes;
   encrypted_bytes_output_ += additional_bytes;
   cur_out += additional_bytes;
@@ -520,7 +529,7 @@ printf("First nonce: "); print_bytes(block_size, in);
   for (i = 0; i < block_size_; i++) {
     if (*pb != 0) {
       if (*pb != 0x80) {
-        printf("bad pad 1\n");
+        printf("%s() error, line: %d, bad pad\n", __func__, __LINE__);
         message_valid_= false;
         return false;
       }
@@ -530,7 +539,7 @@ printf("First nonce: "); print_bytes(block_size, in);
     pb--;
   }
   if (i >= block_size_) {
-    printf("bad pad 2\n");
+    printf("%s() error, line: %d, bad pad\n", __func__, __LINE__);
     message_valid_= false;
     return false;
   }
@@ -563,8 +572,10 @@ bool encryption_scheme::encrypt_file(const char* infile, const char* outfile) {
   byte in_buf[file_buffer_size];
   byte out_buf[file_buffer_size];
 
-  if (!message_info(in_file.bytes_in_file(), encryption_scheme::ENCRYPT))
+  if (!message_info(in_file.bytes_in_file(), encryption_scheme::ENCRYPT)) {
+    printf("%s(), line %d, message_info error\n", __FILE__, __LINE__);
     return false;
+  }
 
   int block_size = get_block_size();
   int num_blocks_in_buffer = file_buffer_size / block_size;
@@ -573,11 +584,15 @@ bool encryption_scheme::encrypt_file(const char* infile, const char* outfile) {
   int bytes_in_output_buffer= 0;
 
   string nonce(block_size, 0);
-  if (crypto_get_random_bytes(block_size, (byte*)nonce.data()) < block_size)
+  if (crypto_get_random_bytes(block_size, (byte*)nonce.data()) < block_size) {
+    printf("%s(), line %d, random bytes error\n", __FILE__, __LINE__);
     return false;
+  }
 
-  if (!init_nonce((int)nonce.size(), (byte*)nonce.data()))
+  if (!init_nonce((int)nonce.size(), (byte*)nonce.data())) {
+    printf("%s(), line %d, error\n", __FILE__, __LINE__);
     return false;
+  }
 
   // process nonce block
   int_obj_.add_to_inner_hash(block_size, (byte*)nonce.data());
@@ -588,12 +603,15 @@ bool encryption_scheme::encrypt_file(const char* infile, const char* outfile) {
   byte* cur_out;
 
   for(;;) {
+
     if (bytes_left_in_buffer <= 0) {
       if (bytes_in_output_buffer > 0) {
          out_file.write_a_block(bytes_in_output_buffer, out_buf);
+         bytes_in_output_buffer = 0;
       }
       bytes_left_in_buffer = in_file.read_a_block(num_blocks_in_buffer * block_size, in_buf);
       if (bytes_left_in_buffer <= 0) {
+    	  printf("%s(), line %d, error\n", __FILE__, __LINE__);
           return false;
       }
       cur_in = in_buf;
@@ -602,7 +620,9 @@ bool encryption_scheme::encrypt_file(const char* infile, const char* outfile) {
     }
 
     while (bytes_left_in_buffer > 0) {
-      if (bytes_left_in_file < block_size) {
+
+      if (bytes_left_in_buffer <= block_size) {
+
         if (bytes_in_output_buffer > 0) {
           out_file.write_a_block(bytes_in_output_buffer, out_buf);
           bytes_in_output_buffer = 0;
@@ -614,8 +634,10 @@ bool encryption_scheme::encrypt_file(const char* infile, const char* outfile) {
         }
         int additional_bytes = num_blocks_in_buffer * block_size;
         if (!finalize_encrypt(bytes_left_in_buffer, cur_in, &additional_bytes, cur_out)) {
+          printf("%s(), line %d, finalize_encrypt error\n", __FILE__, __LINE__);
           return false;
         }
+
         out_file.write_a_block(additional_bytes, cur_out);
         total_bytes_output_ += additional_bytes;
         encrypted_bytes_output_ += additional_bytes - get_mac_size();
@@ -624,11 +646,13 @@ bool encryption_scheme::encrypt_file(const char* infile, const char* outfile) {
         out_file.close();
         return message_valid_;
       }
+
       if (mode_ == CTR) {
         ctr_encrypt_step(cur_in, cur_out);
       } else if (mode_ == CBC) {
         cbc_encrypt_step(cur_in, cur_out);
       } else {
+          printf("%s(), line %d, error\n", __FILE__, __LINE__);
           return false;
       }
       encrypted_bytes_output_ += block_size;
@@ -701,6 +725,7 @@ bool encryption_scheme::decrypt_file(const char* infile, const char* outfile) {
     }
 
     while (bytes_left_in_buffer > 0) {
+
       if (bytes_left_in_file <= (block_size + mac_size)) {
         if (bytes_in_output_buffer > 0) {
           out_file.write_a_block(bytes_in_output_buffer, out_buf);
@@ -724,15 +749,16 @@ bool encryption_scheme::decrypt_file(const char* infile, const char* outfile) {
           printf("finalize_decrypt failed\n");
           return false;
         }
+#if 0
+printf("after finalize_decrypt (%d): ", additional_bytes); print_bytes(block_size, cur_out); printf("\n");
+#endif
+
         cur_in += additional_bytes;
-        cur_out += additional_bytes;
         bytes_left_in_file -= additional_bytes;
         bytes_left_in_buffer -= additional_bytes;
-        total_bytes_output_ += additional_bytes;
-        encrypted_bytes_output_ += additional_bytes;
 
         // now fix message size
-        byte* pb = cur_out - 1;
+        byte* pb = cur_out + block_size_ - 1;
         int i;
         for (i = 0; i < block_size; i++) {
           if (*pb != 0) {
@@ -740,10 +766,9 @@ bool encryption_scheme::decrypt_file(const char* infile, const char* outfile) {
               message_valid_= false;
               in_file.close();
               out_file.close();
-              printf("bad pad 1\n");
+              printf("%s(), error line %d, bad pad\n", __FILE__, __LINE__);
               return false;
             }
-            encrypted_bytes_output_ -=  (i + 1);
             additional_bytes -=  (i + 1);
             break;
           }
@@ -753,10 +778,18 @@ bool encryption_scheme::decrypt_file(const char* infile, const char* outfile) {
           message_valid_= false;
           in_file.close();
           out_file.close();
-          printf("bad pad 2\n");
+          printf("%s(), error line %d, bad pad\n", __FILE__, __LINE__);
           return false;
         }
+#if 0
+printf("Additional bytes (%d): ", additional_bytes); print_bytes(additional_bytes, cur_out); printf("\n");
+#endif
+
         out_file.write_a_block(additional_bytes, cur_out);
+        cur_out += additional_bytes;
+        total_bytes_output_ += additional_bytes;
+        encrypted_bytes_output_ += additional_bytes;
+
         message_valid_ = (memcmp(cur_in, computed_mac, hmac_digest_size_) == 0);
 #if 0
 if (message_valid_)printf("message valid\n"); else printf("message not valid\n");

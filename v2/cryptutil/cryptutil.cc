@@ -1281,7 +1281,7 @@ int main(int an, char** av) {
 
     if ("scheme_encrypt_file" == FLAGS_operation) {
       if (!scheme.encrypt_file(FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
-        printf("Can't file encrypt\n");
+        printf("%s(), line %d, Can't file encrypt\n", __FILE__, __LINE__);
         ret = 1;
         goto done;
       } else {
@@ -1290,7 +1290,7 @@ int main(int an, char** av) {
       }
     } else {
       if (!scheme.decrypt_file(FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
-        printf("Can't file decrypt\n");
+        printf("%s(), line %d, Can't file decrypt\n", __FILE__, __LINE__);
         ret = 1;
         goto done;
       } else {
@@ -1359,7 +1359,7 @@ int main(int an, char** av) {
 
     if ("encrypt_file_with_password" == FLAGS_operation) {
       if (!scheme.encrypt_file(FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
-        printf("Can't file encrypt\n");
+    	printf("%s(), line %d, Can't file encrypt\n", __FILE__, __LINE__);
         ret = 1;
         goto done;
       } else {
@@ -1368,7 +1368,7 @@ int main(int an, char** av) {
       }
     } else {
       if (!scheme.decrypt_file(FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
-        printf("Can't file decrypt\n");
+    	printf("%s(), line %d, Can't file decrypt\n", __FILE__, __LINE__);
         ret = 1;
         goto done;
       } else {
