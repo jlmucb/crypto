@@ -19,7 +19,6 @@
 #include "support.pb.h"
 #include "dilithium.h"
 
-
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
 bool test_dilithium1() {
