@@ -18,6 +18,7 @@
 
 #include "crypto_support.h"
 #include "symmetric_cipher.h"
+using namespace std;
 
 class dilithium_parameters {
 public:
@@ -39,12 +40,13 @@ public:
 
 class coefficient_vector {
 public:
-  coefficient_vector(int q, int len);
-  ~coefficient_vector();
   int q_;
   int len_;
 
-  int* c_;
+  coefficient_vector(int q, int len);
+  ~coefficient_vector();
+
+  vector<int> c_;
 };
 
 class module_coefficients {

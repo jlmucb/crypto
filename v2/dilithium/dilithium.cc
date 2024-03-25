@@ -14,7 +14,15 @@
 #include "crypto_support.h"
 #include "dilithium.h"
 
+using namespace std;
+
 coefficient_vector::coefficient_vector(int q, int dim) {
+  q_ = q;
+  len_ = dim;
+
+  c_.resize(dim);
+  for (int i = 0; i < dim; i++)
+    c_[i] = 0;
 }
 
 coefficient_vector::~coefficient_vector() {
@@ -32,7 +40,6 @@ dilithium_parameters::dilithium_parameters() {
   beta_= 0;
 }
 
-
 dilithium_parameters::~dilithium_parameters() {
 }
 
@@ -46,15 +53,16 @@ void print_module_coefficients(module_coefficients& mc) {
 }
 
 void print_coefficient_vector(coefficient_vector& v) {
-  if (v.c_ == nullptr)
+  if (v.c_.size() == 0)
     return;
-  printf("(");
-  for (int i = 0; i < v.len_; i++)
-    printf("%d ", v.c_[i]);
+  printf("(%d", v.c_[0]);
+  for (int i = 1; i < (int)v.c_.size(); i++)
+    printf(", %d", v.c_[i]);
   printf(")");
 }
 
 void print_dilithium_parameters(dilithium_parameters& p) {
+  vector<int> g1(10, 0);
   printf("Dilithium parameters, ");
   printf("q: %d, n: %d, k: %d, l: %d, d: %d, gamma 1: %d, gamma 2: %d, eta: %d, beta: %d\n",
       p.q_, p.n_, p.k_, p.l_, p.d_, p.gamma_1_, p.gamma_2_, p.eta_, p.beta_);
@@ -83,7 +91,11 @@ bool module_mult(module_coefficients& in1, module_coefficients& in2, module_coef
 }
 
 bool vector_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
-  return false;
+  if (in1.c_.size() != in2.c_.size() || out->c_.size() < in1.c_.size())
+    return false;
+  for (int i = 0; i < (int)in1.c_.size(); i++)
+      out->c_[i] = (in1.c_[i] + in2.c_[i]) % in1.q_;
+  return true;
 }
 
 bool vector_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
