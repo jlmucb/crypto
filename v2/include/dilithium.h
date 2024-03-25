@@ -21,54 +21,70 @@
 
 class dilithium_parameters {
 public:
-  dilithium_parameters(int n, int k, int l, int q, int g_1, int g_2, int eta, int beta);
+  dilithium_parameters();
   ~dilithium_parameters();
 
   int n_;
   int k_;
   int l_;
+  int d_;
 
   int q_;
+  int wt_c_;
   int gamma_1_;
   int gamma_2_;
   int eta_;
   int beta_;
 };
 
-class module_coefficients {
+class coefficient_vector {
 public:
-  module_coefficients(dilithium_parameters& params);
-  int n_;
+  coefficient_vector(int q, int len);
+  ~coefficient_vector();
   int q_;
+  int len_;
 
   int* c_;
 };
 
+class module_coefficients {
+public:
+  module_coefficients(int q, int dim);
+  ~module_coefficients();
+  int len_;
+
+  coefficient_vector* c_;
+};
+
+bool coefficient_add(coefficient_vector& in1, coefficient_vector& in2,
+    coefficient_vector* out);
+bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2,
+    coefficient_vector* out);
+
 bool module_add(module_coefficients& in1, module_coefficients& in2, module_coefficients* out);
 bool module_mult(module_coefficients& in1, module_coefficients& in2, module_coefficients* out);
 
-class coefficient_vector {
-public:
-  int n_;
-  int q_;
-  int n_c_;
-
-  module_coefficients* c_;
-};
-
 class coefficient_array {
 public:
-  int n_;
   int q_;
   int n_r_;
   int n_c_;
 
   module_coefficients* c_;
   int index(int r, int c);
+  coefficient_array();
+  ~coefficient_array();
 };
 
 bool vector_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
+bool vector_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
+bool vector_reduce(coefficient_vector& in, coefficient_vector* out);
 bool apply_array(coefficient_array& A, coefficient_vector& v, coefficient_vector* out);
 bool dilithium_keygen(dilithium_parameters& params, int* A, int* t, int* s1, int* s2);
+
+void print_coefficient_vector(coefficient_vector& v);
+
+void print_dilithium_parameters(dilithium_parameters& p);
+bool init_dilithium_parameters(dilithium_parameters* p);
 
 #endif

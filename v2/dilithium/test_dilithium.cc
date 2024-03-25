@@ -46,6 +46,10 @@ int main(int an, char** av) {
     return 1;
   }
 
+  dilithium_parameters params;
+  init_dilithium_parameters(&params);
+  print_dilithium_parameters(params);
+
   int result = RUN_ALL_TESTS();
 
   close_crypto();

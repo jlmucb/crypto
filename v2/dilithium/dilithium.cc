@@ -14,19 +14,64 @@
 #include "crypto_support.h"
 #include "dilithium.h"
 
-dilithium_parameters::dilithium_parameters(int n, int k, int l, int q, int g_1, int g_2, int eta, int beta) {
-  n_ = n;
-  k_ = k;
-  l_ = l;
-  q_ = q;
-  gamma_1_ = g_1;
-  gamma_2_ = g_2;
-  eta_ = eta;
-  beta_= beta;
+coefficient_vector::coefficient_vector(int q, int dim) {
+}
+
+coefficient_vector::~coefficient_vector() {
+}
+
+dilithium_parameters::dilithium_parameters() {
+  n_ = 0;
+  k_ = 0;
+  l_ = 0;
+  q_ = 0;
+  gamma_1_ = 0;
+  gamma_2_ = 0;
+  d_ = 0;
+  eta_ = 0;
+  beta_= 0;
 }
 
 
 dilithium_parameters::~dilithium_parameters() {
+}
+
+module_coefficients::module_coefficients(int q, int dim) {
+}
+
+module_coefficients::~module_coefficients() {
+}
+
+void print_module_coefficients(module_coefficients& mc) {
+}
+
+void print_coefficient_vector(coefficient_vector& v) {
+  if (v.c_ == nullptr)
+    return;
+  printf("(");
+  for (int i = 0; i < v.len_; i++)
+    printf("%d ", v.c_[i]);
+  printf(")");
+}
+
+void print_dilithium_parameters(dilithium_parameters& p) {
+  printf("Dilithium parameters, ");
+  printf("q: %d, n: %d, k: %d, l: %d, d: %d, gamma 1: %d, gamma 2: %d, eta: %d, beta: %d\n",
+      p.q_, p.n_, p.k_, p.l_, p.d_, p.gamma_1_, p.gamma_2_, p.eta_, p.beta_);
+}
+
+bool init_dilithium_parameters(dilithium_parameters* p) {
+  p->q_ = (1<<23) - (1<<13) + 1;
+  p->n_ = 256;
+  p->k_ = 5;
+  p->l_ = 4;
+  p->d_ = 14;
+  p->wt_c_ = 60;
+  p->gamma_1_ = (p->q_ - 1) / 16;
+  p->gamma_2_ = p->gamma_1_ / 2;
+  p->eta_ = 5;
+  p->beta_ = 275;
+  return true;
 }
 
 bool module_add(module_coefficients& in1, module_coefficients& in2, module_coefficients* out) {
@@ -38,6 +83,14 @@ bool module_mult(module_coefficients& in1, module_coefficients& in2, module_coef
 }
 
 bool vector_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
+  return false;
+}
+
+bool vector_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
+  return false;
+}
+
+bool vector_reduce(coefficient_vector& in, coefficient_vector* out) {
   return false;
 }
 
