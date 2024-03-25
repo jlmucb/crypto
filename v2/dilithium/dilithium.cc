@@ -43,13 +43,7 @@ dilithium_parameters::dilithium_parameters() {
 dilithium_parameters::~dilithium_parameters() {
 }
 
-module_coefficients::module_coefficients(int q, int dim) {
-}
-
-module_coefficients::~module_coefficients() {
-}
-
-void print_module_coefficients(module_coefficients& mc) {
+void print_module_array(module_array& ma) {
 }
 
 void print_coefficient_vector(coefficient_vector& v) {
@@ -80,14 +74,6 @@ bool init_dilithium_parameters(dilithium_parameters* p) {
   p->eta_ = 5;
   p->beta_ = 275;
   return true;
-}
-
-bool module_add(module_coefficients& in1, module_coefficients& in2, module_coefficients* out) {
-  return false;
-}
-
-bool module_mult(module_coefficients& in1, module_coefficients& in2, module_coefficients* out) {
-  return false;
 }
 
 bool vector_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
@@ -130,7 +116,7 @@ bool vector_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_v
   return true;
 }
 
-bool apply_array(coefficient_array& A, coefficient_vector& v, coefficient_vector* out) {
+bool apply_array(module_array& A, module_vector& v, module_vector* out) {
   return false;
 }
 

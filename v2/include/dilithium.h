@@ -49,38 +49,33 @@ public:
   vector<int> c_;
 };
 
-class module_coefficients {
-public:
-  module_coefficients(int q, int dim);
-  ~module_coefficients();
-  int len_;
-
-  coefficient_vector* c_;
-};
-
 bool coefficient_add(coefficient_vector& in1, coefficient_vector& in2,
     coefficient_vector* out);
 bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2,
     coefficient_vector* out);
 
-bool module_add(module_coefficients& in1, module_coefficients& in2, module_coefficients* out);
-bool module_mult(module_coefficients& in1, module_coefficients& in2, module_coefficients* out);
-
-class coefficient_array {
+class module_array {
 public:
   int q_;
   int n_r_;
   int n_c_;
 
-  module_coefficients* c_;
+  coefficient_vector* c_;
   int index(int r, int c);
-  coefficient_array();
-  ~coefficient_array();
+};
+
+class module_vector {
+public:
+  int q_;
+  int dim_;
+
+  coefficient_vector* c_;
 };
 
 bool vector_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
 bool vector_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
-bool apply_array(coefficient_array& A, coefficient_vector& v, coefficient_vector* out);
+
+bool apply_array(module_array& A, module_vector& v, module_vector* out);
 bool dilithium_keygen(dilithium_parameters& params, int* A, int* t, int* s1, int* s2);
 
 void print_coefficient_vector(coefficient_vector& v);
