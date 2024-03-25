@@ -98,12 +98,36 @@ bool vector_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_ve
   return true;
 }
 
-bool vector_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
-  return false;
+int reduce(int a, int b, int q) {
+  // (b - a) % q
+  return (q + b - a) % q;
 }
 
-bool vector_reduce(coefficient_vector& in, coefficient_vector* out) {
-  return false;
+bool vector_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
+  // multiply and reduce by (x**in1.c_.size() + 1)
+  if (in1.c_.size() != in2.c_.size())
+    return false;
+
+  vector<int> t_out;
+  t_out.resize(2 * in1.c_.size() - 1);
+  for (int i = 0; i < (int)t_out.size(); i++)
+    t_out[i] = 0;
+
+  for (int i = 0; i < (int)in1.c_.size(); i++) {
+    for (int j = 0; j < (int)in2.c_.size(); j++) {
+      t_out[i + j] = (t_out[i + j] + (t_out[i] * t_out[j])) % in1.q_;
+    }
+  }
+
+  int n = (int)in1.c_.size();
+  for (int j = (2 * n - 1); j >= n; j--) {
+    t_out[j - n] = reduce(t_out[j - n], t_out[j], in1.q_);
+  }
+
+  for (int j = 0; j < n; j++)
+    out->c_[j] = t_out[j];
+
+  return true;
 }
 
 bool apply_array(coefficient_array& A, coefficient_vector& v, coefficient_vector* out) {

@@ -80,7 +80,6 @@ public:
 
 bool vector_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
 bool vector_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
-bool vector_reduce(coefficient_vector& in, coefficient_vector* out);
 bool apply_array(coefficient_array& A, coefficient_vector& v, coefficient_vector* out);
 bool dilithium_keygen(dilithium_parameters& params, int* A, int* t, int* s1, int* s2);
 
