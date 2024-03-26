@@ -49,8 +49,8 @@ void print_module_array(module_array& ma) {
 void print_coefficient_vector(coefficient_vector& v) {
   if (v.c_.size() == 0)
     return;
-  printf("(%d", v.c_[0]);
-  for (int i = 1; i < (int)v.c_.size(); i++)
+  printf("(%d", v.c_[v.c_.size()-1]);
+  for (int i = (int)v.c_.size() - 2; i>=0; i--)
     printf(", %d", v.c_[i]);
   printf(")");
 }
@@ -85,8 +85,7 @@ bool vector_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_ve
 }
 
 int reduce(int a, int b, int q) {
-  // (b - a) % q
-  return (q + b - a) % q;
+  return (q + a - b) % q;
 }
 
 bool vector_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
@@ -101,16 +100,29 @@ bool vector_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_v
 
   for (int i = 0; i < (int)in1.c_.size(); i++) {
     for (int j = 0; j < (int)in2.c_.size(); j++) {
-      t_out[i + j] = (t_out[i + j] + (t_out[i] * t_out[j])) % in1.q_;
+      t_out[i + j] = (t_out[i + j] + (in1.c_[i] * in2.c_[j])) % in1.q_;
     }
+#if 0
+    printf("t_out (%d): ", i);
+    for (int k = t_out.size() - 1; k >= 0; k--)
+      printf("%d ", t_out[k]);
+  printf("\n");
+#endif
   }
 
-  int n = (int)in1.c_.size();
-  for (int j = (2 * n - 1); j >= n; j--) {
-    t_out[j - n] = reduce(t_out[j - n], t_out[j], in1.q_);
+#if 0
+  printf("t_out: ");
+  for (int k = t_out.size() - 1; k >= 0; k--)
+    printf("%d ", t_out[k]);
+  printf("\n");
+#endif
+
+  int m = (int)in1.c_.size() - 1;
+  for (int j = (2 * m); j > m; j--) {
+    t_out[j -  m] = reduce(t_out[j - m], t_out[j], in1.q_);
   }
 
-  for (int j = 0; j < n; j++)
+  for (int j = 0; j <= m; j++)
     out->c_[j] = t_out[j];
 
   return true;

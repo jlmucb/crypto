@@ -21,6 +21,62 @@
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
+bool test_module_arith() {
+  int q = (1<<23) - (1<<13) + 1;
+  int n = 3;
+
+  coefficient_vector v1(q, n);
+  coefficient_vector v2(q, n);
+  coefficient_vector out1(q, n);
+  coefficient_vector out2(q, n);
+
+  // x^2 + x + 1
+  v1.c_[0] = 1;
+  v1.c_[1] = 1;
+  v1.c_[2] = 1;
+
+  //x^2 + (q-1)x + 2
+  v2.c_[0] = 2;
+  v2.c_[1] = q-1;
+  v2.c_[2] = 1;
+
+  if (!vector_add(v1, v2, &out1)) {
+    printf("vector add fails\n");
+    return false;
+  }
+
+  if (FLAGS_print_all) {
+    print_coefficient_vector(v1);
+    printf(" + ");
+    print_coefficient_vector(v2);
+    printf(" = ");
+    print_coefficient_vector(out1);
+    printf(" mod(%d)\n", v1.q_);
+  }
+
+  if (!vector_mult(v1, v2, &out2)) {
+    printf("vector mult fails\n");
+    return false;
+  }
+
+
+  if (FLAGS_print_all) {
+    print_coefficient_vector(v1);
+    printf(" * ");
+    print_coefficient_vector(v2);
+    printf(" = ");
+    print_coefficient_vector(out2);
+    printf(" mod(%d)\n", v1.q_);
+  }
+
+  if (out1.c_[2] != 2 || out1.c_[1] != 0 || out1.c_[0] != 3)
+    return false;
+  if (out2.c_[2] != 1 || out2.c_[1] != 1 || out2.c_[0] != 2)
+    return false;
+
+  return true;
+}
+
 bool test_dilithium1() {
 
   //dilithium_parameters params(int n, int k, int l, int q, int g_1, int g_2, int eta, int beta);
@@ -33,6 +89,9 @@ bool test_dilithium1() {
 
 TEST (dilithium, test_dilithium1) {
   EXPECT_TRUE(test_dilithium1());
+}
+TEST (module_arith, test_module_arith) {
+  EXPECT_TRUE(test_module_arith());
 }
 
 int main(int an, char** av) {
