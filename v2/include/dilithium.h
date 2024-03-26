@@ -57,10 +57,14 @@ bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2,
 class module_array {
 public:
   int q_;
-  int n_r_;
-  int n_c_;
+  int n_;
+  int nr_;
+  int nc_;
 
-  coefficient_vector* c_;
+  module_array(int q, int n, int nr, int cn);
+  ~module_array();
+
+  coefficient_vector** c_;
   int index(int r, int c);
 };
 
@@ -68,8 +72,12 @@ class module_vector {
 public:
   int q_;
   int dim_;
+  int n_;
 
-  coefficient_vector* c_;
+  module_vector(int q, int n, int dim);
+  ~module_vector();
+
+  coefficient_vector** c_;
 };
 
 bool vector_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);

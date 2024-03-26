@@ -41,9 +41,15 @@ dilithium_parameters::dilithium_parameters() {
 }
 
 dilithium_parameters::~dilithium_parameters() {
-}
-
-void print_module_array(module_array& ma) {
+  n_ = 0;
+  k_ = 0;
+  l_ = 0;
+  q_ = 0;
+  gamma_1_ = 0;
+  gamma_2_ = 0;
+  d_ = 0;
+  eta_ = 0;
+  beta_= 0;
 }
 
 void print_coefficient_vector(coefficient_vector& v) {
@@ -128,8 +134,64 @@ bool vector_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_v
   return true;
 }
 
+module_vector::module_vector(int q, int n, int dim) {
+  q_ = q;
+  n_ = n;
+  dim_ = dim;
+  c_ = new coefficient_vector*[dim];
+
+}
+
+module_vector::~module_vector() {
+  // delete all the coefficient vectors
+  if (c_ != nullptr)
+    delete []c_;
+  c_ = nullptr;
+}
+
+module_array::module_array(int q, int n, int nr, int nc) {
+  q_ = q;
+  n_ = n;
+  nr_ = nr;
+  nc_ = nc;
+  c_ = new coefficient_vector*[nr * nc];
+}
+
+module_array::~module_array() {
+}
+
 bool apply_array(module_array& A, module_vector& v, module_vector* out) {
   return false;
+}
+
+void print_module_array(module_array& ma) {
+}
+
+void print_module_vector(module_array& ma) {
+}
+
+bool H(int in_len, byte* in, int* out_len, byte* out) {
+  // SHAKE256
+  return false;
+}
+
+int inf_norm(vector<int> v) {
+  int x = v[0];
+  for (int i = 1; i < (int)v.size(); i++) {
+    if (v[i] > x)
+        x = v[i];
+  }
+  return x;
+}
+
+int high_bits(int x, int a) {
+  // x = x_high*2*a + x_low
+  return x / (2 * a);
+}
+
+int low_bits(int x, int a) {
+  // x = x_high*2*a + x_low
+  return x - (x / (2 * a));
 }
 
 // A is R_q[k*l]
@@ -137,6 +199,30 @@ bool apply_array(module_array& A, module_vector& v, module_vector* out) {
 // s1 is module coefficient vector of length l
 // s2 is module coefficient vector of length k
 bool dilithium_keygen(dilithium_parameters& params, int* A, int* t, int* s1, int* s2) {
+  // A := R_q^kxl
+  // (s_1, s_2) := S_eta^k x S_eta^l
+  // t := As_1 + s_2
+  // return pk := (A, t); sk := (A, t, s_1, s_2)
+  return false;
+}
+
+bool dilithium_sign(dilithium_parameters& params, int* A, int* t, int* s1, int* s2) {
+  // z := no
+  // while z == no {
+  //    y := S_g1^l -1
+  //    w_1 := highbits(Ay, 2g2)
+  //    c := H(M||w_1)
+  //    z := y + cs_1
+  //    if (||z||_inf > g1-beta or lowbits(Ay-cs2, 2g_1)>= g1-beta then z := no
+  // }
+  // return (z,c)
+  return false;
+}
+
+bool dilithium_verify(dilithium_parameters& params, int* A, int* t, int* s1, int* s2) {
+  // w_1' := highbits(Az-ct, 2g2)
+  // return ||z||_inf < g1-beta and c == H(M||w1)
+
   return false;
 }
 
