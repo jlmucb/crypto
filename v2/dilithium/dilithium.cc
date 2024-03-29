@@ -160,14 +160,29 @@ module_array::module_array(int q, int n, int nr, int nc) {
 module_array::~module_array() {
 }
 
-bool apply_array(module_array& A, module_vector& v, module_vector* out) {
+bool module_vector_add(module_vector& in1, module_vector& in2, module_vector* out) {
+  if (in1.dim_ != in2.dim_ || in1.dim_ != out->dim_)
+    return false;
+  for (int i = 0; i < (int)in1.dim_; i++) {
+      if (!vector_add(*in1.c_[i], *in2.c_[i], out->c_[i]))
+        return false;
+  }
+  return true;
+}
+
+bool module_apply_array(module_array& A, module_vector& v, module_vector* out) {
   return false;
 }
 
 void print_module_array(module_array& ma) {
 }
 
-void print_module_vector(module_array& ma) {
+void print_module_vector(module_vector& mv) {
+  for (int i = 0; i < (int)mv.dim_; i++) {
+    printf("p[%d] = ", i);
+    print_coefficient_vector(*mv.c_[i]);
+    printf("\n");
+  }
 }
 
 bool H(int in_len, byte* in, int* out_len, byte* out) {
@@ -191,7 +206,22 @@ int high_bits(int x, int a) {
 
 int low_bits(int x, int a) {
   // x = x_high*2*a + x_low
-  return x - (x / (2 * a));
+  int k = x / (2 * a);
+  return x - k * 2 * a;  //shift?
+}
+
+bool coefficients_high_bits(int a, coefficient_vector& in, coefficient_vector* out) {
+  for (int i = 0; i < in.len_; i++) {
+    out->c_[i] = high_bits(in.c_[i], a);
+  }
+  return true;
+}
+
+bool coefficients_low_bits(int a, coefficient_vector& in, coefficient_vector* out) {
+  for (int i = 0; i < in.len_; i++) {
+    out->c_[i] = low_bits(in.c_[i], a);
+  }
+  return true;
 }
 
 // A is R_q[k*l]

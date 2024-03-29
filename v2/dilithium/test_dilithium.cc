@@ -21,7 +21,15 @@
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
-bool test_module_arith() {
+bool test_arith_support() {
+  // inf_norm
+  // high_bits
+  // low_bits
+  // H 
+  return true;
+}
+
+bool test_coefficient_arith() {
   int q = (1<<23) - (1<<13) + 1;
   int n = 3;
 
@@ -77,6 +85,10 @@ bool test_module_arith() {
   return true;
 }
 
+bool test_module_arith() {
+  return true;
+}
+
 bool test_dilithium1() {
 
   //dilithium_parameters params(int n, int k, int l, int q, int g_1, int g_2, int eta, int beta);
@@ -89,6 +101,12 @@ bool test_dilithium1() {
 
 TEST (dilithium, test_dilithium1) {
   EXPECT_TRUE(test_dilithium1());
+}
+TEST (coefficient_arith, test_coefficient_arith) {
+  EXPECT_TRUE(test_coefficient_arith());
+}
+TEST (arith_support, test_arith_support) {
+  EXPECT_TRUE(test_arith_support());
 }
 TEST (module_arith, test_module_arith) {
   EXPECT_TRUE(test_module_arith());

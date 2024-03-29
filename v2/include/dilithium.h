@@ -38,6 +38,11 @@ public:
   int beta_;
 };
 
+bool H(int in_len, byte* in, int* out_len, byte* out);
+int inf_norm(vector<int> v);
+int high_bits(int x, int a);
+int low_bits(int x, int a);
+
 class coefficient_vector {
 public:
   int q_;
@@ -53,6 +58,8 @@ bool coefficient_add(coefficient_vector& in1, coefficient_vector& in2,
     coefficient_vector* out);
 bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2,
     coefficient_vector* out);
+bool coefficients_high_bits(int a, coefficient_vector& in, coefficient_vector* out);
+bool coefficients_low_bits(int a, coefficient_vector& in, coefficient_vector* out);
 
 class module_array {
 public:
@@ -82,13 +89,16 @@ public:
 
 bool vector_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
 bool vector_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
-
-bool apply_array(module_array& A, module_vector& v, module_vector* out);
-bool dilithium_keygen(dilithium_parameters& params, int* A, int* t, int* s1, int* s2);
-
 void print_coefficient_vector(coefficient_vector& v);
+void print_module_array(module_array& ma);
+
+bool module_vector_add(module_vector& in1, module_vector& in2, module_vector* out);
+bool module_apply_array(module_array& A, module_vector& v, module_vector* out);
+void print_module_vector(module_vector& mv);
 
 void print_dilithium_parameters(dilithium_parameters& p);
 bool init_dilithium_parameters(dilithium_parameters* p);
+
+bool dilithium_keygen(dilithium_parameters& params, int* A, int* t, int* s1, int* s2);
 
 #endif
