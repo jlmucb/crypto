@@ -228,7 +228,8 @@ bool coefficients_low_bits(int a, coefficient_vector& in, coefficient_vector* ou
 // t is module coefficient vector of length l
 // s1 is module coefficient vector of length l
 // s2 is module coefficient vector of length k
-bool dilithium_keygen(dilithium_parameters& params, int* A, int* t, int* s1, int* s2) {
+bool dilithium_keygen(dilithium_parameters& params, module_array* A, module_vector* t,
+		module_vector* s1, module_vector* s2) {
   // A := R_q^kxl
   // (s_1, s_2) := S_eta^k x S_eta^l
   // t := As_1 + s_2
@@ -236,10 +237,12 @@ bool dilithium_keygen(dilithium_parameters& params, int* A, int* t, int* s1, int
   return false;
 }
 
-bool dilithium_sign(dilithium_parameters& params, int* A, int* t, int* s1, int* s2) {
+bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vector& t,
+		module_vector& s1, module_vector& s2,
+		module_vector* z, int len_c, byte* c) {
   // z := no
   // while z == no {
-  //    y := S_g1^l -1
+  //    y := S_g1^l - 1
   //    w_1 := highbits(Ay, 2g2)
   //    c := H(M||w_1)
   //    z := y + cs_1
@@ -249,7 +252,9 @@ bool dilithium_sign(dilithium_parameters& params, int* A, int* t, int* s1, int* 
   return false;
 }
 
-bool dilithium_verify(dilithium_parameters& params, int* A, int* t, int* s1, int* s2) {
+bool dilithium_verify(dilithium_parameters& params,  module_array& A,  module_vector& t,
+                module_vector& s1, module_vector& s2,
+                module_vector& z, int len_c, byte* c) {
   // w_1' := highbits(Az-ct, 2g2)
   // return ||z||_inf < g1-beta and c == H(M||w1)
 

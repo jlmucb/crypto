@@ -99,6 +99,12 @@ void print_module_vector(module_vector& mv);
 void print_dilithium_parameters(dilithium_parameters& p);
 bool init_dilithium_parameters(dilithium_parameters* p);
 
-bool dilithium_keygen(dilithium_parameters& params, int* A, int* t, int* s1, int* s2);
-
+bool dilithium_keygen(dilithium_parameters& params, module_array* A, module_vector* t,
+                module_vector* s1, module_vector* s2);
+bool dilithium_verify(dilithium_parameters& params,  module_array& A,  module_vector& t,
+                module_vector& s1, module_vector& s2,
+                module_vector& z, int len_c, byte* c);
+bool dilithium_verify(dilithium_parameters& params,  module_array& A,  module_vector& t,
+                module_vector& s1, module_vector& s2,
+                module_vector& z, int len_c, byte* c);
 #endif

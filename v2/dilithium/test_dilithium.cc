@@ -22,10 +22,42 @@
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
 bool test_arith_support() {
+
   // inf_norm
+  vector<int> v;
+  for (int i = 0; i < 20; i++)
+    v.push_back(10 * i);
+  int n = inf_norm(v);
+  if (FLAGS_print_all) {
+    printf("v: ");
+    for(int i = 0; i < (int)v.size(); i++)
+      printf(" %3d", v[i]);
+    printf("\n");
+    printf("inf norm: %d\n", n);
+  }
+  if (n != 190)
+   return false;
+
   // high_bits
+  int x = 0xfefefe;
+  int a = 0x8ff;
+  int h =high_bits(x, a);
+  if (FLAGS_print_all) {
+    printf("x: %08x %d, a: %08x %d, h: %08x %d\n", x, x, a, a, h, h);
+  }
+  if (h != 3628)
+    return false;
+
   // low_bits
+  int  l = low_bits(x, a);
+  if (FLAGS_print_all) {
+    printf("x: %08x %d, a: %08x %d, l: %08x %d\n", x, x, a, a, l, l);
+  }
+  if (l != 854)
+    return false;
+
   // H 
+  // bool H(int in_len, byte* in, int* out_len, byte* out)
   return true;
 }
 
