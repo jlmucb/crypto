@@ -13,6 +13,7 @@
 
 #include "crypto_support.h"
 #include "dilithium.h"
+#include "sha3.h"
 
 using namespace std;
 
@@ -185,9 +186,29 @@ void print_module_vector(module_vector& mv) {
   }
 }
 
+// shake256(M) = sha3(M || 0xf)
+bool shake256(int in_len, byte* in, int* out_len, byte* out) {
+
+  return true;
+}
+
+bool shake512(int in_len, byte* in, int* out_len, byte* out) {
+  return true;
+}
+
+
 bool H(int in_len, byte* in, int* out_len, byte* out) {
   // SHAKE256
-  return false;
+  sha3 h(256);
+  if (!h.init())
+    return false;
+  h.add_to_hash(in_len, in);
+  byte append = 0xf0;
+  h.add_to_hash(1, &append);
+  h.finalize();
+  if (!h.get_digest(*out_len, out))
+    return false;
+  return true;
 }
 
 int inf_norm(vector<int> v) {

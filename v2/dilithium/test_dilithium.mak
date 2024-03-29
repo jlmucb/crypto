@@ -33,6 +33,7 @@ endif
 
 S= $(SRC_DIR)/dilithium
 O= $(OBJ_DIR)/dilithium
+S_HASH=$(SRC_DIR)/hash
 S_SUPPORT=$(SRC_DIR)/crypto_support
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(S_SUPPORT) -I/usr/local/include
 
@@ -44,7 +45,8 @@ PROTO=protoc
 AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
-dobj=	$(O)/test_dilithium.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o $(O)/dilithium.o
+dobj=	$(O)/test_dilithium.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
+$(O)/hash.o $(O)/sha3.o $(O)/dilithium.o
 
 all:	test_dilithium.exe
 clean:
@@ -75,6 +77,14 @@ $(O)/crypto_support.o: $(S_SUPPORT)/crypto_support.cc $(S_SUPPORT)/support.pb.h
 $(O)/crypto_names.o: $(S_SUPPORT)/crypto_names.cc
 	@echo "compiling crypto_names.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/crypto_names.o $(S_SUPPORT)/crypto_names.cc
+
+$(O)/hash.o: $(S_HASH)/hash.cc
+	@echo "compiling hash.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/hash.o $(S_HASH)/hash.cc
+
+$(O)/sha3.o: $(S_HASH)/sha3.cc
+	@echo "compiling sha3.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/sha3.o $(S_HASH)/sha3.cc
 
 $(O)/dilithium.o: $(S)/dilithium.cc
 	@echo "compiling dilithium.cc"

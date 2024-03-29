@@ -57,7 +57,25 @@ bool test_arith_support() {
     return false;
 
   // H 
-  // bool H(int in_len, byte* in, int* out_len, byte* out)
+  // SHAKE128("abc") = 0x5881092dd818bf5cf8a3ddb793fbcba7
+  // SHAKE256("abc") = 0x483366601360a8771c6863080cc4114d
+  byte in[4] = {
+	  (byte)'a', (byte)'b', (byte)'c', 0xf0
+  };
+  int out_len = 32;
+  byte out[32];
+  memset(out, 0, 32);
+  if (!H(3, in, &out_len, out))
+    return false;
+  if (FLAGS_print_all) {
+    printf("\nin : ");
+    print_bytes(3, in);
+    //printf("\n");
+    printf("out: ");
+    print_bytes(32, out);
+    printf("\n");
+  }
+
   return true;
 }
 
