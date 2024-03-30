@@ -68,7 +68,7 @@ uint32_t sha256_test3_answer[8] = {
 };
 
 
-const int sha3_test0_size = 1;
+const int sha3_test0_size = 3;
 const byte sha3_test0_input[3] = {0x61, 0x62, 0x63};
 const byte sha3_test0_answer[128] = {
   0xb7, 0x51, 0x85, 0x0b, 0x1a, 0x57, 0x16, 0x8a,
@@ -287,73 +287,74 @@ bool test_sha256() {
 }
 
 bool test_sha3() {
-  sha3 hash_object(1024);
+  sha3 hash_object;
   byte digest[1024 / NBITSINBYTE];
 
   memset(digest, 0, 1024 / NBITSINBYTE);
-  if (!hash_object.init()) {
+  if (!hash_object.init(1024, 512)) {
     return false;
   }
   hash_object.add_to_hash(sizeof(sha3_test0_input), (byte*)sha3_test0_input);
   hash_object.finalize();
-  if (!hash_object.get_digest(1024 / NBITSINBYTE, digest)) {
+  if (!hash_object.get_digest(hash_object.num_out_bytes_, digest)) {
     return false;
   }
   if (FLAGS_print_all) {
-    printf("\nSHA-3\n");
+    printf("\nSHA-3(c= %d, r= %d), size: %d\n", hash_object.c_, hash_object.r_, hash_object.num_out_bytes_);
     printf("\tInput        : ");
     print_bytes(sizeof(sha3_test0_input), (byte*)sha3_test0_input);
     printf("\tComputed hash: ");
-    print_bytes(1024 / NBITSINBYTE, digest);
+    print_bytes(hash_object.num_out_bytes_, digest);
     printf("\tCorrect hash:  ");
-    print_bytes(1024 / NBITSINBYTE, (byte*)sha3_test0_answer);
+    print_bytes(hash_object.num_out_bytes_, (byte*)sha3_test0_answer);
     printf("\n");
   }
-  //if (memcmp((byte*)sha3_test0_answer, digest, 1024 / NBITSINBYTE) != 0) return false;
+  //if (memcmp((byte*)sha3_test0_answer, digest, hash_object.num_out_bytes_) != 0) return false;
 
   memset(digest, 0, 1024 / NBITSINBYTE);
-  if (!hash_object.init()) {
+  if (!hash_object.init(1024, 512)) {
     return false;
   }
   hash_object.add_to_hash(sizeof(sha3_test1_input), (byte*)sha3_test1_input);
   hash_object.finalize();
-  if (!hash_object.get_digest(1024 / NBITSINBYTE, digest)) {
+  if (!hash_object.get_digest(hash_object.num_out_bytes_, digest)) {
     return false;
   }
   if (FLAGS_print_all) {
-    printf("\nSHA-3\n");
+    printf("\nSHA-3(c= %d, r= %d)\n", hash_object.c_, hash_object.r_);
     printf("\tInput        : ");
     print_bytes(sizeof(sha3_test1_input), (byte*)sha3_test1_input);
     printf("\tComputed hash: ");
-    print_bytes(1024 / NBITSINBYTE, digest);
+    print_bytes(hash_object.num_out_bytes_, digest);
     printf("\tCorrect hash:  ");
-    print_bytes(1024 / NBITSINBYTE, (byte*)sha3_test1_answer);
+    print_bytes(hash_object.num_out_bytes_, (byte*)sha3_test1_answer);
     printf("\n");
   }
-  if (memcmp((byte*)sha3_test1_answer, digest, 1024 / NBITSINBYTE) != 0) return false;
+  if (memcmp((byte*)sha3_test1_answer, digest, hash_object.num_out_bytes_) != 0) return false;
 
   memset(digest, 0, 1024 / NBITSINBYTE);
-  if (!hash_object.init()) {
+  if (!hash_object.init(1024, 512)) {
     return false;
   }
   hash_object.add_to_hash(sizeof(sha3_test2_input), (byte*)sha3_test2_input);
   hash_object.finalize();
-  if (!hash_object.get_digest(1024 / NBITSINBYTE, digest)) {
+  if (!hash_object.get_digest(hash_object.num_out_bytes_, digest)) {
     return false;
   }
   if (FLAGS_print_all) {
-    printf("\nSHA-3\n");
+    printf("\nSHA-3(c= %d, r= %d)\n", hash_object.c_, hash_object.r_);
     printf("\tInput        : ");
     print_bytes(sizeof(sha3_test2_input), (byte*)sha3_test2_input);
     printf("\tComputed hash: ");
-    print_bytes(1024 / NBITSINBYTE, digest);
+    print_bytes(hash_object.num_out_bytes_, digest);
     printf("\tCorrect hash:  ");
-    print_bytes(1024 / NBITSINBYTE, (byte*)sha3_test2_answer);
+    print_bytes(hash_object.num_out_bytes_, (byte*)sha3_test2_answer);
     printf("\n");
   }
-  if (memcmp((byte*)sha3_test2_answer, digest, 1024 / NBITSINBYTE) != 0) return false;
+  if (memcmp((byte*)sha3_test2_answer, digest, hash_object.num_out_bytes_) != 0) return false;
+
   memset(digest, 0, 1024 / NBITSINBYTE);
-  if (!hash_object.init()) {
+  if (!hash_object.init(1024, 512)) {
     return false;
   }
   hash_object.add_to_hash(sizeof(sha3_test3_input), (byte*)sha3_test3_input);
@@ -362,16 +363,16 @@ bool test_sha3() {
     return false;
   }
   if (FLAGS_print_all) {
-    printf("\nSHA-3\n");
+    printf("\nSHA-3(c= %d, r= %d)\n", hash_object.c_, hash_object.r_);
     printf("\tInput        : ");
     print_bytes(sizeof(sha3_test3_input), (byte*)sha3_test3_input);
     printf("\tComputed hash: ");
-    print_bytes(1024 / NBITSINBYTE, digest);
+    print_bytes(hash_object.num_out_bytes_, digest);
     printf("\tCorrect hash:  ");
-    print_bytes(1024 / NBITSINBYTE, (byte*)sha3_test3_answer);
+    print_bytes(hash_object.num_out_bytes_, (byte*)sha3_test3_answer);
     printf("\n");
   }
-  if (memcmp((byte*)sha3_test3_answer, digest, 1024 / NBITSINBYTE) != 0) return false;
+  if (memcmp((byte*)sha3_test3_answer, digest, hash_object.num_out_bytes_) != 0) return false;
 
   return true;
 }

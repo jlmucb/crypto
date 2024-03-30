@@ -37,7 +37,7 @@ const uint64_t KeccakF_RoundConstants[sha3::NR] = {
     (uint64_t)0x8000000080008081ULL, (uint64_t)0x8000000000008080ULL,
     (uint64_t)0x0000000080000001ULL, (uint64_t)0x8000000080008008ULL};
 
-sha3::sha3(int num_bits) { num_out_bytes_ = num_bits / NBITSINBYTE; }
+sha3::sha3() {};
 
 sha3::~sha3() {}
 
@@ -305,7 +305,10 @@ void sha3::transform_block(const uint64_t* in, int laneCount) {
   state_[24] = Asu;
 }
 
-bool sha3::init() {
+bool sha3::init(int c, int num_bits_out) {
+  num_out_bytes_ = num_bits_out / NBITSINBYTE;
+  c_ = c;
+  r_ = 1600 - c;
   if (num_out_bytes_ > BLOCKBYTESIZE) return false;
   memset((byte*)state_, 0, sizeof(state_));
   num_bytes_waiting_ = 0;

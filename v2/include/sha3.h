@@ -28,20 +28,22 @@ class sha3 : public crypto_hash {
     LANESIZEBITS = 64,
     DIGESTBYTESIZE = 128,
   };
+  int c_;
+  int r_;
   int num_out_bytes_;
   int num_bytes_waiting_;
   byte bytes_waiting_[BLOCKBYTESIZE];
-  uint64_t state_[5 * 5];
+  uint64_t state_[5 * 5];  // 1600 bits
   byte digest_[sha3::DIGESTBYTESIZE];
   uint64_t num_bits_processed_;
   bool finalized_;
 
-  sha3(int num_bits);
+  sha3();
   ~sha3();
 
   void transform_block(const uint64_t*, int);
 
-  bool init();
+  bool init(int c, int num_bytes_out);
   void add_to_hash(int size, const byte* in);
   bool get_digest(int size, byte* out);
   void finalize();
