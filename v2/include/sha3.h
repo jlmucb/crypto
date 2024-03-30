@@ -28,8 +28,11 @@ class sha3 : public crypto_hash {
     LANESIZEBITS = 64,
     DIGESTBYTESIZE = 128,
   };
+  int b_ = 1600;
   int c_;
   int r_;
+  int cb_;
+  int rb_;
   int num_out_bytes_;
   int num_bytes_waiting_;
   byte bytes_waiting_[BLOCKBYTESIZE];

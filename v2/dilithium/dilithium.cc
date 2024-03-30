@@ -188,8 +188,8 @@ void print_module_vector(module_vector& mv) {
 
 bool H(int in_len, byte* in, int* out_len, byte* out) {
   // SHAKE256
-  sha3 h(256);
-  if (!h.init())
+  sha3 h;
+  if (!h.init(512, 256))
     return false;
   h.add_to_hash(in_len, in);
   h.shake_finalize();

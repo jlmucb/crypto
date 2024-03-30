@@ -308,7 +308,9 @@ void sha3::transform_block(const uint64_t* in, int laneCount) {
 bool sha3::init(int c, int num_bits_out) {
   num_out_bytes_ = num_bits_out / NBITSINBYTE;
   c_ = c;
-  r_ = 1600 - c;
+  cb_ = c_ / NBITSINBYTE;
+  r_ = b_ - c;
+  rb_ = r_ / NBITSINBYTE;
   if (num_out_bytes_ > BLOCKBYTESIZE) return false;
   memset((byte*)state_, 0, sizeof(state_));
   num_bytes_waiting_ = 0;
@@ -319,25 +321,29 @@ bool sha3::init(int c, int num_bits_out) {
 
 void sha3::add_to_hash(int size, const byte* in) {
   if (num_bytes_waiting_ > 0) {
-    int needed = BLOCKBYTESIZE - num_bytes_waiting_;
+    int needed = rb_ - num_bytes_waiting_;
     if (size < needed) {
       memcpy(&bytes_waiting_[num_bytes_waiting_], in, size);
       num_bytes_waiting_ += size;
       return;
     }
     memcpy(&bytes_waiting_[num_bytes_waiting_], in, needed);
+    // added S ^ P_i
+    byte* p = (byte*)&state_;
+    for (int i = 0; i <rb_; i++)
+      *p ^= bytes_waiting_[i];
     transform_block((const uint64_t*)bytes_waiting_,
-                   BLOCKBYTESIZE / sizeof(uint64_t));
-    num_bits_processed_ += BLOCKBYTESIZE * NBITSINBYTE;
+                   rb_ / sizeof(uint64_t));
+    num_bits_processed_ += rb_ * NBITSINBYTE;
     size -= needed;
     in += needed;
     num_bytes_waiting_ = 0;
   }
-  while (size >= BLOCKBYTESIZE) {
-    transform_block((const uint64_t*)in, BLOCKBYTESIZE / sizeof(uint64_t));
-    num_bits_processed_ += BLOCKBYTESIZE * NBITSINBYTE;
-    size -= BLOCKBYTESIZE;
-    in += BLOCKBYTESIZE;
+  while (size >= rb_) {
+    transform_block((const uint64_t*)in, rb_ / sizeof(uint64_t));
+    num_bits_processed_ += rb_ * NBITSINBYTE;
+    size -= rb_;
+    in += rb_;
   }
   if (size > 0) {
     num_bytes_waiting_ = size;
@@ -360,25 +366,28 @@ bool sha3::get_digest(int size, byte* out) {
     temp[RSizeBytes-1]|= 0x80;
 */
 
+// for sha-3, add bitstring 11 to message plus pad
 void sha3::finalize() {
-  bytes_waiting_[num_bytes_waiting_++] = 0x1;
+  // bytes_waiting_[num_bytes_waiting_++] = 0x1;  // used to work
+  bytes_waiting_[num_bytes_waiting_++] = 0x07;
   memset(&bytes_waiting_[num_bytes_waiting_], 0,
-         BLOCKBYTESIZE - num_bytes_waiting_);
-  bytes_waiting_[BLOCKBYTESIZE - 1] |= 0x80;
+         rb_ - num_bytes_waiting_);
+  bytes_waiting_[rb_ - 1] |= 0x80;
   transform_block((const uint64_t*)bytes_waiting_,
-                 BLOCKBYTESIZE / sizeof(uint64_t));
+                 rb_ / sizeof(uint64_t));
   memset(digest_, 0, 128);
   memcpy(digest_, state_, num_out_bytes_);
   finalized_ = true;
 }
 
+// for shake, add bitstring 1111 to message plus pad
 void sha3::shake_finalize() {
   bytes_waiting_[num_bytes_waiting_++] = 0x1f;
   memset(&bytes_waiting_[num_bytes_waiting_], 0,
-         BLOCKBYTESIZE - num_bytes_waiting_);
-  bytes_waiting_[BLOCKBYTESIZE - 1] |= 0x80;
+         rb_ - num_bytes_waiting_);
+  bytes_waiting_[rb_ - 1] |= 0x80;
   transform_block((const uint64_t*)bytes_waiting_,
-                 BLOCKBYTESIZE / sizeof(uint64_t));
+                 rb_ / sizeof(uint64_t));
   memset(digest_, 0, 128);
   memcpy(digest_, state_, num_out_bytes_);
   finalized_ = true;
