@@ -368,3 +368,15 @@ void sha3::finalize() {
   memcpy(digest_, state_, num_out_bytes_);
   finalized_ = true;
 }
+
+void sha3::shake_finalize() {
+  bytes_waiting_[num_bytes_waiting_++] = 0x1f;
+  memset(&bytes_waiting_[num_bytes_waiting_], 0,
+         BLOCKBYTESIZE - num_bytes_waiting_);
+  bytes_waiting_[BLOCKBYTESIZE - 1] |= 0x80;
+  transform_block((const uint64_t*)bytes_waiting_,
+                 BLOCKBYTESIZE / sizeof(uint64_t));
+  memset(digest_, 0, 128);
+  memcpy(digest_, state_, num_out_bytes_);
+  finalized_ = true;
+}

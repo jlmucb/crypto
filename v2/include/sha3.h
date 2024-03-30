@@ -45,5 +45,6 @@ class sha3 : public crypto_hash {
   void add_to_hash(int size, const byte* in);
   bool get_digest(int size, byte* out);
   void finalize();
+  void shake_finalize();
 };
 #endif

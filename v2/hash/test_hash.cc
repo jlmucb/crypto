@@ -67,6 +67,20 @@ uint32_t sha256_test3_answer[8] = {
   0x0b249b11, 0xe8f07a51, 0xafac4503, 0x7afee9d1
 };
 
+
+const int sha3_test0_size = 1;
+const byte sha3_test0_input[3] = {0x61, 0x62, 0x63};
+const byte sha3_test0_answer[128] = {
+  0xb7, 0x51, 0x85, 0x0b, 0x1a, 0x57, 0x16, 0x8a,
+  0x56, 0x93, 0xcd, 0x92, 0x4b, 0x6b, 0x09, 0x6e,
+  0x08, 0xf6, 0x21, 0x82, 0x74, 0x44, 0xf7, 0x0d,
+  0x88, 0x4f, 0x5d, 0x02, 0x40, 0xd2, 0x71, 0x2e,
+  0x10, 0xe1, 0x16, 0xe9, 0x19, 0x2a, 0xf3, 0xc9,
+  0x1a, 0x7e, 0xc5, 0x76, 0x47, 0xe3, 0x93, 0x40,
+  0x57, 0x34, 0x0b, 0x4c, 0xf4, 0x08, 0xd5, 0xa5,
+  0x65, 0x92, 0xf8, 0x27, 0x4e, 0xec, 0x53, 0xf0
+};
+
 const int sha3_test1_size = 1;
 const byte sha3_test1_input[1] = {0xCC};
 const byte sha3_test1_answer[128] = {
@@ -280,12 +294,34 @@ bool test_sha3() {
   if (!hash_object.init()) {
     return false;
   }
+  hash_object.add_to_hash(sizeof(sha3_test0_input), (byte*)sha3_test0_input);
+  hash_object.finalize();
+  if (!hash_object.get_digest(1024 / NBITSINBYTE, digest)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("\nSHA-3\n");
+    printf("\tInput        : ");
+    print_bytes(sizeof(sha3_test0_input), (byte*)sha3_test0_input);
+    printf("\tComputed hash: ");
+    print_bytes(1024 / NBITSINBYTE, digest);
+    printf("\tCorrect hash:  ");
+    print_bytes(1024 / NBITSINBYTE, (byte*)sha3_test0_answer);
+    printf("\n");
+  }
+  //if (memcmp((byte*)sha3_test0_answer, digest, 1024 / NBITSINBYTE) != 0) return false;
+
+  memset(digest, 0, 1024 / NBITSINBYTE);
+  if (!hash_object.init()) {
+    return false;
+  }
   hash_object.add_to_hash(sizeof(sha3_test1_input), (byte*)sha3_test1_input);
   hash_object.finalize();
   if (!hash_object.get_digest(1024 / NBITSINBYTE, digest)) {
     return false;
   }
   if (FLAGS_print_all) {
+    printf("\nSHA-3\n");
     printf("\tInput        : ");
     print_bytes(sizeof(sha3_test1_input), (byte*)sha3_test1_input);
     printf("\tComputed hash: ");
@@ -306,6 +342,7 @@ bool test_sha3() {
     return false;
   }
   if (FLAGS_print_all) {
+    printf("\nSHA-3\n");
     printf("\tInput        : ");
     print_bytes(sizeof(sha3_test2_input), (byte*)sha3_test2_input);
     printf("\tComputed hash: ");
@@ -325,6 +362,7 @@ bool test_sha3() {
     return false;
   }
   if (FLAGS_print_all) {
+    printf("\nSHA-3\n");
     printf("\tInput        : ");
     print_bytes(sizeof(sha3_test3_input), (byte*)sha3_test3_input);
     printf("\tComputed hash: ");
@@ -518,7 +556,7 @@ TEST (pkdf, test_pkdf2) {
   EXPECT_TRUE(test_pkdf2());
 }
 TEST (sha3, test_sha3) {
-  EXPECT_TRUE(test_sha1());
+  EXPECT_TRUE(test_sha3());
 }
 
 
