@@ -56,19 +56,11 @@ void sha3::transform_block(const uint64_t* in, int laneCount) {
   uint64_t Ema, Eme, Emi, Emo, Emu;
   uint64_t Esa, Ese, Esi, Eso, Esu;
 
-#if 1
-  printf("laneCount: %d\n", laneCount);
-#endif
-
   while ((--laneCount) >= 0) state_[laneCount] ^= in[laneCount];
 
 #if 1
   printf("After xor\n");
-  for (int i = 0; i < 25; i++) {
-    printf("%016lx", state_[i]);
-    if ((i%4) == 3)
-      printf("\n");
-  }
+  print_bytes(200, (byte*)state_);
   printf("\n");
 #endif
 
@@ -347,9 +339,9 @@ void sha3::add_to_hash(int size, const byte* in) {
     transform_block((const uint64_t*)bytes_waiting_,
                    rb_ / sizeof(uint64_t));
 #if 1
-    printf("new     state  %d lanes\n", rb_ / sizeof(uint64_t));
-    print_bytes(200, (byte*)state_);
-    printf("\n");
+  printf("After transform\n");
+  print_bytes(200, (byte*)state_);
+  printf("\n");
 #endif
     num_bits_processed_ += rb_ * NBITSINBYTE;
     size -= needed;
@@ -358,6 +350,11 @@ void sha3::add_to_hash(int size, const byte* in) {
   }
   while (size >= rb_) {
     transform_block((const uint64_t*)in, rb_ / sizeof(uint64_t));
+#if 1
+  printf("After transform\n");
+  print_bytes(200, (byte*)state_);
+  printf("\n");
+#endif
     num_bits_processed_ += rb_ * NBITSINBYTE;
     size -= rb_;
     in += rb_;
@@ -385,7 +382,6 @@ bool sha3::get_digest(int size, byte* out) {
 
 // for sha-3, add bitstring 11 to message plus pad
 void sha3::finalize() {
-  // bytes_waiting_[num_bytes_waiting_++] = 0x1;  // used to work
   bytes_waiting_[num_bytes_waiting_++] = 0x07;
   num_bits_processed_ += 2;
   memset(&bytes_waiting_[num_bytes_waiting_], 0,
@@ -394,6 +390,11 @@ void sha3::finalize() {
   bytes_waiting_[rb_ - 1] |= 0x80;
   transform_block((const uint64_t*)bytes_waiting_,
                  rb_ / sizeof(uint64_t));
+#if 1
+  printf("After transform\n");
+  print_bytes(200, (byte*)state_);
+  printf("\n");
+#endif
   num_bytes_waiting_ = 0;
   memset(digest_, 0, 128);
   memcpy(digest_, state_, num_out_bytes_);
@@ -409,9 +410,9 @@ void sha3::shake_finalize() {
   transform_block((const uint64_t*)bytes_waiting_,
                  rb_ / sizeof(uint64_t));
 #if 1
-    printf("new     state: ");
-    print_bytes(200, (byte*)state_);
-    printf("\n");
+  printf("After transform\n");
+  print_bytes(200, (byte*)state_);
+  printf("\n");
 #endif
   num_bytes_waiting_ = 0;
   memset(digest_, 0, 128);
