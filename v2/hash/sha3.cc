@@ -425,7 +425,7 @@ void sha3::shake_finalize() {
 #if 0
   printf("shake_finalize(), %d\n", num_bytes_waiting_);
 #endif
-  bytes_waiting_[num_bytes_waiting_++] = 0x1f;
+  bytes_waiting_[num_bytes_waiting_++] = 0x1f;  // 0x3e?
   memset(&bytes_waiting_[num_bytes_waiting_], 0,
          rb_ - num_bytes_waiting_);
   bytes_waiting_[rb_ - 1] |= 0x80;
