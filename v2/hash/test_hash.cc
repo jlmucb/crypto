@@ -129,6 +129,25 @@ const byte sha3_test1a_answer[32] = {
     0x58, 0x2D, 0xD9, 0xB2, 0x0A, 0xAA, 0xD7, 0xF0
 };
 
+// shake-128
+const int shake128_test1_size = 1;
+const byte shake128_test1_input[1] = {0x0e};
+const byte shake128_test1_answer[16] = {
+    0xfa, 0x99, 0x6d, 0xaf, 0xaa, 0x20, 0x8d, 0x72,
+    0x28, 0x7c, 0x23, 0xbc, 0x4e, 0xd4, 0xbf, 0xd5
+};
+
+// shake-256
+const int shake256_test1_size = 1;
+const byte shake256_test1_input[1] = {0x0f};
+const byte shake256_test1_answer[32] = {
+    0xaa, 0xbb, 0x07, 0x48, 0x8f, 0xf9, 0xed, 0xd0,
+    0x5d, 0x6a, 0x60, 0x3b, 0x77, 0x91, 0xb6, 0x0a,
+    0x16, 0xd4, 0x50, 0x93, 0x60, 0x8f, 0x1b, 0xad,
+    0xc0, 0xc9, 0xcc, 0x9a, 0x91, 0x54, 0xf2, 0x15
+};
+
+
 int hmacsha256_test1_keysize = 20;
 byte hmacsha256_test1_key[] = {
     0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
@@ -351,6 +370,31 @@ bool test_sha3() {
     printf("\n");
   }
   if (memcmp((byte*)sha3_test1a_answer, digest, hash_object.num_out_bytes_) != 0) return false;
+
+  if (FLAGS_print_all) {
+    printf("Shake256 test1\n");
+  }
+  memset(digest, 0, 1024 / NBITSINBYTE);
+  if (!hash_object.init(512, 256)) {
+    return false;
+  }
+  hash_object.add_to_hash(sizeof(shake256_test1_input), (byte*)shake256_test1_input);
+  hash_object.shake_finalize();
+  if (!hash_object.get_digest(hash_object.num_out_bytes_, digest)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("Shake256(c= %d, r= %d), hash size: %d\n", hash_object.c_, hash_object.r_, hash_object.num_out_bytes_);
+    printf("\tInput        : ");
+    print_bytes(sizeof(shake256_test1_input), (byte*)shake256_test1_input);
+    printf("\tComputed hash: ");
+    print_bytes(hash_object.num_out_bytes_, digest);
+    printf("\tCorrect hash:  ");
+    print_bytes(hash_object.num_out_bytes_, (byte*)shake256_test1_answer);
+    printf("\n");
+  }
+  if (memcmp((byte*)shake256_test1_answer, digest, hash_object.num_out_bytes_) != 0) return false;
+
 
   return true;
 }
