@@ -58,12 +58,6 @@ void sha3::transform_block(const uint64_t* in, int laneCount) {
 
   while ((--laneCount) >= 0) state_[laneCount] ^= in[laneCount];
 
-#if 1
-  printf("After xor\n");
-  print_bytes(200, (byte*)state_);
-  printf("\n");
-#endif
-
   // copyFromState(A, state)
   Aba = state_[0];
   Abe = state_[1];
@@ -328,33 +322,52 @@ bool sha3::init(int c, int num_bits_out) {
 }
 
 void sha3::add_to_hash(int size, const byte* in) {
-  if (num_bytes_waiting_ > 0) {
-    int needed = rb_ - num_bytes_waiting_;
-    if (size < needed) {
-      memcpy(&bytes_waiting_[num_bytes_waiting_], in, size);
-      num_bytes_waiting_ += size;
-      return;
-    }
-    memcpy(&bytes_waiting_[num_bytes_waiting_], in, needed);
-    transform_block((const uint64_t*)bytes_waiting_,
+#if 1
+  printf("add_to_hash(%d), %d\n", size, num_bytes_waiting_);
+#endif
+  int needed = rb_ - num_bytes_waiting_;
+  if (size < needed) {
+    memcpy(&bytes_waiting_[num_bytes_waiting_], in, size);
+    num_bytes_waiting_ += size;
+    return;
+  }
+  memcpy(&bytes_waiting_[num_bytes_waiting_], in, needed);
+#if 1
+  printf("in (%d):\n", needed);
+  print_bytes(rb_, (byte*)bytes_waiting_);
+  printf("\n");
+  printf("State before transform\n");
+  print_bytes(200, (byte*)state_);
+  printf("\n");
+#endif
+  transform_block((const uint64_t*)bytes_waiting_,
                    rb_ / sizeof(uint64_t));
 #if 1
   printf("After transform\n");
   print_bytes(200, (byte*)state_);
   printf("\n");
 #endif
-    num_bits_processed_ += rb_ * NBITSINBYTE;
-    size -= needed;
-    in += needed;
-    num_bytes_waiting_ = 0;
-  }
+  num_bits_processed_ += rb_ * NBITSINBYTE;
+  size -= needed;
+  in += needed;
+  num_bytes_waiting_ = 0;
+
   while (size >= rb_) {
+#if 1
+    printf("in:\n");
+    print_bytes(rb_, (byte*)bytes_waiting_);
+    printf("\n");
+    printf("State before transform\n");
+    print_bytes(200, (byte*)state_);
+    printf("\n");
+#endif
     transform_block((const uint64_t*)in, rb_ / sizeof(uint64_t));
 #if 1
-  printf("After transform\n");
-  print_bytes(200, (byte*)state_);
-  printf("\n");
+    printf("After transform\n");
+    print_bytes(200, (byte*)state_);
+    printf("\n");
 #endif
+    num_bytes_waiting_ = 0;
     num_bits_processed_ += rb_ * NBITSINBYTE;
     size -= rb_;
     in += rb_;
@@ -372,26 +385,27 @@ bool sha3::get_digest(int size, byte* out) {
   return true;
 }
 
-/*
 // padding
-    memcpy(temp, in, (size_t)inlen);
-    temp[inlen++]= 1;
-    memset(temp+inlen, 0, RSizeBytes-(size_t)inlen);
-    temp[RSizeBytes-1]|= 0x80;
-*/
 
 // for sha-3, add bitstring 11 to message plus pad
 void sha3::finalize() {
   bytes_waiting_[num_bytes_waiting_++] = 0x07;
-  num_bits_processed_ += 2;
+  num_bits_processed_ += 2;  // 11 pad
   memset(&bytes_waiting_[num_bytes_waiting_], 0,
          rb_ - num_bytes_waiting_);
-  int k = rb_ - 1;
   bytes_waiting_[rb_ - 1] |= 0x80;
+#if 1
+  printf("in:\n");
+  print_bytes(rb_, (byte*)bytes_waiting_);
+  printf("\n");
+  printf("State before transform\n");
+  print_bytes(200, (byte*)state_);
+  printf("\n");
+#endif
   transform_block((const uint64_t*)bytes_waiting_,
                  rb_ / sizeof(uint64_t));
 #if 1
-  printf("After transform\n");
+  printf("State after transform\n");
   print_bytes(200, (byte*)state_);
   printf("\n");
 #endif
@@ -407,6 +421,14 @@ void sha3::shake_finalize() {
   memset(&bytes_waiting_[num_bytes_waiting_], 0,
          rb_ - num_bytes_waiting_);
   bytes_waiting_[rb_ - 1] |= 0x80;
+#if 1
+  printf("in:\n");
+  print_bytes(rb_, (byte*)bytes_waiting_);
+  printf("\n");
+  printf("State before transform\n");
+  print_bytes(200, (byte*)state_);
+  printf("\n");
+#endif
   transform_block((const uint64_t*)bytes_waiting_,
                  rb_ / sizeof(uint64_t));
 #if 1

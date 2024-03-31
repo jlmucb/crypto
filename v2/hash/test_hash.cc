@@ -96,6 +96,7 @@ const byte sha3_test1_answer[128] = {
     0xE2, 0xF5, 0xF4, 0xA8, 0xEE, 0x17, 0xDB, 0xDD, 0xE7, 0x26, 0x78, 0x94,
     0x55, 0x8A, 0x20, 0x97, 0x2C, 0x9E, 0xB6, 0xCF
 };
+
 const int sha3_test2_size = 128;
 const byte sha3_test2_input[] = {
     0x2B, 0x6D, 0xB7, 0xCE, 0xD8, 0x66, 0x5E, 0xBE, 0x9D, 0xEB, 0x08, 0x02,
@@ -290,6 +291,9 @@ bool test_sha3() {
   sha3 hash_object;
   byte digest[1024 / NBITSINBYTE];
 
+  if (FLAGS_print_all) {
+    printf("Sha3 test0\n");
+  }
   memset(digest, 0, 1024 / NBITSINBYTE);
   if (!hash_object.init(512, 256)) {
     return false;
@@ -315,6 +319,10 @@ bool test_sha3() {
   if (!hash_object.init(1024, 512)) {
     return false;
   }
+
+  if (FLAGS_print_all) {
+    printf("Sha3 test1\n");
+  }
   hash_object.add_to_hash(sizeof(sha3_test1_input), (byte*)sha3_test1_input);
   hash_object.finalize();
   if (!hash_object.get_digest(hash_object.num_out_bytes_, digest)) {
@@ -336,6 +344,9 @@ bool test_sha3() {
   if (!hash_object.init(1024, 512)) {
     return false;
   }
+  if (FLAGS_print_all) {
+    printf("Sha3 test2\n");
+  }
   hash_object.add_to_hash(sizeof(sha3_test2_input), (byte*)sha3_test2_input);
   hash_object.finalize();
   if (!hash_object.get_digest(hash_object.num_out_bytes_, digest)) {
@@ -356,6 +367,9 @@ bool test_sha3() {
   memset(digest, 0, 1024 / NBITSINBYTE);
   if (!hash_object.init(1024, 512)) {
     return false;
+  }
+  if (FLAGS_print_all) {
+    printf("Sha3 test3\n");
   }
   hash_object.add_to_hash(sizeof(sha3_test3_input), (byte*)sha3_test3_input);
   hash_object.finalize();
