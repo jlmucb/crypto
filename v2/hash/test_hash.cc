@@ -304,7 +304,7 @@ bool test_sha3() {
   sha3 hash_object;
   byte digest[1024 / NBITSINBYTE];
 
-  if (FLAGS_print_all) {
+  if (0) {
     printf("Sha3 test0\n");
   }
   memset(digest, 0, 1024 / NBITSINBYTE);
@@ -326,7 +326,7 @@ bool test_sha3() {
     print_bytes(hash_object.num_out_bytes_, (byte*)sha3_test0_answer);
     printf("\n");
   }
-  //if (memcmp((byte*)sha3_test0_answer, digest, hash_object.num_out_bytes_) != 0) return false;
+  if (memcmp((byte*)sha3_test0_answer, digest, hash_object.num_out_bytes_) != 0) return false;
 
   memset(digest, 0, 1024 / NBITSINBYTE);
   if (!hash_object.init(1024, 512)) {
