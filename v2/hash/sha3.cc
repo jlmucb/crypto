@@ -56,7 +56,21 @@ void sha3::transform_block(const uint64_t* in, int laneCount) {
   uint64_t Ema, Eme, Emi, Emo, Emu;
   uint64_t Esa, Ese, Esi, Eso, Esu;
 
-  while (--laneCount >= 0) state_[laneCount] ^= in[laneCount];
+#if 1
+  printf("laneCount: %d\n", laneCount);
+#endif
+
+  while ((--laneCount) >= 0) state_[laneCount] ^= in[laneCount];
+
+#if 1
+  printf("After xor\n");
+  for (int i = 0; i < 25; i++) {
+    printf("%016lx", state_[i]);
+    if ((i%4) == 3)
+      printf("\n");
+  }
+  printf("\n");
+#endif
 
   // copyFromState(A, state)
   Aba = state_[0];
@@ -312,8 +326,9 @@ bool sha3::init(int c, int num_bits_out) {
   r_ = b_ - c;
   rb_ = r_ / NBITSINBYTE;
   if (num_out_bytes_ > BLOCKBYTESIZE) return false;
-  memset(bytes_waiting_, 0, BLOCKBYTESIZE);
-  memset((byte*)state_, 0, sizeof(state_));
+  memset(bytes_waiting_, 0, BUFFERBYTESIZE);
+  for (int i = 0; i < 25; i++)
+    state_[i] = 0ULL;
   num_bytes_waiting_ = 0;
   num_bits_processed_ = 0;
   finalized_ = false;
@@ -329,20 +344,11 @@ void sha3::add_to_hash(int size, const byte* in) {
       return;
     }
     memcpy(&bytes_waiting_[num_bytes_waiting_], in, needed);
-#if 1
-    printf("\n");
-    printf("current state: ");
-    print_bytes(200, (byte*)&state_);
-    printf("\n");
-    printf("bytes added  : ");
-    print_bytes(rb_, bytes_waiting_);
-    printf("\n");
-#endif
     transform_block((const uint64_t*)bytes_waiting_,
                    rb_ / sizeof(uint64_t));
 #if 1
-    printf("transf  state: ");
-    print_bytes(200, (byte*)&state_);
+    printf("new     state  %d lanes\n", rb_ / sizeof(uint64_t));
+    print_bytes(200, (byte*)state_);
     printf("\n");
 #endif
     num_bits_processed_ += rb_ * NBITSINBYTE;
@@ -384,23 +390,10 @@ void sha3::finalize() {
   num_bits_processed_ += 2;
   memset(&bytes_waiting_[num_bytes_waiting_], 0,
          rb_ - num_bytes_waiting_);
+  int k = rb_ - 1;
   bytes_waiting_[rb_ - 1] |= 0x80;
-#if 1
-    printf("\nbytes: %d, c: %d\n", rb_, cb_);
-    printf("current state: ");
-    print_bytes(200, (byte*)&state_);
-    printf("\n");
-    printf("bytes added  : ");
-    print_bytes(rb_, bytes_waiting_);
-    printf("\n");
-#endif
   transform_block((const uint64_t*)bytes_waiting_,
                  rb_ / sizeof(uint64_t));
-#if 1
-    printf("transf  state: ");
-    print_bytes(200, (byte*)&state_);
-    printf("%d lanes\n", rb_ / sizeof(uint64_t));
-#endif
   num_bytes_waiting_ = 0;
   memset(digest_, 0, 128);
   memcpy(digest_, state_, num_out_bytes_);
@@ -413,20 +406,11 @@ void sha3::shake_finalize() {
   memset(&bytes_waiting_[num_bytes_waiting_], 0,
          rb_ - num_bytes_waiting_);
   bytes_waiting_[rb_ - 1] |= 0x80;
-#if 1
-    printf("\nbytes: %d\n", rb_);
-    printf("current state: ");
-    print_bytes(200, (byte*)&state_);
-    printf("\n");
-    printf("bytes added  : ");
-    print_bytes(rb_, bytes_waiting_);
-    printf("\n");
-#endif
   transform_block((const uint64_t*)bytes_waiting_,
                  rb_ / sizeof(uint64_t));
 #if 1
-    printf("transf  state: ");
-    print_bytes(200, (byte*)&state_);
+    printf("new     state: ");
+    print_bytes(200, (byte*)state_);
     printf("\n");
 #endif
   num_bytes_waiting_ = 0;
