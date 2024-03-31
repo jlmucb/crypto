@@ -342,7 +342,7 @@ void sha3::add_to_hash(int size, const byte* in) {
 #endif
   transform_block((const uint64_t*)bytes_waiting_,
                    rb_ / sizeof(uint64_t));
-#if 1
+#if 0
   printf("After transform\n");
   print_bytes(200, (byte*)state_);
   printf("\n");
@@ -357,12 +357,14 @@ void sha3::add_to_hash(int size, const byte* in) {
     printf("in:\n");
     print_bytes(rb_, (byte*)bytes_waiting_);
     printf("\n");
+#endif
+#if 0
     printf("State before transform\n");
     print_bytes(200, (byte*)state_);
     printf("\n");
 #endif
     transform_block((const uint64_t*)in, rb_ / sizeof(uint64_t));
-#if 1
+#if 0
     printf("After transform\n");
     print_bytes(200, (byte*)state_);
     printf("\n");
@@ -389,7 +391,10 @@ bool sha3::get_digest(int size, byte* out) {
 
 // for sha-3, add bitstring 11 to message plus pad
 void sha3::finalize() {
-  bytes_waiting_[num_bytes_waiting_++] = 0x07;
+#if 1
+  printf("finalize(), %d\n", num_bytes_waiting_);
+#endif
+  bytes_waiting_[num_bytes_waiting_++] = 0x06;
   num_bits_processed_ += 2;  // 11 pad
   memset(&bytes_waiting_[num_bytes_waiting_], 0,
          rb_ - num_bytes_waiting_);
@@ -398,13 +403,15 @@ void sha3::finalize() {
   printf("in:\n");
   print_bytes(rb_, (byte*)bytes_waiting_);
   printf("\n");
+#endif
+#if 0
   printf("State before transform\n");
   print_bytes(200, (byte*)state_);
   printf("\n");
 #endif
   transform_block((const uint64_t*)bytes_waiting_,
                  rb_ / sizeof(uint64_t));
-#if 1
+#if 0
   printf("State after transform\n");
   print_bytes(200, (byte*)state_);
   printf("\n");
@@ -417,6 +424,9 @@ void sha3::finalize() {
 
 // for shake, add bitstring 1111 to message plus pad
 void sha3::shake_finalize() {
+#if 1
+  printf("shake_finalize(), %d\n", num_bytes_waiting_);
+#endif
   bytes_waiting_[num_bytes_waiting_++] = 0x1f;
   memset(&bytes_waiting_[num_bytes_waiting_], 0,
          rb_ - num_bytes_waiting_);
@@ -425,13 +435,15 @@ void sha3::shake_finalize() {
   printf("in:\n");
   print_bytes(rb_, (byte*)bytes_waiting_);
   printf("\n");
+#endif
+#if 0
   printf("State before transform\n");
   print_bytes(200, (byte*)state_);
   printf("\n");
 #endif
   transform_block((const uint64_t*)bytes_waiting_,
                  rb_ / sizeof(uint64_t));
-#if 1
+#if 0
   printf("After transform\n");
   print_bytes(200, (byte*)state_);
   printf("\n");
