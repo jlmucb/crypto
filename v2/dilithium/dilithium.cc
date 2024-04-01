@@ -56,7 +56,7 @@ dilithium_parameters::~dilithium_parameters() {
 void print_coefficient_vector(coefficient_vector& v) {
   if (v.c_.size() == 0)
     return;
-  printf("(%d[%d] + ", v.c_[v.c_.size()-1], v.c_.size()-1);
+  printf("(%d[%d] + ", v.c_[v.c_.size()-1], (int)v.c_.size()-1);
   for (int i = (int)v.c_.size() - 2; i>0; i--) {
     printf("%d[%d] + ", v.c_[i], i);
     if ((i%8) ==0)
@@ -260,34 +260,62 @@ int module_array::index(int r, int c) {
   return r * nc_ + c;
 }
 
+bool rand_coefficient(int top, coefficient_vector& v) {
+  for (int k = 0; k < (int)v.c_.size(); k++) {
+    int s = 0;
+    int m = crypto_get_random_bytes(4, (byte*)&s);
+    s %= top;
+    v.c_[k] = s;
+  }
+  return true;
+}
+
 // A is R_q[k*l]
 // t is module coefficient vector of length l
 // s1 is module coefficient vector of length l
 // s2 is module coefficient vector of length k
 bool dilithium_keygen(dilithium_parameters& params, module_array* A, module_vector* t,
-		module_vector* s1, module_vector* s2) {
+                module_vector* s1, module_vector* s2) {
 
+  // A := R_q^kxl
   for (int r = 0; r < params.k_; r++) {
     for (int c = 0; c < params.l_; r++) {
       for (int k = 0; k < params.n_; k++) {
-            int t = 0;
-            int l = crypto_get_random_bytes(32, (byte*)&t);
-            t %= params.q_;
-            A->c_[A->index(r, c)]->c_[k] = l;
+            int s = 0;
+            int l = crypto_get_random_bytes(4, (byte*)&s);
+            s %= params.q_;
+            A->c_[A->index(r, c)]->c_[k] = s;
       }
     }
   }
 
-  // A := R_q^kxl
   // (s_1, s_2) := S_eta^k x S_eta^l
+  for (int ll = 0; ll < s1->dim_; ll++) {
+      if (!rand_coefficient(params.eta_, *(s1->c_[ll]))) {
+        return false;
+      }
+  }
+
+  for (int ll = 0; ll < s1->dim_; ll++) {
+      if (!rand_coefficient(params.eta_, *(s2->c_[ll]))) {
+        return false;
+      }
+  }
+
+  module_vector tv(params.q_, params.n_, params.l_);
+  if (!module_apply_array(*A, *s1, &tv)) {
+    return false;
+  }
   // t := As_1 + s_2
-  // return pk := (A, t); sk := (A, t, s_1, s_2)
-  return false;
+  if (module_vector_add(tv, *s2, t)) {
+    return false;
+  }
+  return true;
 }
 
 bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vector& t,
-		module_vector& s1, module_vector& s2,
-		module_vector* z, int len_c, byte* c) {
+                module_vector& s1, module_vector& s2,
+                module_vector* z, int len_c, byte* c) {
   // z := no
   // while z == no {
   //    y := S_g1^l - 1
