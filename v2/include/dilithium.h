@@ -101,9 +101,9 @@ bool init_dilithium_parameters(dilithium_parameters* p);
 
 bool dilithium_keygen(dilithium_parameters& params, module_array* A, module_vector* t,
                 module_vector* s1, module_vector* s2);
-bool dilithium_verify(dilithium_parameters& params,  module_array& A,  module_vector& t,
+bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vector& t,
                 module_vector& s1, module_vector& s2,
-                module_vector& z, int len_c, byte* c);
+                module_vector* z, int len_c, byte* c);
 bool dilithium_verify(dilithium_parameters& params,  module_array& A,  module_vector& t,
                 module_vector& s1, module_vector& s2,
                 module_vector& z, int len_c, byte* c);
