@@ -56,10 +56,13 @@ dilithium_parameters::~dilithium_parameters() {
 void print_coefficient_vector(coefficient_vector& v) {
   if (v.c_.size() == 0)
     return;
-  printf("(%d", v.c_[v.c_.size()-1]);
-  for (int i = (int)v.c_.size() - 2; i>=0; i--)
-    printf(", %d", v.c_[i]);
-  printf(")");
+  printf("(%d[%d] + ", v.c_[v.c_.size()-1], v.c_.size()-1);
+  for (int i = (int)v.c_.size() - 2; i>0; i--) {
+    printf("%d[%d] + ", v.c_[i], i);
+    if ((i%8) ==0)
+      printf("\n  ");
+  }
+  printf("%d[%d])\n", v.c_[0], 0);
 }
 
 void print_dilithium_parameters(dilithium_parameters& p) {
@@ -191,7 +194,7 @@ bool module_apply_array(module_array& A, module_vector& v, module_vector* out) {
 void print_module_array(module_array& ma) {
   for (int r = 0; r < ma.nr_; r++) {
     for (int c = 0; c < ma.nc_; c++) {
-      printf("A[%d, %d] = ", r, c);
+      printf("A[%d, %d] = ", r + 1, c + 1);
       print_coefficient_vector(*ma.c_[ma.index(r, c)]);
       printf("\n");
     }
@@ -201,8 +204,8 @@ void print_module_array(module_array& ma) {
 
 void print_module_vector(module_vector& mv) {
   for (int i = 0; i < (int)mv.dim_; i++) {
-    printf("p[%d] = ", i);
     print_coefficient_vector(*mv.c_[i]);
+    printf("[%d] = ", i);
     printf("\n");
   }
 }
