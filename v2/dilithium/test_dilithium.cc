@@ -167,6 +167,29 @@ bool test_dilithium1() {
   module_vector t(params.q_, params.l_, params.n_);
   module_vector s1(params.q_, params.k_, params.n_);
   module_vector s2(params.q_, params.l_, params.n_);
+  
+  printf("A.q_: %d, A.n_: %d, A.nr_: %d, A.nc_: %d\n",
+      A.q_, A.n_, A.nr_, A.nc_);
+
+  for (int r = 0; r < A.nr_; r++) {
+    for (int c = 0; c < A.nc_; c++) {
+      for (int k = 0; k < params.n_; k++) {
+        unsigned t = 0;
+        int l = crypto_get_random_bytes(4, (byte*)&t);
+        t %= params.q_;
+	if (A.c_[A.index(r, c)] == nullptr)
+	  continue;
+	coefficient_vector* vp = A.c_[A.index(r, c)];
+	if (vp == nullptr)
+	  continue;
+        // printf("k: %d t: %d, r: %d, c: %d, index: %d\n", k, t, r, c, A.index(r, c));
+	// printf("Size A.c_[A.index(r, c)].size %d\n", vp->c_.size());
+        A.c_[A.index(r, c)]->c_[k] = t;
+      }
+    }
+  }
+
+  print_module_array(A);
   return true;
 
   if (!dilithium_keygen(params, &A, &t, &s1, &s2)) {

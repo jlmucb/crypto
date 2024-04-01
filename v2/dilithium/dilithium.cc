@@ -21,7 +21,7 @@ coefficient_vector::coefficient_vector(int q, int dim) {
   q_ = q;
   len_ = dim;
 
-  c_.resize(dim);
+  c_.resize(dim, 0);
   for (int i = 0; i < dim; i++)
     c_[i] = 0;
 }
@@ -140,7 +140,6 @@ module_vector::module_vector(int q, int n, int dim) {
   n_ = n;
   dim_ = dim;
   c_ = new coefficient_vector*[dim];
-
 }
 
 module_vector::~module_vector() {
@@ -197,6 +196,7 @@ void print_module_array(module_array& ma) {
       printf("\n");
     }
   }
+  printf("\n");
 }
 
 void print_module_vector(module_vector& mv) {
@@ -254,7 +254,7 @@ bool coefficients_low_bits(int a, coefficient_vector& in, coefficient_vector* ou
 }
 
 int module_array::index(int r, int c) {
-  return r * nr_ + nc_;
+  return r * nc_ + c;
 }
 
 // A is R_q[k*l]

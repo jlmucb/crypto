@@ -68,7 +68,7 @@ public:
   int nr_;
   int nc_;
 
-  module_array(int q, int n, int nr, int cn);
+  module_array(int q, int n, int nr, int nc);
   ~module_array();
 
   coefficient_vector** c_;
