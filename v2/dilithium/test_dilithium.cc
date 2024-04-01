@@ -65,7 +65,7 @@ bool test_arith_support() {
     0x58, 0x81, 0x09, 0x2d, 0xd8, 0x18, 0xbf, 0x5c, 0xf8, 0xa3, 0xdd, 0xb7, 0x93, 0xfb, 0xcb, 0xa7
   };
   byte in[3] = {
-	  (byte)'a', (byte)'b', (byte)'c'
+          (byte)'a', (byte)'b', (byte)'c'
   };
   int out_len = 32;
   byte out[32];
@@ -143,14 +143,48 @@ bool test_coefficient_arith() {
 }
 
 bool test_module_arith() {
+
+  dilithium_parameters params;
+  init_dilithium_parameters(&params);
+
+  if (FLAGS_print_all) {
+    print_dilithium_parameters(params);
+  }
+
   return true;
 }
 
 bool test_dilithium1() {
 
-  //dilithium_parameters params(int n, int k, int l, int q, int g_1, int g_2, int eta, int beta);
+  dilithium_parameters params;
+  init_dilithium_parameters(&params);
 
   if (FLAGS_print_all) {
+    print_dilithium_parameters(params);
+  }
+
+  module_array A(params.q_, 256, params.k_, params.l_);
+  module_vector t(params.q_, params.l_, params.n_);
+  module_vector s1(params.q_, params.k_, params.n_);
+  module_vector s2(params.q_, params.l_, params.n_);
+  return true;
+
+  if (!dilithium_keygen(params, &A, &t, &s1, &s2)) {
+    printf("dilithium_keygen failed\n");
+    return false;
+  }
+
+  module_vector z(params.q_, params.l_, params.n_);
+  int len_c = 256;
+  byte c[len_c];
+  if (!dilithium_sign(params,  A, t, s1, s2, &z, len_c, c)) {
+    printf("dilithium_sign failed\n");
+    return false;
+  }
+
+  if (!dilithium_verify(params,  A,  t, s1, s2, z, len_c, c)) {
+    printf("dilithium_verify failed\n");
+    return false;
   }
 
   return true;

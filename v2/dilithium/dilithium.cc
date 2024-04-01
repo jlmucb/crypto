@@ -155,10 +155,24 @@ module_array::module_array(int q, int n, int nr, int nc) {
   n_ = n;
   nr_ = nr;
   nc_ = nc;
-  c_ = new coefficient_vector*[nr * nc];
+
+  c_ = new coefficient_vector* [nr * nc];
+  for (int r = 0; r < nr_; r++) {
+    for (int c = 0; c < nc_; c++) {
+      c_[index(r,c)] = new coefficient_vector(q, n);
+    }
+  }
 }
 
 module_array::~module_array() {
+  for (int r = 0; r < nr_; r++) {
+    for (int c = 0; c < nc_; c++) {
+      delete c_[index(r,c)];
+      c_[index(r,c)] = nullptr;
+    }
+  }
+  delete []c_;
+  c_ = nullptr;
 }
 
 bool module_vector_add(module_vector& in1, module_vector& in2, module_vector* out) {
@@ -176,6 +190,13 @@ bool module_apply_array(module_array& A, module_vector& v, module_vector* out) {
 }
 
 void print_module_array(module_array& ma) {
+  for (int r = 0; r < ma.nr_; r++) {
+    for (int c = 0; c < ma.nc_; c++) {
+      printf("A[%d, %d] = ", r, c);
+      print_coefficient_vector(*ma.c_[ma.index(r, c)]);
+      printf("\n");
+    }
+  }
 }
 
 void print_module_vector(module_vector& mv) {
@@ -232,12 +253,28 @@ bool coefficients_low_bits(int a, coefficient_vector& in, coefficient_vector* ou
   return true;
 }
 
+int module_array::index(int r, int c) {
+  return r * nr_ + nc_;
+}
+
 // A is R_q[k*l]
 // t is module coefficient vector of length l
 // s1 is module coefficient vector of length l
 // s2 is module coefficient vector of length k
 bool dilithium_keygen(dilithium_parameters& params, module_array* A, module_vector* t,
 		module_vector* s1, module_vector* s2) {
+
+  for (int r = 0; r < params.k_; r++) {
+    for (int c = 0; c < params.l_; r++) {
+      for (int k = 0; k < params.n_; k++) {
+            int t = 0;
+            int l = crypto_get_random_bytes(32, (byte*)&t);
+            t %= params.q_;
+            A->c_[A->index(r, c)]->c_[k] = l;
+      }
+    }
+  }
+
   // A := R_q^kxl
   // (s_1, s_2) := S_eta^k x S_eta^l
   // t := As_1 + s_2
