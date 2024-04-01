@@ -314,8 +314,11 @@ bool dilithium_keygen(dilithium_parameters& params, module_array* A, module_vect
 }
 
 bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vector& t,
-                module_vector& s1, module_vector& s2,
+                module_vector& s1, module_vector& s2, int m_len, byte* M,
                 module_vector* z, int len_c, byte* c) {
+
+  return true;
+
   // z := no
   // while z == no {
   //    y := S_g1^l - 1
@@ -324,16 +327,78 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
   //    z := y + cs_1
   //    if (||z||_inf > g1-beta or lowbits(Ay-cs2, 2g_1)>= g1-beta then z := no
   // }
-  // return (z,c)
-  return false;
+  bool done = false;
+#if 0
+  while (!done) {
+    module_vector y(params.q_, params.n_, params.l_);
+    module_vector tv(params.q_, params.n_, params.k_);
+    if (!module_apply_array(A, y, &tv)) {
+      return false;
+    }
+    coefficient_vector w1(params.q_, params.k_);
+    if (!coefficients_high_bits(2 * params.gamma1_, tv, &w1)) {
+      return false;
+    }
+    if (!H(int in_len, byte* in, int* out_len, byte* out)) {
+      return false;
+    }
+    if (!module_vector_add(y, *s1, z)) {
+      return false;
+    }
+    int inf = inf_norm(*z);
+    if (inf > (params.gamma_1_ - params.beta_)) {
+      return false;
+    }
+    module_vector tv2(params.q_, params.k_);
+    if (!module_add(tv, *s2, tv2)) {
+      return false;
+    }
+    coefficient_vector w2(params.q_, params.k_);
+    if (!coefficient_low_bits(2 * params.gamma1_, &w2)) {
+      continue;
+    }
+    int low = inf_norm(w2);
+    if (low > (params.gamma_1_ - params.beta_)) {
+      continue;
+    }
+
+    done = true;
+  }
+#endif
+
+  return true;
 }
 
-bool dilithium_verify(dilithium_parameters& params,  module_array& A,  module_vector& t,
-                module_vector& s1, module_vector& s2,
+bool dilithium_verify(dilithium_parameters& params,  module_array& A, module_vector& t,
+                module_vector& s1, module_vector& s2, int m_len, byte* M,
                 module_vector& z, int len_c, byte* c) {
+
   // w_1' := highbits(Az-ct, 2g2)
   // return ||z||_inf < g1-beta and c == H(M||w1)
+  return true;
 
-  return false;
+#if 0
+  module_vector tv1(params.q_, params.n_, params.k_);
+  module_vector tv2(params.q_, params.n_, params.k_);
+  if (!module_apply_array(A, z, &tv1)) {
+    return false;
+  }
+  if (!module_add(tv1, *, &tv2)) {
+    return false;
+  }
+  coefficient_vector w1(params.q_, params.k_);
+  if (!coefficients_high_bits(2 * params.gamma2_, tv, &w1)) {
+    return false;
+  }
+
+  int t_len = 32;
+  byte tc[t_len];
+  memset(tc,0, t_len);
+  // in = M || w1
+  if (!H(int in_len, byte* in, int* out_len, tc)) {
+    return false;
+  }
+  return memcmp(c, tc, t_len) == 0;
+#endif
 }
 
