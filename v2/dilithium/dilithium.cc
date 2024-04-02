@@ -210,18 +210,6 @@ void print_module_vector(module_vector& mv) {
   }
 }
 
-bool H(int in_len, byte* in, int* out_len, byte* out) {
-  // SHAKE256
-  sha3 h;
-  if (!h.init(512, 256))
-    return false;
-  h.add_to_hash(in_len, in);
-  h.shake_finalize();
-  if (!h.get_digest(*out_len, out))
-    return false;
-  return true;
-}
-
 int inf_norm(vector<int> v) {
   int x = v[0];
   for (int i = 1; i < (int)v.size(); i++) {
@@ -269,6 +257,31 @@ bool rand_coefficient(int top, coefficient_vector& v) {
   }
   return true;
 }
+
+bool fill_module_vector_hash(module_vector& v, int size_coeff, int* sz_buf, byte* buf) {
+
+  if ((v.dim_ * size_coeff * (int)sizeof(int)) > *sz_buf)
+    return false;
+  int sz = 0;
+  for (int i = 0; i < v.dim_; i++) {
+    for (int j = 0; j < size_coeff; j++) {
+      memcpy(&buf[i * size_coeff + j], (byte*)&(v.c_[i]->c_[j]), sizeof(int));
+      sz += (int)sizeof(int);
+    }
+  }
+  *sz_buf = sz;
+  return true;
+}
+
+bool module_vector_mult_by_scalar(coefficient_vector& in1, module_vector& in2, module_vector* out) {
+
+  for (int i = 0; i < in2.dim_; i++) {
+    if (!vector_mult(in1, *in2.c_[i], (out->c_[i])))
+      return false;
+  }
+  return true;
+}
+
 
 // A is R_q[k*l]
 // t is module coefficient vector of length l
@@ -328,36 +341,77 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
   //    if (||z||_inf > g1-beta or lowbits(Ay-cs2, 2g_1)>= g1-beta then z := no
   // }
   bool done = false;
-#if 0
+
+#if 1
+  int w_h_len = params.k_ * params.n_ * sizeof(int);
+  byte w_h[w_h_len];
+  memset(w_h, 0, w_h_len);
+  sha3 H;
+
   while (!done) {
-    module_vector y(params.q_, params.n_, params.l_);
-    module_vector tv(params.q_, params.n_, params.k_);
+    module_vector y(params.q_, params.n_, params.k_);
+    module_vector tv(params.q_, params.n_, params.l_);
     if (!module_apply_array(A, y, &tv)) {
       return false;
     }
     coefficient_vector w1(params.q_, params.k_);
-    if (!coefficients_high_bits(2 * params.gamma1_, tv, &w1)) {
+
+    // fix
+    /*
+    if (!coefficients_high_bits(2 * params.gamma_1_, tv, &w1)) {
       return false;
     }
-    if (!H(int in_len, byte* in, int* out_len, byte* out)) {
+     */
+
+    int t_len = 32;
+    byte tc[t_len];
+    memset(tc,0, t_len);
+
+    // in = M || w1
+    H.add_to_hash(m_len, M);
+
+    // this is not quite right
+    int tsz = w_h_len;
+    /*
+    if (!fill_module_vector_hash(w1, params.n_, &tsz, w_h)) {
       return false;
     }
-    if (!module_vector_add(y, *s1, z)) {
+    */
+    H.add_to_hash(tsz, w_h);
+    H.shake_finalize();
+    if (!H.get_digest(H.num_out_bytes_, tc)) {
       return false;
     }
+
+    coefficient_vector c_poly(params.q_, params.n_);
+    module_vector tu(s1.q_, params.n_, s1.dim_);
+    for (int i = 0; i < c_poly.len_; i++) {
+        c_poly.c_[i] = (int)(w_h[(i / NBITSINBYTE)] & (1 << (i % 8)));
+    }
+    if (!module_vector_mult_by_scalar(c_poly, s1, &tu)) {
+      return false;
+    }
+
+    if (!module_vector_add(y, tu, z)) {
+      return false;
+    }
+
+    /*
     int inf = inf_norm(*z);
     if (inf > (params.gamma_1_ - params.beta_)) {
       return false;
     }
-    module_vector tv2(params.q_, params.k_);
-    if (!module_add(tv, *s2, tv2)) {
+     */
+    module_vector tv2(params.q_, params.n_, params.k_);
+    if (!module_vector_add(tv, s2, &tv2)) {
       return false;
     }
+    // Fix
     coefficient_vector w2(params.q_, params.k_);
-    if (!coefficient_low_bits(2 * params.gamma1_, &w2)) {
+    if (!coefficients_low_bits(2 * params.gamma_1_, w2, &w2)) {
       continue;
     }
-    int low = inf_norm(w2);
+    int low = inf_norm(w2.c_);
     if (low > (params.gamma_1_ - params.beta_)) {
       continue;
     }
@@ -378,6 +432,17 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A, module_vec
   return true;
 
 #if 0
+  int w_h_len = params.k_ * params.n_ * sizeof(int);
+  byte w_h[w_h_len];
+  memset(w_h, 0, w_h_len);
+  int w_len = sizeof(int) * params.n_;
+  byte added_w[w_len];
+  sha3 H;
+
+  if (!H.init(512, 256)) {
+    return false;
+  }
+
   module_vector tv1(params.q_, params.n_, params.k_);
   module_vector tv2(params.q_, params.n_, params.k_);
   if (!module_apply_array(A, z, &tv1)) {
@@ -391,13 +456,25 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A, module_vec
     return false;
   }
 
+  // in = M || w1
   int t_len = 32;
   byte tc[t_len];
   memset(tc,0, t_len);
-  // in = M || w1
-  if (!H(int in_len, byte* in, int* out_len, tc)) {
+  H.add_to_hash(m_len, M);
+
+  // this is not quite right
+  int tsz = w_h_len;
+  /*
+  if (!fill_module_vector_hash(w1, params.n_, &tsz, w_h)) {
     return false;
   }
+  */
+  H.add_to_hash(tsz, w_h);
+  H.shake_finalize();
+  if (!H.get_digest(H.num_out_bytes_, tc)) {
+    return false;
+  }
+
   return memcmp(c, tc, t_len) == 0;
 #endif
 }

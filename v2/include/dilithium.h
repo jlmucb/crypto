@@ -38,7 +38,6 @@ public:
   int beta_;
 };
 
-bool H(int in_len, byte* in, int* out_len, byte* out);
 int inf_norm(vector<int> v);
 int high_bits(int x, int a);
 int low_bits(int x, int a);
@@ -92,6 +91,7 @@ bool vector_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_v
 void print_coefficient_vector(coefficient_vector& v);
 void print_module_array(module_array& ma);
 
+bool module_vector_mult_by_scalar(coefficient_vector& in1, module_vector& in2, module_vector* out);
 bool module_vector_add(module_vector& in1, module_vector& in2, module_vector* out);
 bool module_apply_array(module_array& A, module_vector& v, module_vector* out);
 void print_module_vector(module_vector& mv);
