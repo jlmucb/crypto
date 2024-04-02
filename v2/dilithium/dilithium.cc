@@ -358,7 +358,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
 
     // fix
     /*
-    if (!coefficients_high_bits(2 * params.gamma_1_, tv, &w1)) {
+    if (!coefficients_high_bits(2 * params.gamma_2_, tv, &w1)) {
       return false;
     }
      */
@@ -412,7 +412,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
       continue;
     }
     int low = inf_norm(w2.c_);
-    if (low > (params.gamma_1_ - params.beta_)) {
+    if (low > (params.gamma_2_ - params.beta_)) {
       continue;
     }
 
