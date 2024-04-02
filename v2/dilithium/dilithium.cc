@@ -17,6 +17,9 @@
 
 using namespace std;
 
+// This is the "vanilla" dilithium, which is slow and has
+// large keys.
+
 coefficient_vector::coefficient_vector(int q, int dim) {
   q_ = q;
   len_ = dim;
@@ -219,6 +222,18 @@ int inf_norm(vector<int> v) {
   return x;
 }
 
+int module_inf_norm(module_vector& mv) {
+  int max = 0;
+  int m;
+
+  for (int i = 0; i < mv.dim_; i++) {
+    m = inf_norm(mv.c_[i]->c_);
+    if (m > max)
+      max = m;
+  }
+  return max;
+}
+
 int high_bits(int x, int a) {
   // x = x_high*2*a + x_low
   return x / (2 * a);
@@ -278,6 +293,7 @@ bool rand_coefficient(int top, coefficient_vector& v) {
 
 bool fill_module_vector_hash(module_vector& v, int size_coeff, int* sz_buf, byte* buf) {
 
+  // todo: compress coefficients
   if ((v.dim_ * size_coeff * (int)sizeof(int)) > *sz_buf)
     return false;
   int sz = 0;
@@ -409,7 +425,6 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
     // in = M || w1
     H.add_to_hash(m_len, M);
 
-    // this is not quite right
     int tsz = w_h_len;
     if (!fill_module_vector_hash(w1, params.n_, &tsz, w_h)) {
       return false;
@@ -437,12 +452,11 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
       return false;
     }
 
-    /*
-    int inf = inf_norm(*z);
+    int inf = module_inf_norm(*z);
     if (inf > (params.gamma_1_ - params.beta_)) {
       return false;
     }
-     */
+
     module_vector tv2(params.q_, params.n_, params.k_);
     if (!module_vector_add(tv, s2, &tv2)) {
       return false;
@@ -451,12 +465,10 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
     if (!module_low_bits(2 * params.gamma_1_,tv2, &w2)) {
       continue;
     }
-    /*
-    int low = inf_norm(w2.c_);
+    int low = module_inf_norm(w2);
     if (low > (params.gamma_2_ - params.beta_)) {
       continue;
     }
-    */
 
     done = true;
   }
@@ -471,9 +483,10 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A, module_vec
 
   // w_1' := highbits(Az-ct, 2g2)
   // return ||z||_inf < g1-beta and c == H(M||w1)
+
   return true;
 
-#if 0
+#if 1
   int w_h_len = params.k_ * params.n_ * sizeof(int);
   byte w_h[w_h_len];
   memset(w_h, 0, w_h_len);
@@ -490,11 +503,11 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A, module_vec
   if (!module_apply_array(A, z, &tv1)) {
     return false;
   }
-  if (!module_add(tv1, *, &tv2)) {
+  if (!module_vector_add(tv1, z, &tv2)) {
     return false;
   }
-  coefficient_vector w1(params.q_, params.k_);
-  if (!coefficients_high_bits(2 * params.gamma2_, tv, &w1)) {
+  module_vector w1(params.q_, params.n_, params.l_);
+  if (!module_high_bits(2 * params.gamma_2_, tv1, &w1)) {
     return false;
   }
 
@@ -506,16 +519,29 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A, module_vec
 
   // this is not quite right
   int tsz = w_h_len;
-  /*
   if (!fill_module_vector_hash(w1, params.n_, &tsz, w_h)) {
     return false;
   }
-  */
   H.add_to_hash(tsz, w_h);
   H.shake_finalize();
   if (!H.get_digest(H.num_out_bytes_, tc)) {
     return false;
   }
+
+  coefficient_vector c_poly(params.q_, params.n_);
+  module_vector tu(s1.q_, params.n_, s1.dim_);
+  int cc[256];
+  if (!c_from_h(32, tc, cc))
+    return false;
+  for (int i = 0; i < c_poly.len_; i++) {
+      c_poly.c_[i] = cc[i];
+  }
+  if (!module_vector_mult_by_scalar(c_poly, s1, &tu)) {
+    return false;
+  }
+
+  if (module_inf_norm(z) > params.gamma_1_ - params.beta_)
+    return false;
 
   return memcmp(c, tc, t_len) == 0;
 #endif
