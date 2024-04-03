@@ -93,18 +93,19 @@ void print_module_array(module_array& ma);
 
 bool module_vector_mult_by_scalar(coefficient_vector& in1, module_vector& in2, module_vector* out);
 bool module_vector_add(module_vector& in1, module_vector& in2, module_vector* out);
+bool module_vector_subtract(module_vector& in1, module_vector& in2, module_vector* out);
 bool module_apply_array(module_array& A, module_vector& v, module_vector* out);
 void print_module_vector(module_vector& mv);
 
 void print_dilithium_parameters(dilithium_parameters& p);
 bool init_dilithium_parameters(dilithium_parameters* p);
 
-bool dilithium_keygen(dilithium_parameters& params, module_array* A, module_vector* t,
-                module_vector* s1, module_vector* s2);
-bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vector& t,
-                module_vector& s1, module_vector& s2, int m_len, byte* M,
-                module_vector* z, int len_c, byte* c);
-bool dilithium_verify(dilithium_parameters& params,  module_array& A,  module_vector& t,
-                module_vector& s1, module_vector& s2,  int m_len, byte* M,
-                module_vector& z, int len_c, byte* c);
+bool dilithium_keygen(dilithium_parameters& params, module_array* A,
+        module_vector* t, module_vector* s1, module_vector* s2);
+bool dilithium_sign(dilithium_parameters& params,  module_array& A,
+        module_vector& t, module_vector& s1, module_vector& s2,
+        int m_len, byte* M, module_vector* z, int len_c, byte* c);
+bool dilithium_verify(dilithium_parameters& params,  module_array& A,
+        module_vector& t, int m_len, byte* M,
+        module_vector& z, int len_c, byte* c);
 #endif
