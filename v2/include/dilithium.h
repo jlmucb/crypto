@@ -53,10 +53,6 @@ public:
   vector<int> c_;
 };
 
-bool coefficient_add(coefficient_vector& in1, coefficient_vector& in2,
-    coefficient_vector* out);
-bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2,
-    coefficient_vector* out);
 bool coefficients_high_bits(int a, coefficient_vector& in, coefficient_vector* out);
 bool coefficients_low_bits(int a, coefficient_vector& in, coefficient_vector* out);
 
@@ -86,12 +82,13 @@ public:
   coefficient_vector** c_;
 };
 
-bool vector_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
-bool vector_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
+bool coefficient_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
+bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
 void print_coefficient_vector(coefficient_vector& v);
 bool coefficient_set_vector(coefficient_vector& in, coefficient_vector* out);
 bool coefficient_vector_zero(coefficient_vector* out);
 bool coefficient_vector_add_to(coefficient_vector& in, coefficient_vector* out);
+bool vector_equal(coefficient_vector& in1, coefficient_vector& in2);
 
 void print_module_array(module_array& ma);
 bool module_vector_mult_by_scalar(coefficient_vector& in1, module_vector& in2, module_vector* out);

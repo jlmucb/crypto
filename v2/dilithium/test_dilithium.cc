@@ -78,7 +78,7 @@ bool test_coefficient_arith() {
   v2.c_[1] = q-1;
   v2.c_[2] = 1;
 
-  if (!vector_add(v1, v2, &out1)) {
+  if (!coefficient_add(v1, v2, &out1)) {
     printf("vector add fails\n");
     return false;
   }
@@ -92,11 +92,10 @@ bool test_coefficient_arith() {
     printf(" mod(%d)\n", v1.q_);
   }
 
-  if (!vector_mult(v1, v2, &out2)) {
+  if (!coefficient_mult(v1, v2, &out2)) {
     printf("vector mult fails\n");
     return false;
   }
-
 
   if (FLAGS_print_all) {
     print_coefficient_vector(v1);
@@ -112,9 +111,19 @@ bool test_coefficient_arith() {
   if (out2.c_[2] != 1 || out2.c_[1] != 1 || out2.c_[0] != 2)
     return false;
 
-  // bool coefficient_set_vector(coefficient_vector& in, coefficient_vector* out);
-  // bool coefficient_vector_zero(coefficient_vector* out);
-  // bool coefficient_vector_add_to(coefficient_vector& in, coefficient_vector* out);
+  if (!coefficient_set_vector(out2, &out2)) {
+    printf("coefficient_set_vector failed\n");
+    return false;
+  }
+
+  if (!coefficient_vector_zero(&out1)) {
+    printf("coefficient_vector_zero failed\n");
+    return false;
+  }
+  if (!coefficient_vector_add_to(out2, &out1)) {
+    printf("coefficient_vector_add_to failed\n");
+    return false;
+  }
 
   return true;
 }

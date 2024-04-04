@@ -89,7 +89,19 @@ bool init_dilithium_parameters(dilithium_parameters* p) {
   return true;
 }
 
-bool vector_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
+bool coefficient_equal(coefficient_vector& in1, coefficient_vector& in2) {
+  if (in1.len_ != in2.len_)
+    return false;
+
+  for (int i = 0; i < in1.len_; i++) {
+    if (in1.c_[i] != in2.c_[i])
+      return false;
+  }
+
+  return true;
+}
+
+bool coefficient_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
   if (in1.c_.size() != in2.c_.size() || out->c_.size() < in1.c_.size())
     return false;
   for (int i = 0; i < (int)in1.c_.size(); i++)
@@ -101,7 +113,7 @@ int reduce(int a, int b, int q) {
   return (q + a - b) % q;
 }
 
-bool vector_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
+bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
   // multiply and reduce by (x**in1.c_.size() + 1)
   if (in1.c_.size() != in2.c_.size())
     return false;
@@ -207,7 +219,7 @@ bool module_vector_add(module_vector& in1, module_vector& in2, module_vector* ou
   if (in1.dim_ != in2.dim_ || in1.dim_ != out->dim_)
     return false;
   for (int i = 0; i < (int)in1.dim_; i++) {
-      if (!vector_add(*in1.c_[i], *in2.c_[i], out->c_[i]))
+      if (!coefficient_add(*in1.c_[i], *in2.c_[i], out->c_[i]))
         return false;
   }
   return true;
@@ -238,7 +250,7 @@ bool module_apply_array(module_array& A, module_vector& v, module_vector* out) {
     for (int j = 0; j < v.dim_; j++) {
       if (!coefficient_vector_zero(&t))
         return false;
-      if (!vector_mult(*A.c_[A.index(i,j)], *v.c_[j], &t))
+      if (!coefficient_mult(*A.c_[A.index(i,j)], *v.c_[j], &t))
         return false;
       if (!coefficient_vector_add_to(t, &acc))
         return false;
@@ -365,7 +377,7 @@ bool fill_module_vector_hash(module_vector& v, int size_coeff, int* sz_buf, byte
 bool module_vector_mult_by_scalar(coefficient_vector& in1, module_vector& in2, module_vector* out) {
 
   for (int i = 0; i < in2.dim_; i++) {
-    if (!vector_mult(in1, *in2.c_[i], (out->c_[i])))
+    if (!coefficient_mult(in1, *in2.c_[i], (out->c_[i])))
       return false;
   }
   return true;
