@@ -154,6 +154,8 @@ bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2, coeffici
 }
 
 bool coefficient_set_vector(coefficient_vector& in, coefficient_vector* out) {
+  out->len_ = in.len_;
+  out->c_.resize(in.c_.size());
   for (int j = 0; j < (int)out->len_; j++) {
     out->c_[j]= in.c_[j];
   }

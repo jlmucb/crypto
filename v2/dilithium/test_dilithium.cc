@@ -106,13 +106,21 @@ bool test_coefficient_arith() {
     printf(" mod(%d)\n", v1.q_);
   }
 
+  if (coefficient_equal(v1, v2)) {
+    return false;
+  }
+
   if (out1.c_[2] != 2 || out1.c_[1] != 0 || out1.c_[0] != 3)
     return false;
   if (out2.c_[2] != 1 || out2.c_[1] != 1 || out2.c_[0] != 2)
     return false;
 
-  if (!coefficient_set_vector(out2, &out2)) {
+  if (!coefficient_set_vector(out1, &out2)) {
     printf("coefficient_set_vector failed\n");
+    return false;
+  }
+  if (!coefficient_equal(out1, out2)) {
+    printf("out 1 != out2\n");
     return false;
   }
 
@@ -120,8 +128,29 @@ bool test_coefficient_arith() {
     printf("coefficient_vector_zero failed\n");
     return false;
   }
+  coefficient_vector zero(out1.q_, out1.len_);
+  if (!coefficient_vector_zero(&zero)) {
+    printf("coefficient_vector_zero failed\n");
+    return false;
+  }
+
+  if (!coefficient_equal(zero, out1)) {
+    printf("coefficient_vector_zero zero failed\n");
+    printf("out1 (%d): \n", out1.c_.size());
+    print_coefficient_vector(out1);
+    printf("\n");
+    printf("zero (%d): \n", zero.c_.size());
+    print_coefficient_vector(zero);
+    printf("\n");
+    return false;
+  }
+
   if (!coefficient_vector_add_to(out2, &out1)) {
     printf("coefficient_vector_add_to failed\n");
+    return false;
+  }
+  if (!coefficient_equal(out1, out2)) {
+    printf("out 1 != out2 after add_to\n");
     return false;
   }
 
