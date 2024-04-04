@@ -89,8 +89,11 @@ public:
 bool vector_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
 bool vector_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
 void print_coefficient_vector(coefficient_vector& v);
-void print_module_array(module_array& ma);
+bool coefficient_set_vector(coefficient_vector& in, coefficient_vector* out);
+bool coefficient_vector_zero(coefficient_vector* out);
+bool coefficient_vector_add_to(coefficient_vector& in, coefficient_vector* out);
 
+void print_module_array(module_array& ma);
 bool module_vector_mult_by_scalar(coefficient_vector& in1, module_vector& in2, module_vector* out);
 bool module_vector_add(module_vector& in1, module_vector& in2, module_vector* out);
 bool module_vector_subtract(module_vector& in1, module_vector& in2, module_vector* out);
