@@ -141,6 +141,29 @@ bool vector_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_v
   return true;
 }
 
+bool coefficient_set_vector(coefficient_vector& in, coefficient_vector* out) {
+  for (int j = 0; j < (int)out->len_; j++) {
+    out->c_[j]= in.c_[j];
+  }
+  return true;
+}
+
+bool coefficient_vector_zero(coefficient_vector* out) {
+  for (int j = 0; j < (int)out->len_; j++) {
+    out->c_[j]= 0;
+  }
+  return true;
+}
+
+bool coefficient_vector_add_to(coefficient_vector& in, coefficient_vector* out) {
+  if (in.len_ != out->len_)
+    return false;
+  for (int i = 0; i < in.len_; i++) {
+      out->c_[i] += in.c_[i];
+  }
+  return true;
+}
+
 module_vector::module_vector(int q, int n, int dim) {
   q_ = q;
   n_ = n;
@@ -203,7 +226,27 @@ bool module_vector_subtract(module_vector& in1, module_vector& in2, module_vecto
 }
 
 bool module_apply_array(module_array& A, module_vector& v, module_vector* out) {
-  return false;
+  if ((A.nc_ != v.dim_) || A.nr_ != out->dim_)
+    return false;
+
+  coefficient_vector acc(v.q_, v.n_);
+  coefficient_vector t(v.q_, v.n_);
+
+  for (int i = 0; i < A.nr_; i++) {
+    if (!coefficient_vector_zero(&acc))
+      return false;
+    for (int j = 0; j < v.dim_; j++) {
+      if (!coefficient_vector_zero(&t))
+        return false;
+      if (!vector_mult(*A.c_[A.index(i,j)], *v.c_[j], &t))
+        return false;
+      if (!coefficient_vector_add_to(t, &acc))
+        return false;
+    }
+    if (!coefficient_set_vector(acc, out->c_[i]))
+      return false;
+  }
+  return true;
 }
 
 void print_module_array(module_array& ma) {
