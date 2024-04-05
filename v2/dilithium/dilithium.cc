@@ -125,8 +125,10 @@ bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2, coeffici
   if (in1.c_.size() != in2.c_.size())
     return false;
 
+  if (!coefficient_vector_zero(out))
+    return false;
   vector<int> t_out;
-  t_out.resize(2 * in1.c_.size() - 1);
+  t_out.resize(in1.c_.size() + in2.c_.size() - 1);
   for (int i = 0; i < (int)t_out.size(); i++)
     t_out[i] = 0;
 
@@ -135,17 +137,20 @@ bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2, coeffici
       int64_t tt = (int64_t)in1.c_[i] * (int64_t)in2.c_[j];
       tt %= in1.q_;
       t_out[i + j] += (int) tt;
-      if (t_out[i + j] < 0)
-	t_out[i + j] += in1.q_;
+      t_out[i + j] %= (int) in1.q_;
+      // printf("tt: %d, t_out[%d] = %d\n", (int)tt, i+j, t_out[i + j]);
     }
   }
 
-  int m = (int)in1.c_.size() - 1;
-  for (int j = (2 * m); j > m; j--) {
-    t_out[j -  m] = reduce(t_out[j - m], t_out[j], in1.q_);
+  if ((int)in1.c_.size() == 256) {
+    int m = (int)in1.c_.size() - 1;
+    for (int j = (2 * m); j > m; j--) {
+      t_out[j -  m] = reduce(t_out[j - m], t_out[j], in1.q_);
+    }
   }
 
-  for (int j = 0; j <= m; j++)
+  // printf("size: %d\n", (int)t_out.size());
+  for (int j = 0; j < (int)t_out.size(); j++)
     out->c_[j] = t_out[j];
 
   return true;

@@ -66,7 +66,7 @@ bool test_coefficient_arith() {
   coefficient_vector v1(q, n);
   coefficient_vector v2(q, n);
   coefficient_vector out1(q, n);
-  coefficient_vector out2(q, n);
+  coefficient_vector out2(q, 2 * n);
 
   // x^2 + x + 1
   v1.c_[0] = 1;
@@ -78,6 +78,7 @@ bool test_coefficient_arith() {
   v2.c_[1] = q-1;
   v2.c_[2] = 1;
 
+  coefficient_vector_zero(&out1);
   if (!coefficient_add(v1, v2, &out1)) {
     printf("vector add fails\n");
     return false;
@@ -92,6 +93,7 @@ bool test_coefficient_arith() {
     printf(" mod(%d)\n", v1.q_);
   }
 
+  coefficient_vector_zero(&out2);
   if (!coefficient_mult(v1, v2, &out2)) {
     printf("vector mult fails\n");
     return false;
@@ -107,13 +109,18 @@ bool test_coefficient_arith() {
   }
 
   if (coefficient_equal(v1, v2)) {
+    printf("coefficient_equal fails\n");
     return false;
   }
 
-  if (out1.c_[2] != 2 || out1.c_[1] != 0 || out1.c_[0] != 3)
+  if (out1.c_[2] != 2 || out1.c_[1] != 0 || out1.c_[0] != 3) {
+    printf("coefficient_equal comparison fail 1\n");
     return false;
-  if (out2.c_[2] != 1 || out2.c_[1] != 1 || out2.c_[0] != 2)
+  }
+  if (out2.c_[4] != 1 || out2.c_[2] != 2 || out2.c_[1] != 1 || out2.c_[0] != 2) {
+    printf("coefficient_equal comparison fail 2\n");
     return false;
+  }
 
   if (!coefficient_set_vector(out1, &out2)) {
     printf("coefficient_set_vector failed\n");
@@ -136,10 +143,10 @@ bool test_coefficient_arith() {
 
   if (!coefficient_equal(zero, out1)) {
     printf("coefficient_vector_zero zero failed\n");
-    printf("out1 (%d): \n", out1.c_.size());
+    printf("out1 (%d): \n", (int)out1.c_.size());
     print_coefficient_vector(out1);
     printf("\n");
-    printf("zero (%d): \n", zero.c_.size());
+    printf("zero (%d): \n", (int)zero.c_.size());
     print_coefficient_vector(zero);
     printf("\n");
     return false;
@@ -264,8 +271,12 @@ bool test_module_arith() {
   scalar.c_[0] = 1;
   scalar.c_[2] = 1;
 
+  if (!make_module_vector_zero(&rt1)) {
+    return false;
+  }
+  return true;
   if (!module_vector_mult_by_scalar(scalar, s1, &rt1)) {
-    printf("imodule_vector_mult_by_scalar failed\n");
+    printf("module_vector_mult_by_scalar failed\n");
     return false;
   }
 
