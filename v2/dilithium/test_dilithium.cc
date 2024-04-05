@@ -158,8 +158,6 @@ bool test_coefficient_arith() {
 }
 
 bool random_module_vector_fill(module_vector* v) {
-  printf("random_module_vector_fill, q_: %d, n_: %d, dim_: %d\n", v->q_, v->n_, v->dim_);
-  return true;
   for (int i = 0; i < v->dim_; i++) {
     for (int k = 0; k < v->n_; k++) {
       unsigned t = 0;
@@ -181,12 +179,11 @@ bool test_module_arith() {
   }
 
   module_array A(params.q_, 256, params.k_, params.l_);
-  module_vector t(params.q_, params.n_, params.l_);
-  return true;
-  module_vector s1(params.q_, params.n_, params.k_);
-  module_vector s2(params.q_, params.n_, params.l_);
-  module_vector s3(params.q_, params.n_, params.k_);
-  module_vector s4(params.q_, params.n_, params.l_);
+  module_vector t(params.q_, params.n_, params.k_);
+  module_vector s1(params.q_, params.n_, params.l_);
+  module_vector s2(params.q_, params.n_, params.k_);
+  module_vector s3(params.q_, params.n_, params.l_);
+  module_vector s4(params.q_, params.n_, params.k_);
 
   if (FLAGS_print_all) {
     printf("A.q_: %d, A.n_: %d, A.nr_: %d, A.nc_: %d\n",
@@ -227,7 +224,6 @@ bool test_module_arith() {
     printf("random_module_vector_fill (4) failed\n");
     return false;
   }
-  return true;
 
   module_vector r1(params.q_, params.n_, params.l_);
   module_vector r2(params.q_, params.n_, params.k_);
@@ -235,11 +231,15 @@ bool test_module_arith() {
   module_vector rt2(params.q_, params.n_, params.k_);
 
   if (!module_vector_subtract(s1, s1, &r1)) {
-    printf("module_vector_subtract fails (1)\n");
+    printf("module_vector_subtract fails (1) %d %d %d\n", s1.dim_, s1.dim_, r1.dim_);
+    print_module_vector(r1);
+    printf("\n");
     return false;
   }
   if (!module_vector_is_zero(r1)) {
     printf("module_vector_subtract fails (1.5)\n");
+    print_module_vector(r1);
+    printf("\n");
     return false;
   }
   if (!module_vector_add(s1, s1, &r1)) {
