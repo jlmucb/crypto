@@ -157,18 +157,108 @@ bool test_coefficient_arith() {
   return true;
 }
 
+bool random_module_vector_fill(module_vector* v) {
+  printf("random_module_vector_fill, q_: %d, n_: %d, dim_: %d\n", v->q_, v->n_, v->dim_);
+  return true;
+  for (int i = 0; i < v->dim_; i++) {
+    for (int k = 0; k < v->n_; k++) {
+      unsigned t = 0;
+      int l = crypto_get_random_bytes(4, (byte*)&t);
+      t %= v->q_;
+      v->c_[i]->c_[k] = (int)t;
+    }
+  }
+  return true;
+}
+
 bool test_module_arith() {
 
-  // module_array A(params.q_, 256, params.k_, params.l_);
-  // module_vector t(params.q_, params.l_, params.n_);
-  // module_vector s1(params.q_, params.k_, params.n_);
-  // module_vector s2(params.q_, params.l_, params.n_);
+    dilithium_parameters params;
+    init_dilithium_parameters(&params);
+
+  if (FLAGS_print_all) {
+    print_dilithium_parameters(params);
+  }
+
+  module_array A(params.q_, 256, params.k_, params.l_);
+  module_vector t(params.q_, params.n_, params.l_);
+  return true;
+  module_vector s1(params.q_, params.n_, params.k_);
+  module_vector s2(params.q_, params.n_, params.l_);
+  module_vector s3(params.q_, params.n_, params.k_);
+  module_vector s4(params.q_, params.n_, params.l_);
+
+  if (FLAGS_print_all) {
+    printf("A.q_: %d, A.n_: %d, A.nr_: %d, A.nc_: %d\n",
+      A.q_, A.n_, A.nr_, A.nc_);
+  }
+
+  for (int r = 0; r < A.nr_; r++) {
+    for (int c = 0; c < A.nc_; c++) {
+      for (int k = 0; k < params.n_; k++) {
+        unsigned t = 0;
+        int l = crypto_get_random_bytes(4, (byte*)&t);
+        t %= params.q_;
+        if (A.c_[A.index(r, c)] == nullptr)
+          continue;
+        coefficient_vector* vp = A.c_[A.index(r, c)];
+        if (vp == nullptr)
+          continue;
+        // printf("k: %d t: %d, r: %d, c: %d, index: %d\n", k, t, r, c, A.index(r, c));
+        // printf("Size A.c_[A.index(r, c)].size %d\n", vp->c_.size());
+        A.c_[A.index(r, c)]->c_[k] = t;
+      }
+    }
+  }
+
+  if (!random_module_vector_fill(&s1)) {
+    printf("random_module_vector_fill (1) failed\n");
+    return false;
+  }
+  if (!random_module_vector_fill(&s2)) {
+    printf("random_module_vector_fill (2) failed\n");
+    return false;
+  }
+  if (!random_module_vector_fill(&s3)) {
+    printf("random_module_vector_fill (3) failed\n");
+    return false;
+  }
+  if (!random_module_vector_fill(&s4)) {
+    printf("random_module_vector_fill (4) failed\n");
+    return false;
+  }
+  return true;
+
+  module_vector r1(params.q_, params.n_, params.l_);
+  module_vector r2(params.q_, params.n_, params.k_);
+  module_vector rt1(params.q_, params.n_, params.l_);
+  module_vector rt2(params.q_, params.n_, params.k_);
+
+  if (!module_vector_subtract(s1, s1, &r1)) {
+    printf("module_vector_subtract fails (1)\n");
+    return false;
+  }
+  if (!module_vector_is_zero(r1)) {
+    printf("module_vector_subtract fails (1.5)\n");
+    return false;
+  }
+  if (!module_vector_add(s1, s1, &r1)) {
+    printf("module_vector_add fails (1)\n");
+    return false;
+  }
+
+  if (FLAGS_print_all) {
+    printf("s1:\n");
+    printf("s1+s1=:\n"); 
+    print_module_vector(r1);
+    printf("\n");
+  }
+
+  coefficient_vector scalar(s1.q_, s1.n_);
+  return true;
 
   // bool module_vector_mult_by_scalar(coefficient_vector& in1, module_vector& in2, module_vector* out);
-  // bool module_vector_add(module_vector& in1, module_vector& in2, module_vector* out);
-  // bool module_vector_subtract(module_vector& in1, module_vector& in2, module_vector* out);
   // bool module_apply_array(module_array& A, module_vector& v, module_vector* out);
-  // void print_module_vector(module_vector& mv);
   // void print_module_array(module_array& ma);
 
   return true;

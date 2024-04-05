@@ -95,6 +95,9 @@ bool module_vector_mult_by_scalar(coefficient_vector& in1, module_vector& in2, m
 bool module_vector_add(module_vector& in1, module_vector& in2, module_vector* out);
 bool module_vector_subtract(module_vector& in1, module_vector& in2, module_vector* out);
 bool module_apply_array(module_array& A, module_vector& v, module_vector* out);
+bool module_vector_is_zero(module_vector& in);
+bool make_module_vector_zero(module_vector* out);
+bool module_vector_equal(module_vector& in1, module_vector& in2);
 void print_module_vector(module_vector& mv);
 
 void print_dilithium_parameters(dilithium_parameters& p);

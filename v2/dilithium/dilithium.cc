@@ -182,11 +182,16 @@ module_vector::module_vector(int q, int n, int dim) {
   q_ = q;
   n_ = n;
   dim_ = dim;
-  c_ = new coefficient_vector*[dim];
+  c_ = new coefficient_vector* [dim];
+  for (int i = 0; i < dim; i++)
+    c_[i] = new coefficient_vector(q, n);
 }
 
 module_vector::~module_vector() {
-  // delete all the coefficient vectors
+  for (int i = 0; i < dim_; i++) {
+    delete c_[i];
+    c_[i] = nullptr;
+  }
   if (c_ != nullptr)
     delete []c_;
   c_ = nullptr;
@@ -357,6 +362,37 @@ bool rand_coefficient(int top, coefficient_vector& v) {
     s %= top;
     v.c_[k] = s;
   }
+  return true;
+}
+
+bool module_vector_is_zero(module_vector& in) {
+  for (int i = 0; i < in.dim_; i++) {
+    for (int j = 0; j < in.n_; j++) {
+      if (in.c_[i]->c_[j] != 0)
+        return false;
+    }
+  }
+  return true;
+}
+
+bool make_module_vector_zero(module_vector* out) {
+  for (int i = 0; i < out->dim_; i++) {
+    for (int j = 0; j < out->n_; j++) {
+        out->c_[i]->c_[j] = 0;
+    }
+  }
+  return true;
+}
+
+bool module_vector_equal(module_vector& in1, module_vector& in2) {
+  if (in1.dim_ != in2.dim_)
+    return false;
+
+  for (int i = 0; i < in1.dim_; i++) {
+    if (!coefficient_equal(*in1.c_[i], *in2.c_[i]))
+      return false;
+  }
+
   return true;
 }
 
