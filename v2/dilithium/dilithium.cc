@@ -122,13 +122,15 @@ int reduce(int a, int b, int q) {
 
 bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
   // multiply and reduce by (x**in1.c_.size() + 1)
-  if (in1.c_.size() != in2.c_.size())
+  if (in1.c_.size() != in2.c_.size() || out->c_.size() <  in2.c_.size()) {
+    printf("Size mismatch\n");
     return false;
+  }
 
   if (!coefficient_vector_zero(out))
     return false;
   vector<int> t_out;
-  t_out.resize(in1.c_.size() + in2.c_.size() - 1);
+  t_out.resize(2 * in1.c_.size() - 1);
   for (int i = 0; i < (int)t_out.size(); i++)
     t_out[i] = 0;
 
@@ -138,19 +140,15 @@ bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2, coeffici
       tt %= in1.q_;
       t_out[i + j] += (int) tt;
       t_out[i + j] %= (int) in1.q_;
-      // printf("tt: %d, t_out[%d] = %d\n", (int)tt, i+j, t_out[i + j]);
     }
   }
 
-  if ((int)in1.c_.size() == 256) {
     int m = (int)in1.c_.size() - 1;
     for (int j = (2 * m); j > m; j--) {
-      t_out[j -  m] = reduce(t_out[j - m], t_out[j], in1.q_);
+      t_out[j -  m - 1] = reduce(t_out[j - m - 1], t_out[j], in1.q_);
     }
-  }
 
-  // printf("size: %d\n", (int)t_out.size());
-  for (int j = 0; j < (int)t_out.size(); j++)
+  for (int j = 0; j < (int)in1.c_.size(); j++)
     out->c_[j] = t_out[j];
 
   return true;
