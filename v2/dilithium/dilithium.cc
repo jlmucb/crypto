@@ -294,8 +294,10 @@ void print_module_vector(module_vector& mv) {
   }
 }
 
+
 int inf_norm(vector<int> v) {
   int x = v[0];
+
   for (int i = 1; i < (int)v.size(); i++) {
     if (v[i] > x)
         x = v[i];
@@ -638,14 +640,19 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
     }
 
 #if 1
-    printf("tu1:\n");
+    printf("\ntu1:\n");
     print_module_vector(tu1);
     printf("\n");
     printf("tv1:\n");
     print_module_vector(tv1);
     printf("\n");
 #endif
+
     int inf = module_inf_norm(*z);
+#if 1
+    printf("sign: inf_norm(high_bits(z)) %d, g1-beta: %d\n",
+      inf, params.gamma_1_ - params.beta_);
+#endif
     if (inf >= (params.gamma_1_ - params.beta_)) {
 #if 1
       printf("sign: compare 1 failed\n");
@@ -659,15 +666,25 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
       return false;
     }
 
-    if (!module_vector_subtract(tv1, s2, &tv2)) {
+    if (!module_vector_subtract(tv1, tu2, &tv2)) {
       printf("sign:module_vector_mult_by_scalar failed\n");
       return false;
     }
 
     if (!module_low_bits(2 * params.gamma_2_, tv2, &w2)) {
+      printf("sign: module_low_bits failed\n");
       return false;
     }
+#if 1
+    printf("w2, 2 * params.gamma_2_: %d\n", 2 * params.gamma_2_);
+    print_module_vector(w2);
+    printf("\n");
+#endif
     int low = module_inf_norm(w2);
+#if 1
+    printf("sign: inf_norm(low_bits(tv2)) %d, g2-beta: %d\n",
+       low, params.gamma_2_ - params.beta_);
+#endif
     if (low >= (params.gamma_2_ - params.beta_)) {
 #if 0
       continue;

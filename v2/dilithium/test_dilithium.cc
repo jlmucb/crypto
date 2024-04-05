@@ -41,9 +41,9 @@ bool test_arith_support() {
   // high_bits
   int x = 0xfefefe;
   int a = 0x8ff;
-  int h =high_bits(x, a);
+  int h = high_bits(x, a);
   if (FLAGS_print_all) {
-    printf("x: %08x %d, a: %08x %d, h: %08x %d\n", x, x, a, a, h, h);
+    printf("x: %08x %d, a: %08x %d, high_bits: %08x %d\n", x, x, a, a, h, h);
   }
   if (h != 3628)
     return false;
@@ -51,7 +51,7 @@ bool test_arith_support() {
   // low_bits
   int  l = low_bits(x, a);
   if (FLAGS_print_all) {
-    printf("x: %08x %d, a: %08x %d, l: %08x %d\n", x, x, a, a, l, l);
+    printf("x: %08x %d, a: %08x %d, low_bits: %08x %d\n", x, x, a, a, l, l);
   }
   if (l != 854)
     return false;
@@ -186,6 +186,7 @@ bool test_module_arith() {
 
   if (FLAGS_print_all) {
     print_dilithium_parameters(params);
+    printf("\n");
   }
 
   module_array A(params.q_, 256, params.k_, params.l_);
@@ -358,6 +359,7 @@ bool test_dilithium1() {
 
   if (FLAGS_print_all) {
     print_dilithium_parameters(params);
+    printf("\n");
   }
 
   module_array A(params.q_, 256, params.k_, params.l_);
@@ -365,11 +367,6 @@ bool test_dilithium1() {
   module_vector s1(params.q_, params.n_, params.l_);
   module_vector s2(params.q_, params.n_, params.k_);
   
-  if (FLAGS_print_all) {
-    printf("A.q_: %d, A.n_: %d, A.nr_: %d, A.nc_: %d\n",
-      A.q_, A.n_, A.nr_, A.nc_);
-  }
-
   for (int r = 0; r < A.nr_; r++) {
     for (int c = 0; c < A.nc_; c++) {
       for (int k = 0; k < params.n_; k++) {
@@ -423,7 +420,7 @@ bool test_dilithium1() {
   }
 
   if (FLAGS_print_all) {
-    printf("z:\n");
+    printf("\nz:\n");
     print_module_vector(z);
     printf("\n");
     printf("c:\n");
