@@ -59,8 +59,14 @@ dilithium_parameters::~dilithium_parameters() {
 void print_coefficient_vector(coefficient_vector& v) {
   if (v.c_.size() == 0)
     return;
-  printf("(%d[%d] + ", v.c_[v.c_.size()-1], (int)v.c_.size()-1);
-  for (int i = (int)v.c_.size() - 2; i>0; i--) {
+  int k = (int)v.c_.size() - 1;
+  while (v.c_[k] == 0 && k > 0)
+    k--; 
+  if (k > 0)
+    printf("(%d[%d] + ", v.c_[k], k);
+  else
+    printf("(");
+  for (int i = k - 1; i > 0; i--) {
     printf("%d[%d] + ", v.c_[i], i);
     if ((i%8) ==0)
       printf("\n  ");
@@ -126,7 +132,7 @@ bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2, coeffici
 
   for (int i = 0; i < (int)in1.c_.size(); i++) {
     for (int j = 0; j < (int)in2.c_.size(); j++) {
-      int64_t tt = (int64_t)in1.c_[i] * (int64_t)in2.c_[i];
+      int64_t tt = (int64_t)in1.c_[i] * (int64_t)in2.c_[j];
       tt %= in1.q_;
       t_out[i + j] += (int) tt;
       if (t_out[i + j] < 0)
@@ -407,7 +413,9 @@ bool fill_module_vector_hash(module_vector& v, int size_coeff, int* sz_buf, byte
 }
 
 bool module_vector_mult_by_scalar(coefficient_vector& in1, module_vector& in2, module_vector* out) {
-
+  if (!make_module_vector_zero(out)) {
+    return false;
+  }
   for (int i = 0; i < in2.dim_; i++) {
     if (!coefficient_mult(in1, *in2.c_[i], (out->c_[i])))
       return false;

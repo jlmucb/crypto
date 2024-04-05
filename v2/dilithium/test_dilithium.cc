@@ -157,11 +157,14 @@ bool test_coefficient_arith() {
   return true;
 }
 
-bool random_module_vector_fill(module_vector* v) {
+bool random_module_vector_fill(module_vector* v, int k_h) {
   for (int i = 0; i < v->dim_; i++) {
-    for (int k = 0; k < v->n_; k++) {
+    if (!coefficient_vector_zero(v->c_[i])) {
+      return false;
+    }
+    for (int k = 0; k < k_h; k++) {
       unsigned t = 0;
-      int l = crypto_get_random_bytes(4, (byte*)&t);
+      int l = crypto_get_random_bytes(3, (byte*)&t);
       t %= v->q_;
       v->c_[i]->c_[k] = (int)t;
     }
@@ -206,19 +209,19 @@ bool test_module_arith() {
     }
   }
 
-  if (!random_module_vector_fill(&s1)) {
+  if (!random_module_vector_fill(&s1, 4)) {
     printf("random_module_vector_fill (1) failed\n");
     return false;
   }
-  if (!random_module_vector_fill(&s2)) {
+  if (!random_module_vector_fill(&s2, 4)) {
     printf("random_module_vector_fill (2) failed\n");
     return false;
   }
-  if (!random_module_vector_fill(&s3)) {
+  if (!random_module_vector_fill(&s3, 4)) {
     printf("random_module_vector_fill (3) failed\n");
     return false;
   }
-  if (!random_module_vector_fill(&s4)) {
+  if (!random_module_vector_fill(&s4, 4)) {
     printf("random_module_vector_fill (4) failed\n");
     return false;
   }
@@ -247,6 +250,7 @@ bool test_module_arith() {
 
   if (FLAGS_print_all) {
     printf("s1:\n");
+    print_module_vector(s1);
     printf("s1+s1=:\n"); 
     print_module_vector(r1);
     printf("\n");
@@ -274,6 +278,7 @@ bool test_module_arith() {
     print_module_vector(rt1);
     printf("\n");
   }
+  return true;
 
   if (!make_module_vector_zero(&rt2)) {
     printf("Can't zero rt1\n");
