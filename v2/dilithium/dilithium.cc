@@ -104,8 +104,9 @@ bool coefficient_equal(coefficient_vector& in1, coefficient_vector& in2) {
 bool coefficient_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
   if (in1.c_.size() != in2.c_.size() || out->c_.size() < in1.c_.size())
     return false;
-  for (int i = 0; i < (int)in1.c_.size(); i++)
+  for (int i = 0; i < (int)in1.c_.size(); i++) {
       out->c_[i] = (in1.c_[i] + in2.c_[i]) % in1.q_;
+  }
   return true;
 }
 
@@ -125,22 +126,13 @@ bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2, coeffici
 
   for (int i = 0; i < (int)in1.c_.size(); i++) {
     for (int j = 0; j < (int)in2.c_.size(); j++) {
-      t_out[i + j] = (t_out[i + j] + (in1.c_[i] * in2.c_[j])) % in1.q_;
+      int64_t tt = (int64_t)in1.c_[i] * (int64_t)in2.c_[i];
+      tt %= in1.q_;
+      t_out[i + j] += (int) tt;
+      if (t_out[i + j] < 0)
+	t_out[i + j] += in1.q_;
     }
-#if 0
-    printf("t_out (%d): ", i);
-    for (int k = t_out.size() - 1; k >= 0; k--)
-      printf("%d ", t_out[k]);
-  printf("\n");
-#endif
   }
-
-#if 0
-  printf("t_out: ");
-  for (int k = t_out.size() - 1; k >= 0; k--)
-    printf("%d ", t_out[k]);
-  printf("\n");
-#endif
 
   int m = (int)in1.c_.size() - 1;
   for (int j = (2 * m); j > m; j--) {
@@ -360,7 +352,7 @@ int module_array::index(int r, int c) {
 bool rand_coefficient(int top, coefficient_vector& v) {
   for (int k = 0; k < (int)v.c_.size(); k++) {
     int s = 0;
-    int m = crypto_get_random_bytes(4, (byte*)&s);
+    int m = crypto_get_random_bytes(3, (byte*)&s);
     s %= top;
     v.c_[k] = s;
   }
@@ -425,7 +417,10 @@ bool module_vector_mult_by_scalar(coefficient_vector& in1, module_vector& in2, m
 
 int rand_int_in_range(int i) {
   // pick # between 0 and i, inclusive
-  return 2;
+  int s = 0;
+  int m = crypto_get_random_bytes(3, (byte*)&s);
+  s %= i;
+  return s;
 }
 
 bool c_from_h(int size_in, byte* H, int* c) {
@@ -466,7 +461,7 @@ bool dilithium_keygen(dilithium_parameters& params, module_array* A,
     for (int c = 0; c < params.l_; r++) {
       for (int k = 0; k < params.n_; k++) {
             int s = 0;
-            int l = crypto_get_random_bytes(4, (byte*)&s);
+            int l = crypto_get_random_bytes(3, (byte*)&s);
             s %= params.q_;
             A->c_[A->index(r, c)]->c_[k] = s;
       }
@@ -546,7 +541,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
     for (int i = 0; i < (int)params.k_; i++) {
       for (int j = 0; j < (int)params.n_; j++) {
         unsigned s;
-        int l = crypto_get_random_bytes(4, (byte*)&s);
+        int l = crypto_get_random_bytes(3, (byte*)&s);
         s %= params.gamma_1_;
         y.c_[i]->c_[j] = (int) s;
       }
