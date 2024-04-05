@@ -454,7 +454,7 @@ bool c_from_h(int size_in, byte* H, int* c) {
 
 
 // A is R_q[k*l]
-// t is module coefficient vector of length l
+// t is module coefficient vector of length k
 // s1 is module coefficient vector of length l
 // s2 is module coefficient vector of length k
 bool dilithium_keygen(dilithium_parameters& params, module_array* A,
@@ -463,13 +463,15 @@ bool dilithium_keygen(dilithium_parameters& params, module_array* A,
   // s1: dim l, s2: dim k
   // tv = As1 (dim k)
   // t := tv + s2 (dim k)
-  if (t->dim_ != params.k_ || s1->dim_ != params.l_ || s2->dim_ != params.k_)
+  if (t->dim_ != params.k_ || s1->dim_ != params.l_ || s2->dim_ != params.k_) {
+    printf("keygen dims wrong, t: %d,  s1: %d, s2: %d, k: %d, l: %d\n",
+        t->dim_, s1->dim_, s2->dim_, params.k_, params.l_);
     return false;
+  }
 
   module_vector tv(params.q_, params.n_, params.k_);
-
   for (int r = 0; r < params.k_; r++) {
-    for (int c = 0; c < params.l_; r++) {
+    for (int c = 0; c < params.l_; c++) {
       for (int k = 0; k < params.n_; k++) {
             int s = 0;
             int l = crypto_get_random_bytes(3, (byte*)&s);
@@ -482,21 +484,24 @@ bool dilithium_keygen(dilithium_parameters& params, module_array* A,
   // (s_1, s_2) := S_eta^l x S_eta^k
   for (int ll = 0; ll < s1->dim_; ll++) {
       if (!rand_coefficient(params.eta_, *(s1->c_[ll]))) {
+        printf("rand_coefficient failed on s1\n");
         return false;
       }
   }
 
-  for (int ll = 0; ll < s1->dim_; ll++) {
+  for (int ll = 0; ll < s2->dim_; ll++) {
       if (!rand_coefficient(params.eta_, *(s2->c_[ll]))) {
+        printf("rand_coefficient failed on s2\n");
         return false;
       }
   }
 
   if (!module_apply_array(*A, *s1, &tv)) {
+        printf("module_apply_array failed\n");
     return false;
   }
   // t := As_1 + s_2
-  if (module_vector_add(tv, *s2, t)) {
+  if (!module_vector_add(tv, *s2, t)) {
     return false;
   }
   return true;

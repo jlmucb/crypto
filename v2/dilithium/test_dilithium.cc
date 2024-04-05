@@ -352,7 +352,6 @@ bool test_module_arith() {
 }
 
 bool test_dilithium1() {
-  return true;
 
   dilithium_parameters params;
   init_dilithium_parameters(&params);
@@ -362,9 +361,9 @@ bool test_dilithium1() {
   }
 
   module_array A(params.q_, 256, params.k_, params.l_);
-  module_vector t(params.q_, params.l_, params.n_);
-  module_vector s1(params.q_, params.k_, params.n_);
-  module_vector s2(params.q_, params.l_, params.n_);
+  module_vector t(params.q_, params.n_, params.k_);
+  module_vector s1(params.q_, params.n_, params.l_);
+  module_vector s2(params.q_, params.n_, params.k_);
   
   if (FLAGS_print_all) {
     printf("A.q_: %d, A.n_: %d, A.nr_: %d, A.nc_: %d\n",
@@ -382,13 +381,10 @@ bool test_dilithium1() {
         coefficient_vector* vp = A.c_[A.index(r, c)];
         if (vp == nullptr)
           continue;
-        // printf("k: %d t: %d, r: %d, c: %d, index: %d\n", k, t, r, c, A.index(r, c));
-        // printf("Size A.c_[A.index(r, c)].size %d\n", vp->c_.size());
         A.c_[A.index(r, c)]->c_[k] = t;
       }
     }
   }
-  return true;
 
   if (!dilithium_keygen(params, &A, &t, &s1, &s2)) {
     printf("dilithium_keygen failed\n");
@@ -408,6 +404,7 @@ bool test_dilithium1() {
     print_module_vector(s2);
     printf("\n");
   }
+  return true;
 
   int m_len = 3;
   byte M[3] = {0x1, 0x2, 0x3};
