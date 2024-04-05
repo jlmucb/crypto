@@ -201,8 +201,6 @@ bool test_module_arith() {
         coefficient_vector* vp = A.c_[A.index(r, c)];
         if (vp == nullptr)
           continue;
-        // printf("k: %d t: %d, r: %d, c: %d, index: %d\n", k, t, r, c, A.index(r, c));
-        // printf("Size A.c_[A.index(r, c)].size %d\n", vp->c_.size());
         A.c_[A.index(r, c)]->c_[k] = t;
       }
     }
@@ -255,11 +253,46 @@ bool test_module_arith() {
   }
 
   coefficient_vector scalar(s1.q_, s1.n_);
-  return true;
+  if (!coefficient_vector_zero(&scalar)) {
+    printf("Can't zero scalar\n");
+    return false;
+  }
+  scalar.c_[0] = 1;
+  scalar.c_[2] = 1;
 
-  // bool module_vector_mult_by_scalar(coefficient_vector& in1, module_vector& in2, module_vector* out);
-  // bool module_apply_array(module_array& A, module_vector& v, module_vector* out);
-  // void print_module_array(module_array& ma);
+  if (!module_vector_mult_by_scalar(scalar, s1, &rt1)) {
+    printf("imodule_vector_mult_by_scalar failed\n");
+    return false;
+  }
+
+  if (FLAGS_print_all) {
+    printf("scalar: \n");
+    print_coefficient_vector(scalar);
+    printf("\ns1: \n");
+    print_module_vector(s1);
+    printf("\nscalar * s1: \n");
+    print_module_vector(rt1);
+    printf("\n");
+  }
+
+  if (!make_module_vector_zero(&rt2)) {
+    printf("Can't zero rt1\n");
+    return false;
+  }
+  if (!module_apply_array(A, s1, &rt2)) {
+    printf("module_apply_array failed\n");
+    return false;
+  }
+
+  if (FLAGS_print_all) {
+    printf("A: \n");
+    print_module_array(A);
+    printf("\ns1: \n");
+    print_module_vector(s1);
+    printf("\nresult: \n");
+    print_module_vector(rt2);
+    printf("\n");
+  }
 
   return true;
 }

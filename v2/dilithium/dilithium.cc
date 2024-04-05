@@ -245,8 +245,10 @@ bool module_vector_subtract(module_vector& in1, module_vector& in2, module_vecto
 }
 
 bool module_apply_array(module_array& A, module_vector& v, module_vector* out) {
-  if ((A.nc_ != v.dim_) || A.nr_ != out->dim_)
+  if ((A.nc_ != v.dim_) || A.nr_ != out->dim_) {
+    printf("mismatch, nc: %d, v: %d, nr: %d, out: %d\n", A.nc_,  v.dim_, A.nr_, out->dim_);
     return false;
+  }
 
   coefficient_vector acc(v.q_, v.n_);
   coefficient_vector t(v.q_, v.n_);
@@ -281,8 +283,8 @@ void print_module_array(module_array& ma) {
 
 void print_module_vector(module_vector& mv) {
   for (int i = 0; i < (int)mv.dim_; i++) {
-    print_coefficient_vector(*mv.c_[i]);
     printf("[%d] = ", i);
+    print_coefficient_vector(*mv.c_[i]);
     printf("\n");
   }
 }
