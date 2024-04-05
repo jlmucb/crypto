@@ -519,8 +519,6 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
                 module_vector& s1, module_vector& s2, int m_len, byte* M,
                 module_vector* z, int len_c, byte* c) {
 
-  return true;
-
   // y: dim l_
   // tv1 = Ay, dim k
   // w1 = high_bits(w1), dim k
@@ -529,12 +527,14 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
   // tu2 = c*s2, dim k
   // tv2 = tv1 - tu2, dim k
   // w2 = low_bits(tv2), dim k
-  if (t.dim_ != params.k_ || s1.dim_ != params.l_ || z->dim_ != params.k_)
+  if (t.dim_ != params.k_ || s1.dim_ != params.l_ || s2.dim_ != params.k_ || z->dim_ != params.l_) {
+    printf("sign: wrong dimensions, t: %d, s1: %d, s2: %d, z: %d\n",
+      t.dim_, s1.dim_, s2.dim_, z->dim_);
     return false;
+  }
 
   bool done = false;
-
-#if 1
+  memset(c, 0, len_c);
   int w_h_len = params.k_ * params.n_ * sizeof(int);
   byte w_h[w_h_len];
   memset(w_h, 0, w_h_len);
@@ -554,7 +554,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
     memset(c, 0, t_len);
 
     // construct y
-    for (int i = 0; i < (int)params.k_; i++) {
+    for (int i = 0; i < (int)params.l_; i++) {
       for (int j = 0; j < (int)params.n_; j++) {
         unsigned s;
         int l = crypto_get_random_bytes(3, (byte*)&s);
@@ -564,65 +564,108 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
     }
 
     if (!module_apply_array(A, y, &tv1)) {
+      printf("sign: module_apply_array failed\n");
       return false;
     }
+#if 1
+    printf("y:\n");
+    print_module_vector(y);
+    printf("tv1:\n");
+    print_module_vector(tv1);
+#endif
 
     if (!module_high_bits(2 * params.gamma_2_, tv1, &w1)) {
+      printf("sign: module_high_bits failed\n");
       return false;
     }
+#if 1
+    printf("w1:\n");
+    print_module_vector(w1);
+#endif
 
     // in = M || w1
+    if (!H.init(512, 256)) {
+      printf("sign: hash init failed\n");
+      return false;
+    }
     H.add_to_hash(m_len, M);
 
     int tsz = w_h_len;
     if (!fill_module_vector_hash(w1, params.n_, &tsz, w_h)) {
+      printf("sign: fill_module_vector_hash failed\n");
       return false;
     }
 
     H.add_to_hash(tsz, w_h);
     H.shake_finalize();
     if (!H.get_digest(H.num_out_bytes_, c)) {
+      printf("sign: get digest failed\n");
       return false;
     }
 
     int cc[256];
-    if (!c_from_h(32, c, cc))
+    memset((byte*)cc, 0, 256 * sizeof(int));
+    if (!c_from_h(32, c, cc)) {
+      printf("sign: c_from_h\n");
       return false;
+    }
+#if 1
+    printf("cc:\n");
+    for (int kk = 0; kk < 256; kk++) {
+      if (cc[kk] == 0)
+	printf("0");
+      else if (cc[kk] == 1)
+	printf("+");
+      else if (cc[kk] == -1)
+	printf("-");
+      if ((kk%64)==63)
+        printf("\n");
+    }
+#endif
     for (int i = 0; i < c_poly.len_; i++) {
         c_poly.c_[i] = cc[i];
     }
     if (!module_vector_mult_by_scalar(c_poly, s1, &tu1)) {
+      printf("sign: module_vector_mult_by_scalar failed\n");
       return false;
     }
 
     if (!module_vector_add(y, tu1, z)) {
+      printf("sign: module_vector_add failed\n");
       return false;
     }
 
     int inf = module_inf_norm(*z);
     if (inf >= (params.gamma_1_ - params.beta_)) {
-      return false;
+#if 1
+      printf("sign: compare 1 failed\n");
+#else
+      continue;
+#endif
     }
 
     if (!module_vector_mult_by_scalar(c_poly, s2, &tu2)) {
+      printf("sign: module_vector_mult_by_scalar failed\n");
       return false;
     }
 
     if (!module_vector_subtract(tv1, s2, &tv2)) {
+      printf("sign:module_vector_mult_by_scalar failed\n");
       return false;
     }
 
     if (!module_low_bits(2 * params.gamma_2_, tv2, &w2)) {
-      continue;
+      return false;
     }
     int low = module_inf_norm(w2);
     if (low >= (params.gamma_2_ - params.beta_)) {
+#if 0
       continue;
+#endif
     }
 
     done = true;
   }
-#endif
 
   return true;
 }
