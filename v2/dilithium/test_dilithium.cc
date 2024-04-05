@@ -430,7 +430,6 @@ bool test_dilithium1() {
     print_bytes(len_c, c); 
     printf("\n");
   }
-  return true;
 
   if (dilithium_verify(params,  A,  t, m_len, M, z, len_c, c)) {
     printf("dilithium_verify succeeded\n");

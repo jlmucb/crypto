@@ -148,8 +148,12 @@ bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2, coeffici
       t_out[j -  m - 1] = reduce(t_out[j - m - 1], t_out[j], in1.q_);
     }
 
-  for (int j = 0; j < (int)in1.c_.size(); j++)
-    out->c_[j] = t_out[j];
+  for (int j = 0; j < (int)in1.c_.size(); j++) {
+    if (t_out[j] >= 0)
+      out->c_[j] = t_out[j];
+    else
+      out->c_[j] = (in1.q_ + t_out[j]) % in1.q_;
+  }
 
   return true;
 }
@@ -568,8 +572,6 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
       return false;
     }
 #if 1
-    printf("y:\n");
-    print_module_vector(y);
     printf("tv1:\n");
     print_module_vector(tv1);
 #endif
@@ -635,6 +637,14 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
       return false;
     }
 
+#if 1
+    printf("tu1:\n");
+    print_module_vector(tu1);
+    printf("\n");
+    printf("tv1:\n");
+    print_module_vector(tv1);
+    printf("\n");
+#endif
     int inf = module_inf_norm(*z);
     if (inf >= (params.gamma_1_ - params.beta_)) {
 #if 1
@@ -676,13 +686,11 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A,
         module_vector& t, int m_len, byte* M,
         module_vector& z, int len_c, byte* c) {
 
-  return true;
 
   // tv1 = Az, dim k
   // tu = ct, dim k
   // tv2 = tv1-tu, dim k
   // w1 = high_bits(tv2), dim k
-#if 1
   int w_h_len = params.k_ * params.n_ * (int)sizeof(int);
   byte w_h[w_h_len];
   memset(w_h, 0, w_h_len);
@@ -744,6 +752,5 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A,
     return false;
 
   return memcmp(c, tc, t_len) == 0;
-#endif
 }
 
