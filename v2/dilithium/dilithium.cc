@@ -140,7 +140,6 @@ bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2, coeffici
       int64_t tt = (int64_t)in1.c_[i] * (int64_t)in2.c_[j];
       tt %= in1.q_;
       t_out[i + j] += (int) tt;
-      t_out[i + j] %= (int) in1.q_;
     }
   }
 
@@ -151,7 +150,7 @@ bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2, coeffici
 
   for (int j = 0; j < (int)in1.c_.size(); j++) {
     if (t_out[j] >= 0)
-      out->c_[j] = t_out[j];
+      out->c_[j] = t_out[j] % in1.q_;
     else
       out->c_[j] = (in1.q_ + t_out[j]) % in1.q_;
   }
@@ -180,6 +179,7 @@ bool coefficient_vector_add_to(coefficient_vector& in, coefficient_vector* out) 
     return false;
   for (int i = 0; i < in.len_; i++) {
       out->c_[i] += in.c_[i];
+      out->c_[i] %= in.q_;
   }
   return true;
 }
@@ -606,7 +606,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
 #if 1
     printf("\ny (%d):\n", params.gamma_1_);
     print_module_vector(y);
-    printf("tv1=Ay:\n");
+    printf("\ntv1=Ay:\n");
     print_module_vector(tv1);
 #endif
 

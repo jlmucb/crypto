@@ -396,24 +396,22 @@ bool test_dilithium1() {
   }
 
   if (FLAGS_print_all) {
-    printf("A:\n");
+    printf("\nA:\n");
     // print_module_array(A);
-    printf("t:\n");
-    print_module_vector(t);
-    printf("\n");
-    printf("s1:\n");
+    printf("\ns1 (%d):\n", params.eta_);
     print_module_vector(s1);
     printf("\n");
-    printf("s2:\n");
+    printf("\ns2 (%d):\n", params.eta_);
     print_module_vector(s2);
-    printf("\n");
+    printf("\nt=As1+s2:\n");
+    print_module_vector(t);
   }
 
   int m_len = 3;
   byte M[3] = {0x1, 0x2, 0x3};
 
   if (FLAGS_print_all) {
-    printf("To sign: ");
+    printf("\nTo sign: ");
     print_bytes(3, M);
     printf("\n");
   }
