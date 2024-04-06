@@ -418,16 +418,20 @@ bool test_dilithium1() {
     printf("\n");
   }
 
-  module_vector z(params.q_, params.n_, params.l_);
   int len_c = 32;
   byte c[len_c];
-  if (!dilithium_sign(params,  A, t, s1, s2, m_len, M, &z, len_c, c)) {
+  int len_cc = 256;
+  int cc[256];
+  memset(c, 0, len_c);
+  memset(cc, 0, len_cc * sizeof(int));
+
+  module_vector z(params.q_, params.n_, params.l_);
+  if (!dilithium_sign(params,  A, t, s1, s2, m_len, M, &z, len_c, c, len_cc, cc)) {
     printf("dilithium_sign failed\n");
     return false;
   }
 
-  //if (FLAGS_print_all) {
-  if (0) {
+  if (FLAGS_print_all) {
     printf("\nz:\n");
     print_module_vector(z);
     printf("\n");
@@ -437,7 +441,7 @@ bool test_dilithium1() {
   }
   return true;
 
-  if (dilithium_verify(params,  A,  t, m_len, M, z, len_c, c)) {
+  if (dilithium_verify(params,  A,  t, m_len, M, z, len_c, c, len_cc, cc)) {
     printf("dilithium_verify succeeded\n");
   } else {
     printf("dilithium_verify failed\n");
