@@ -116,6 +116,7 @@ bool coefficient_add(coefficient_vector& in1, coefficient_vector& in2, coefficie
   return true;
 }
 
+// Note: (1753)^256 = -1 (mod q)
 int reduce(int a, int b, int q) {
   return (q + a - b) % q;
 }
@@ -280,7 +281,6 @@ void print_module_array(module_array& ma) {
     for (int c = 0; c < ma.nc_; c++) {
       printf("A[%d, %d] = ", r + 1, c + 1);
       print_coefficient_vector(*ma.c_[ma.index(r, c)]);
-      printf("\n");
     }
   }
   printf("\n");
@@ -290,7 +290,6 @@ void print_module_vector(module_vector& mv) {
   for (int i = 0; i < (int)mv.dim_; i++) {
     printf("[%d] = ", i);
     print_coefficient_vector(*mv.c_[i]);
-    printf("\n");
   }
 }
 
@@ -308,12 +307,18 @@ int center_normalize(int x, int a) {
   }
 }
 
+inline int abs(int x) {
+  if (x >= 0)
+    return x;
+  return -x;
+}
+
 int inf_norm(vector<int> v) {
-  int x = v[0];
+  int x = abs(v[0]);
 
   for (int i = 1; i < (int)v.size(); i++) {
-    if (v[i] > x)
-        x = v[i];
+    if (abs(v[i]) > x)
+        x = abs(v[i]);
   }
   return x;
 }
@@ -332,25 +337,30 @@ int module_inf_norm(module_vector& mv) {
 
 int high_bits(int x, int a) {
   // x = x_high*2*a + x_low
+  x = abs(x);  // check
   return x / (2 * a);
 }
 
 int low_bits(int x, int a) {
   // x = x_high*2*a + x_low
+  x = abs(x); // check
   int k = x / (2 * a);
-  return x - k * 2 * a;  //shift?
+  int y = x - (k * 2 * a);
+  if (y >= 2*a)
+    printf("Huh?\n");
+  return y;
 }
 
 bool coefficients_high_bits(int a, coefficient_vector& in, coefficient_vector* out) {
   for (int i = 0; i < in.len_; i++) {
-    out->c_[i] = high_bits(in.c_[i], a);
+    out->c_[i] = high_bits(center_normalize(in.c_[i], in.q_), a);
   }
   return true;
 }
 
 bool coefficients_low_bits(int a, coefficient_vector& in, coefficient_vector* out) {
   for (int i = 0; i < in.len_; i++) {
-    out->c_[i] = low_bits(in.c_[i], a);
+    out->c_[i] = low_bits(center_normalize(in.c_[i], in.q_), a);
   }
   return true;
 }
@@ -540,7 +550,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
 
   // y: dim l_
   // tv1 = Ay, dim k
-  // w1 = high_bits(w1), dim k
+  // w1 = high_bits(tv1), dim k
   // tu1 = c*s1, dim l
   // z = y + c tu1, dim l
   // tu2 = c*s2, dim k
@@ -565,6 +575,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
     module_vector tv2(params.q_, params.n_, params.k_);
     module_vector w1(params.q_, params.n_, params.k_);
     module_vector w2(params.q_, params.n_, params.k_);
+    module_vector w3(params.q_, params.n_, params.k_);
     module_vector tu1(params.q_, params.n_, params.l_);
     module_vector tu2(params.q_, params.n_, params.k_);
     coefficient_vector c_poly(params.q_, params.n_);
@@ -575,7 +586,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
     // construct y
     for (int i = 0; i < (int)params.l_; i++) {
       for (int j = 0; j < (int)params.n_; j++) {
-        unsigned s;
+        unsigned s = 0;
         int l = crypto_get_random_bytes(3, (byte*)&s);
         s %= params.gamma_1_;
         y.c_[i]->c_[j] = (int) s;
@@ -653,14 +664,13 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
     }
 
 #if 1
+    printf("\ny (%d):\n", params.gamma_1_);
+    print_module_vector(y);
     printf("\ntu1:\n");
     print_module_vector(tu1);
-    printf("\n");
-    printf("tv1:\n");
-    print_module_vector(tv1);
-    printf("\n");
+    printf("z:\n");
+    print_module_vector(*z);
 #endif
-
     int inf = module_inf_norm(*z);
 #if 1
     printf("sign: inf_norm(high_bits(z)) %d, g1-beta: %d\n",
@@ -679,21 +689,26 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
       return false;
     }
 
+    make_module_vector_zero(&tv2);
+    make_module_vector_zero(&w3);
     if (!module_vector_subtract(tv1, tu2, &tv2)) {
       printf("sign:module_vector_mult_by_scalar failed\n");
       return false;
     }
 
-    if (!module_low_bits(2 * params.gamma_2_, tv2, &w2)) {
+    if (!module_low_bits(2 * params.gamma_2_, tv2, &w3)) {
       printf("sign: module_low_bits failed\n");
       return false;
     }
 #if 1
-    printf("w2, 2 * params.gamma_2_: %d\n", 2 * params.gamma_2_);
-    print_module_vector(w2);
+    printf("tv2:\n");
+    print_module_vector(tv2);
+    printf("\n");
+    printf("w3, 2 * params.gamma_2_: %d\n", 2 * params.gamma_2_);
+    print_module_vector(w3);
     printf("\n");
 #endif
-    int low = module_inf_norm(w2);
+    int low = module_inf_norm(w3);
 #if 1
     printf("sign: inf_norm(low_bits(tv2)) %d, g2-beta: %d\n",
        low, params.gamma_2_ - params.beta_);
