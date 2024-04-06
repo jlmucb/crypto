@@ -604,7 +604,9 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
       return false;
     }
 #if 1
-    printf("tv1:\n");
+    printf("\ny (%d):\n", params.gamma_1_);
+    print_module_vector(y);
+    printf("tv1=Ay:\n");
     print_module_vector(tv1);
 #endif
 
@@ -613,7 +615,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
       return false;
     }
 #if 1
-    printf("w1:\n");
+    printf("w1=high_bits(Ay):\n");
     print_module_vector(w1);
 #endif
 
@@ -669,11 +671,9 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
     }
 
 #if 1
-    printf("\ny (%d):\n", params.gamma_1_);
-    print_module_vector(y);
-    printf("\ntu1:\n");
+    printf("\ntu1= cs1:\n");
     print_module_vector(tu1);
-    printf("\nz:\n");
+    printf("\nz=y+cs1:\n");
     print_module_vector(*z);
 #endif
     int inf = module_inf_norm(*z);
@@ -707,17 +707,17 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
       return false;
     }
 #if 1
-    printf("\ntu2:\n");
+    printf("\ntu2=cs2:\n");
     print_module_vector(tu2);
-    printf("\ntv2:\n");
+    printf("\ntv2=Ay-cs2:\n");
     print_module_vector(tv2);
-    printf("\nw3, 2 * params.gamma_2_: %d\n", 2 * params.gamma_2_);
+    printf("\nw3=low_bits(Ay-cs2), 2 * params.gamma_2_: %d\n", 2 * params.gamma_2_);
     print_module_vector(w3);
     printf("\n");
 #endif
     int low = module_inf_norm(w3);
 #if 1
-    printf("sign: inf_norm(low_bits(tv2)) %d, g2-beta: %d\n",
+    printf("sign: inf_norm(low_bits(Ay-cs2)) %d, g2-beta: %d\n",
        low, params.gamma_2_ - params.beta_);
 #endif
     if (low >= (params.gamma_2_ - params.beta_)) {
@@ -770,7 +770,37 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A,
   module_vector tv2(params.q_, params.n_, params.k_);
   module_vector tu(params.q_, params.n_, params.k_);
   module_vector w1(params.q_, params.n_, params.k_);
+  module_vector w2(params.q_, params.n_, params.k_);
   coefficient_vector c_poly(params.q_, params.n_);
+
+  if (!module_apply_array(A, z, &tv1)) {
+    return false;
+  }
+  for (int i = 0; i < c_poly.len_; i++) {
+      c_poly.c_[i] = cc[i];
+  }
+  if (!module_vector_mult_by_scalar(c_poly, t, &tu)) {
+    return false;
+  }
+  if (!module_vector_subtract(tv1, tu, &tv2)) {
+    return false;
+  }
+#if 1
+    printf("\ntv1= Az:\n");
+    print_module_vector(tv1);
+    printf("\ntu= ct:\n");
+    print_module_vector(tu);
+    printf("\ntv2= Az-ct:\n");
+    print_module_vector(tv2);
+#endif
+
+  if (!module_high_bits(2 * params.gamma_2_, tv2, &w1)) {
+    return false;
+  }
+#if 1
+    printf("\nw1= high_bits(Az-ct):\n");
+    print_module_vector(w1);
+#endif
 
   H.add_to_hash(m_len, M);
   // this is not quite right
@@ -784,29 +814,13 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A,
     return false;
   }
 
-  if (!module_apply_array(A, z, &tv1)) {
+  int inf_z = module_inf_norm(z);
+#if 1
+    printf("inf_norm(z) = %d, params.gamma_1_ - params.beta_ = %d\n", inf_z,params.gamma_1_ - params.beta_);
+#endif
+  if (inf_z >= (params.gamma_1_ - params.beta_)) {
     return false;
   }
-
-  for (int i = 0; i < c_poly.len_; i++) {
-      c_poly.c_[i] = cc[i];
-  }
-  if (!module_vector_mult_by_scalar(c_poly, t, &tu)) {
-    return false;
-  }
-
-  // actually subtract
-  if (!module_vector_subtract(tv1, tu, &tv2)) {
-    return false;
-  }
-
-  if (!module_high_bits(2 * params.gamma_2_, tv2, &w1)) {
-    return false;
-  }
-
-  if (module_inf_norm(z) >= (params.gamma_1_ - params.beta_))
-    return false;
 
   return memcmp(c, tc, t_len) == 0;
 }
-
