@@ -23,6 +23,13 @@ DEFINE_bool(print_all, false, "Print intermediate test computations");
 
 bool test_arith_support() {
 
+  int p = 11;
+  for (int x = 0; x < p; x++) {
+    int k1 = center_normalize(x, p);
+    int k2 = center_normalize(-x, p);
+    printf("center normalize(%d): %d, %d; %d, %d\n", p, x, k1, -x, k2);
+  }
+
   // inf_norm
   vector<int> v;
   for (int i = 0; i < 20; i++)

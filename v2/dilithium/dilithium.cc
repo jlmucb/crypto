@@ -294,6 +294,19 @@ void print_module_vector(module_vector& mv) {
   }
 }
 
+int center_normalize(int x, int a) {
+  int b = (a -1) /2;
+  if (x >= 0) {
+    if (x <= b) {
+      return x;
+    } 
+    return (x - a);
+  } else {
+    if (x >= -b)
+      return x;
+    return (x + a);
+  }
+}
 
 int inf_norm(vector<int> v) {
   int x = v[0];
@@ -617,11 +630,11 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
     printf("cc:\n");
     for (int kk = 0; kk < 256; kk++) {
       if (cc[kk] == 0)
-	printf("0");
+        printf("0");
       else if (cc[kk] == 1)
-	printf("+");
+        printf("+");
       else if (cc[kk] == -1)
-	printf("-");
+        printf("-");
       if ((kk%64)==63)
         printf("\n");
     }

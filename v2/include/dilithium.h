@@ -38,6 +38,7 @@ public:
   int beta_;
 };
 
+int center_normalize(int x, int a);
 int inf_norm(vector<int> v);
 int high_bits(int x, int a);
 int low_bits(int x, int a);
