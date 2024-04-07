@@ -716,6 +716,26 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
     printf("\nw3=low_bits(Ay-cs2), 2 * params.gamma_2_: %d\n", 2 * params.gamma_2_);
     print_module_vector(w3);
     printf("\n");
+    module_vector wa(params.q_, params.n_, params.k_);
+    if (!module_low_bits(2 * params.gamma_2_, tu2, &wa)) {
+      printf("sign: module_low_bits failed\n");
+      return false;
+    }
+    printf("lowbits(cs2):\n");
+    print_module_vector(wa);
+    printf("\n");
+    module_vector wb(params.q_, params.n_, params.k_);
+    if (!module_low_bits(2 * params.gamma_2_, tv1, &wb)) {
+      printf("sign: module_low_bits failed\n");
+      return false;
+    }
+    int l1 = module_inf_norm(wa);
+    printf("inf_norm(low_bits(cs2)): %d\n", l1);
+    printf("lowbits(Ay):\n");
+    print_module_vector(wb);
+    printf("\n");
+    int l2 = module_inf_norm(wb);
+    printf("inf_norm(low_bits(Ay)): %d\n", l2);
 #endif
     int low = module_inf_norm(w3);
 #if 1
