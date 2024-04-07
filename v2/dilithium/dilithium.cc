@@ -731,7 +731,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
     }
     int l1 = module_inf_norm(wa);
     printf("inf_norm(low_bits(cs2)): %d\n", l1);
-    printf("lowbits(Ay):\n");
+    printf("\nlowbits(Ay):\n");
     print_module_vector(wb);
     printf("\n");
     int l2 = module_inf_norm(wb);
