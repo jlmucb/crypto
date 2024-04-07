@@ -50,7 +50,7 @@ bool test_arith_support() {
   // high_bits
   int x = 0xfefefe;
   int a = 0x8ff;
-  int h = high_bits(x, a);
+  int h = high_bits(x, a, a + 50000000);
   if (FLAGS_print_all) {
     printf("x: %08x %d, a: %08x %d, high_bits: %08x %d\n", x, x, a, a, h, h);
   }
@@ -60,7 +60,7 @@ bool test_arith_support() {
   }
 
   // low_bits
-  int  l = low_bits(x, a);
+  int  l = low_bits(x, a, a + 50000000);
   if (FLAGS_print_all) {
     printf("x: %08x %d, a: %08x %d, low_bits: %08x %d\n", x, x, a, a, l, l);
   }
@@ -450,7 +450,7 @@ bool test_dilithium1() {
   if (FLAGS_print_all) {
     printf("\n\nverify******\n\n");
   }
-#if 1
+#ifdef VERIFYDEBUG
   if(dilithium_verify(params,  A,  t, m_len, M, z, len_c, c, len_cc, cc))
     printf("Would return true\n");
   else

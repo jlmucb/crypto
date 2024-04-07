@@ -40,8 +40,13 @@ public:
 
 int center_normalize(int x, int a);
 int inf_norm(vector<int> v);
+#if 1
+int high_bits(int x, int a, int q);
+int low_bits(int x, int a, int q);
+#else
 int high_bits(int x, int a);
 int low_bits(int x, int a);
+#endif
 
 class coefficient_vector {
 public:
