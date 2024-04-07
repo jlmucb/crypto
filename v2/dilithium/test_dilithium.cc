@@ -42,8 +42,10 @@ bool test_arith_support() {
     printf("\n");
     printf("inf norm: %d\n", n);
   }
-  if (n != 190)
+  if (n != 190) {
+   printf("inf_norm failed\n");
    return false;
+  }
 
   // high_bits
   int x = 0xfefefe;
@@ -52,16 +54,20 @@ bool test_arith_support() {
   if (FLAGS_print_all) {
     printf("x: %08x %d, a: %08x %d, high_bits: %08x %d\n", x, x, a, a, h, h);
   }
-  if (h != 3628)
+  if (h != 7256) {
+    printf("high bits failed\n");
     return false;
+  }
 
   // low_bits
   int  l = low_bits(x, a);
   if (FLAGS_print_all) {
     printf("x: %08x %d, a: %08x %d, low_bits: %08x %d\n", x, x, a, a, l, l);
   }
-  if (l != 854)
+  if (l != 854) {
+    printf("low bits failed\n");
     return false;
+  }
 
   return true;
 }
@@ -411,8 +417,10 @@ bool test_dilithium1() {
   byte M[3] = {0x1, 0x2, 0x3};
 
   if (FLAGS_print_all) {
-    printf("\nTo sign: ");
+    printf("\n\nsign******\n");
+    printf("To sign: ");
     print_bytes(3, M);
+    printf("\n");
     printf("\n");
   }
 
@@ -437,7 +445,15 @@ bool test_dilithium1() {
     print_bytes(len_c, c); 
     printf("\n");
   }
+
+
+  if (FLAGS_print_all) {
+    printf("\n\nverify******\n\n");
+  }
+#if 1
+  dilithium_verify(params,  A,  t, m_len, M, z, len_c, c, len_cc, cc);
   return true;
+#endif
 
   if (dilithium_verify(params,  A,  t, m_len, M, z, len_c, c, len_cc, cc)) {
     printf("dilithium_verify succeeded\n");

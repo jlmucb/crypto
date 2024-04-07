@@ -238,6 +238,7 @@ bool module_vector_add(module_vector& in1, module_vector& in2, module_vector* ou
   return true;
 }
 
+// out = in1 - in2
 bool module_vector_subtract(module_vector& in1, module_vector& in2, module_vector* out) {
   if (in1.dim_ != in2.dim_ || in1.dim_ != out->dim_)
     return false;
@@ -483,6 +484,20 @@ bool c_from_h(int size_in, byte* H, int* c) {
   return true;
 }
 
+void print_cc(int len, int* cc) {
+  printf("cc:\n");
+  for (int kk = 0; kk < len; kk++) {
+    if (cc[kk] == 0)
+      printf("0");
+    else if (cc[kk] == 1)
+      printf("+");
+    else if (cc[kk] == -1)
+      printf("-");
+    if ((kk%64)==63)
+      printf("\n");
+  }
+}
+
 
 // A is R_q[k*l]
 // t is module coefficient vector of length k
@@ -580,7 +595,6 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
     module_vector tv1(params.q_, params.n_, params.k_);
     module_vector tv2(params.q_, params.n_, params.k_);
     module_vector w1(params.q_, params.n_, params.k_);
-    module_vector w2(params.q_, params.n_, params.k_);
     module_vector w3(params.q_, params.n_, params.k_);
     module_vector tu1(params.q_, params.n_, params.l_);
     module_vector tu2(params.q_, params.n_, params.k_);
@@ -615,7 +629,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
       return false;
     }
 #if 1
-    printf("w1=high_bits(Ay):\n");
+    printf("\nw1=high_bits(Ay):\n");
     print_module_vector(w1);
 #endif
 
@@ -645,17 +659,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
       return false;
     }
 #if 1
-    printf("cc:\n");
-    for (int kk = 0; kk < 256; kk++) {
-      if (cc[kk] == 0)
-        printf("0");
-      else if (cc[kk] == 1)
-        printf("+");
-      else if (cc[kk] == -1)
-        printf("-");
-      if ((kk%64)==63)
-        printf("\n");
-    }
+    print_cc(256, cc);
 #endif
     for (int i = 0; i < c_poly.len_; i++) {
         c_poly.c_[i] = cc[i];
@@ -664,7 +668,6 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
       printf("sign: module_vector_mult_by_scalar failed\n");
       return false;
     }
-
     if (!module_vector_add(y, tu1, z)) {
       printf("sign: module_vector_add failed\n");
       return false;
@@ -683,7 +686,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
 #endif
     if (inf >= (params.gamma_1_ - params.beta_)) {
 #if 1
-      printf("sign: compare 1 failed\n");
+      printf("sign: compare 1(z) failed\n");
 #else
       printf("sign: compare 1 failed\n");
       continue;
@@ -701,7 +704,6 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
       printf("sign:module_vector_mult_by_scalar failed\n");
       return false;
     }
-
     if (!module_low_bits(2 * params.gamma_2_, tv2, &w3)) {
       printf("sign: module_low_bits failed\n");
       return false;
@@ -724,7 +726,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
 #if 1
       printf("compare 2 fail\n");
 #else
-      printf("compare 2 fail\n");
+      printf("compare 2 (low_bits(Ay-cs2) fail\n");
       continue;
 #endif
     }
@@ -735,7 +737,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
   return true;
 }
 
-// w_1' := highbits(Az-ct, 2g2)
+// w_1 := highbits(Az-ct, 2g2)
 // return ||z||_inf < g1-beta and c == H(M||w1)
 bool dilithium_verify(dilithium_parameters& params,  module_array& A,
         module_vector& t, int m_len, byte* M,
@@ -757,11 +759,6 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A,
   byte added_w[w_len];
   sha3 H;
 
-  if (!H.init(512, 256)) {
-    return false;
-  }
-
-  // in = M || w1
   int t_len = 32;
   byte tc[t_len];
   memset(tc, 0, t_len);
@@ -798,10 +795,14 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A,
     return false;
   }
 #if 1
-    printf("\nw1= high_bits(Az-ct):\n");
+    printf("\n\nw1= high_bits(Az-ct):\n");
     print_module_vector(w1);
 #endif
 
+  // in = M || w1
+  if (!H.init(512, 256)) {
+    return false;
+  }
   H.add_to_hash(m_len, M);
   // this is not quite right
   int tsz = w_h_len;
