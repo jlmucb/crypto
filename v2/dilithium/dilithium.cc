@@ -820,6 +820,7 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A,
     printf("inf_norm(z) = %d, params.gamma_1_ - params.beta_ = %d\n", inf_z,params.gamma_1_ - params.beta_);
 #endif
   if (inf_z >= (params.gamma_1_ - params.beta_)) {
+    printf("returning false\n");
     return false;
   }
 
