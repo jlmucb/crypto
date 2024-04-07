@@ -451,7 +451,10 @@ bool test_dilithium1() {
     printf("\n\nverify******\n\n");
   }
 #if 1
-  dilithium_verify(params,  A,  t, m_len, M, z, len_c, c, len_cc, cc);
+  if(dilithium_verify(params,  A,  t, m_len, M, z, len_c, c, len_cc, cc))
+    printf("Would return true\n");
+  else
+    printf("Would return false\n");
   return true;
 #endif
 
