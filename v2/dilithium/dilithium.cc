@@ -834,6 +834,11 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A,
   if (!H.get_digest(H.num_out_bytes_, tc)) {
     return false;
   }
+#if 1
+    printf("\nH(M||w1):\n");
+    print_bytes(H.num_out_bytes_, tc);
+    printf("\n");
+#endif
 
   int inf_z = module_inf_norm(z);
 #if 1
