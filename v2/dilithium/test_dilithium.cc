@@ -432,7 +432,7 @@ bool test_dilithium1() {
   memset(cc, 0, len_cc * sizeof(int));
 
   module_vector z(params.q_, params.n_, params.l_);
-  if (!dilithium_sign(params,  A, t, s1, s2, m_len, M, &z, len_c, c, len_cc, cc)) {
+  if (!dilithium_sign(params,  A, t, s1, s2, m_len, M, &z, len_cc, cc)) {
     printf("dilithium_sign failed\n");
     return false;
   }
@@ -441,9 +441,6 @@ bool test_dilithium1() {
     printf("\nz:\n");
     print_module_vector(z);
     printf("\n");
-    printf("c:\n");
-    print_bytes(len_c, c); 
-    printf("\n");
   }
 
 
@@ -451,14 +448,14 @@ bool test_dilithium1() {
     printf("\n\nverify******\n\n");
   }
 #ifdef VERIFYDEBUG
-  if(dilithium_verify(params,  A,  t, m_len, M, z, len_c, c, len_cc, cc))
+  if(dilithium_verify(params,  A,  t, m_len, M, z, len_cc, cc))
     printf("Would return true\n");
   else
     printf("Would return false\n");
   return true;
 #endif
 
-  if (dilithium_verify(params,  A,  t, m_len, M, z, len_c, c, len_cc, cc)) {
+  if (dilithium_verify(params,  A,  t, m_len, M, z, len_cc, cc)) {
     printf("dilithium_verify succeeded\n");
   } else {
     printf("dilithium_verify failed\n");

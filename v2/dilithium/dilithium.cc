@@ -517,9 +517,10 @@ bool c_from_h(int size_in, byte* H, int* c) {
       s[i] = H[k] & (1<<m);
   }
 
+  int start_index = 8;
   memset(c, 0, 256);
   for (int i = 196; i < 256; i++) {
-    int j = rand_int_in_range(i);
+    int j = H[start_index++] % i;
     c[i] = c[j];
     c[j] = s[255 - i] == 0 ? -1 : 1;
   }
@@ -605,7 +606,7 @@ bool dilithium_keygen(dilithium_parameters& params, module_array* A,
 // }
 bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vector& t,
                 module_vector& s1, module_vector& s2, int m_len, byte* M,
-                module_vector* z, int len_c, byte* c, int len_cc, int* cc) {
+                module_vector* z, int len_cc, int* cc) {
 
   // y: dim l_
   // tv1 = Ay, dim k
@@ -626,7 +627,6 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
   }
 
   bool done = false;
-  memset(c, 0, len_c);
   int w_h_len = params.k_ * params.n_ * sizeof(int);
   byte w_h[w_h_len];
   memset(w_h, 0, w_h_len);
@@ -641,9 +641,6 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
     module_vector tu1(params.q_, params.n_, params.l_);
     module_vector tu2(params.q_, params.n_, params.k_);
     coefficient_vector c_poly(params.q_, params.n_);
-
-    int t_len = 32;
-    memset(c, 0, t_len);
 
     // construct y
     for (int i = 0; i < (int)params.l_; i++) {
@@ -676,7 +673,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
 #endif
 
     // in = M || w1
-    if (!H.init(512, 256)) {
+    if (!H.init(512, 1024)) {
       printf("sign: hash init failed\n");
       return false;
     }
@@ -690,18 +687,24 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
 
     H.add_to_hash(tsz, w_h);
     H.shake_finalize();
-    if (!H.get_digest(H.num_out_bytes_, c)) {
+
+    int t_len = 128;
+    byte t_c[t_len];
+    memset(t_c, 0, t_len);
+
+    if (!H.get_digest(H.num_out_bytes_, t_c)) {
       printf("sign: get digest failed\n");
       return false;
     }
 
     memset((byte*)cc, 0, 256 * sizeof(int));
-    if (!c_from_h(32, c, cc)) {
-      printf("sign: c_from_h\n");
+    if (!c_from_h(t_len, t_c, cc)) {
       return false;
     }
 #ifdef SIGNDEBUG
-    print_cc(256, cc);
+    printf("SHAKE:\n");
+    print_bytes(t_len, t_c);
+    printf("\n");
 #endif
     for (int i = 0; i < c_poly.len_; i++) {
         c_poly.c_[i] = cc[i];
@@ -803,7 +806,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
 // return ||z||_inf < g1-beta and c == H(M||w1)
 bool dilithium_verify(dilithium_parameters& params,  module_array& A,
         module_vector& t, int m_len, byte* M,
-        module_vector& z, int len_c, byte* c, int len_cc, int* cc) {
+        module_vector& z, int len_cc, int* cc) {
 
   if (len_cc != 256) {
     printf("verify: cc len wrong %d\n", len_cc);
@@ -821,9 +824,9 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A,
   byte added_w[w_len];
   sha3 H;
 
-  int t_len = 32;
-  byte tc[t_len];
-  memset(tc, 0, t_len);
+  int t_len = 128;
+  byte t_c[t_len];
+  memset(t_c, 0, t_len);
 
   module_vector tv1(params.q_, params.n_, params.k_);
   module_vector tv2(params.q_, params.n_, params.k_);
@@ -862,7 +865,7 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A,
 #endif
 
   // in = M || w1
-  if (!H.init(512, 256)) {
+  if (!H.init(512, 1024)) {
     return false;
   }
   H.add_to_hash(m_len, M);
@@ -873,13 +876,26 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A,
   }
   H.add_to_hash(tsz, w_h);
   H.shake_finalize();
-  if (!H.get_digest(H.num_out_bytes_, tc)) {
+  if (!H.get_digest(H.num_out_bytes_, t_c)) {
+    return false;
+  }
+
+#ifdef VERIFYDEBUG
+  printf("\nH(M||w1):\n");
+  print_bytes(H.num_out_bytes_, t_c);
+  printf("\n");
+#endif
+
+  int v_cc[256];
+  memset((byte*)v_cc, 0, 256 * sizeof(int));
+  if (!c_from_h(t_len, t_c, v_cc)) {
     return false;
   }
 #ifdef VERIFYDEBUG
-    printf("\nH(M||w1):\n");
-    print_bytes(H.num_out_bytes_, tc);
-    printf("\n");
+  printf("given cc: \n");
+  print_cc(256, cc);
+  printf("computed cc: \n");
+  print_cc(256, v_cc);
 #endif
 
   int inf_z = module_inf_norm(z);
@@ -890,5 +906,9 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A,
     return false;
   }
 
-  return memcmp(c, tc, t_len) == 0;
+  for (int i = 0; i < 256; i++) {
+    if (cc[i] != v_cc[i])
+      return false;
+  }
+  return true;
 }
