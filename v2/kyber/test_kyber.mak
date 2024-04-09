@@ -9,7 +9,7 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License
-#    File: test_dilithium.mak
+#    File: test_kyber.mak
 
 
 ifndef SRC_DIR
@@ -31,8 +31,8 @@ ifndef TARGET_MACHINE_TYPE
 TARGET_MACHINE_TYPE= x64
 endif
 
-S= $(SRC_DIR)/dilithium
-O= $(OBJ_DIR)/dilithium
+S= $(SRC_DIR)/kyber
+O= $(OBJ_DIR)/kyber
 S_HASH=$(SRC_DIR)/hash
 S_SUPPORT=$(SRC_DIR)/crypto_support
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(S_SUPPORT) -I/usr/local/include
@@ -45,26 +45,26 @@ PROTO=protoc
 AR=ar
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
-dobj=	$(O)/test_dilithium.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
-$(O)/hash.o $(O)/sha3.o $(O)/dilithium.o
+dobj=	$(O)/test_kyber.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
+$(O)/hash.o $(O)/sha3.o $(O)/kyber.o
 
-all:	test_dilithium.exe
+all:	test_kyber.exe
 clean:
 	@echo "removing object files"
 	rm $(O)/*.o
 	@echo "removing executable file"
-	rm $(EXE_DIR)/test_dilithium.exe
+	rm $(EXE_DIR)/test_kyber.exe
 
-test_dilithium.exe: $(dobj) 
+test_kyber.exe: $(dobj) 
 	@echo "linking executable files"
-	$(LINK) -o $(EXE_DIR)/test_dilithium.exe $(dobj) $(LDFLAGS)
+	$(LINK) -o $(EXE_DIR)/test_kyber.exe $(dobj) $(LDFLAGS)
 
 $(S_SUPPORT)/support.pb.cc $(S_SUPPORT)/support.pb.h: $(S_SUPPORT)/support.proto
 	$(PROTO) -I=$(S) --cpp_out=$(S_SUPPORT) $(S_SUPPORT)/support.proto
 
-$(O)/test_dilithium.o: $(S)/test_dilithium.cc
-	@echo "compiling test_dilithium.cc"
-	$(CC) $(CFLAGS) -c $(I) -o $(O)/test_dilithium.o $(S)/test_dilithium.cc
+$(O)/test_kyber.o: $(S)/test_kyber.cc
+	@echo "compiling test_kyber.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/test_kyber.o $(S)/test_kyber.cc
 
 $(O)/support.pb.o: $(S_SUPPORT)/support.pb.cc $(S_SUPPORT)/support.pb.h
 	@echo "compiling support.pb.cc"
@@ -86,7 +86,7 @@ $(O)/sha3.o: $(S_HASH)/sha3.cc
 	@echo "compiling sha3.cc"
 	$(CC) $(CFLAGS) -c $(I) -o $(O)/sha3.o $(S_HASH)/sha3.cc
 
-$(O)/dilithium.o: $(S)/dilithium.cc
-	@echo "compiling dilithium.cc"
-	$(CC) $(CFLAGS) -c $(I) -o $(O)/dilithium.o $(S)/dilithium.cc
+$(O)/kyber.o: $(S)/kyber.cc
+	@echo "compiling kyber.cc"
+	$(CC) $(CFLAGS) -c $(I) -o $(O)/kyber.o $(S)/kyber.cc
 
