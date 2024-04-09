@@ -20,3 +20,6 @@ using namespace std;
 // This is the "vanilla" kyber, which is slow and has
 // large keys.
 
+// For 256 bit seal (ML-KEM-1024)
+//    n =256, q=3329, k=4, eta1=2, eta2=2, du=11, dv=5
+
