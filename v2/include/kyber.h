@@ -22,17 +22,19 @@ using namespace std;
 
 class kyber_parameters {
 public:
-  kyber_parameters();
+  kyber_parameters(int ks);
   ~kyber_parameters();
 
   int n_;
   int k_;
   int du_;
   int dv_;
+  int dt_;
 
   int q_;
   int eta1_;
-  int eta4_;
+  int eta2_;
+  int beta_;
 };
 
 #endif
