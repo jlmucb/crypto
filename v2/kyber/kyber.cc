@@ -467,7 +467,9 @@ byte bit_reverse(byte b) {
   return r;
 }
 
-bool ntt_mult(int g, short int in1, short int in2, short int* out) {
+bool ntt_base_mult(short int q, short int g, int& in1, int& in2, int* out) {
+  // out[1] = (in1[0] * in2[1] + in1[1] * in2[0]) % q;
+  // out[0] = (((in1[0] * in2[0]) % q) + ((g * in1[1]) % q) * in2[1]) % q;
   return true;
 }
 
@@ -493,14 +495,23 @@ bool sample_poly_cbd(int q, int eta, int l, short int* out) {
   return false;
 }
 
-bool ntt(int q, int n, short int g, short int* in, short int* out) {
+// ntt representation of f= f0 + f_1x + ... is
+//   [ f mod (x^2-g^2Rev(0)+1, f mod (x^2-g^2Rev(1)+1,..., f mod (x^2-g^2Rev(127)+1) ]
+bool ntt(coefficient_vector& in, coefficient_vector* out) {
   return false;
 }
 
-bool ntt_inv(int q, int n, short int g, short int* in, short int* out) {
+bool ntt_inv(coefficient_vector& in, coefficient_vector* out) {
   return false;
 }
 
+bool ntt_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
+  return false;
+}
+
+bool ntt_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
+  return false;
+}
 
 // Hard problem
 //  distinguish between (a_i,b_i) := R_q^k x R_q and b_i = a_^Ts+e_i
@@ -536,7 +547,7 @@ bool ntt_inv(int q, int n, short int g, short int* in, short int* out) {
 //  (u,v) := Kyber.Enc(A, t, m, r)
 //  c := (u,v)
 //  K := H(K, H(c))
-//  return c,k
+//  return c,K
 
 // Kyber.Decaps
 //  m' := Kyber.Dec(s, u, v)
