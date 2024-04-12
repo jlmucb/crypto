@@ -477,11 +477,9 @@ short int exp_in_ntt(short int q, short int e, short int base) {
 
   for (int i = 0; i < 16; i++) {
     if ((e&0x1) != 0) {
-      r *= t;
-      r %= q;
+      r = (r * t) %q;
     }
-    t *= t;
-    t %= q;
+    t = (t * t) % q;
     e >>= 1;
   }
   return r;

@@ -125,6 +125,50 @@ bool test_kyber_support() {
     return false;
   }
 
+  e = 1;
+  base = 17;
+  ex = exp_in_ntt((short int)q, e, base);
+  if (FLAGS_print_all) {
+    printf("%d^%d (mod %d) = %d\n", base, e, q, ex);
+  }
+  if (ex != 17) {
+    printf("exp fail (3)\n");
+    return false;
+  }
+
+  e = 3;
+  base = 17;
+  ex = exp_in_ntt((short int)q, e, base);
+  if (FLAGS_print_all) {
+    printf("%d^%d (mod %d) = %d\n", base, e, q, ex);
+  }
+  if (ex != 1584) {
+    printf("exp fail (4)\n");
+    return false;
+  }
+
+  e = 4;
+  base = 17;
+  ex = exp_in_ntt((short int)q, e, base);
+  if (FLAGS_print_all) {
+    printf("%d^%d (mod %d) = %d\n", base, e, q, ex);
+  }
+  if (ex != 296) {
+    printf("exp fail (5)\n");
+    return false;
+  }
+
+  e = 128;
+  base = 17;
+  ex = exp_in_ntt((short int)q, e, base);
+  if (FLAGS_print_all) {
+    printf("%d^%d (mod %d) = %d\n", base, e, q, ex);
+  }
+  if (ex != 3328) {
+    printf("exp fail (6)\n");
+    return false;
+  }
+
   return true;
 }
 
