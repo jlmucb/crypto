@@ -64,6 +64,12 @@ bool kyber_parameters::init_kyber(int ks) {
 //  |x'-x| <= B_q = cloasest(q/2^(d+1))
 
 short_coefficient_vector::short_coefficient_vector(int q, int len) {
+  q_ = q;
+  len_ = len;
+
+  c_.resize(len, 0);
+  for (int i = 0; i < len; i++)
+    c_[i] = 0;
 }
 
 short_coefficient_vector::~short_coefficient_vector() {
@@ -71,32 +77,109 @@ short_coefficient_vector::~short_coefficient_vector() {
 
 bool short_coefficient_add(short_coefficient_vector& in1, short_coefficient_vector& in2,
     short_coefficient_vector* out) {
+  if (in1.c_.size() != in2.c_.size() || out->c_.size() < in1.c_.size())
+    return false;
+  for (int i = 0; i < (int)in1.c_.size(); i++) {
+      out->c_[i] = (in1.c_[i] + in2.c_[i]) % in1.q_;
+  }
   return true;
+}
+
+int short_reduce(short int a, short int b, short int q) {
+  return (q + a - b) % q;
 }
 
 bool short_coefficient_mult(short_coefficient_vector& in1, short_coefficient_vector& in2,
     short_coefficient_vector* out) {
+  // multiply and reduce by (x**in1.c_.size() + 1)
+  if (in1.c_.size() != in2.c_.size() || out->c_.size() <  in2.c_.size()) {
+    printf("Size mismatch\n");
+    return false;
+  }
+
+  if (!short_coefficient_vector_zero(out))
+    return false;
+  vector<short int> t_out;
+  t_out.resize(2 * in1.c_.size() - 1);
+  for (int i = 0; i < (int)t_out.size(); i++)
+    t_out[i] = 0;
+
+  for (int i = 0; i < (int)in1.c_.size(); i++) {
+    for (int j = 0; j < (int)in2.c_.size(); j++) {
+      int32_t tt = (int64_t)in1.c_[i] * (int64_t)in2.c_[j];
+      tt %= in1.q_;
+      t_out[i + j] += (int) tt;
+    }
+  }
+
+    int m = (int)in1.c_.size() - 1;
+    for (int j = (2 * m); j > m; j--) {
+      t_out[j -  m - 1] = short_reduce(t_out[j - m - 1], t_out[j], in1.q_);
+    }
+
+  for (int j = 0; j < (int)in1.c_.size(); j++) {
+    if (t_out[j] >= 0)
+      out->c_[j] = t_out[j] % in1.q_;
+    else
+      out->c_[j] = (in1.q_ + t_out[j]) % in1.q_;
+  }
   return true;
 }
 
 void print_short_coefficient_vector(short_coefficient_vector& v) {
+  if (v.c_.size() == 0)
+    return;
+  int k = (int)v.c_.size() - 1;
+  while (v.c_[k] == 0 && k > 0)
+    k--;
+  if (k > 0)
+    printf("(%d[%d] + ", v.c_[k], k);
+  else
+    printf("(");
+  for (int i = k - 1; i > 0; i--) {
+    printf("%d[%d] + ", v.c_[i], i);
+    if ((i%8) ==0)
+      printf("\n  ");
+  }
+  printf("%d[%d])\n", v.c_[0], 0);
 }
 
 bool short_coefficient_set_vector(short_coefficient_vector& in,
     short_coefficient_vector* out) {
+    out->len_ = in.len_;
+  out->c_.resize(in.c_.size());
+  for (int j = 0; j < (int)out->len_; j++) {
+    out->c_[j]= in.c_[j];
+  }
   return true;
 }
 
 bool short_coefficient_vector_zero(short_coefficient_vector* out) {
+  for (int j = 0; j < (int)out->len_; j++) {
+    out->c_[j]= 0;
+  }
   return true;
 }
 
 bool short_coefficient_vector_add_to(short_coefficient_vector& in,
       short_coefficient_vector* out) {
+    if (in.len_ != out->len_)
+    return false;
+  for (int i = 0; i < in.len_; i++) {
+      out->c_[i] += in.c_[i];
+      out->c_[i] %= in.q_;
+  }
   return true;
 }
 
 bool short_coefficient_equal(short_coefficient_vector& in1, short_coefficient_vector& in2) {
+  if (in1.len_ != in2.len_)
+    return false;
+
+  for (int i = 0; i < in1.len_; i++) {
+    if (in1.c_[i] != in2.c_[i])
+      return false;
+  }
   return true;
 }
 
@@ -320,6 +403,15 @@ void print_module_vector(module_vector& mv) {
 }
 
 void print_kyber_parameters(kyber_parameters& p) {
+  printf("q: %d\n", p.q_);
+  printf("n: %d\n", p.n_);
+  printf("k: %d\n", p.k_);
+  printf("du: %d\n", p.du_);
+  printf("dv: %d\n", p.dv_);
+  printf("dt: %d\n", p.dt_);
+  printf("eta1: %d\n", p.eta1_);
+  printf("eta2: %d\n", p.eta2_);
+  printf("beta: %d\n", p.beta_);
 }
 
 void print_coefficient_vector(coefficient_vector& v) {

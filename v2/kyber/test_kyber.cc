@@ -23,6 +23,12 @@ DEFINE_bool(print_all, false, "Print intermediate test computations");
 
 
 bool test_kyber1() {
+  kyber_parameters p;
+
+  if (!p.init_kyber(256)) {
+    printf("Could not init kyber parameters\n");
+  }
+  print_kyber_parameters(p);
   return true;
 }
 
@@ -91,8 +97,8 @@ bool test_kyber_support() {
 TEST (support, test_kyber_support) {
   EXPECT_TRUE(test_kyber_support());
 }
-TEST (kyber, test_kyber_support) {
-  EXPECT_TRUE(test_kyber_support());
+TEST (kyber, test_kyber1) {
+  EXPECT_TRUE(test_kyber1());
 }
 
 

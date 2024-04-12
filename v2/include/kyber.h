@@ -30,7 +30,6 @@ public:
   ~kyber_parameters();
   bool init_kyber(int ks);
 
-
   int n_;
   int k_;
   int du_;
