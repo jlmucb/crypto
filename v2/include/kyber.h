@@ -100,8 +100,8 @@ bool ntt_base_mult(short int q, short int g, int& in1, int& in2, int* out);
 short int exp_in_ntt(short int q, short int e, short int base);
 bool sample_ntt(int l, byte* b, short int* out);
 bool sample_poly_cbd(int q, int eta, int l, short int* out);
-bool ntt(coefficient_vector& in, coefficient_vector* out);
-bool ntt_inv(coefficient_vector& in, coefficient_vector* out);
+bool ntt(short int g, coefficient_vector& in, coefficient_vector* out);
+bool ntt_inv(short int g, coefficient_vector& in, coefficient_vector* out);
 bool ntt_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
 bool ntt_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
 

@@ -497,11 +497,11 @@ bool sample_poly_cbd(int q, int eta, int l, short int* out) {
 
 // ntt representation of f= f0 + f_1x + ... is
 //   [ f mod (x^2-g^2Rev(0)+1, f mod (x^2-g^2Rev(1)+1,..., f mod (x^2-g^2Rev(127)+1) ]
-bool ntt(coefficient_vector& in, coefficient_vector* out) {
+bool ntt(short int g, coefficient_vector& in, coefficient_vector* out) {
   return false;
 }
 
-bool ntt_inv(coefficient_vector& in, coefficient_vector* out) {
+bool ntt_inv(short int g, coefficient_vector& in, coefficient_vector* out) {
   return false;
 }
 
