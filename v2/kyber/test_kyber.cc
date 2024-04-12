@@ -26,9 +26,73 @@ bool test_kyber1() {
   return true;
 }
 
+bool test_kyber_support() {
+  int a, b, c, r;
 
-TEST (kyber, test_kyber1) {
-  EXPECT_TRUE(test_kyber1());
+  a = 1;
+  b = 2;
+  r = round(a,b);
+  if (FLAGS_print_all) {
+    printf("a: %d, b: %d. round(a/b): %d\n", a, b, r);
+  }
+  if (r != 1) {
+    printf("round fail(1)\n");
+    return false;
+  }
+
+  a = 5;
+  b = 4;
+  r = round(a,b);
+  if (FLAGS_print_all) {
+    printf("a: %d, b: %d. round(a/b): %d\n", a, b, r);
+  }
+  if (r != 1) {
+    printf("round fail(2)\n");
+    return false;
+  }
+
+  a = 1;
+  b = 4;
+  r = round(a,b);
+  if (FLAGS_print_all) {
+    printf("a: %d, b: %d. round(a/b): %d\n", a, b, r);
+  }
+  if (r != 0) {
+    printf("round fail(3)\n");
+    return false;
+  }
+
+  int q, x, d;
+  q = 3329;
+  x =  5;
+  d = 11;
+  r = compress(q, x, d);
+  if (FLAGS_print_all) {
+    printf("q: %d, x: %d, d: %d. compress: %d\n", q, x, d, r);
+  }
+  if (r != 3) {
+    printf("compress fail(1)\n");
+    return false;
+  }
+
+  x = r;
+  r = decompress(q, x, d);
+  if (FLAGS_print_all) {
+    printf("q: %d, x: %d, d: %d. decompress: %d\n", q, x, d, r);
+  }
+  if (r != 5) {
+    printf("decompress fail(1)\n");
+    return false;
+  }
+
+  return true;
+}
+
+TEST (support, test_kyber_support) {
+  EXPECT_TRUE(test_kyber_support());
+}
+TEST (kyber, test_kyber_support) {
+  EXPECT_TRUE(test_kyber_support());
 }
 
 
