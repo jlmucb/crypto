@@ -91,6 +91,40 @@ bool test_kyber_support() {
     return false;
   }
 
+  byte b1, b2;
+  b1 = 0xc;
+  b2 = bit_reverse(b1);
+  if (FLAGS_print_all) {
+    printf("%02x reversed is %02x\n", b1, b2);
+  }
+  if (b2 != 0x30) {
+    printf("bit_reverse fail(1)\n");
+    return false;
+  }
+
+ 
+  short int e = 4;
+  short int base = 2;
+
+  short int ex = exp_in_ntt((short int)q, e, base);
+  if (FLAGS_print_all) {
+    printf("%d^%d (mod %d) = %d\n", base, e, q, ex);
+  }
+  if (ex != 16) {
+    printf("exp fail (1)\n");
+    return false;
+  }
+
+  e = 12;
+  ex = exp_in_ntt((short int)q, e, base);
+  if (FLAGS_print_all) {
+    printf("%d^%d (mod %d) = %d\n", base, e, q, ex);
+  }
+  if (ex != 767) {
+    printf("exp fail (2)\n");
+    return false;
+  }
+
   return true;
 }
 

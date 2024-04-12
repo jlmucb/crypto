@@ -49,6 +49,7 @@ bool kyber_parameters::init_kyber(int ks) {
     n_ = 256;
     q_ = 3329;
     k_ = 4;
+    gamma_ = 17;
     du_ = 11;
     dv_ = 5;
     dt_;
@@ -405,6 +406,7 @@ void print_module_vector(module_vector& mv) {
 void print_kyber_parameters(kyber_parameters& p) {
   printf("q: %d\n", p.q_);
   printf("n: %d\n", p.n_);
+  printf("gamma: %d\n", p.gamma_);
   printf("k: %d\n", p.k_);
   printf("du: %d\n", p.du_);
   printf("dv: %d\n", p.dv_);
@@ -454,9 +456,60 @@ int module_inf_norm(module_vector& mv) {
   return max;
 }
 
+byte bit_reverse(byte b) {
+  byte r = 0;
+
+  for (int i = 0; i < 8; i++) {
+    byte bb = b&0x1;
+    r = (r<<1) | bb;
+    b >>= 1;
+  }
+  return r;
+}
+
+bool ntt_mult(int g, short int in1, short int in2, short int* out) {
+  return true;
+}
+
+short int exp_in_ntt(short int q, short int e, short int base) {
+  short int r = 1;
+  short int t = base;
+
+  for (int i = 0; i < 16; i++) {
+    if ((e&0x1) != 0) {
+      r *= t;
+      r %= q;
+    }
+    t *= t;
+    t %= q;
+    e >>= 1;
+  }
+  return r;
+}
+
+bool sample_ntt(int l, byte* b, short int* out) {
+  return false;
+}
+
+bool sample_poly_cbd(int q, int eta, int l, short int* out) {
+  return false;
+}
+
+bool ntt(int q, int n, short int g, short int* in, short int* out) {
+  return false;
+}
+
+bool ntt_inv(int q, int n, short int g, short int* in, short int* out) {
+  return false;
+}
+
 
 // Hard problem
 //  distinguish between (a_i,b_i) := R_q^k x R_q and b_i = a_^Ts+e_i
+
+// H(s) := SHA3-256(s)
+// J(s) := SHAKE256(s, 32)
+// G(s) := SHA3-512(s)
 
 // Keygen
 //    A := R_q^(kxk), (s,e) := beta_eta^k x beta_eta^k
