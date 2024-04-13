@@ -545,6 +545,16 @@ bool sample_poly_cbd(int q, int eta, byte* b, int l, short int* out) {
   return true;
 }
 
+bool multiply_ntt(short int g, coefficient_vector& in1,
+      coefficient_vector& in2, coefficient_vector* out) {
+  for (int i = 0; i < in1.len_; i++) {
+    if (!ntt_base_mult(in1.q_, g, in1.c_[i], in2.c_[i], &(out->c_[i]))) {
+      return false;
+    }
+  }
+  return true;
+}
+
 short int read_ntt(vector<int> x, int m) {
   int t = m / 2;
   if ((m&1)==0)
