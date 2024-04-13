@@ -503,12 +503,46 @@ short int exp_in_ntt(short int q, short int e, short int base) {
   return r;
 }
 
-bool sample_ntt(int l, byte* b, short int* out) {
-  return false;
+byte bit_in_byte_stream(int k, int l, byte* b) {
+  if ((k+7)/8 > l)
+    return 0;
+  byte t = b[k/8];
+  return (t>>(k%8))&1;
 }
 
-bool sample_poly_cbd(int q, int eta, int l, short int* out) {
-  return false;
+bool sample_ntt(int q, int l, byte* b, short int* out) {
+  int i = 0;
+  int j = 0;
+
+  while (j < 256) {
+    short int d1 = b[i] + 256 * (b[i+1] % 16);
+    short int d2 = (b[i+1] / 16) + 16 * b[i+2];
+    if (d1 < q) {
+      out[j] = d1;
+      j++;
+    }
+    if (d2 < q && j < 256) {
+      out[j] = d2;
+    }
+    i += 3;
+  }
+
+  return true;
+}
+
+bool sample_poly_cbd(int q, int eta, byte* b, int l, short int* out) {
+  int t;
+
+  for (int i = 0; i < 256; i++) {
+    short int x = 0;
+    for (int j = 0; j < eta; j++)
+      x += (short int) bit_in_byte_stream(2*i*eta+j, l, b);
+    short int y = 0;
+    for (int j = 0; j < eta; j++)
+      y += (short int) bit_in_byte_stream(2*i*eta+eta+j, l, b);
+    out[i] = (q + x - y) % q;
+  }
+  return true;
 }
 
 short int read_ntt(vector<int> x, int m) {
