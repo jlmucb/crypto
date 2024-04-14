@@ -143,4 +143,19 @@ void print_module_vector(module_vector& mv);
 
 void print_kyber_parameters(kyber_parameters& p);
 
+bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
+      int* dk_len, byte* dk);
+bool kyber_encrypt(kyber_parameters& p, int ek_len, byte* ek,
+      int m_len, byte* m, int* c_len, byte* c);
+bool kyber_decrypt(kyber_parameters& p, int dk_len, byte* dk,
+      int c_len, byte* c, int* m_len, byte* m);
+
+bool kyber_kem_keygen(kyber_parameters& p, int* kem_ek_len, byte* kem_ek,
+      int* kem_dk_len, byte* kem_dk);
+bool kyber_kem_encaps(kyber_parameters& p, int kem_ek_len, byte* kem_ek,
+      int* k_len, byte* k, int* c_len, byte* c);
+bool kyber_kem_decaps(kyber_parameters& p, int kem_dk_len, byte* kem_dk,
+      int c_len, byte* c, int* k_len, byte* k);
+
+
 #endif

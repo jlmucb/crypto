@@ -656,36 +656,62 @@ bool ntt_mult(short int g, coefficient_vector& in1, coefficient_vector& in2, coe
 // J(s) := SHAKE256(s, 32)
 // G(s) := SHA3-512(s)
 
-// Keygen
+// Kyber.Keygen
 //    A := R_q^(kxk), (s,e) := beta_eta^k x beta_eta^k
 //    t := Compress(q,As+e), d_t)
 //    pk := (A,t), sk := s
+bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
+      int* dk_len, byte* dk) {
+  return true;
+}
 
 // G: {0,1}* --> {0,1}^512
 // H: {0, 1}* --> {0,1}^256
 
-// Kyber.Enc
+// Kyber.Encrypt
 //  r := {0,1}^256
 //  t := Decompress(q, t, dt)
 //  (e1, e2) := beta_eta^k x beta_eta^k
 //  u := Compress(q, A^T r +e1, du)
 //  v := Compress(q,t^tr + e2 + closest(q/2)n, dv)
 //  return c=(u,v)
+bool kyber_encrypt(kyber_parameters& p, int ek_len, byte* ek,
+      int m_len, byte* m, int* c_len, byte* c) {
+  return true;
+}
 
-// Kyber.Dec
+// Kyber.Decrypt
 //  u := Decompress(q, u, du)
 //  v := Decompress(q, v, dv)
 //  return (v-s^Tu, 1)
+bool kyber_decrypt(kyber_parameters& p, int dk_len, byte* dk,
+      int c_len, byte* c, int* m_len, byte* m) {
+  return true;
+}
 
-// Kyber.Encaps
+// Kem Keygen
+//  s := B^32
+//  (ek, dk) := kyber_keygen
+//  kem_ek := ek
+//  kem_dk := dk || ek || H(ek) || z
+bool kyber_kem_keygen(kyber_parameters& p, int* kem_ek_len, byte* kem_ek,
+      int* kem_dk_len, byte* kem_dk) {
+  return true;
+}
+
+// Kem.Encapsulate
 //  m := {0,1}^256
 //  (K, r) := G(H(pk), m)
 //  (u,v) := Kyber.Enc(A, t, m, r)
 //  c := (u,v)
 //  K := H(K, H(c))
 //  return c,K
+bool kyber_kem_encaps(kyber_parameters& p, int kem_ek_len, byte* kem_ek,
+      int* k_len, byte* k, int* c_len, byte* c) {
+  return true;
+}
 
-// Kyber.Decaps
+// Kem.Decapsulate
 //  m' := Kyber.Dec(s, u, v)
 //  (K', r') := G(H(pk), m')
 //  (u', v') := Kyber.Enc(A,t,m',r')
@@ -694,6 +720,9 @@ bool ntt_mult(short int g, coefficient_vector& in1, coefficient_vector& in2, coe
 //  else
 //    K := H(Z, H(c))
 //  return K
-
+bool kyber_kem_decaps(kyber_parameters& p, int kem_dk_len, byte* kem_dk,
+      int c_len, byte* c, int* k_len, byte* k) {
+  return true;
+}
 
 

@@ -29,6 +29,23 @@ bool test_kyber1() {
     printf("Could not init kyber parameters\n");
   }
   print_kyber_parameters(p);
+
+  /*
+    bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
+      int* dk_len, byte* dk);
+    bool kyber_encrypt(kyber_parameters& p, int ek_len, byte* ek,
+      int m_len, byte* m, int* c_len, byte* c);
+    bool kyber_decrypt(kyber_parameters& p, int dk_len, byte* dk,
+      int c_len, byte* c, int* m_len, byte* m);
+
+    bool kyber_kem_keygen(kyber_parameters& p, int* kem_ek_len, byte* kem_ek,
+      int* kem_dk_len, byte* kem_dk);
+    bool kyber_kem_kem(kyber_parameters& p, int kem_ek_len, byte* kem_ek,
+      int* k_len, byte* k, int* c_len, byte* c);
+    bool kyber_kem_decaps(kyber_parameters& p, int kem_dk_len, byte* kem_dk,
+      int c_len, byte* c, int* k_len, byte* k);
+  */
+
   return true;
 }
 
@@ -168,6 +185,17 @@ bool test_kyber_support() {
     printf("exp fail (6)\n");
     return false;
   }
+
+  /*
+  bool ntt_base_mult(short int q, short int g, int& in1, int& in2, int* out);
+  bool ntt_base_add(short int q, int& in1, int& in2, int* out);
+  bool sample_ntt(int q, int l, byte* b, short int* out);
+  bool sample_poly_cbd(int q, int eta, int l, byte* b, short int* out);
+  bool ntt(short int g, coefficient_vector& in, coefficient_vector* out);
+  bool ntt_inv(short int g, coefficient_vector& in, coefficient_vector* out);
+  bool ntt_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
+  bool ntt_mult(short int g, coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
+*/
 
   return true;
 }
