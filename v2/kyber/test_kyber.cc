@@ -30,21 +30,75 @@ bool test_kyber1() {
   }
   print_kyber_parameters(p);
 
-  /*
-    bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
-      int* dk_len, byte* dk);
-    bool kyber_encrypt(kyber_parameters& p, int ek_len, byte* ek,
-      int m_len, byte* m, int* c_len, byte* c);
-    bool kyber_decrypt(kyber_parameters& p, int dk_len, byte* dk,
-      int c_len, byte* c, int* m_len, byte* m);
+  int ek_len = 384 * p.k_ + 32;
+  byte ek[ek_len];
+  memset(ek, 0, ek_len);
+  int dk_len = 384 * p.k_;
+  byte dk[dk_len];
+  memset(dk, 0, dk_len);
+  if (!kyber_keygen(p, &ek_len, ek, &dk_len, dk)) {
+    printf("Could not init kyber_keygen\n");
+    return false;
+  }
 
-    bool kyber_kem_keygen(kyber_parameters& p, int* kem_ek_len, byte* kem_ek,
-      int* kem_dk_len, byte* kem_dk);
-    bool kyber_kem_kem(kyber_parameters& p, int kem_ek_len, byte* kem_ek,
-      int* k_len, byte* k, int* c_len, byte* c);
-    bool kyber_kem_decaps(kyber_parameters& p, int kem_dk_len, byte* kem_dk,
-      int c_len, byte* c, int* k_len, byte* k);
-  */
+  int m_len = 32;
+  byte m[m_len];
+  int r_len = 32;
+  byte r[r_len];
+  int c_len = 32 * (p.du_ * p.k_ + p.dv_);
+  byte c[c_len];
+  memset(m, 0, m_len);
+  memset(c, 0, c_len);
+  memset(r, 0, r_len);
+  if (!kyber_encrypt(p, ek_len, ek, m_len, m, &c_len, c)) {
+    printf("Could not init kyber_encrypt\n");
+    return false;
+  }
+  int recovered_m_len = 32;
+  byte recovered_m[m_len];
+  memset(recovered_m, 0, recovered_m_len);
+  if (!kyber_decrypt(p, dk_len, dk, c_len, c, &recovered_m_len, recovered_m)) {
+    printf("Could not init kyber_decrypt\n");
+    return false;
+  }
+  if (memcmp(m, recovered_m, m_len) != 0) {
+    printf("message and recovered message dont match\n");
+    return false;
+  }
+
+  int kem_ek_len = 384 * p.k_ + 32;
+  byte kem_ek[kem_ek_len];
+  memset(kem_ek, 0, kem_ek_len);
+  int kem_dk_len = 768 * p.k_ + 96;
+  byte kem_dk[kem_dk_len];
+  memset(kem_dk, 0, kem_dk_len);
+  if (!kyber_kem_keygen(p, &kem_ek_len, kem_ek, &kem_dk_len, kem_dk)) {
+    printf("Could not init kem_keygen\n");
+    return false;
+  }
+  int kem_c_len = 32 * (p.du_ * p.k_ + p.dv_);
+  byte kem_c[kem_dk_len];
+  memset(kem_c, 0, kem_c_len);
+  int kem_k_len = 32;
+  byte kem_k[kem_k_len];
+  memset(kem_k, 0, kem_k_len);
+  if (!kyber_kem_encaps(p, kem_ek_len, kem_ek, &kem_k_len,
+                          kem_k, &kem_c_len, kem_c)) {
+    printf("Could not init kem_encaps\n");
+    return false;
+  }
+  int recovered_k_len = 32;
+  byte recovered_k[recovered_k_len];
+  memset(recovered_k, 0, recovered_k_len);
+  if (!kyber_kem_decaps(p, kem_dk_len, kem_dk, kem_c_len, kem_c,
+                           &recovered_k_len, recovered_k)) {
+    printf("Could not init kem_decaps\n");
+    return false;
+  }
+  if (memcmp(kem_k, recovered_k, recovered_k_len) != 0) {
+    printf("Generated and encapsulated keys don't match\n");
+    return false;
+  }
 
   return true;
 }
