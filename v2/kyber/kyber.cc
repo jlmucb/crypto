@@ -478,7 +478,7 @@ bool ntt_base_mult(short int q, short int g, int& in1, int& in2, int* out) {
   return true;
 }
 
-bool ntt_base_add(short int q, short int g, int& in1, int& in2, int* out) {
+bool ntt_base_add(short int q, int& in1, int& in2, int* out) {
   short int s1 = (short int) (in1 & 0xffff);
   short int s2 = (short int) ((in1>>16) & 0xffff);
   short int t1 = (short int) (in2 & 0xffff);
@@ -511,6 +511,8 @@ byte bit_in_byte_stream(int k, int l, byte* b) {
 }
 
 bool sample_ntt(int q, int l, byte* b, short int* out) {
+
+  return true;
   int i = 0;
   int j = 0;
 
@@ -530,8 +532,8 @@ bool sample_ntt(int q, int l, byte* b, short int* out) {
   return true;
 }
 
-bool sample_poly_cbd(int q, int eta, byte* b, int l, short int* out) {
-  int t;
+bool sample_poly_cbd(int q, int eta, int l, byte* b, short int* out) {
+  return true;
 
   for (int i = 0; i < 256; i++) {
     short int x = 0;
@@ -577,6 +579,8 @@ void write_ntt(int m, short int y, vector<int>& x) {
 // ntt representation of f= f0 + f_1x + ... is
 //   [ f mod (x^2-g^2Rev(0)+1, f mod (x^2-g^2Rev(1)+1,..., f mod (x^2-g^2Rev(127)+1) ]
 bool ntt(short int g, coefficient_vector& in, coefficient_vector* out) {
+  return true;
+
   int k = 1;
   coefficient_set_vector(in, out);
 
@@ -597,6 +601,8 @@ bool ntt(short int g, coefficient_vector& in, coefficient_vector* out) {
 }
 
 bool ntt_inv(short int g, coefficient_vector& in, coefficient_vector* out) {
+  return true;
+
   int k = 127;
   coefficient_set_vector(in, out);
 
@@ -626,7 +632,7 @@ bool ntt_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vecto
     return false;
   int g = 0; // FIX
   for (int i = 0; i < in1.len_; i++) {
-    if (!ntt_base_add((short int) in1.q_, (short int) g, in1.c_[i], in2.c_[i], &(out->c_[i])))
+    if (!ntt_base_add((short int) in1.q_, in1.c_[i], in2.c_[i], &(out->c_[i])))
       return false;
   }
   return true;

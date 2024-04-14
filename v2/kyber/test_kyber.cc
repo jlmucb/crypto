@@ -240,16 +240,137 @@ bool test_kyber_support() {
     return false;
   }
 
+  kyber_parameters p;
+  if (!p.init_kyber(256)) {
+    printf("Could not init kyber parameters\n");
+  }
+  print_kyber_parameters(p);
+
+  short int g = 17;
+  int i1 = 0;
+  int i2 = 0;
+  int o1 = 0;
+  int o2 = 0;
+  if (!ntt_base_mult((short int) p.q_, g, i1, i2, &o1)) {
+    printf("Could not ntt_base_mult\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("ntt_base_mult %d, %d = %d\n", i1, i2, o1);
+  }
+
+  if (!ntt_base_add((short int) p.q_, i1, i2, &o2)) {
+    printf("Could not ntt_base_mult\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("ntt_base_add %d, %d = %d\n", i1, i2, o2);
+  }
+
+  coefficient_vector in1(p.q_, p.n_);
+  coefficient_vector in2(p.q_, p.n_);
+  coefficient_vector out(p.q_, p.n_);
+
+  if (!coefficient_vector_zero(&in1)) {
+    printf("Cant zero in1\n");
+    return false;
+  }
+  if (!coefficient_vector_zero(&in2)) {
+    printf("Cant zero in2\n");
+    return false;
+  }
+  if (!coefficient_vector_zero(&out)) {
+    printf("Cant zero out\n");
+    return false;
+  }
+
+  int sample_ntt_b_len = 64;
+  byte sample_ntt_b[sample_ntt_b_len];
+  memset(sample_ntt_b, 0, sample_ntt_b_len);
+  int sample_ntt_out_len = 64;
+  short int sample_ntt_out[sample_ntt_out_len];
+  memset(sample_ntt_out, 0, sizeof(short int) * sample_ntt_out_len);
+  if (!sample_ntt(p.q_, p.n_, sample_ntt_b, sample_ntt_out)) {
+    printf("Could not sample_ntt\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("sample_ntt %d:\n", sample_ntt_out_len);
+    printf("b: ");
+    print_bytes(sample_ntt_b_len, sample_ntt_b);
+    printf("sample ntt out: ");
+    for (int i = 0; i < sample_ntt_out_len; i++) {
+      printf("%d ", sample_ntt_out[i]);
+    }
+    printf("\n\n");
+  }
+
+  int sample_cbd_b_len = 64;
+  byte sample_cbd_b[sample_cbd_b_len];
+  memset(sample_cbd_b, 0, sample_cbd_b_len);
+  int sample_cbd_out_len = 64;
+  short int sample_cbd_out[sample_cbd_out_len];
+  memset(sample_cbd_out, 0, sizeof(short int) * sample_cbd_out_len);
+  if (!sample_poly_cbd(p.q_, p.eta1_, sample_cbd_b_len, sample_cbd_b, sample_cbd_out)) {
+    printf("Could not sample_poly_cbd\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("sample_poly_cbd%d:\n", sample_cbd_out_len);
+    printf("b: ");
+    print_bytes(sample_cbd_b_len, sample_cbd_b);
+    printf("sample poly out: ");
+    for (int i = 0; i < sample_cbd_out_len; i++) {
+      printf("%d ", sample_cbd_out[i]);
+    }
+    printf("\n\n");
+  }
+
+  coefficient_vector ntt_in(p.q_, p.n_);
+  coefficient_vector ntt_out(p.q_, p.n_);
+  coefficient_vector ntt_inv_out(p.q_, p.n_);
+  if (!coefficient_vector_zero(&ntt_in)) {
+    printf("Cant zero ntt_in\n");
+    return false;
+  }
+  if (!coefficient_vector_zero(&ntt_out)) {
+    printf("Cant zero ntt_out");
+    return false;
+  }
+  if (!coefficient_vector_zero(&ntt_inv_out)) {
+    printf("Cant zero ntt_inv_out");
+    return false;
+  }
+  if (!ntt(g, ntt_in, &ntt_out)) {
+    printf("Could not ntt transfom\n");
+    return false;
+  }
+  if (!ntt_inv(g, ntt_out, &ntt_inv_out)) {
+    printf("Could not inverse ntt transfom\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("ntt in: ");
+    print_coefficient_vector(ntt_in);
+    printf("\n\n");
+    printf("ntt out: ");
+    print_coefficient_vector(ntt_out);
+    printf("\n\n");
+    printf("ntt inv out: ");
+    print_coefficient_vector(ntt_inv_out);
+    printf("\n\n");
+  }
+
   /*
-  bool ntt_base_mult(short int q, short int g, int& in1, int& in2, int* out);
-  bool ntt_base_add(short int q, int& in1, int& in2, int* out);
-  bool sample_ntt(int q, int l, byte* b, short int* out);
-  bool sample_poly_cbd(int q, int eta, int l, byte* b, short int* out);
-  bool ntt(short int g, coefficient_vector& in, coefficient_vector* out);
-  bool ntt_inv(short int g, coefficient_vector& in, coefficient_vector* out);
-  bool ntt_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
-  bool ntt_mult(short int g, coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
-*/
+  if (!ntt_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out)) {
+    printf("Could not inverse ntt_add\n");
+    return false;
+  }
+  if (!ntt_mult(short int g, coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out)) {
+    printf("Could not inverse ntt_mult\n");
+    return false;
+  }
+  */
 
   return true;
 }
