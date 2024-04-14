@@ -103,7 +103,7 @@ bool sample_poly_cbd(int q, int eta, int l, byte* b, short int* out);
 bool ntt(short int g, coefficient_vector& in, coefficient_vector* out);
 bool ntt_inv(short int g, coefficient_vector& in, coefficient_vector* out);
 bool ntt_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
-bool ntt_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
+bool ntt_mult(short int g, coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
 
 bool coefficient_add(coefficient_vector& in1, coefficient_vector& in2,
     coefficient_vector* out);

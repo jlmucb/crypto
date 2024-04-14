@@ -472,8 +472,8 @@ bool ntt_base_mult(short int q, short int g, int& in1, int& in2, int* out) {
   short int s2 = (short int) ((in1>>16) & 0xffff);
   short int t1 = (short int) (in2 & 0xffff);
   short int t2 = (short int) ((in2>>16) & 0xffff);
-  short int u1 = ((t1 * s1) % q + (g * t2 * s2) % q) % q;
-  short int u2 = (s1 * t2 + t1 * s2) % q;
+  short int u1 = (((int)t1 * (int)s1) % q + ((int)g * (int)t2 * (int)s2) % q) % q;
+  short int u2 = ((int)s1 * (int)t2 + (int)t1 * (int)s2) % q;
   *out = ((int) u2) << 16 | ((int) u1);
   return true;
 }
@@ -620,11 +620,33 @@ bool ntt_inv(short int g, coefficient_vector& in, coefficient_vector* out) {
 }
 
 bool ntt_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
-  return false;
+  if (in1.len_ != in2.len_ || in1.len_ != out->len_)
+    return false;
+  if (in1.q_ != in2.q_ || in1.q_ != out->q_)
+    return false;
+  int g = 0; // FIX
+  for (int i = 0; i < in1.len_; i++) {
+    if (!ntt_base_add((short int) in1.q_, (short int) g, in1.c_[i], in2.c_[i], &(out->c_[i])))
+      return false;
+  }
+  return true;
 }
 
-bool ntt_mult(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
-  return false;
+bool ntt_mult(short int g, coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
+  if (in1.len_ != in2.len_ || in1.len_ != out->len_)
+    return false;
+  if (in1.q_ != in2.q_ || in1.q_ != out->q_)
+    return false;
+  short int t = 0;
+  for (int i = 0; i < in1.len_; i++) {
+    short int e = (short int)(bit_reverse(i/2)>>1);
+    e *= 2;
+    e += 1;
+    t = exp_in_ntt((short int) in1.q_, e, g);
+    if (!ntt_base_mult((short int) in1.q_, (short int) g, in1.c_[i], in2.c_[i], &(out->c_[i])))
+      return false;
+  }
+  return true;
 }
 
 // Hard problem
