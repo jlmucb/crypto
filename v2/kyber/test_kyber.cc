@@ -368,6 +368,18 @@ bool test_kyber_support() {
   for (int i = 0; i < p.n_; i++) {
     ntt_in.c_[i] = i;
   }
+
+  int hi = 7;
+  int low = 6;
+  short int s1 = read_ntt(ntt_in.c_, low);
+  short int s2 = read_ntt(ntt_in.c_, hi);
+  printf("[%d, %d]: (%d, %d)\n", hi, low, s2, s1);
+  write_ntt(hi, s1, &ntt_in.c_);
+  write_ntt(low, s2, &ntt_in.c_);
+  s2 = read_ntt(ntt_in.c_, hi);
+  s1 = read_ntt(ntt_in.c_, low);
+  printf("[%d, %d]: (%d, %d)\n", hi, low, s2, s1);
+
   if (!ntt(g, ntt_in, &ntt_out)) {
     printf("Could not ntt transfom\n");
     return false;

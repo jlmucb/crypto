@@ -573,20 +573,20 @@ bool multiply_ntt(short int g, coefficient_vector& in1,
 short int read_ntt(vector<int> x, int m) {
   int t = m / 2;
   if ((m&1)==0)
-    return (short int)x[t];
+    return (short int)(x[t]&0x0ffff);
   else
-    return (short int)(x[t]>>16);
+    return (short int)((x[t]>>16)&0xffff);
 }
 
-void write_ntt(int m, short int y, vector<int>& x) {
+void write_ntt(int m, short int y, vector<int>* x) {
   int t = m / 2;
-  short int t1 = (short int) (x[m] & 0xffff);
-  short int t2 = (short int) ((x[m]>>16) & 0xffff);
+  short int t1 = (short int) ((*x)[t] & 0xffff);
+  short int t2 = (short int) (((*x)[t]>>16) & 0xffff);
   if ((m&1)==0)
     t1 = y;
   else
     t2 = y;
-  x[m] = ((int) t2) << 16 | (int) t1;
+  (*x)[t] = (((int) t2) << 16) | (int) t1;
 }
 
 // ntt representation of f= f0 + f_1x + ... is
@@ -604,12 +604,12 @@ bool ntt(short int g, coefficient_vector& in, coefficient_vector* out) {
       bb >>= 1;
       short int z = exp_in_ntt((short int) in.q_, (short int) bb, g);
       k++;
-      for (int j = 0; j < s + l; j++) {
+      for (int j = s; j < (s + l); j++) {
         short int t = (z * read_ntt(out->c_, j+l)) % in.q_;
-        short int s1 = (in.q_ + read_ntt(out->c_, j) - t) % in.q_;
-        write_ntt(j + l, s1, out->c_);
-        short int s2 = (in.q_ + (read_ntt(out->c_, j) + t) % in.q_) % in.q_;
-        write_ntt(j, s2, out->c_);
+        short int s1 = (read_ntt(out->c_, j) + (in.q_ - t)) % in.q_;
+        write_ntt(j + l, s1, &out->c_);
+        short int s2 = (read_ntt(out->c_, j) + t) % in.q_;
+        write_ntt(j, s2, &out->c_);
       }
     }
   }
@@ -632,9 +632,9 @@ bool ntt_inv(short int g, coefficient_vector& in, coefficient_vector* out) {
       for (int j = s; j < s + l; j += 2 * l) {
         short int t = read_ntt(out->c_, j);
         short int s1 = (in.q_ + (z *  read_ntt(out->c_, j + l))  - t ) % in.q_;
-        write_ntt(j, s1, out->c_);
+        write_ntt(j, s1, &out->c_);
         short int s2 = (in.q_ + ((z *  read_ntt(out->c_, j + l) % in.q_))  - t ) % in.q_;
-        write_ntt(j + l, s2, out->c_);
+        write_ntt(j + l, s2, &out->c_);
       }
     }
   }
