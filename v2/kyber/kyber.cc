@@ -592,13 +592,14 @@ void write_ntt(int m, short int y, vector<int>& x) {
 // ntt representation of f= f0 + f_1x + ... is
 //   [ f mod (x^2-g^2Rev(0)+1, f mod (x^2-g^2Rev(1)+1,..., f mod (x^2-g^2Rev(127)+1) ]
 bool ntt(short int g, coefficient_vector& in, coefficient_vector* out) {
-  return true;
+  if (in.len_ != 256 || out->len_ != 256)
+    return false;
 
   int k = 1;
   coefficient_set_vector(in, out);
 
   for (int l = 128; l >= 2; l /=2) {
-    for (int s = 0; s < 256; s+= 2*l) {
+    for (int s = 0; s < in.len_; s+= 2*l) {
       byte bb = bit_reverse((byte)k);
       bb >>= 1;
       short int z = exp_in_ntt((short int) in.q_, (short int) bb, g);
@@ -614,7 +615,8 @@ bool ntt(short int g, coefficient_vector& in, coefficient_vector* out) {
 }
 
 bool ntt_inv(short int g, coefficient_vector& in, coefficient_vector* out) {
-  return true;
+  if (in.len_ != 256 || out->len_ != 256)
+    return false;
 
   int k = 127;
   coefficient_set_vector(in, out);
@@ -625,7 +627,7 @@ bool ntt_inv(short int g, coefficient_vector& in, coefficient_vector* out) {
       bb >>= 1;
       short int z = exp_in_ntt((short int) in.q_, (short int) bb, g);
       k--;
-      for (int j = s; j < s + l; s += 2 * l) {
+      for (int j = s; j < s + l; j += 2 * l) {
         short int t = read_ntt(out->c_, j);
         write_ntt(j, (t + read_ntt(out->c_, j + l)) % in.q_, out->c_); 
         write_ntt(j + l, (in.q_ + (z *  read_ntt(out->c_, j + l))  - t )% in.q_, out->c_); 
