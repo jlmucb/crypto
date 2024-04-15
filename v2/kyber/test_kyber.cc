@@ -331,20 +331,20 @@ bool test_kyber_support() {
   short int sample_cbd_out[sample_cbd_out_len];
   memset(sample_cbd_out, 0, sizeof(short int) * sample_cbd_out_len);
   n_b = crypto_get_random_bytes(sample_cbd_b_len, sample_cbd_b);
-  if (!sample_poly_cbd(p.q_,p.n_, p.eta1_, sample_cbd_b_len, sample_cbd_b,
+  if (!sample_poly_cbd(p.q_, p.eta1_, p.n_, sample_cbd_b_len, sample_cbd_b,
 	&sample_cbd_out_len, sample_cbd_out)) {
     printf("Could not sample_poly_cbd\n");
     return false;
   }
   if (FLAGS_print_all) {
-    printf("\nsample_poly_cbd%d:\n", sample_cbd_out_len);
+    printf("\nsample_poly_cbd(%d):\n", sample_cbd_out_len);
     printf("\nb:\n");
     print_bytes(sample_cbd_b_len, sample_cbd_b);
     printf("\n");
     printf("\nsample poly out:\n");
     for (int i = 0; i < sample_cbd_out_len; i++) {
-      printf("%3d ", sample_cbd_out[i]);
-      if ((i%16) == 15)
+      printf("%4d[%3d] ", sample_cbd_out[i], i);
+      if ((i%8) == 7)
 	printf("\n");
     }
     printf("\n\n");
@@ -376,13 +376,13 @@ bool test_kyber_support() {
   if (FLAGS_print_all) {
     printf("ntt in: ");
     print_coefficient_vector(ntt_in);
-    printf("\n\n");
+    printf("\n");
     printf("ntt out: ");
     print_coefficient_vector(ntt_out);
-    printf("\n\n");
+    printf("\n");
     printf("ntt inv out: ");
     print_coefficient_vector(ntt_inv_out);
-    printf("\n\n");
+    printf("\n");
   }
 
   /*

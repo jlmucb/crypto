@@ -536,7 +536,7 @@ bool sample_ntt(int q, int l, int b_len, byte* b, int* out_len, short int* out) 
     if (loop++ > 512)
       return false;
   }
-
+  *out_len = l;
   return true;
 }
 
