@@ -99,7 +99,7 @@ byte bit_reverse(byte b);
 bool ntt_base_mult(short int q, short int g, int& in1, int& in2, int* out);
 bool ntt_base_add(short int q, int& in1, int& in2, int* out);
 short int exp_in_ntt(short int q, short int e, short int base);
-bool sample_ntt(int q, int l, byte* b, short int* out);
+bool sample_ntt(int q, int l, int b_len, byte* b, int* out_len, short int* out);
 bool sample_poly_cbd(int q, int eta, int l, byte* b, short int* out);
 bool ntt(short int g, coefficient_vector& in, coefficient_vector* out);
 bool ntt_inv(short int g, coefficient_vector& in, coefficient_vector* out);

@@ -284,23 +284,28 @@ bool test_kyber_support() {
     return false;
   }
 
-  int sample_ntt_b_len = 64;
+  int sample_ntt_b_len = 256;
   byte sample_ntt_b[sample_ntt_b_len];
   memset(sample_ntt_b, 0, sample_ntt_b_len);
-  int sample_ntt_out_len = 64;
+  int sample_ntt_out_len = 256;
   short int sample_ntt_out[sample_ntt_out_len];
   memset(sample_ntt_out, 0, sizeof(short int) * sample_ntt_out_len);
-  if (!sample_ntt(p.q_, p.n_, sample_ntt_b, sample_ntt_out)) {
+  int n_b = crypto_get_random_bytes(sample_ntt_b_len, sample_ntt_b);
+  if (!sample_ntt(p.q_, p.n_, sample_ntt_b_len, 
+                  sample_ntt_b, &sample_ntt_out_len, 
+                  sample_ntt_out)) {
     printf("Could not sample_ntt\n");
     return false;
   }
   if (FLAGS_print_all) {
-    printf("sample_ntt %d:\n", sample_ntt_out_len);
-    printf("b: ");
+    printf("\nsample_ntt %d:\n", sample_ntt_out_len);
+    printf("b:\n");
     print_bytes(sample_ntt_b_len, sample_ntt_b);
-    printf("sample ntt out: ");
+    printf("\nsample ntt out:\n");
     for (int i = 0; i < sample_ntt_out_len; i++) {
-      printf("%d ", sample_ntt_out[i]);
+      printf("%4d ", sample_ntt_out[i]);
+      if ((i%16) == 15)
+	printf("\n");
     }
     printf("\n\n");
   }
@@ -311,17 +316,21 @@ bool test_kyber_support() {
   int sample_cbd_out_len = 64;
   short int sample_cbd_out[sample_cbd_out_len];
   memset(sample_cbd_out, 0, sizeof(short int) * sample_cbd_out_len);
+  n_b = crypto_get_random_bytes(sample_cbd_b_len, sample_cbd_b);
   if (!sample_poly_cbd(p.q_, p.eta1_, sample_cbd_b_len, sample_cbd_b, sample_cbd_out)) {
     printf("Could not sample_poly_cbd\n");
     return false;
   }
   if (FLAGS_print_all) {
-    printf("sample_poly_cbd%d:\n", sample_cbd_out_len);
-    printf("b: ");
+    printf("\nsample_poly_cbd%d:\n", sample_cbd_out_len);
+    printf("\nb:\n");
     print_bytes(sample_cbd_b_len, sample_cbd_b);
-    printf("sample poly out: ");
+    printf("\n");
+    printf("\nsample poly out:\n");
     for (int i = 0; i < sample_cbd_out_len; i++) {
-      printf("%d ", sample_cbd_out[i]);
+      printf("%3d ", sample_cbd_out[i]);
+      if ((i%16) == 15)
+	printf("\n");
     }
     printf("\n\n");
   }

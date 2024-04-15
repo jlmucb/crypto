@@ -510,23 +510,31 @@ byte bit_in_byte_stream(int k, int l, byte* b) {
   return (t>>(k%8))&1;
 }
 
-bool sample_ntt(int q, int l, byte* b, short int* out) {
-
-  return true;
+bool sample_ntt(int q, int l, int b_len, byte* b, int* out_len, short int* out) {
   int i = 0;
   int j = 0;
+  int loop = 0;
 
-  while (j < 256) {
+  if (b_len < 32) {
+    return false;
+  }
+
+  while (j < l) {
     short int d1 = b[i] + 256 * (b[i+1] % 16);
     short int d2 = (b[i+1] / 16) + 16 * b[i+2];
+    if (j >= *out_len)
+      return false;
     if (d1 < q) {
       out[j] = d1;
       j++;
     }
-    if (d2 < q && j < 256) {
+    if (d2 < q && j < l) {
       out[j] = d2;
+      j++;
     }
     i += 3;
+    if (loop++ > 512)
+      return false;
   }
 
   return true;
