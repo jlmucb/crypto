@@ -241,7 +241,7 @@ bool test_kyber_support() {
   }
 
   int bb_len = 16;
-  byte bb[bb_len] = {
+  byte bb[16] = {
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
   };
@@ -365,6 +365,9 @@ bool test_kyber_support() {
     printf("Cant zero ntt_inv_out");
     return false;
   }
+  for (int i = 0; i < p.n_; i++) {
+    ntt_in.c_[i] = i;
+  }
   if (!ntt(g, ntt_in, &ntt_out)) {
     printf("Could not ntt transfom\n");
     return false;
@@ -374,16 +377,28 @@ bool test_kyber_support() {
     return false;
   }
   if (FLAGS_print_all) {
-    printf("ntt in: ");
+    printf("\nntt in: \n");
+    printf(" ");
     print_coefficient_vector(ntt_in);
     printf("\n");
-    printf("ntt out: ");
+    printf("\nntt out:\n");
+    printf(" ");
     print_coefficient_vector(ntt_out);
     printf("\n");
-    printf("ntt inv out: ");
+    printf("\nntt inv out: \n");
+    printf(" ");
     print_coefficient_vector(ntt_inv_out);
     printf("\n");
   }
+
+#if 0
+  for (int i = 0; i < 256; i++) {
+    if (ntt_in.c_[i] !=  ntt_inv_out.c_[i]) {
+      printf("input and ntt_inv(ntt(input)) do not match at %d\n", i);
+      return false;
+    }
+  }
+#endif
 
   /*
   if (!ntt_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out)) {

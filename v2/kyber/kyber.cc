@@ -606,8 +606,10 @@ bool ntt(short int g, coefficient_vector& in, coefficient_vector* out) {
       k++;
       for (int j = 0; j < s + l; j++) {
         short int t = (z * read_ntt(out->c_, j+l)) % in.q_;
-        write_ntt(j + l, (read_ntt(out->c_, j) - t) % in.q_, out->c_);
-        write_ntt(j, (read_ntt(out->c_, j) + t) % in.q_, out->c_);
+        short int s1 = (in.q_ + read_ntt(out->c_, j) - t) % in.q_;
+        write_ntt(j + l, s1, out->c_);
+        short int s2 = (in.q_ + (read_ntt(out->c_, j) + t) % in.q_) % in.q_;
+        write_ntt(j, s2, out->c_);
       }
     }
   }
@@ -629,8 +631,10 @@ bool ntt_inv(short int g, coefficient_vector& in, coefficient_vector* out) {
       k--;
       for (int j = s; j < s + l; j += 2 * l) {
         short int t = read_ntt(out->c_, j);
-        write_ntt(j, (t + read_ntt(out->c_, j + l)) % in.q_, out->c_); 
-        write_ntt(j + l, (in.q_ + (z *  read_ntt(out->c_, j + l))  - t )% in.q_, out->c_); 
+        short int s1 = (in.q_ + (z *  read_ntt(out->c_, j + l))  - t ) % in.q_;
+        write_ntt(j, s1, out->c_);
+        short int s2 = (in.q_ + ((z *  read_ntt(out->c_, j + l) % in.q_))  - t ) % in.q_;
+        write_ntt(j + l, s2, out->c_);
       }
     }
   }
