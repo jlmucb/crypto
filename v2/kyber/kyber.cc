@@ -540,18 +540,23 @@ bool sample_ntt(int q, int l, int b_len, byte* b, int* out_len, short int* out) 
   return true;
 }
 
-bool sample_poly_cbd(int q, int eta, int l, byte* b, short int* out) {
-  return true;
+bool sample_poly_cbd(int q, int eta, int l, int b_len, byte* b,
+	int* out_len, short int* out) {
+  if (b_len * NBITSINBYTE < l)
+    return false;
 
-  for (int i = 0; i < 256; i++) {
+  for (int i = 0; i < l; i++) {
     short int x = 0;
     for (int j = 0; j < eta; j++)
       x += (short int) bit_in_byte_stream(2*i*eta+j, l, b);
     short int y = 0;
     for (int j = 0; j < eta; j++)
       y += (short int) bit_in_byte_stream(2*i*eta+eta+j, l, b);
+    if (i >= *out_len)
+      return false;
     out[i] = (q + x - y) % q;
   }
+  *out_len = l;
   return true;
 }
 

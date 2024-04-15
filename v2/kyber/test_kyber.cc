@@ -240,6 +240,20 @@ bool test_kyber_support() {
     return false;
   }
 
+  int bb_len = 16;
+  byte bb[bb_len] = {
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+  };
+  printf("\nbit_in_byte_stream: \n");
+  for (int i = 0; i < bb_len * NBITSINBYTE; i++) {
+    byte h = bit_in_byte_stream(i, bb_len, bb);
+    printf("%d", h);
+    if ((i%32) == 31)
+      printf("\n");
+  }
+  printf("\n\n");
+
   kyber_parameters p;
   if (!p.init_kyber(256)) {
     printf("Could not init kyber parameters\n");
@@ -310,14 +324,15 @@ bool test_kyber_support() {
     printf("\n\n");
   }
 
-  int sample_cbd_b_len = 64;
+  int sample_cbd_b_len = 256;
   byte sample_cbd_b[sample_cbd_b_len];
   memset(sample_cbd_b, 0, sample_cbd_b_len);
-  int sample_cbd_out_len = 64;
+  int sample_cbd_out_len = 256;
   short int sample_cbd_out[sample_cbd_out_len];
   memset(sample_cbd_out, 0, sizeof(short int) * sample_cbd_out_len);
   n_b = crypto_get_random_bytes(sample_cbd_b_len, sample_cbd_b);
-  if (!sample_poly_cbd(p.q_, p.eta1_, sample_cbd_b_len, sample_cbd_b, sample_cbd_out)) {
+  if (!sample_poly_cbd(p.q_,p.n_, p.eta1_, sample_cbd_b_len, sample_cbd_b,
+	&sample_cbd_out_len, sample_cbd_out)) {
     printf("Could not sample_poly_cbd\n");
     return false;
   }
