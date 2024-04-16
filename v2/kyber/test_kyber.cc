@@ -261,10 +261,10 @@ bool test_kyber_support() {
   print_kyber_parameters(p);
 
   int g = 17;
-  int i1a = 0;
-  int i2a = 0;
-  int i1b = 0;
-  int i2b = 0;
+  int i1a = 2;
+  int i2a = 5;
+  int i1b = 1;
+  int i2b = 3;
   int oa = 0;
   int ob = 0;
   if (!ntt_base_mult(p.q_, g, i1a, i1b, i2a, i2b, &oa, &ob)) {
@@ -386,20 +386,14 @@ bool test_kyber_support() {
     printf("\n");
   }
 
-#if 0
   for (int i = 0; i < 256; i++) {
     if (ntt_in.c_[i] !=  ntt_inv_out.c_[i]) {
       printf("input and ntt_inv(ntt(input)) do not match at %d\n", i);
       return false;
     }
   }
-#endif
 
   /*
-  if (!ntt_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out)) {
-    printf("Could not inverse ntt_add\n");
-    return false;
-  }
   if (!ntt_mult(short int g, coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out)) {
     printf("Could not inverse ntt_mult\n");
     return false;
