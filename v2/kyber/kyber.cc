@@ -599,13 +599,13 @@ bool ntt(short int g, coefficient_vector& in, coefficient_vector* out) {
   coefficient_set_vector(in, out);
 
   for (int l = 128; l >= 2; l /=2) {
-    for (int s = 0; s < in.len_; s+= 2*l) {
+    for (int s = 0; s < in.len_; s+= 2 * l) {
       byte bb = bit_reverse((byte)k);
       bb >>= 1;
       short int z = exp_in_ntt((short int) in.q_, (short int) bb, g);
       k++;
       for (int j = s; j < (s + l); j++) {
-        short int t = (z * read_ntt(out->c_, j+l)) % in.q_;
+        short int t = (z * read_ntt(out->c_, j + l)) % in.q_;
         short int s1 = (read_ntt(out->c_, j) + (in.q_ - t)) % in.q_;
         write_ntt(j + l, s1, &out->c_);
         short int s2 = (read_ntt(out->c_, j) + t) % in.q_;
