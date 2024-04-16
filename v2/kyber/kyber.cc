@@ -163,6 +163,29 @@ bool coefficient_vector_add_to(coefficient_vector& in, coefficient_vector* out) 
   return true;
 }
 
+coefficient_array::coefficient_array(int q, int nr, int nc) {
+  q_ = q;
+  nr_ = nr;
+  nc_ = nc;
+  a_ = new int[nr * nc];
+}
+
+coefficient_array::~coefficient_array() {
+  if (a_ != nullptr) {
+    delete []a_;
+  }
+  a_ = nullptr;
+}
+
+int coefficient_array::index(int r, int c) {
+  return nc_ * r + c;
+}
+
+bool coefficient_apply_array(coefficient_array& A, coefficient_vector& v,
+        coefficient_vector* out) {
+  return false;
+}
+
 module_vector::module_vector(int q, int n, int dim) {
   q_ = q;
   n_ = n;
@@ -500,9 +523,33 @@ bool ntt_mult(int g, coefficient_vector& in1, coefficient_vector& in2, coefficie
   return true;
 }
 
+bool fill_random_coefficient_array(coefficient_array* ma) {
+  for (int r = 0; r < ma->nr_; r++) {
+    for (int c = 0; c < ma->nc_; c++) {
+      int s = 0;
+      int l = crypto_get_random_bytes(3, (byte*)&s);
+      s %= ma->q_;
+      ma->a_[ma->index(r, c)] = s;
+    }
+  }
+  return true;
+}
+
+bool rand_coefficient(int top, coefficient_vector& v) {
+  for (int k = 0; k < (int)v.c_.size(); k++) {
+    int s = 0;
+    int m = crypto_get_random_bytes(3, (byte*)&s);
+    s %= top;
+    v.c_[k] = s;
+  }
+  return true;
+}
+
 // Hard problem
 //  distinguish between (a_i,b_i) := R_q^k x R_q and b_i = a_^Ts+e_i
 
+// G: {0,1}* --> {0,1}^512
+// H: {0, 1}* --> {0,1}^256
 // H(s) := SHA3-256(s)
 // J(s) := SHAKE256(s, 32)
 // G(s) := SHA3-512(s)
@@ -513,11 +560,33 @@ bool ntt_mult(int g, coefficient_vector& in1, coefficient_vector& in2, coefficie
 //    pk := (A,t), sk := s
 bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
       int* dk_len, byte* dk) {
+
+  coefficient_array A(p.q_, p.k_, p.k_);
+  if (!fill_random_coefficient_array(&A)) {
+    printf("fill_random_array failed on A\n");
+    return false;
+  }
+  coefficient_vector s(p.q_, p.k_);
+  coefficient_vector e(p.q_, p.k_);
+  if (!rand_coefficient(p.eta1_, s)) {
+    printf("rand_coefficients failed\n");
+    return false;
+  }
+  if (!rand_coefficient(p.eta1_, e)) {
+    printf("rand_coefficients failed\n");
+    return false;
+  }
+  coefficient_vector t(p.q_, p.k_);
+  if (!coefficient_apply_array(A, s, &t)) {
+    printf("module_apply_array failed\n");
+    return false;
+  }
+  if (!coefficient_vector_add_to(e, &t)) {
+    printf("coefficient_vector_add_to failed\n");
+    return false;
+  }
   return true;
 }
-
-// G: {0,1}* --> {0,1}^512
-// H: {0, 1}* --> {0,1}^256
 
 // Kyber.Encrypt
 //  r := {0,1}^256

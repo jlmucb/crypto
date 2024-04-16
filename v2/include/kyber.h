@@ -58,6 +58,19 @@ public:
 bool coefficients_high_bits(int a, coefficient_vector& in, coefficient_vector* out);
 bool coefficients_low_bits(int a, coefficient_vector& in, coefficient_vector* out);
 
+class coefficient_array {
+public:
+  int q_;
+  int nr_;
+  int nc_;
+
+  coefficient_array(int q, int nr, int nc);
+  ~coefficient_array();
+
+  int *a_;
+  int index(int r, int c);
+};
+
 class module_array {
 public:
   int q_;
@@ -86,6 +99,8 @@ public:
 
 byte bit_reverse(byte b);
 byte bit_in_byte_stream(int k, int l, byte* b);
+bool rand_coefficient(int top, coefficient_vector& v);
+bool fill_random_coefficient_array(coefficient_array* ma);
 
 bool ntt_base_mult(int q, int g, int& in1a, int& in1b,
         int& in2a, int& in2b, int* outa, int* outb);
@@ -107,6 +122,7 @@ bool coefficient_set_vector(coefficient_vector& in, coefficient_vector* out);
 bool coefficient_vector_zero(coefficient_vector* out);
 bool coefficient_vector_add_to(coefficient_vector& in, coefficient_vector* out);
 bool coefficient_equal(coefficient_vector& in1, coefficient_vector& in2);
+bool coefficient_apply_array(coefficient_array& A, coefficient_vector& v, coefficient_vector* out);
 
 void print_module_array(module_array& ma);
 bool module_vector_mult_by_scalar(coefficient_vector& in1, module_vector& in2,
