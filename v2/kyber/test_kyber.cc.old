@@ -174,10 +174,10 @@ bool test_kyber_support() {
   }
 
  
-  int e = 4;
-  int base = 2;
+  short int e = 4;
+  short int base = 2;
 
-  int ex = exp_in_ntt((short int)q, e, base);
+  short int ex = exp_in_ntt((short int)q, e, base);
   if (FLAGS_print_all) {
     printf("%d^%d (mod %d) = %d\n", base, e, q, ex);
   }
@@ -187,7 +187,7 @@ bool test_kyber_support() {
   }
 
   e = 12;
-  ex = exp_in_ntt(q, e, base);
+  ex = exp_in_ntt((short int)q, e, base);
   if (FLAGS_print_all) {
     printf("%d^%d (mod %d) = %d\n", base, e, q, ex);
   }
@@ -260,19 +260,25 @@ bool test_kyber_support() {
   }
   print_kyber_parameters(p);
 
-  int g = 17;
-  int i1a = 0;
-  int i2a = 0;
-  int i1b = 0;
-  int i2b = 0;
-  int oa = 0;
-  int ob = 0;
-  if (!ntt_base_mult(p.q_, g, i1a, i1b, i2a, i2b, &oa, &ob)) {
+  short int g = 17;
+  int i1 = 0;
+  int i2 = 0;
+  int o1 = 0;
+  int o2 = 0;
+  if (!ntt_base_mult((short int) p.q_, g, i1, i2, &o1)) {
     printf("Could not ntt_base_mult\n");
     return false;
   }
   if (FLAGS_print_all) {
-    printf("ntt_base_mult (%d, %d) (%d, %d) = (%d, %d)\n", i1a, i1b, i2a, i2b, oa, ob);
+    printf("ntt_base_mult %d, %d = %d\n", i1, i2, o1);
+  }
+
+  if (!ntt_base_add((short int) p.q_, i1, i2, &o2)) {
+    printf("Could not ntt_base_mult\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("ntt_base_add %d, %d = %d\n", i1, i2, o2);
   }
 
   coefficient_vector in1(p.q_, p.n_);
@@ -362,6 +368,17 @@ bool test_kyber_support() {
   for (int i = 0; i < p.n_; i++) {
     ntt_in.c_[i] = i;
   }
+
+  int hi = 7;
+  int low = 6;
+  short int s1 = read_ntt(ntt_in.c_, low);
+  short int s2 = read_ntt(ntt_in.c_, hi);
+  printf("[%d, %d]: (%d, %d)\n", hi, low, s2, s1);
+  write_ntt(hi, s1, &ntt_in.c_);
+  write_ntt(low, s2, &ntt_in.c_);
+  s2 = read_ntt(ntt_in.c_, hi);
+  s1 = read_ntt(ntt_in.c_, low);
+  printf("[%d, %d]: (%d, %d)\n", hi, low, s2, s1);
 
   if (!ntt(g, ntt_in, &ntt_out)) {
     printf("Could not ntt transfom\n");

@@ -44,6 +44,17 @@ public:
   int beta_;
 };
 
+class short_coefficient_vector {
+public:
+  int q_;
+  int len_;
+
+  short_coefficient_vector(int q, int len);
+  ~short_coefficient_vector();
+
+  vector<short int> c_;
+};
+
 class coefficient_vector {
 public:
   int q_;
@@ -86,17 +97,21 @@ public:
 
 byte bit_reverse(byte b);
 byte bit_in_byte_stream(int k, int l, byte* b);
+short int read_ntt(vector<int> x, int m);
+void write_ntt(int m, short int y, vector<int>* x);
 
-bool ntt_base_mult(int q, int g, int& in1a, int& in1b,
-        int& in2a, int& in2b, int* outa, int* outb);
-int exp_in_ntt(int q, int e, int base);
+bool ntt_base_mult(short int q, short int g, int& in1, int& in2, int* out);
+bool ntt_base_add(short int q, int& in1, int& in2, int* out);
+short int exp_in_ntt(short int q, short int e, short int base);
 
 bool sample_ntt(int q, int l, int b_len, byte* b, int* out_len, short int* out);
 bool sample_poly_cbd(int q, int eta, int l, int b_len, byte* b, int* out_len, short int* out);
 
-bool ntt(int g, coefficient_vector& in, coefficient_vector* out);
-bool ntt_inv(int g, coefficient_vector& in, coefficient_vector* out);
-bool ntt_mult(int g, coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
+bool ntt(short int g, coefficient_vector& in, coefficient_vector* out);
+bool ntt_inv(short int g, coefficient_vector& in, coefficient_vector* out);
+
+bool ntt_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
+bool ntt_mult(short int g, coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
 
 bool coefficient_add(coefficient_vector& in1, coefficient_vector& in2,
     coefficient_vector* out);
@@ -107,6 +122,19 @@ bool coefficient_set_vector(coefficient_vector& in, coefficient_vector* out);
 bool coefficient_vector_zero(coefficient_vector* out);
 bool coefficient_vector_add_to(coefficient_vector& in, coefficient_vector* out);
 bool coefficient_equal(coefficient_vector& in1, coefficient_vector& in2);
+
+bool short_coefficient_add(short_coefficient_vector& in1, short_coefficient_vector& in2,
+    short_coefficient_vector* out);
+bool short_coefficient_mult(short_coefficient_vector& in1, short_coefficient_vector& in2,
+    short_coefficient_vector* out);
+void print_short_coefficient_vector(short_coefficient_vector& v);
+bool short_coefficient_set_vector(short_coefficient_vector& in,
+      short_coefficient_vector* out);
+bool short_coefficient_vector_zero(short_coefficient_vector* out);
+bool short_coefficient_vector_add_to(short_coefficient_vector& in,
+      short_coefficient_vector* out);
+bool short_coefficient_equal(short_coefficient_vector& in1,
+      short_coefficient_vector& in2);
 
 void print_module_array(module_array& ma);
 bool module_vector_mult_by_scalar(coefficient_vector& in1, module_vector& in2,
@@ -136,32 +164,6 @@ bool kyber_kem_encaps(kyber_parameters& p, int kem_ek_len, byte* kem_ek,
       int* k_len, byte* k, int* c_len, byte* c);
 bool kyber_kem_decaps(kyber_parameters& p, int kem_dk_len, byte* kem_dk,
       int c_len, byte* c, int* k_len, byte* k);
-#endif
 
-#if 0
 
-class short_coefficient_vector {
-public:
-  int q_;
-  int len_;
-
-  short_coefficient_vector(int q, int len);
-  ~short_coefficient_vector();
-
-  vector<short int> c_;
-};
-bool short_coefficient_add(short_coefficient_vector& in1, short_coefficient_vector& in2,
-    short_coefficient_vector* out);
-bool short_coefficient_mult(short_coefficient_vector& in1, short_coefficient_vector& in2,
-    short_coefficient_vector* out);
-void print_short_coefficient_vector(short_coefficient_vector& v);
-bool short_coefficient_set_vector(short_coefficient_vector& in,
-      short_coefficient_vector* out);
-bool short_coefficient_vector_zero(short_coefficient_vector* out);
-bool short_coefficient_vector_add_to(short_coefficient_vector& in,
-      short_coefficient_vector* out);
-bool short_coefficient_equal(short_coefficient_vector& in1,
-      short_coefficient_vector& in2);
-short int read_ntt(vector<int> x, int m);
-void write_ntt(int m, short int y, vector<int>* x);
 #endif

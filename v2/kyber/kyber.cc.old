@@ -34,8 +34,6 @@ int compress(int q, int x, int d) {
   return round(x * (1<<d), q);
 }
 
-//  x' = Decompress(q, Compress(q, x, d), d)
-//  |x'-x| <= B_q = clasest(q/2^(d+1))
 int decompress(int q, int x, int d) {
   return round(x * q, (1<<d));
 }
@@ -61,6 +59,129 @@ bool kyber_parameters::init_kyber(int ks) {
     return true;
   }
   return false;
+}
+
+//  x' = Decompress(q, Compress(q, x, d), d)
+//  |x'-x| <= B_q = cloasest(q/2^(d+1))
+
+short_coefficient_vector::short_coefficient_vector(int q, int len) {
+  q_ = q;
+  len_ = len;
+
+  c_.resize(len, 0);
+  for (int i = 0; i < len; i++)
+    c_[i] = 0;
+}
+
+short_coefficient_vector::~short_coefficient_vector() {
+}
+
+bool short_coefficient_add(short_coefficient_vector& in1, short_coefficient_vector& in2,
+    short_coefficient_vector* out) {
+  if (in1.c_.size() != in2.c_.size() || out->c_.size() < in1.c_.size())
+    return false;
+  for (int i = 0; i < (int)in1.c_.size(); i++) {
+      out->c_[i] = (in1.c_[i] + in2.c_[i]) % in1.q_;
+  }
+  return true;
+}
+
+int short_reduce(short int a, short int b, short int q) {
+  return (q + a - b) % q;
+}
+
+bool short_coefficient_mult(short_coefficient_vector& in1, short_coefficient_vector& in2,
+    short_coefficient_vector* out) {
+  // multiply and reduce by (x**in1.c_.size() + 1)
+  if (in1.c_.size() != in2.c_.size() || out->c_.size() <  in2.c_.size()) {
+    printf("Size mismatch\n");
+    return false;
+  }
+
+  if (!short_coefficient_vector_zero(out))
+    return false;
+  vector<short int> t_out;
+  t_out.resize(2 * in1.c_.size() - 1);
+  for (int i = 0; i < (int)t_out.size(); i++)
+    t_out[i] = 0;
+
+  for (int i = 0; i < (int)in1.c_.size(); i++) {
+    for (int j = 0; j < (int)in2.c_.size(); j++) {
+      int32_t tt = (int64_t)in1.c_[i] * (int64_t)in2.c_[j];
+      tt %= in1.q_;
+      t_out[i + j] += (int) tt;
+    }
+  }
+
+    int m = (int)in1.c_.size() - 1;
+    for (int j = (2 * m); j > m; j--) {
+      t_out[j -  m - 1] = short_reduce(t_out[j - m - 1], t_out[j], in1.q_);
+    }
+
+  for (int j = 0; j < (int)in1.c_.size(); j++) {
+    if (t_out[j] >= 0)
+      out->c_[j] = t_out[j] % in1.q_;
+    else
+      out->c_[j] = (in1.q_ + t_out[j]) % in1.q_;
+  }
+  return true;
+}
+
+void print_short_coefficient_vector(short_coefficient_vector& v) {
+  if (v.c_.size() == 0)
+    return;
+  int k = (int)v.c_.size() - 1;
+  while (v.c_[k] == 0 && k > 0)
+    k--;
+  if (k > 0)
+    printf("(%d[%d] + ", v.c_[k], k);
+  else
+    printf("(");
+  for (int i = k - 1; i > 0; i--) {
+    printf("%d[%d] + ", v.c_[i], i);
+    if ((i%8) ==0)
+      printf("\n  ");
+  }
+  printf("%d[%d])\n", v.c_[0], 0);
+}
+
+bool short_coefficient_set_vector(short_coefficient_vector& in,
+    short_coefficient_vector* out) {
+    out->len_ = in.len_;
+  out->c_.resize(in.c_.size());
+  for (int j = 0; j < (int)out->len_; j++) {
+    out->c_[j]= in.c_[j];
+  }
+  return true;
+}
+
+bool short_coefficient_vector_zero(short_coefficient_vector* out) {
+  for (int j = 0; j < (int)out->len_; j++) {
+    out->c_[j]= 0;
+  }
+  return true;
+}
+
+bool short_coefficient_vector_add_to(short_coefficient_vector& in,
+      short_coefficient_vector* out) {
+    if (in.len_ != out->len_)
+    return false;
+  for (int i = 0; i < in.len_; i++) {
+      out->c_[i] += in.c_[i];
+      out->c_[i] %= in.q_;
+  }
+  return true;
+}
+
+bool short_coefficient_equal(short_coefficient_vector& in1, short_coefficient_vector& in2) {
+  if (in1.len_ != in2.len_)
+    return false;
+
+  for (int i = 0; i < in1.len_; i++) {
+    if (in1.c_[i] != in2.c_[i])
+      return false;
+  }
+  return true;
 }
 
 coefficient_vector::coefficient_vector(int q, int dim) {
@@ -346,22 +467,35 @@ byte bit_reverse(byte b) {
   return r;
 }
 
-bool ntt_base_mult(int q, int g, int& in1a, int& in1b,
-        int& in2a, int& in2b, int* outa, int* outb) {
-  int u0 = ((in1a * in2a) % q + (((in1b * in2b) %q) * g) % q) % q;
-  int u1 = (((in1a * in2b) % q) + ((in2a * in1a) %q)) % q;
-  *outa = u0;
-  *outb = u1;
+bool ntt_base_mult(short int q, short int g, int& in1, int& in2, int* out) {
+  short int s1 = (short int) (in1 & 0xffff);
+  short int s2 = (short int) ((in1>>16) & 0xffff);
+  short int t1 = (short int) (in2 & 0xffff);
+  short int t2 = (short int) ((in2>>16) & 0xffff);
+  short int u1 = (((int)t1 * (int)s1) % q + ((int)g * (int)t2 * (int)s2) % q) % q;
+  short int u2 = ((int)s1 * (int)t2 + (int)t1 * (int)s2) % q;
+  *out = ((int) u2) << 16 | ((int) u1);
   return true;
 }
 
-int exp_in_ntt(int q, int e, int base) {
-  int r = 1;
-  int t = base;
+bool ntt_base_add(short int q, int& in1, int& in2, int* out) {
+  short int s1 = (short int) (in1 & 0xffff);
+  short int s2 = (short int) ((in1>>16) & 0xffff);
+  short int t1 = (short int) (in2 & 0xffff);
+  short int t2 = (short int) ((in2>>16) & 0xffff);
+  short int u1 = (t1 + s1) % q;
+  short int u2 = (t2 + s2) % q;
+  *out = ((int) u2) << 16 | ((int) u1);
+  return true;
+}
+
+short int exp_in_ntt(short int q, short int e, short int base) {
+  short int r = 1;
+  short int t = base;
 
   for (int i = 0; i < 16; i++) {
     if ((e&0x1) != 0) {
-      r = (r * t) % q;
+      r = (r * t) %q;
     }
     t = (t * t) % q;
     e >>= 1;
@@ -426,9 +560,38 @@ bool sample_poly_cbd(int q, int eta, int l, int b_len, byte* b,
   return true;
 }
 
+bool multiply_ntt(short int g, coefficient_vector& in1,
+      coefficient_vector& in2, coefficient_vector* out) {
+  for (int i = 0; i < in1.len_; i++) {
+    if (!ntt_base_mult(in1.q_, g, in1.c_[i], in2.c_[i], &(out->c_[i]))) {
+      return false;
+    }
+  }
+  return true;
+}
+
+short int read_ntt(vector<int> x, int m) {
+  int t = m / 2;
+  if ((m&1)==0)
+    return (short int)(x[t]&0x0ffff);
+  else
+    return (short int)((x[t]>>16)&0xffff);
+}
+
+void write_ntt(int m, short int y, vector<int>* x) {
+  int t = m / 2;
+  short int t1 = (short int) ((*x)[t] & 0xffff);
+  short int t2 = (short int) (((*x)[t]>>16) & 0xffff);
+  if ((m&1)==0)
+    t1 = y;
+  else
+    t2 = y;
+  (*x)[t] = (((int) t2) << 16) | (int) t1;
+}
+
 // ntt representation of f= f0 + f_1x + ... is
 //   [ f mod (x^2-g^2Rev(0)+1, f mod (x^2-g^2Rev(1)+1,..., f mod (x^2-g^2Rev(127)+1) ]
-bool ntt(int g, coefficient_vector& in, coefficient_vector* out) {
+bool ntt(short int g, coefficient_vector& in, coefficient_vector* out) {
   if (in.len_ != 256 || out->len_ != 256)
     return false;
 
@@ -439,22 +602,21 @@ bool ntt(int g, coefficient_vector& in, coefficient_vector* out) {
     for (int s = 0; s < in.len_; s+= 2 * l) {
       byte bb = bit_reverse((byte)k);
       bb >>= 1;
-      int z = exp_in_ntt(in.q_, (int) bb, g);
+      short int z = exp_in_ntt((short int) in.q_, (short int) bb, g);
       k++;
       for (int j = s; j < (s + l); j++) {
-        // FIX
-        //int t = (z * read_ntt(out->c_, j + l)) % in.q_;
-        //int s1 = (read_ntt(out->c_, j) + (in.q_ - t)) % in.q_;
-        //write_ntt(j + l, s1, &out->c_);
-        //short int s2 = (read_ntt(out->c_, j) + t) % in.q_;
-        //write_ntt(j, s2, &out->c_);
+        short int t = (z * read_ntt(out->c_, j + l)) % in.q_;
+        short int s1 = (read_ntt(out->c_, j) + (in.q_ - t)) % in.q_;
+        write_ntt(j + l, s1, &out->c_);
+        short int s2 = (read_ntt(out->c_, j) + t) % in.q_;
+        write_ntt(j, s2, &out->c_);
       }
     }
   }
   return true;
 }
 
-bool ntt_inv(int g, coefficient_vector& in, coefficient_vector* out) {
+bool ntt_inv(short int g, coefficient_vector& in, coefficient_vector* out) {
   if (in.len_ != 256 || out->len_ != 256)
     return false;
 
@@ -465,15 +627,14 @@ bool ntt_inv(int g, coefficient_vector& in, coefficient_vector* out) {
     for (int s = 0; s < 256; s += 2 * l) {
       byte bb = bit_reverse((byte)k);
       bb >>= 1;
-      int z = exp_in_ntt(in.q_, bb, g);
+      short int z = exp_in_ntt((short int) in.q_, (short int) bb, g);
       k--;
       for (int j = s; j < s + l; j += 2 * l) {
-        // FIX
-        // short int t = read_ntt(out->c_, j);
-        // short int s1 = (in.q_ + (z *  read_ntt(out->c_, j + l))  - t ) % in.q_;
-        // write_ntt(j, s1, &out->c_);
-        // short int s2 = (in.q_ + ((z *  read_ntt(out->c_, j + l) % in.q_))  - t ) % in.q_;
-        // write_ntt(j + l, s2, &out->c_);
+        short int t = read_ntt(out->c_, j);
+        short int s1 = (in.q_ + (z *  read_ntt(out->c_, j + l))  - t ) % in.q_;
+        write_ntt(j, s1, &out->c_);
+        short int s2 = (in.q_ + ((z *  read_ntt(out->c_, j + l) % in.q_))  - t ) % in.q_;
+        write_ntt(j + l, s2, &out->c_);
       }
     }
   }
@@ -483,21 +644,32 @@ bool ntt_inv(int g, coefficient_vector& in, coefficient_vector* out) {
   return true;
 }
 
+bool ntt_add(coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
+  if (in1.len_ != in2.len_ || in1.len_ != out->len_)
+    return false;
+  if (in1.q_ != in2.q_ || in1.q_ != out->q_)
+    return false;
+  int g = 0; // FIX
+  for (int i = 0; i < in1.len_; i++) {
+    if (!ntt_base_add((short int) in1.q_, in1.c_[i], in2.c_[i], &(out->c_[i])))
+      return false;
+  }
+  return true;
+}
+
 bool ntt_mult(short int g, coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
   if (in1.len_ != in2.len_ || in1.len_ != out->len_)
     return false;
   if (in1.q_ != in2.q_ || in1.q_ != out->q_)
     return false;
-  int t = 0;
+  short int t = 0;
   for (int i = 0; i < in1.len_; i++) {
-    int e = (short int)(bit_reverse(i/2)>>1);
+    short int e = (short int)(bit_reverse(i/2)>>1);
     e *= 2;
     e += 1;
-    t = exp_in_ntt(in1.q_, e, g);
-#if 0
-    if (!ntt_base_mult(in1.q_, g, in1.c_[i], in2.c_[i], &(out->c_[i])))
+    t = exp_in_ntt((short int) in1.q_, e, g);
+    if (!ntt_base_mult((short int) in1.q_, (short int) g, in1.c_[i], in2.c_[i], &(out->c_[i])))
       return false;
-#endif
   }
   return true;
 }
@@ -577,4 +749,5 @@ bool kyber_kem_decaps(kyber_parameters& p, int kem_dk_len, byte* kem_dk,
       int c_len, byte* c, int* k_len, byte* k) {
   return true;
 }
+
 
