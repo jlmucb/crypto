@@ -36,7 +36,12 @@ bool test_kyber1() {
   int dk_len = 384 * p.k_;
   byte dk[dk_len];
   memset(dk, 0, dk_len);
-  if (!kyber_keygen(p, &ek_len, ek, &dk_len, dk)) {
+
+  module_array A(p.q_, p.n_, p.k_, p.k_);
+  module_vector e(p.q_, p.n_, p.k_);
+  module_vector s(p.q_, p.n_, p.k_);
+  module_vector t(p.q_, p.n_, p.k_);
+  if (!kyber_keygen(p, &ek_len, ek, &dk_len, dk, &A, &t, &e, &s)) {
     printf("Could not init kyber_keygen\n");
     return false;
   }

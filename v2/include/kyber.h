@@ -101,6 +101,8 @@ byte bit_reverse(byte b);
 byte bit_in_byte_stream(int k, int l, byte* b);
 bool rand_coefficient(int top, coefficient_vector& v);
 bool fill_random_coefficient_array(coefficient_array* ma);
+bool fill_random_module_array(module_array* ma);
+bool rand_module_coefficients(int top, module_vector& v);
 
 bool ntt_base_mult(int q, int g, int& in1a, int& in1b,
         int& in2a, int& in2b, int* outa, int* outb);
@@ -140,7 +142,8 @@ void print_module_vector(module_vector& mv);
 void print_kyber_parameters(kyber_parameters& p);
 
 bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
-      int* dk_len, byte* dk);
+      int* dk_len, byte* dk, module_array* A, module_vector* t,
+      module_vector* e, module_vector* s);
 bool kyber_encrypt(kyber_parameters& p, int ek_len, byte* ek,
       int m_len, byte* m, int* c_len, byte* c);
 bool kyber_decrypt(kyber_parameters& p, int dk_len, byte* dk,

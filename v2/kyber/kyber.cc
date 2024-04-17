@@ -545,6 +545,32 @@ bool rand_coefficient(int top, coefficient_vector& v) {
   return true;
 }
 
+bool fill_random_module_array(module_array* ma) {
+  for (int r = 0; r < ma->nr_; r++) {
+    for (int c = 0; c < ma->nc_; c++) {
+      for (int j = 0; j < ma->n_; c++) {
+        int s = 0;
+        int l = crypto_get_random_bytes(3, (byte*)&s);
+        s %= ma->q_;
+        ma->c_[ma->index(r, c)]->c_[j] = s;
+      }
+    }
+  }
+  return true;
+}
+
+bool rand_module_coefficients(int top, module_vector& v) {
+  for (int k = 0; k < (int)v.dim_; k++) {
+    for (int j = 0; j < v.n_; j++) {
+      int s = 0;
+      int m = crypto_get_random_bytes(3, (byte*)&s);
+      s %= top;
+      v.c_[k]->c_[j] = s;
+    }
+  }
+  return true;
+}
+
 // Hard problem
 //  distinguish between (a_i,b_i) := R_q^k x R_q and b_i = a_^Ts+e_i
 
@@ -559,30 +585,28 @@ bool rand_coefficient(int top, coefficient_vector& v) {
 //    t := Compress(q,As+e), d_t)
 //    pk := (A,t), sk := s
 bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
-      int* dk_len, byte* dk) {
+      int* dk_len, byte* dk, module_array* A, module_vector* t,
+      module_vector* e, module_vector* s) {
 
-  coefficient_array A(p.q_, p.k_, p.k_);
-  if (!fill_random_coefficient_array(&A)) {
+  if (!fill_random_module_array(A)) {
     printf("fill_random_array failed on A\n");
     return false;
   }
-  coefficient_vector s(p.q_, p.k_);
-  coefficient_vector e(p.q_, p.k_);
-  if (!rand_coefficient(p.eta1_, s)) {
+  if (!rand_module_coefficients(p.eta1_, *s)) {
     printf("rand_coefficients failed\n");
     return false;
   }
-  if (!rand_coefficient(p.eta1_, e)) {
+  if (!rand_module_coefficients(p.eta1_, *e)) {
     printf("rand_coefficients failed\n");
     return false;
   }
-  coefficient_vector t(p.q_, p.k_);
-  if (!coefficient_apply_array(A, s, &t)) {
+  module_vector r(p.q_, p.n_, p.k_);
+  if (!module_apply_array(*A, *s, &r)) {
     printf("module_apply_array failed\n");
     return false;
   }
-  if (!coefficient_vector_add_to(e, &t)) {
-    printf("coefficient_vector_add_to failed\n");
+  if (!module_vector_add(r, *e, t)) {
+    printf("module_vector_add failed\n");
     return false;
   }
   return true;
@@ -597,6 +621,10 @@ bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
 //  return c=(u,v)
 bool kyber_encrypt(kyber_parameters& p, int ek_len, byte* ek,
       int m_len, byte* m, int* c_len, byte* c) {
+  byte r[32];
+  int l = crypto_get_random_bytes(32, r);
+  module_vector e1(p.q_, p.n_, p.k_);
+  module_vector e2(p.q_, p.n_, p.k_);
   return true;
 }
 
