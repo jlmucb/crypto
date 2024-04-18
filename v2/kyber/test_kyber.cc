@@ -55,14 +55,15 @@ bool test_kyber1() {
   memset(m, 0, m_len);
   memset(c, 0, c_len);
   memset(r, 0, r_len);
-  if (!kyber_encrypt(p, ek_len, ek, m_len, m, &c_len, c)) {
+  if (!kyber_encrypt(p, ek_len, ek, m_len, m, A, t,
+          r_len, r, &c_len, c)) {
     printf("Could not init kyber_encrypt\n");
     return false;
   }
   int recovered_m_len = 32;
   byte recovered_m[m_len];
   memset(recovered_m, 0, recovered_m_len);
-  if (!kyber_decrypt(p, dk_len, dk, c_len, c, &recovered_m_len, recovered_m)) {
+  if (!kyber_decrypt(p, dk_len, dk, c_len, c, s, &recovered_m_len, recovered_m)) {
     printf("Could not init kyber_decrypt\n");
     return false;
   }

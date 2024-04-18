@@ -620,8 +620,8 @@ bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
 //  v := Compress(q,t^tr + e2 + closest(q/2)n, dv)
 //  return c=(u,v)
 bool kyber_encrypt(kyber_parameters& p, int ek_len, byte* ek,
-      int m_len, byte* m, int* c_len, byte* c) {
-  byte r[32];
+      int m_len, byte* m, module_array& A, module_vector& t,
+      int r_len, byte* r, int* c_len, byte* c) {
   int l = crypto_get_random_bytes(32, r);
   module_vector e1(p.q_, p.n_, p.k_);
   module_vector e2(p.q_, p.n_, p.k_);
@@ -633,7 +633,7 @@ bool kyber_encrypt(kyber_parameters& p, int ek_len, byte* ek,
 //  v := Decompress(q, v, dv)
 //  return (v-s^Tu, 1)
 bool kyber_decrypt(kyber_parameters& p, int dk_len, byte* dk,
-      int c_len, byte* c, int* m_len, byte* m) {
+      int c_len, byte* c, module_vector& s, int* m_len, byte* m) {
   return true;
 }
 
