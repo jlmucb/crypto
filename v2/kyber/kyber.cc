@@ -591,10 +591,65 @@ bool rand_module_coefficients(int top, module_vector& v) {
 // H: {0, 1}* --> {0,1}^256
 // H(s) := SHA3-256(s)
 // J(s) := SHAKE256(s, 32)
-// G(s) := SHA3-512(s)
 //
 // PRF(eta)(s, b) := SHAKE256(s||b, 64 · eta),
 // XOF(ρ, i, j) := SHAKE128(ρ||i|| j)
+
+// G(s) := SHA3-512(s)
+bool G(int in_len, byte* in, int* out_len, byte* out) {
+  sha3 h;
+
+  if (!h.init(512, 256)) {
+    return false;
+  }
+  h.add_to_hash(in_len, in);
+  h.finalize();
+  if (!h.get_digest(*out_len, out)) {
+    return false;
+  }
+  return true;
+}
+
+// PRF(eta)(s, b) := SHAKE256(s||b, 64 · eta),
+bool prf(int eta, int in1_len, byte* in1, int in2_len, byte* in2, int* out_len, byte* out) {
+  sha3 h;
+
+  if (!h.init(512, 64 * eta)) {
+    return false;
+  }
+  h.add_to_hash(in1_len, in1);
+  h.add_to_hash(in2_len, in2);
+  h.shake_finalize();
+  if (!h.get_digest(*out_len, out)) {
+    return false;
+  }
+  return true;
+}
+
+// XOF(ρ, i, j) := SHAKE128(ρ||i|| j)
+bool xof(int eta, int in1_len, byte* in1, int i, int j, int* out_len, byte* out) {
+  sha3 h;
+
+  if (!h.init(256, NBITSINBYTE * (*out_len))) {
+    return false;
+  }
+  h.add_to_hash(in1_len, in1);
+  h.add_to_hash(sizeof(int), (byte*)&i);
+  h.add_to_hash(sizeof(int), (byte*)&j);
+  h.shake_finalize();
+  if (!h.get_digest(*out_len, out)) {
+    return false;
+  }
+  return true;
+}
+
+bool byte_encode(int d, int n, int* pi, int* out_len, byte* out) {
+  return true;
+}
+
+bool byte_decode(int d, int n, int in_len, byte* in, int* pi) {
+  return true;
+}
 
 // Kyber.Keygen
 //  abbreviated
