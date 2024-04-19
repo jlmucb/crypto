@@ -592,6 +592,9 @@ bool rand_module_coefficients(int top, module_vector& v) {
 // H(s) := SHA3-256(s)
 // J(s) := SHAKE256(s, 32)
 // G(s) := SHA3-512(s)
+//
+// PRF(eta)(s, b) := SHAKE256(s||b, 64 · eta),
+// XOF(ρ, i, j) := SHAKE128(ρ||i|| j)
 
 // Kyber.Keygen
 //  abbreviated
@@ -651,12 +654,38 @@ bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
 }
 
 // Kyber.Encrypt
-//  r := {0,1}^256
-//  t := Decompress(q, t, dt)
-//  (e1, e2) := beta_eta^k x beta_eta^k
-//  u := Compress(q, A^T r +e1, du)
-//  v := Compress(q,t^tr + e2 + closest(q/2)n, dv)
-//  return c=(u,v)
+//  abbreviated
+//    r := {0,1}^256
+//    t := Decompress(q, t, dt)
+//    (e1, e2) := beta_eta^k x beta_eta^k
+//    u := Compress(q, A^T r +e1, du)
+//    v := Compress(q,t^tr + e2 + closest(q/2)n, dv)
+//    return c=(u,v)
+//  full
+//    N := 0
+//    t^ := byte_decode(12, ek[0:384k])
+//    rho :=  bytedecode(12, ek[384k:384k_32]
+//    for (i = 0; i < k; i++) {
+//      for (j=0; j < k; j++) {
+//        A^[i,j] := sample_ntt(xof(rho, i, j))
+//      }
+//    }
+//    for (i = 0; i < k; i++) {
+//      r[i] = sample_poly_cdb(eta1,(PRF(eta1, r,N)))
+//      n++;
+//    }
+//    for (i = 0; i < k; i++) {
+//      e1[i] = sample_poly_cdb(eta2,(PRF(eta2, r,N)))
+//      n++;
+//    }
+//    e1 = sample_poly_cdb(eta2,(PRF(eta2, r,N)))
+//    r^ = ntt(r)
+//    u = ntt_inv(A^^T(r^) + e1
+//    mu = decompress(1, byte_encode(1,u))
+//    nu = ntt_inv(t^^T r^) +e2 + mu
+//    c1 = byte_encode(du, compress(du,u))
+//    c2 = byte_encode(dv, compress(dv,nu))
+//    return (c1, c2)
 bool kyber_encrypt(kyber_parameters& p, int ek_len, byte* ek,
       int m_len, byte* m, module_array& A, module_vector& t,
       int r_len, byte* r, int* c_len, byte* c) {
@@ -667,19 +696,30 @@ bool kyber_encrypt(kyber_parameters& p, int ek_len, byte* ek,
 }
 
 // Kyber.Decrypt
-//  u := Decompress(q, u, du)
-//  v := Decompress(q, v, dv)
-//  return (v-s^Tu, 1)
+//  abbreviated
+//    u := Decompress(q, u, du)
+//    v := Decompress(q, v, dv)
+//    return (v-s^Tu, 1)
+//  full
+//    c1 = c[0:384duk]
+//    c2 := c[384duk: 384duk+32(duk _dv)
+//    u := decompress(du, byte_decode(du, c1))
+//    nu := decompress(dv, byte_decode(dv, c2))
+//    s^ = byte_decode(12, dek)
+//    w := nu - ntt_inv(s^^T NTT(u))
+//    m := byte_encode(1, compress(1,w))
 bool kyber_decrypt(kyber_parameters& p, int dk_len, byte* dk,
       int c_len, byte* c, module_vector& s, int* m_len, byte* m) {
   return true;
 }
 
 // Kem Keygen
-//  s := B^32
-//  (ek, dk) := kyber_keygen
-//  kem_ek := ek
-//  kem_dk := dk || ek || H(ek) || z
+//  abbreviated
+//    z := B^32
+//    (ek, dk) := kyber_keygen
+//    kem_ek := ek
+//    kem_dk := dk || ek || H(ek) || z
+//  full
 bool kyber_kem_keygen(kyber_parameters& p, int* kem_ek_len, byte* kem_ek,
       int* kem_dk_len, byte* kem_dk) {
   return true;
@@ -688,9 +728,9 @@ bool kyber_kem_keygen(kyber_parameters& p, int* kem_ek_len, byte* kem_ek,
 // Kem.Encapsulate
 //  m := {0,1}^256
 //  (K, r) := G(H(pk), m)
-//  (u,v) := Kyber.Enc(A, t, m, r)
+//  (u,v) := Kyber.Enc(ek, m, r)
 //  c := (u,v)
-//  K := H(K, H(c))
+//  K := H(K, c)
 //  return c,K
 bool kyber_kem_encaps(kyber_parameters& p, int kem_ek_len, byte* kem_ek,
       int* k_len, byte* k, int* c_len, byte* c) {
@@ -698,13 +738,18 @@ bool kyber_kem_encaps(kyber_parameters& p, int kem_ek_len, byte* kem_ek,
 }
 
 // Kem.Decapsulate
-//  m' := Kyber.Dec(s, u, v)
-//  (K', r') := G(H(pk), m')
-//  (u', v') := Kyber.Enc(A,t,m',r')
-//  if (u', v') == (u, v)
-//    K := H(K^', H(c))
+//  dk := dk[0:384k]
+//  ek := dk[384k:768k +32]
+//  h := dk[768k +64: 768k+32]
+//  z := dk[768k+64: 768k+96
+//  m' := Kyber.Dec(dk, c)
+//  (K', r') := G(m'|| h)
+//  K-bar = J(z||c, 32)
+//  c' := Kyber.Enc(A,t,m',r')
+//  if c != c'
+//    K' := K-bar
 //  else
-//    K := H(Z, H(c))
+//   e
 //  return K
 bool kyber_kem_decaps(kyber_parameters& p, int kem_dk_len, byte* kem_dk,
       int c_len, byte* c, int* k_len, byte* k) {
