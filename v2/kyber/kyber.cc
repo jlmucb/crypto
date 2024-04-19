@@ -122,10 +122,10 @@ bool coefficient_mult(coefficient_vector& in1, coefficient_vector& in2, coeffici
     }
   }
 
-    int m = (int)in1.c_.size() - 1;
-    for (int j = (2 * m); j > m; j--) {
-      t_out[j -  m - 1] = reduce(t_out[j - m - 1], t_out[j], in1.q_);
-    }
+  int m = (int)in1.c_.size() - 1;
+  for (int j = (2 * m); j > m; j--) {
+    t_out[j -  m - 1] = reduce(t_out[j - m - 1], t_out[j], in1.q_);
+  }
 
   for (int j = 0; j < (int)in1.c_.size(); j++) {
     if (t_out[j] >= 0)
@@ -378,6 +378,19 @@ bool ntt_base_mult(int q, int g, int& in1a, int& in1b,
   return true;
 }
 
+bool multiply_ntt(int g, module_vector& in1, module_vector& in2, module_vector* out) {
+  for (int i = 0; i < in1.dim_; i++) {
+    for (int j = 0; j < in1.n_ / 2; j += 2) {
+      if (!ntt_base_mult(in1.q_, g, in1.c_[i]->c_[j], in1.c_[i]->c_[j+1],
+            in2.c_[i]->c_[j], in2.c_[i]->c_[j+1],
+            &(out->c_[i]->c_[j]), &(out->c_[i]->c_[j+1]))) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 int exp_in_ntt(int q, int e, int base) {
   int r = 1;
   int t = base;
@@ -581,9 +594,34 @@ bool rand_module_coefficients(int top, module_vector& v) {
 // G(s) := SHA3-512(s)
 
 // Kyber.Keygen
+//  abbreviated
 //    A := R_q^(kxk), (s,e) := beta_eta^k x beta_eta^k
 //    t := Compress(q,As+e), d_t)
 //    pk := (A,t), sk := s
+//
+//  full
+//    d := random32)
+//    (rho, sigma) := G(d)
+//    N := 0
+//    for (i = 0 i < k; i++) {
+//      for (j = 0; j < k; j++) {
+//        A^[i,j] := sample_ntt(XOF(rho, i, j)
+//      }
+//    }
+//    for (i = 0; i < k; i++) {
+//      s[i] := sample_poly_cbd(eta1, PRF(eta1, sigma, N))
+//      N++;
+//    }
+//    for (i = 0; i < k; i++) {
+//      e[i] := sample_poly_cdb(eta1, PRF(eta1, sigma, rho))
+//      n++
+//    }
+//    s^ := ntt(s)
+//    e^ := ntt(e))
+//    t^ := A^(s^)+e^
+//    ek := byte_encode(12) (t^) || rho
+//    dk := byte_encode(12) (s^)
+//    return (ek, dk)
 bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
       int* dk_len, byte* dk, module_array* A, module_vector* t,
       module_vector* e, module_vector* s) {
