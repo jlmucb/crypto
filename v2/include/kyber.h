@@ -23,10 +23,16 @@ using namespace std;
 int round(int a, int b);
 int compress(int q, int x, int d);
 int decompress(int q, int x, int d);
+
 byte bit_from_ints(int bits_in_int, int bit_numb, int* pi);
 byte bit_from_bytes(int bit_numb, byte* buf);
 bool byte_encode(int d, int n, int* pi, int* out_len, byte* out);
 bool byte_decode(int d, int n, int in_len, byte* in, int* pi);
+
+byte bit_from_int_vector(int bits_in_int, int bit_numb, vector<int>& v);
+bool byte_encode_from_vector(int d, int n, vector<int>& v, int* out_len, byte* out);
+bool byte_decode_from_vector(int d, int n, int in_len, byte* in, vector<int>& v);
+
 bool G(int in_len, byte* in, int bit_out_len, byte* out);
 bool prf(int eta, int in1_len, byte* in1, int in2_len, byte* in2, int bit_out_len, byte* out);
 bool xof(int eta, int in1_len, byte* in1, int i, int j, int bit_out_len, byte* out);

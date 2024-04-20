@@ -649,6 +649,15 @@ byte bit_from_ints(int bits_in_int, int bit_numb, int* pi) {
   return b;
 }
 
+// least significant bit first
+byte bit_from_int_vector(int bits_in_int, int bit_numb, vector<int>& v) {
+  int i = bit_numb / bits_in_int;
+  int j =  bit_numb - (i * bits_in_int);
+  int t = v[i]>>j;
+  byte b = t & 1;
+  return b;
+}
+
 byte bit_from_bytes(int bit_numb, byte* buf) {
   int i = bit_numb / NBITSINBYTE;
   int j =  bit_numb - i * NBITSINBYTE;
@@ -700,6 +709,50 @@ bool byte_decode(int d, int n, int in_len, byte* in, int* pi) {
   return true;
 }
 
+// encode n d-bit integers into byte array
+bool byte_encode_from_vector(int d, int n, vector<int>& v, int* out_len, byte* out) {
+  int num_bits = d * n;
+  byte t = 0;
+  byte r = 0;
+  int k = 0;  // bit position in output byte
+  int m = 0;  // current output byte number
+  memset(out, 0, ((d * n) + NBITSINBYTE - 1) / NBITSINBYTE);
+  for (int i = 0; i < num_bits; i++) {
+    t = (int)bit_from_int_vector(d, i, v);
+    r |= t << k;
+    if ((k % NBITSINBYTE)  == 7) {
+      out[m++] = r;
+      r = 0;
+      k = 0;
+    } else {
+      k++;
+    }
+  }
+  return true;
+}
+
+// decode byte array into n d-bit integers
+bool byte_decode_from_vector(int d, int n, int in_len, byte* in, vector<int>& v) {
+  int num_bits = d * n;
+  int t = 0;
+  int r = 0;
+  int k = 0;  // bit position in int
+  int m = 0;  // current output int
+  for (int i = 0; i < num_bits; i++) {
+    t = (int)bit_from_bytes(i, in);
+    r |= t << k;
+    if ((k % d)  == (d - 1)) {
+      v[m++] = r;
+      r = 0;
+      k = 0;
+    } else {
+      k++;
+    }
+  }
+  return true;
+}
+
+
 // Kyber.Keygen
 //  abbreviated
 //    A := R_q^(kxk), (s,e) := beta_eta^k x beta_eta^k
@@ -733,6 +786,8 @@ bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
       int* dk_len, byte* dk) {
 
 #if 1
+  int g = 17;
+
   byte d[32];
   byte parameters[64];  // (rho, sigma)
   memset(d, 0, 32);
@@ -797,13 +852,40 @@ bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
     // if (!sample_poly_cbd(p.q_, p.eta1_, p.k_, b_prf_len, b_prf, int* out))
     N++;
   }
-  // ntt(int g, coefficient_vector& in, coefficient_vector* out)
-  // s^ := ntt(s)
-  // e^ := ntt(e))
+
+  for (int i = 0; i < s_ntt.dim_; i++) {
+    if (!ntt(g, *s.c_[i], s_ntt.c_[i])) {
+        printf("kyber_keygen: ntt (1) failed\n");
+        return false;
+      }
+  }
+  for (int i = 0; i < e_ntt.dim_; i++) {
+    if (!ntt(g, *e.c_[i], e_ntt.c_[i])) {
+        printf("kyber_keygen: ntt (2) failed\n");
+        return false;
+      }
+  }
+
   // t^ := A^(s^)+e^
-  // byte_encode(int d, int n, int* pi, int* out_len, byte* out)
+  // module_apply_ntt
+  // module_add_vector
   // ek := byte_encode(12) (t^) || rho
+  for (int i = 0; i < t_ntt.dim_; i++) {
+    if (!byte_encode_from_vector(12, p.n_, t_ntt.c_[i]->c_, ek_len, ek)) {
+      printf("kyber_keygen: byte_encode (2) failed\n");
+      return false;
+    }
+  }
+  memcpy(&ek[*ek_len], parameters, 32);
+  *ek_len += 32;
+
   // dk := byte_encode(12) (s^)
+  for (int i = 0; i < s_ntt.dim_; i++) {
+    if (!byte_encode_from_vector(12, p.n_, s_ntt.c_[i]->c_, dk_len, dk)) {
+      printf("kyber_keygen: byte_encode (1) failed\n");
+      return false;
+    }
+  }
 
 #else
   // Simple version
@@ -868,9 +950,39 @@ bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
 bool kyber_encrypt(kyber_parameters& p, int ek_len, byte* ek,
       int m_len, byte* m, module_array& A, module_vector& t,
       int r_len, byte* r, int* c_len, byte* c) {
+
   int l = crypto_get_random_bytes(32, r);
   module_vector e1(p.q_, p.n_, p.k_);
   module_vector e2(p.q_, p.n_, p.k_);
+
+  return true;
+
+  int N = 0;
+  //    t^ := byte_decode(12, ek[0:384k])
+  //    rho :=  bytedecode(12, ek[384k:384k_32]
+  for (int i = 0; i < A.nr_; i++) {
+    for (int j = 0; j < A.nc_; j++) {
+      // A^[i,j] := sample_ntt(xof(rho, i, j))
+      // bool sample_ntt(int q, int l, int b_len, byte* b, vector<int>& out);
+    }
+  }
+  for (int i = 0; i < t.dim_; i++) {
+    // bool sample_poly_cbd(int q, int eta, int l, int b_len, byte* b, vector<int>& out);
+    // r[i] = sample_poly_cdb(eta1,(PRF(eta1, r,N)))
+    N++;
+  }
+  for (int i = 0; i < e1.dim_; i++) {
+    // bool sample_poly_cbd(int q, int eta, int l, int b_len, byte* b, vector<int>& out);
+    // e1[i] = sample_poly_cdb(eta2,(PRF(eta2, r,N)))
+    N++;
+  }
+
+  // r^ = ntt(r)
+  // u = ntt_inv(A^^T(r^) + e1
+  // mu = decompress(1, byte_encode(1,u))
+  // nu = ntt_inv(t^^T r^) +e2 + mu
+  // c1 = byte_encode(du, compress(du,u))
+  // c2 = byte_encode(dv, compress(dv,nu))
   return true;
 }
 
