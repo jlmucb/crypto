@@ -924,7 +924,7 @@ bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
 //    return c=(u,v)
 //  full
 //    N := 0
-//    t^ := byte_decode(12, ek[0:384k])
+//    t_ntt^ := byte_decode(12, ek[0:384k])
 //    rho :=  bytedecode(12, ek[384k:384k_32]
 //    for (i = 0; i < k; i++) {
 //      for (j=0; j < k; j++) {
@@ -948,10 +948,10 @@ bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
 //    c2 = byte_encode(dv, compress(dv,nu))
 //    return (c1, c2)
 bool kyber_encrypt(kyber_parameters& p, int ek_len, byte* ek,
-      int m_len, byte* m, module_array& A, module_vector& t,
-      int r_len, byte* r, int* c_len, byte* c) {
+      int m_len, byte* m, int* c_len, byte* c) {
 
-  int l = crypto_get_random_bytes(32, r);
+  module_array A_ntt(p.q_, p.n_, p.k_, p.k_);
+  module_vector t_ntt(p.q_, p.n_, p.k_);
   module_vector e1(p.q_, p.n_, p.k_);
   module_vector e2(p.q_, p.n_, p.k_);
 
@@ -959,14 +959,15 @@ bool kyber_encrypt(kyber_parameters& p, int ek_len, byte* ek,
 
   int N = 0;
   //    t^ := byte_decode(12, ek[0:384k])
-  //    rho :=  bytedecode(12, ek[384k:384k_32]
-  for (int i = 0; i < A.nr_; i++) {
-    for (int j = 0; j < A.nc_; j++) {
+  //    rho :=  bytedecode(12, ek[384k:384k+32]
+
+  for (int i = 0; i < A_ntt.nr_; i++) {
+    for (int j = 0; j < A_ntt.nc_; j++) {
       // A^[i,j] := sample_ntt(xof(rho, i, j))
       // bool sample_ntt(int q, int l, int b_len, byte* b, vector<int>& out);
     }
   }
-  for (int i = 0; i < t.dim_; i++) {
+  for (int i = 0; i < t_ntt.dim_; i++) {
     // bool sample_poly_cbd(int q, int eta, int l, int b_len, byte* b, vector<int>& out);
     // r[i] = sample_poly_cdb(eta1,(PRF(eta1, r,N)))
     N++;

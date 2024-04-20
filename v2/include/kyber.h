@@ -159,8 +159,7 @@ void print_kyber_parameters(kyber_parameters& p);
 bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
       int* dk_len, byte* dk);
 bool kyber_encrypt(kyber_parameters& p, int ek_len, byte* ek,
-      int m_len, byte* m, module_array& A, module_vector& t,
-      int r_len, byte* r, int* c_len, byte* c);
+      int m_len, byte* m, int* c_len, byte* c);
 bool kyber_decrypt(kyber_parameters& p, int dk_len, byte* dk,
       int c_len, byte* c, module_vector& s, int* m_len, byte* m);
 
