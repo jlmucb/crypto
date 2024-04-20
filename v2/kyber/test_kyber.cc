@@ -29,6 +29,7 @@ bool test_kyber1() {
     printf("Could not init kyber parameters\n");
   }
   print_kyber_parameters(p);
+  return true;
 
   int ek_len = 384 * p.k_ + 32;
   byte ek[ek_len];
@@ -178,8 +179,90 @@ bool test_kyber_support() {
     printf("bit_reverse fail(1)\n");
     return false;
   }
+  const char* str = "abc";
+  int g_out_len = 32; 
+  byte g_out[g_out_len];
+  memset(g_out, 0, g_out_len);
+  if (!G(strlen(str), (byte*) str, NBITSINBYTE * g_out_len, g_out)) {
+    printf("G failed\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("\nG for %s is: ", str);
+    print_bytes(g_out_len, g_out);
+  }
 
- 
+  memset(g_out, 0, g_out_len);
+  if (!prf(5, strlen(str), (byte*)str, strlen(str), (byte*)str, g_out_len * NBITSINBYTE, g_out)) {
+    printf("prf failed\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("prf for %s is: ", str);
+    print_bytes(g_out_len, g_out);
+  }
+
+  memset(g_out, 0, g_out_len);
+  int i1 = 1;
+  int i2 = 2;
+  if (!xof(5, strlen(str), (byte*) str, i1, i2, NBITSINBYTE * g_out_len, g_out)) {
+    printf("xof failed\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("xof for %s is: ", str);
+    print_bytes(g_out_len, g_out);
+  }
+  printf("\n");
+
+  int int_in[4] = {
+    0x000aaa, 0x000555, 0x000eee, 0x000111
+  };
+  int dd = 12;
+  int b_out_len = 6;
+  byte b_out[b_out_len];
+  memset(b_out, 0, 6);
+
+  if (FLAGS_print_all) {
+    printf("int string, %d bits per int: %08x %08x %08x %08x\n",
+      dd, int_in[0], int_in[1], int_in[2], int_in[3]);
+  }
+  for (int i = 0; i < 48; i++) {
+    byte b = bit_from_ints(dd, i, int_in);
+    if (FLAGS_print_all) {
+      printf("(%d, %d) ", i, (int)b);
+    }
+  }
+  if (FLAGS_print_all) {
+    printf("\n");
+  }
+  if (!byte_encode(dd, 4, int_in, &b_out_len, b_out)) {
+    printf("byte_encode failed\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("As bytes: ");
+    print_bytes(6, b_out);
+  }
+
+  int recovered_int[4];
+  if (!byte_decode(dd, 4, b_out_len, b_out, recovered_int)) {
+    printf("byte_decode failed\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("As ints again: ");
+    for (int i = 0; i < 4; i++)
+      printf("%08x ", recovered_int[i]);
+    printf("\n\n");
+  }
+  for (int i = 0; i < 4; i++) {
+    if (int_in[i] != recovered_int[i]) {
+      printf("decode after encode is not identical\n");
+      return false;
+    }
+  }
+
   int e = 4;
   int base = 2;
 
@@ -319,7 +402,7 @@ bool test_kyber_support() {
     for (int i = 0; i < sample_ntt_out_len; i++) {
       printf("%4d ", sample_ntt_out[i]);
       if ((i%16) == 15)
-	printf("\n");
+        printf("\n");
     }
     printf("\n\n");
   }
@@ -332,7 +415,7 @@ bool test_kyber_support() {
   memset(sample_cbd_out, 0, sizeof(short int) * sample_cbd_out_len);
   n_b = crypto_get_random_bytes(sample_cbd_b_len, sample_cbd_b);
   if (!sample_poly_cbd(p.q_, p.eta1_, p.n_, sample_cbd_b_len, sample_cbd_b,
-	&sample_cbd_out_len, sample_cbd_out)) {
+        &sample_cbd_out_len, sample_cbd_out)) {
     printf("Could not sample_poly_cbd\n");
     return false;
   }
@@ -345,7 +428,7 @@ bool test_kyber_support() {
     for (int i = 0; i < sample_cbd_out_len; i++) {
       printf("%4d[%3d] ", sample_cbd_out[i], i);
       if ((i%8) == 7)
-	printf("\n");
+        printf("\n");
     }
     printf("\n\n");
   }

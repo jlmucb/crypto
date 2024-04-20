@@ -596,58 +596,114 @@ bool rand_module_coefficients(int top, module_vector& v) {
 // XOF(ρ, i, j) := SHAKE128(ρ||i|| j)
 
 // G(s) := SHA3-512(s)
-bool G(int in_len, byte* in, int* out_len, byte* out) {
+bool G(int in_len, byte* in, int bit_out_len, byte* out) {
   sha3 h;
 
-  if (!h.init(512, 256)) {
+  if (!h.init(512, bit_out_len)) {
     return false;
   }
   h.add_to_hash(in_len, in);
   h.finalize();
-  if (!h.get_digest(*out_len, out)) {
+  if (!h.get_digest(((bit_out_len + NBITSINBYTE - 1) / NBITSINBYTE), out)) {
     return false;
   }
   return true;
 }
 
 // PRF(eta)(s, b) := SHAKE256(s||b, 64 · eta),
-bool prf(int eta, int in1_len, byte* in1, int in2_len, byte* in2, int* out_len, byte* out) {
+bool prf(int eta, int in1_len, byte* in1, int in2_len, byte* in2, int bit_out_len, byte* out) {
   sha3 h;
 
-  if (!h.init(512, 64 * eta)) {
+  if (!h.init(512, bit_out_len)) {
+    printf("prf init failed\n");
     return false;
   }
   h.add_to_hash(in1_len, in1);
   h.add_to_hash(in2_len, in2);
   h.shake_finalize();
-  if (!h.get_digest(*out_len, out)) {
+  if (!h.get_digest((bit_out_len + NBITSINBYTE - 1) / NBITSINBYTE, out)) {
+    printf("prf failed\n");
     return false;
   }
   return true;
 }
 
 // XOF(ρ, i, j) := SHAKE128(ρ||i|| j)
-bool xof(int eta, int in1_len, byte* in1, int i, int j, int* out_len, byte* out) {
+bool xof(int eta, int in1_len, byte* in1, int i, int j, int bit_out_len, byte* out) {
   sha3 h;
 
-  if (!h.init(256, NBITSINBYTE * (*out_len))) {
+  if (!h.init(256, bit_out_len)) {
+    printf("xof init failed\n");
     return false;
   }
   h.add_to_hash(in1_len, in1);
   h.add_to_hash(sizeof(int), (byte*)&i);
   h.add_to_hash(sizeof(int), (byte*)&j);
   h.shake_finalize();
-  if (!h.get_digest(*out_len, out)) {
+  if (!h.get_digest((bit_out_len + NBITSINBYTE - 1) / NBITSINBYTE, out)) {
+    printf("xof failed\n");
     return false;
   }
   return true;
 }
 
+// least significant bit first
+byte bit_from_ints(int bits_in_int, int bit_numb, int* pi) {
+  int i = bit_numb / bits_in_int;
+  int j =  bit_numb - (i * bits_in_int);
+  int t = pi[i]>>j;
+  byte b = t & 1;
+  return b;
+}
+
+byte bit_from_bytes(int bit_numb, byte* buf) {
+  int i = bit_numb / NBITSINBYTE;
+  int j =  bit_numb - i * NBITSINBYTE;
+  int b = buf[i]>>j;
+  return b&1;
+}
+
+// encode n d-bit integers into byte array
 bool byte_encode(int d, int n, int* pi, int* out_len, byte* out) {
+  int num_bits = d * n;
+  byte t = 0;
+  byte r = 0;
+  int k = 0;  // bit position in output byte
+  int m = 0;  // current output byte number
+  memset(out, 0, ((d * n) + NBITSINBYTE - 1) / NBITSINBYTE);
+  for (int i = 0; i < num_bits; i++) {
+    t = (int)bit_from_ints(d, i, pi);
+    r |= t << k;
+    if ((k % NBITSINBYTE)  == 7) {
+      out[m++] = r;
+      r = 0;
+      k = 0;
+    } else {
+      k++;
+    }
+  }
   return true;
 }
 
+// decode byte array into n d-bit integers
 bool byte_decode(int d, int n, int in_len, byte* in, int* pi) {
+  int num_bits = d * n;
+  int t = 0;
+  int r = 0;
+  int k = 0;  // bit position in int
+  int m = 0;  // current output int
+  memset((byte*)pi, 0, n * sizeof(int));
+  for (int i = 0; i < num_bits; i++) {
+    t = (int)bit_from_bytes(i, in);
+    r |= t << k;
+    if ((k % d)  == (d - 1)) {
+      pi[m++] = r;
+      r = 0;
+      k = 0;
+    } else {
+      k++;
+    }
+  }
   return true;
 }
 
