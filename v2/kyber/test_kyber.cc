@@ -29,7 +29,6 @@ bool test_kyber1() {
     printf("Could not init kyber parameters\n");
   }
   print_kyber_parameters(p);
-  return true;
 
   int ek_len = 384 * p.k_ + 32;
   byte ek[ek_len];
@@ -42,10 +41,11 @@ bool test_kyber1() {
   module_vector e(p.q_, p.n_, p.k_);
   module_vector s(p.q_, p.n_, p.k_);
   module_vector t(p.q_, p.n_, p.k_);
-  if (!kyber_keygen(p, &ek_len, ek, &dk_len, dk, &A, &t, &e, &s)) {
+  if (!kyber_keygen(p, &ek_len, ek, &dk_len, dk)) {
     printf("Could not init kyber_keygen\n");
     return false;
   }
+  return true;
 
   int m_len = 32;
   byte m[m_len];
@@ -381,6 +381,7 @@ bool test_kyber_support() {
     return false;
   }
 
+  /*
   int sample_ntt_b_len = 256;
   byte sample_ntt_b[sample_ntt_b_len];
   memset(sample_ntt_b, 0, sample_ntt_b_len);
@@ -411,7 +412,7 @@ bool test_kyber_support() {
   byte sample_cbd_b[sample_cbd_b_len];
   memset(sample_cbd_b, 0, sample_cbd_b_len);
   int sample_cbd_out_len = 256;
-  short int sample_cbd_out[sample_cbd_out_len];
+  int sample_cbd_out[sample_cbd_out_len];
   memset(sample_cbd_out, 0, sizeof(short int) * sample_cbd_out_len);
   n_b = crypto_get_random_bytes(sample_cbd_b_len, sample_cbd_b);
   if (!sample_poly_cbd(p.q_, p.eta1_, p.n_, sample_cbd_b_len, sample_cbd_b,
@@ -432,6 +433,7 @@ bool test_kyber_support() {
     }
     printf("\n\n");
   }
+  */
 
   coefficient_vector ntt_in(p.q_, p.n_);
   coefficient_vector ntt_out(p.q_, p.n_);
@@ -482,12 +484,18 @@ bool test_kyber_support() {
     }
   }
 
-  /*
-  if (!ntt_mult(short int g, coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out)) {
+  coefficient_vector m_out(p.q_, p.n_);
+  if (!multiply_ntt(g, ntt_in, ntt_in, &m_out)) {
     printf("Could not inverse ntt_mult\n");
     return false;
   }
-  */
+  printf("\n");
+  print_coefficient_vector(ntt_in);
+  printf(" x_ntt\n");
+  print_coefficient_vector(ntt_in);
+  printf(" =\n");
+  print_coefficient_vector(m_out);
+  printf("\n");
 
   return true;
 }

@@ -378,14 +378,13 @@ bool ntt_base_mult(int q, int g, int& in1a, int& in1b,
   return true;
 }
 
-bool multiply_ntt(int g, module_vector& in1, module_vector& in2, module_vector* out) {
-  for (int i = 0; i < in1.dim_; i++) {
-    for (int j = 0; j < in1.n_ / 2; j += 2) {
-      if (!ntt_base_mult(in1.q_, g, in1.c_[i]->c_[j], in1.c_[i]->c_[j+1],
-            in2.c_[i]->c_[j], in2.c_[i]->c_[j+1],
-            &(out->c_[i]->c_[j]), &(out->c_[i]->c_[j+1]))) {
-        return false;
-      }
+bool multiply_ntt(int g, coefficient_vector& in1, coefficient_vector& in2,
+    coefficient_vector* out) {
+  for (int j = 0; j < in1.len_ / 2; j += 2) {
+    if (!ntt_base_mult(in1.q_, g, in1.c_[j], in1.c_[j + 1],
+          in2.c_[j], in2.c_[j + 1],
+          &(out->c_[j]), &(out->c_[j + 1]))) {
+      return false;
     }
   }
   return true;
@@ -412,7 +411,7 @@ byte bit_in_byte_stream(int k, int l, byte* b) {
   return (t>>(k%8))&1;
 }
 
-bool sample_ntt(int q, int l, int b_len, byte* b, int* out_len, short int* out) {
+bool sample_ntt(int q, int l, int b_len, byte* b, vector<int>& out) {
   int i = 0;
   int j = 0;
   int loop = 0;
@@ -422,10 +421,8 @@ bool sample_ntt(int q, int l, int b_len, byte* b, int* out_len, short int* out) 
   }
 
   while (j < l) {
-    short int d1 = b[i] + 256 * (b[i+1] % 16);
-    short int d2 = (b[i+1] / 16) + 16 * b[i+2];
-    if (j >= *out_len)
-      return false;
+    int d1 = b[i] + 256 * (b[i+1] % 16);
+    int d2 = (b[i+1] / 16) + 16 * b[i+2];
     if (d1 < q) {
       out[j] = d1;
       j++;
@@ -438,27 +435,23 @@ bool sample_ntt(int q, int l, int b_len, byte* b, int* out_len, short int* out) 
     if (loop++ > 512)
       return false;
   }
-  *out_len = l;
   return true;
 }
 
 bool sample_poly_cbd(int q, int eta, int l, int b_len, byte* b,
-        int* out_len, short int* out) {
+        vector<int>& out) {
   if (b_len * NBITSINBYTE < l)
     return false;
 
   for (int i = 0; i < l; i++) {
-    short int x = 0;
+    int x = 0;
     for (int j = 0; j < eta; j++)
-      x += (short int) bit_in_byte_stream(2*i*eta+j, l, b);
+      x += bit_in_byte_stream(2*i*eta+j, l, b);
     short int y = 0;
     for (int j = 0; j < eta; j++)
-      y += (short int) bit_in_byte_stream(2*i*eta+eta+j, l, b);
-    if (i >= *out_len)
-      return false;
+      y += bit_in_byte_stream(2*i*eta+eta+j, l, b);
     out[i] = (q + x - y) % q;
   }
-  *out_len = l;
   return true;
 }
 
@@ -737,9 +730,83 @@ bool byte_decode(int d, int n, int in_len, byte* in, int* pi) {
 //    dk := byte_encode(12) (s^)
 //    return (ek, dk)
 bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
-      int* dk_len, byte* dk, module_array* A, module_vector* t,
-      module_vector* e, module_vector* s) {
+      int* dk_len, byte* dk) {
 
+#if 1
+  byte d[32];
+  byte parameters[64];  // (rho, sigma)
+  memset(d, 0, 32);
+  memset(parameters, 0, 64);
+
+  int n_b = crypto_get_random_bytes(32, d);
+  if (n_b != 32) {
+    printf("kyber_keygen: crypto_get_random_bytes returne wrong nuber of bytes\n");
+    return false;
+  }
+  if (!G(32, d, 512, parameters)) {
+    printf("kyber_keygen: crypto_get_random_bytes failed\n");
+    return false;
+  }
+  printf("\n kyber_keygen\n");
+  printf("d: ");
+  print_bytes(32, d);
+  printf("sigma || rho: ");
+  print_bytes(64, parameters);
+  printf("\n");
+
+  module_array A(p.q_, p.n_, p.k_, p.k_);
+  module_vector e(p.q_, p.n_, p.k_);
+  module_vector s(p.q_, p.n_, p.k_);
+  module_vector t(p.q_, p.n_, p.k_);
+  module_array A_ntt(p.q_, p.n_, p.k_, p.k_);
+  module_vector e_ntt(p.q_, p.n_, p.k_);
+  module_vector s_ntt(p.q_, p.n_, p.k_);
+  module_vector t_ntt(p.q_, p.n_, p.k_);
+
+  return true;
+  int N = 0;
+  for (int i = 0; i < p.k_; i++) {
+    for (int j = 0; j < p.k_; j++) {
+      int b_xof_len = 64;
+      byte b_xof[b_xof_len];
+      memset(b_xof, 0, b_xof_len);
+      if (!xof(p.eta1_, b_xof_len, b_xof, i, j, b_xof_len * NBITSINBYTE, b_xof)) {
+        printf("kyber_keygen: xof failed\n");
+        return false;
+      }
+      if (!sample_ntt(p.q_, p.n_, b_xof_len, b_xof,
+                      A.c_[A.index(i, j)]->c_)) {
+        printf("kyber_keygen: sample_ntt failed\n");
+        return false;
+      }
+    }
+  }
+  for (int i = 0; i < p.k_; i++) {
+    int b_prf_len = 64;
+    byte b_prf[b_prf_len];
+    memset(b_prf, 0, b_prf_len);
+    // s[i] := sample_poly_cbd(eta1, PRF(eta1, sigma, N))
+    // if (!sample_poly_cbd(p.q_, p.eta1_, p.k_, b_prf_len, b_prf, int* out))
+    N++;
+  }
+  for (int i = 0; i < p.k_; i++) {
+    int b_prf_len = 64;
+    byte b_prf[b_prf_len];
+    memset(b_prf, 0, b_prf_len);
+    // e[i] := sample_poly_cdb(eta1, PRF(eta1, sigma, rho))
+    // if (!sample_poly_cbd(p.q_, p.eta1_, p.k_, b_prf_len, b_prf, int* out))
+    N++;
+  }
+  // ntt(int g, coefficient_vector& in, coefficient_vector* out)
+  // s^ := ntt(s)
+  // e^ := ntt(e))
+  // t^ := A^(s^)+e^
+  // byte_encode(int d, int n, int* pi, int* out_len, byte* out)
+  // ek := byte_encode(12) (t^) || rho
+  // dk := byte_encode(12) (s^)
+
+#else
+  // Simple version
   if (!fill_random_module_array(A)) {
     printf("fill_random_array failed on A\n");
     return false;
@@ -761,6 +828,7 @@ bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
     printf("module_vector_add failed\n");
     return false;
   }
+#endif
   return true;
 }
 

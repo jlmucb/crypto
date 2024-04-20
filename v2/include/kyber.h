@@ -115,13 +115,14 @@ bool ntt_base_mult(int q, int g, int& in1a, int& in1b,
         int& in2a, int& in2b, int* outa, int* outb);
 int exp_in_ntt(int q, int e, int base);
 
-bool sample_ntt(int q, int l, int b_len, byte* b, int* out_len, short int* out);
-bool sample_poly_cbd(int q, int eta, int l, int b_len, byte* b, int* out_len, short int* out);
+bool sample_ntt(int q, int l, int b_len, byte* b, vector<int>& out);
+bool sample_poly_cbd(int q, int eta, int l, int b_len, byte* b, vector<int>& out);
 
 bool ntt(int g, coefficient_vector& in, coefficient_vector* out);
 bool ntt_inv(int g, coefficient_vector& in, coefficient_vector* out);
 bool ntt_mult(int g, coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
-bool multiply_ntt(int g, module_vector& in1, module_vector& in2, module_vector* out);
+bool multiply_ntt(int g, coefficient_vector& in1, coefficient_vector& in2,
+        coefficient_vector* out);
 
 bool coefficient_add(coefficient_vector& in1, coefficient_vector& in2,
     coefficient_vector* out);
@@ -150,8 +151,7 @@ void print_module_vector(module_vector& mv);
 void print_kyber_parameters(kyber_parameters& p);
 
 bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
-      int* dk_len, byte* dk, module_array* A, module_vector* t,
-      module_vector* e, module_vector* s);
+      int* dk_len, byte* dk);
 bool kyber_encrypt(kyber_parameters& p, int ek_len, byte* ek,
       int m_len, byte* m, module_array& A, module_vector& t,
       int r_len, byte* r, int* c_len, byte* c);
