@@ -381,7 +381,7 @@ bool test_kyber_support() {
     return false;
   }
 
-  int sample_ntt_b_len = 256;
+  int sample_ntt_b_len = 384;
   byte sample_ntt_b[sample_ntt_b_len];
   memset(sample_ntt_b, 0, sample_ntt_b_len);
 

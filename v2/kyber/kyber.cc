@@ -411,12 +411,15 @@ byte bit_in_byte_stream(int k, int l, byte* b) {
   return (t>>(k%8))&1;
 }
 
+// l is 256
+// b_len is 384
 bool sample_ntt(int q, int l, int b_len, byte* b, vector<int>& out) {
   int i = 0;
   int j = 0;
   int loop = 0;
 
-  if (b_len < 32) {
+  if (b_len < 384) {
+    printf("sample_ntt: byte input too small %d\n", b_len);
     return false;
   }
 
@@ -825,7 +828,7 @@ bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
   int N = 0;
   for (int i = 0; i < p.k_; i++) {
     for (int j = 0; j < p.k_; j++) {
-      int b_xof_len = 64;
+      int b_xof_len = 384;
       byte b_xof[b_xof_len];
       memset(b_xof, 0, b_xof_len);
       if (!xof(p.eta1_, b_xof_len, b_xof, i, j, b_xof_len * NBITSINBYTE, b_xof)) {
@@ -840,7 +843,7 @@ bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
     }
   }
   for (int i = 0; i < p.k_; i++) {
-    int b_prf_len = 64;
+    int b_prf_len = 64 * p.eta1_;
     byte b_prf[b_prf_len];
     memset(b_prf, 0, b_prf_len);
     // s[i] := sample_poly_cbd(eta1, PRF(eta1, sigma, N))
