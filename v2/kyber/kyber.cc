@@ -283,6 +283,33 @@ bool module_apply_array(module_array& A, module_vector& v, module_vector* out) {
   return true;
 }
 
+bool ntt_module_apply_array(module_array& A, module_vector& v, module_vector* out) {
+  if ((A.nc_ != v.dim_) || A.nr_ != out->dim_) {
+    printf("mismatch, nc: %d, v: %d, nr: %d, out: %d\n", A.nc_,  v.dim_, A.nr_, out->dim_);
+    return false;
+  }
+
+  coefficient_vector acc(v.q_, v.n_);
+  coefficient_vector t(v.q_, v.n_);
+
+  for (int i = 0; i < A.nr_; i++) {
+    if (!coefficient_vector_zero(&acc))
+      return false;
+    for (int j = 0; j < v.dim_; j++) {
+      if (!coefficient_vector_zero(&t))
+        return false;
+      // change this to an multiply_ntt
+      if (!coefficient_mult(*A.c_[A.index(i,j)], *v.c_[j], &t))
+        return false;
+      if (!coefficient_vector_add_to(t, &acc))
+        return false;
+    }
+    if (!coefficient_set_vector(acc, out->c_[i]))
+      return false;
+  }
+  return true;
+}
+
 int module_array::index(int r, int c) {
   return r * nc_ + c;
 }

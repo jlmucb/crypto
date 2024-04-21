@@ -154,6 +154,8 @@ bool make_module_vector_zero(module_vector* out);
 bool module_vector_equal(module_vector& in1, module_vector& in2);
 void print_module_vector(module_vector& mv);
 
+bool ntt_module_apply_array(module_array& A, module_vector& v, module_vector* out);
+
 void print_kyber_parameters(kyber_parameters& p);
 
 bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
