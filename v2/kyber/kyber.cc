@@ -339,11 +339,85 @@ bool ntt_module_apply_array_transpose(int g, module_array& A, module_vector& v, 
 
 bool module_vector_dot_product(module_vector& in1, module_vector& in2,
         coefficient_vector* out) {
+
+  if (!coefficient_vector_zero(out)) {
+    return false;
+  }
+  for (int i = 0; i < in1.dim_; i++) {
+      coefficient_vector t(in1.q_, in1.n_);
+      if (!coefficient_vector_zero(&t)) {
+        return false;
+      }
+      if (!coefficient_mult(*in1.c_[i], *in2.c_[i], &t)) {
+        return false;
+      }
+      if (!coefficient_vector_add_to(t, out)) {
+        return false;
+      }
+  }
   return true;
 }
 
 bool module_vector_dot_product_first_transposed(module_vector& in1,
         module_vector& in2, coefficient_vector* out) {
+
+  if (!coefficient_vector_zero(out)) {
+    return false;
+  }
+  for (int i = 0; i < in1.dim_; i++) {
+      coefficient_vector t(in1.q_, in1.n_);
+      if (!coefficient_vector_zero(&t)) {
+        return false;
+      }
+      if (!coefficient_mult(*in1.c_[in1.dim_ - 1 -i], *in2.c_[i], &t)) {
+        return false;
+      }
+      if (!coefficient_vector_add_to(t, out)) {
+        return false;
+      }
+  }
+  return true;
+}
+
+bool ntt_module_vector_dot_product(module_vector& in1, module_vector& in2,
+        coefficient_vector* out) {
+
+  if (!coefficient_vector_zero(out)) {
+    return false;
+  }
+  for (int i = 0; i < in1.dim_; i++) {
+      coefficient_vector t(in1.q_, in1.n_);
+      if (!coefficient_vector_zero(&t)) {
+        return false;
+      }
+      if (!multiply_ntt(17, *in1.c_[i], *in2.c_[i], &t)) {
+        return false;
+      }
+      if (!coefficient_vector_add_to(t, out)) {
+        return false;
+      }
+  }
+  return true;
+}
+
+bool ntt_module_vector_dot_product_first_transposed(module_vector& in1,
+        module_vector& in2, coefficient_vector* out) {
+
+  if (!coefficient_vector_zero(out)) {
+    return false;
+  }
+  for (int i = 0; i < in1.dim_; i++) {
+      coefficient_vector t(in1.q_, in1.n_);
+      if (!coefficient_vector_zero(&t)) {
+        return false;
+      }
+      if (!multiply_ntt(17, *in1.c_[in1.dim_ - 1 - i], *in2.c_[i], &t)) {
+        return false;
+      }
+      if (!coefficient_vector_add_to(t, out)) {
+        return false;
+      }
+  }
   return true;
 }
 
@@ -736,7 +810,7 @@ byte bit_from_bytes(int bit_numb, byte* buf) {
 }
 
 // encode n d-bit integers into byte array
-bool byte_encode(int d, int n, int* pi, int* out_len, byte* out) {
+bool byte_encode(int d, int n, int* pi, byte* out) {
   int num_bits = d * n;
   byte t = 0;
   byte r = 0;
@@ -780,13 +854,14 @@ bool byte_decode(int d, int n, int in_len, byte* in, int* pi) {
 }
 
 // encode n d-bit integers into byte array
-bool byte_encode_from_vector(int d, int n, vector<int>& v, int* out_len, byte* out) {
+bool byte_encode_from_vector(int d, int n, vector<int>& v, byte* out) {
   int num_bits = d * n;
   byte t = 0;
   byte r = 0;
   int k = 0;  // bit position in output byte
   int m = 0;  // current output byte number
-  memset(out, 0, ((d * n) + NBITSINBYTE - 1) / NBITSINBYTE);
+  int out_len = (num_bits + NBITSINBYTE - 1) / NBITSINBYTE;
+  memset(out, 0, out_len);
   for (int i = 0; i < num_bits; i++) {
     t = (int)bit_from_int_vector(d, i, v);
     r |= t << k;
@@ -911,7 +986,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     memset(b_prf, 0, b_prf_len);
 
     if (!prf(p.eta1_, 32, &parameters[32], sizeof(int), (byte*)&N,
-	  NBITSINBYTE * 64 * p.eta1_, b_prf)) {
+          NBITSINBYTE * 64 * p.eta1_, b_prf)) {
        printf("kyber_keygen: prf (1) failed\n");
       return false;
     }
@@ -926,7 +1001,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     byte b_prf[b_prf_len];
     memset(b_prf, 0, b_prf_len);
     if (!prf(p.eta1_, 32, &parameters[32], sizeof(int), (byte*)&N,
-	  NBITSINBYTE * 64 * p.eta1_, b_prf)) {
+          NBITSINBYTE * 64 * p.eta1_, b_prf)) {
        printf("kyber_keygen: prf (1) failed\n");
       return false;
     }
@@ -968,7 +1043,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
 
   // ek := byte_encode(12) (t^) || rho
   for (int i = 0; i < t_ntt.dim_; i++) {
-    if (!byte_encode_from_vector(12, p.n_, t_ntt.c_[i]->c_, ek_len, ek)) {
+    if (!byte_encode_from_vector(12, p.n_, t_ntt.c_[i]->c_, ek)) {
       printf("kyber_keygen: byte_encode (2) failed\n");
       return false;
     }
@@ -978,7 +1053,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
 
   // dk := byte_encode(12) (s^)
   for (int i = 0; i < s_ntt.dim_; i++) {
-    if (!byte_encode_from_vector(12, p.n_, s_ntt.c_[i]->c_, dk_len, dk)) {
+    if (!byte_encode_from_vector(12, p.n_, s_ntt.c_[i]->c_, dk)) {
       printf("kyber_keygen: byte_encode (1) failed\n");
       return false;
     }
@@ -1096,7 +1171,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     memset(b_prf, 0, b_prf_len);
 
     if (!prf(p.eta1_, 32, rho, sizeof(int), (byte*)&N,
-	  NBITSINBYTE * 64 * p.eta1_, b_prf)) {
+          NBITSINBYTE * 64 * p.eta1_, b_prf)) {
        printf("kyber_encrypt: prf (1) failed\n");
       return false;
     }
@@ -1112,7 +1187,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     memset(b_prf, 0, b_prf_len);
 
     if (!prf(p.eta2_, 32, rho, sizeof(int), (byte*)&N,
-	  NBITSINBYTE * 64 * p.eta2_, b_prf)) {
+          NBITSINBYTE * 64 * p.eta2_, b_prf)) {
        printf("kyber_encrypt: prf (1) failed\n");
       return false;
     }
@@ -1128,7 +1203,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     memset(b_prf, 0, b_prf_len);
 
     if (!prf(p.eta2_, 32, rho, sizeof(int), (byte*)&N,
-	  NBITSINBYTE * 64 * p.eta2_, b_prf)) {
+          NBITSINBYTE * 64 * p.eta2_, b_prf)) {
        printf("kyber_encrypt: prf (1) failed\n");
       return false;
     }
@@ -1179,7 +1254,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   if (!coefficient_vector_zero(&mu)) {
       return false;
   }
-  if (!module_vector_dot_product(t_ntt, r_ntt, &nu_ntt)) {
+  if (!ntt_module_vector_dot_product(t_ntt, r_ntt, &nu_ntt)) {
       return false;
   }
   if (!ntt_inv(g, nu_ntt, &nu)) {
@@ -1208,10 +1283,10 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   byte* pp = b_c1;
   for (int i = 0; i < p.k_; i++) {
     int len = (p.du_ * 256) / NBITSINBYTE;
-    if (!byte_encode_from_vector(p.du_, 256, compressed_u.c_[i]->c_, &len, pp)) {
+    if (!byte_encode_from_vector(p.du_, 256, compressed_u.c_[i]->c_, pp)) {
         return false;
     }
-    pp += len;
+    pp += p.du_ * 32;
   }
 
   coefficient_vector compressed_nu(p.q_, p.n_);
@@ -1220,7 +1295,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   for (int j = 0; j < compressed_nu.len_; j++) {
     compressed_nu.c_[j] = compress(p.q_, nu.c_[j], p.dv_);
   }
-  if (!byte_encode_from_vector(p.dv_, 256, compressed_nu.c_, &c2_b_len, b_c2)) {
+  if (!byte_encode_from_vector(p.dv_, 256, compressed_nu.c_, b_c2)) {
     return false;
   }
 
@@ -1293,7 +1368,7 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
       printf("kyber_decrypt: ntt (1) failed\n");
       return false;
     }
-    if (!module_vector_dot_product_first_transposed(s_transposed, u_ntt, products.c_[i])) {
+    if (!ntt_module_vector_dot_product_first_transposed(s_transposed, u_ntt, products.c_[i])) {
         return false;
     }
 
@@ -1313,11 +1388,9 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
   for (int j = 0; j < p.n_; j++) {
     w.c_[0]->c_[j]= compress(p.q_, w.c_[0]->c_[j], 1);
   }
-#if 0
-  if (!byte_encode_from_vector(1, p.n_, m_vec.c_, m_len, m)) {
+  if (!byte_encode_from_vector(1, 256, m_vec.c_, m)) {
     return false;
   }
-#endif
   return true;
 }
 

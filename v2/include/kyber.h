@@ -26,11 +26,11 @@ int decompress(int q, int x, int d);
 
 byte bit_from_ints(int bits_in_int, int bit_numb, int* pi);
 byte bit_from_bytes(int bit_numb, byte* buf);
-bool byte_encode(int d, int n, int* pi, int* out_len, byte* out);
+bool byte_encode(int d, int n, int* pi, byte* out);
 bool byte_decode(int d, int n, int in_len, byte* in, int* pi);
 
 byte bit_from_int_vector(int bits_in_int, int bit_numb, vector<int>& v);
-bool byte_encode_from_vector(int d, int n, vector<int>& v, int* out_len, byte* out);
+bool byte_encode_from_vector(int d, int n, vector<int>& v, byte* out);
 bool byte_decode_to_vector(int d, int n, int in_len, byte* in, vector<int>& v);
 
 bool G(int in_len, byte* in, int bit_out_len, byte* out);
@@ -152,8 +152,14 @@ bool module_apply_array(module_array& A, module_vector& v, module_vector* out);
 bool module_vector_is_zero(module_vector& in);
 bool make_module_vector_zero(module_vector* out);
 bool module_vector_equal(module_vector& in1, module_vector& in2);
-bool module_vector_dot_product(module_vector& in1, module_vector& in2, coefficient_vector* out);
-bool module_vector_dot_product_first_transposed(module_vector& in1, module_vector& in2, coefficient_vector* out);
+bool module_vector_dot_product(module_vector& in1, module_vector& in2,
+	coefficient_vector* out);
+bool module_vector_dot_product_first_transposed(module_vector& in1,
+	module_vector& in2, coefficient_vector* out);
+bool ntt_module_vector_dot_product(module_vector& in1,
+	module_vector& in2, coefficient_vector* out);
+bool ntt_module_vector_dot_product_first_transposed(module_vector& in1,
+	module_vector& in2, coefficient_vector* out);
 void print_module_vector(module_vector& mv);
 
 bool ntt_module_apply_array(int g, module_array& A, module_vector& v, module_vector* out);

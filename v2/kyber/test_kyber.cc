@@ -75,7 +75,7 @@ bool test_kyber1() {
   int recovered_m_len = 32;
   byte recovered_m[m_len];
   memset(recovered_m, 0, recovered_m_len);
-  if (!kyber_decrypt(g, p, dk_len, dk, c_len, c, s, &recovered_m_len, recovered_m)) {
+  if (!kyber_decrypt(g, p, dk_len, dk, c_len, c, &recovered_m_len, recovered_m)) {
     printf("Could not init kyber_decrypt\n");
     return false;
   }
@@ -247,7 +247,7 @@ bool test_kyber_support() {
   if (FLAGS_print_all) {
     printf("\n");
   }
-  if (!byte_encode(dd, 4, int_in, &b_out_len, b_out)) {
+  if (!byte_encode(dd, 4, int_in, b_out)) {
     printf("byte_encode failed\n");
     return false;
   }
