@@ -283,7 +283,7 @@ bool module_apply_array(module_array& A, module_vector& v, module_vector* out) {
   return true;
 }
 
-bool ntt_module_apply_array(module_array& A, module_vector& v, module_vector* out) {
+bool ntt_module_apply_array(int g, module_array& A, module_vector& v, module_vector* out) {
   if ((A.nc_ != v.dim_) || A.nr_ != out->dim_) {
     printf("mismatch, nc: %d, v: %d, nr: %d, out: %d\n", A.nc_,  v.dim_, A.nr_, out->dim_);
     return false;
@@ -298,9 +298,9 @@ bool ntt_module_apply_array(module_array& A, module_vector& v, module_vector* ou
     for (int j = 0; j < v.dim_; j++) {
       if (!coefficient_vector_zero(&t))
         return false;
-      // change this to an multiply_ntt
-      if (!coefficient_mult(*A.c_[A.index(i,j)], *v.c_[j], &t))
+      if (!ntt_mult(g, *A.c_[A.index(i,j)], *v.c_[j], &t)) {
         return false;
+      }
       if (!coefficient_vector_add_to(t, &acc))
         return false;
     }
@@ -815,8 +815,8 @@ bool byte_decode_from_vector(int d, int n, int in_len, byte* in, vector<int>& v)
 //    ek := byte_encode(12) (t^) || rho
 //    dk := byte_encode(12) (s^)
 //    return (ek, dk)
-bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
-      int* dk_len, byte* dk) {
+bool kyber_keygen(kyber_parameters& p, int r_len, byte* b_r,
+      int* ek_len, byte* ek, int* dk_len, byte* dk) {
 
 #if 1
   int g = 17;
@@ -858,7 +858,8 @@ bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
       int b_xof_len = 384;
       byte b_xof[b_xof_len];
       memset(b_xof, 0, b_xof_len);
-      if (!xof(p.eta1_, b_xof_len, b_xof, i, j, b_xof_len * NBITSINBYTE, b_xof)) {
+
+      if (!xof(p.eta1_, 32, parameters, i, j, b_xof_len * NBITSINBYTE, b_xof)) {
         printf("kyber_keygen: xof failed\n");
         return false;
       }
@@ -873,8 +874,16 @@ bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
     int b_prf_len = 64 * p.eta1_;
     byte b_prf[b_prf_len];
     memset(b_prf, 0, b_prf_len);
+
+    if (!prf(p.eta1_, 32, &parameters[32], sizeof(int), (byte*)&N,
+	  NBITSINBYTE * 64 * p.eta1_, b_prf)) {
+      return false;
+    }
+
     // s[i] := sample_poly_cbd(eta1, PRF(eta1, sigma, N))
-    // if (!sample_poly_cbd(p.q_, p.eta1_, p.k_, b_prf_len, b_prf, int* out))
+    //if (!sample_poly_cbd(p.q_, p.eta1_, p.k_, b_prf_len, b_prf, s[])) {
+      //return false;
+    //}
     N++;
   }
   for (int i = 0; i < p.k_; i++) {

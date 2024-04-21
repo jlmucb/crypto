@@ -154,12 +154,12 @@ bool make_module_vector_zero(module_vector* out);
 bool module_vector_equal(module_vector& in1, module_vector& in2);
 void print_module_vector(module_vector& mv);
 
-bool ntt_module_apply_array(module_array& A, module_vector& v, module_vector* out);
+bool ntt_module_apply_array(int g, module_array& A, module_vector& v, module_vector* out);
 
 void print_kyber_parameters(kyber_parameters& p);
 
-bool kyber_keygen(kyber_parameters& p, int* ek_len, byte* ek,
-      int* dk_len, byte* dk);
+bool kyber_keygen(kyber_parameters& p, int b_r_len, byte* b_r,
+      int* ek_len, byte* ek, int* dk_len, byte* dk);
 bool kyber_encrypt(kyber_parameters& p, int ek_len, byte* ek,
       int m_len, byte* m, int* c_len, byte* c);
 bool kyber_decrypt(kyber_parameters& p, int dk_len, byte* dk,

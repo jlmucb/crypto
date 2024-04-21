@@ -41,7 +41,17 @@ bool test_kyber1() {
   module_vector e(p.q_, p.n_, p.k_);
   module_vector s(p.q_, p.n_, p.k_);
   module_vector t(p.q_, p.n_, p.k_);
-  if (!kyber_keygen(p, &ek_len, ek, &dk_len, dk)) {
+  int b_r_len = 32;
+  byte b_r[b_r_len];
+  memset(b_r, 0, b_r_len);
+  int n_b = crypto_get_random_bytes(b_r_len, b_r);
+  if (n_b != b_r_len) {
+    printf("wrong return from crypto_get_random_bytes\n");
+    return false;
+  }
+  
+
+  if (!kyber_keygen(p, b_r_len, b_r, &ek_len, ek, &dk_len, dk)) {
     printf("Could not init kyber_keygen\n");
     return false;
   }
