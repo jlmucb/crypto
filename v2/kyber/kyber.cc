@@ -1401,8 +1401,39 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
 //    kem_ek := ek
 //    kem_dk := dk || ek || H(ek) || z
 //  full
-bool kyber_kem_keygen(kyber_parameters& p, int* kem_ek_len, byte* kem_ek,
+bool kyber_kem_keygen(int g, kyber_parameters& p, int* kem_ek_len, byte* kem_ek,
       int* kem_dk_len, byte* kem_dk) {
+  byte z[32];
+  int n_b = crypto_get_random_bytes(32, z);
+  if (n_b != 32) {
+    printf("kyber_kem_keygen crypto_get_random_bytes returne wrong nuber of bytes\n");
+    return false;
+  }
+  int dk_PKE_len = 48 * p.k_;
+  byte dk_PKE[dk_PKE_len];
+  if (! kyber_keygen(g, p, kem_ek_len, kem_ek, &dk_PKE_len, dk_PKE)) {
+    return false;
+  }
+
+  // kem_dk = dk_PKE || ek || H(ek) || z
+  int len = 0;
+  memcpy(&kem_dk[len], dk_PKE, dk_PKE_len);
+  len += dk_PKE_len;
+  memcpy(&kem_dk[len], kem_ek, *kem_ek_len);
+  len += *kem_ek_len;
+  sha3 h;
+  if (!h.init(256, 256)) {
+    return false;
+  }
+  h.add_to_hash(*kem_ek_len, kem_ek);
+  h.finalize();
+  h.get_digest(32, &kem_dk[len]);
+  len += 32;
+  memcpy(&kem_dk[len], z, 32);
+  if (*kem_dk_len < len) {
+    return false;
+  }
+  *kem_dk_len = len;
   return true;
 }
 
@@ -1410,19 +1441,55 @@ bool kyber_kem_keygen(kyber_parameters& p, int* kem_ek_len, byte* kem_ek,
 //  m := {0,1}^256
 //  (K, r) := G(H(pk), m)
 //  (u,v) := Kyber.Enc(ek, m, r)
-//  c := (u,v)
-//  K := H(K, c)
-//  return c,K
-bool kyber_kem_encaps(kyber_parameters& p, int kem_ek_len, byte* kem_ek,
-      int* k_len, byte* k, int* c_len, byte* c) {
+//  return K, c
+bool kyber_kem_encaps(int g, kyber_parameters& p, int kem_ek_len, byte* kem_ek,
+      int* k_len, byte* k, int* kem_c_len, byte* kem_c) {
+
+  byte m[32];
+  int n_b = crypto_get_random_bytes(32, m);
+  if (n_b != 32) {
+    printf("kyber_kem_encaps: crypto_get_random_bytes return wrong nuber of bytes\n");
+    return false;
+  }
+  byte h_to_hash[kem_ek_len + 32];
+  memcpy(h_to_hash, m, 32);
+  sha3 h;
+  if (!h.init(256, 256)) {
+    return false;
+  }
+  h.add_to_hash(kem_ek_len, kem_ek);
+  h.finalize();
+  h.get_digest(32, &h_to_hash[32]);
+
+  //  (K, r) := G(H(pk), m)
+  byte K_r[64];
+  if (!G(kem_ek_len + 32, h_to_hash, 64, K_r)) {
+    return false;
+  }
+
+  int len_c = 32*(p.du_* p.k_ + p.dv_);
+  if (*kem_c_len < len_c) {
+    return false;
+  }
+  byte c[len_c];
+  if (!kyber_encrypt(g, p, kem_ek_len, kem_ek,
+          32, m, 32, &K_r[32], kem_c_len, kem_c)) {
+    return false;
+  }
+  if (*kem_c_len < (len_c + 32)) {
+    return false;
+  }
+  *kem_c_len = 32 + len_c;
+  memcpy(kem_c, K_r, 32);
+  memcpy(&kem_c[32], c, len_c);
   return true;
 }
 
 // Kem.Decapsulate
-//  dk := dk[0:384k]
-//  ek := dk[384k:768k +32]
-//  h := dk[768k +64: 768k+32]
-//  z := dk[768k+64: 768k+96
+//  dk := dk[0:384k] = dk[0:48] (bytes)
+//  ek := dk[384k:768k + 32] = dk[48:128] (bytes)
+//  h := dk[768k + 32: 768k+64 = dk[128:160] (bytes)]
+//  z := dk[768k+64: 768k+96 = dk[160:192] (bytes)
 //  m' := Kyber.Dec(dk, c)
 //  (K', r') := G(m'|| h)
 //  K-bar = J(z||c, 32)
@@ -1430,10 +1497,14 @@ bool kyber_kem_encaps(kyber_parameters& p, int kem_ek_len, byte* kem_ek,
 //  if c != c'
 //    K' := K-bar
 //  else
-//   e
+//   error
 //  return K
-bool kyber_kem_decaps(kyber_parameters& p, int kem_dk_len, byte* kem_dk,
+bool kyber_kem_decaps(int g, kyber_parameters& p, int kem_dk_len, byte* kem_dk,
       int c_len, byte* c, int* k_len, byte* k) {
+  byte* dk = kem_dk;
+  byte* ek = &kem_dk[48];
+  byte* h = &kem_dk[128];
+  byte* z = &kem_dk[160];
   return true;
 }
 
