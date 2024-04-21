@@ -29,6 +29,7 @@ bool test_kyber1() {
     printf("Could not init kyber parameters\n");
   }
   print_kyber_parameters(p);
+  int g = 17;
 
   int ek_len = 384 * p.k_ + 32;
   byte ek[ek_len];
@@ -41,17 +42,8 @@ bool test_kyber1() {
   module_vector e(p.q_, p.n_, p.k_);
   module_vector s(p.q_, p.n_, p.k_);
   module_vector t(p.q_, p.n_, p.k_);
-  int b_r_len = 32;
-  byte b_r[b_r_len];
-  memset(b_r, 0, b_r_len);
-  int n_b = crypto_get_random_bytes(b_r_len, b_r);
-  if (n_b != b_r_len) {
-    printf("wrong return from crypto_get_random_bytes\n");
-    return false;
-  }
   
-
-  if (!kyber_keygen(p, b_r_len, b_r, &ek_len, ek, &dk_len, dk)) {
+  if (!kyber_keygen(g, p, &ek_len, ek, &dk_len, dk)) {
     printf("Could not init kyber_keygen\n");
     return false;
   }
@@ -66,15 +58,24 @@ bool test_kyber1() {
   memset(m, 0, m_len);
   memset(c, 0, c_len);
   memset(r, 0, r_len);
-  if (!kyber_encrypt(p, ek_len, ek, m_len, m,
-          &c_len, c)) {
+  int b_r_len = 32;
+  byte b_r[b_r_len];
+  memset(b_r, 0, b_r_len);
+  int n_b = crypto_get_random_bytes(b_r_len, b_r);
+  if (n_b != b_r_len) {
+    printf("wrong return from crypto_get_random_bytes\n");
+    return false;
+  }
+
+  if (!kyber_encrypt(g, p, ek_len, ek, m_len, m,
+          b_r_len, b_r, &c_len, c)) {
     printf("Could not init kyber_encrypt\n");
     return false;
   }
   int recovered_m_len = 32;
   byte recovered_m[m_len];
   memset(recovered_m, 0, recovered_m_len);
-  if (!kyber_decrypt(p, dk_len, dk, c_len, c, s, &recovered_m_len, recovered_m)) {
+  if (!kyber_decrypt(g, p, dk_len, dk, c_len, c, s, &recovered_m_len, recovered_m)) {
     printf("Could not init kyber_decrypt\n");
     return false;
   }
