@@ -337,7 +337,13 @@ bool ntt_module_apply_array_transpose(int g, module_array& A, module_vector& v, 
   return true;
 }
 
-bool module_vector_dot_product(module_vector& in1, module_vector& in2, coefficient_vector* out) {
+bool module_vector_dot_product(module_vector& in1, module_vector& in2,
+        coefficient_vector* out) {
+  return true;
+}
+
+bool module_vector_dot_product_first_transposed(module_vector& in1,
+        module_vector& in2, coefficient_vector* out) {
   return true;
 }
 
@@ -1241,8 +1247,77 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
 //    s^ = byte_decode(12, dek)
 //    w := nu - ntt_inv(s^^T NTT(u))
 //    m := byte_encode(1, compress(1,w))
-bool kyber_decrypt(kyber_parameters& p, int dk_len, byte* dk,
-      int c_len, byte* c, module_vector& s, int* m_len, byte* m) {
+bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
+      int c_len, byte* c, int* m_len, byte* m) {
+  if (c_len != 32 * (p.du_ * p.k_ + p.dv_)) {
+    printf("kyber_decrypt: wrong input size\n");
+    return false;
+  }
+  byte* c1= c;
+  byte* c2 = &c[32 *p.du_ * p.k_];
+
+  byte* p_c1 = c1;
+  int len = 32;
+  module_vector u(p.q_, p.n_, p.k_);
+  for (int i = 0; i < p.k_; i++) {
+    if (!byte_decode_to_vector(p.du_, p.n_, len, p_c1, u.c_[i]->c_)) {
+      return false;
+    }
+    p_c1 += len;
+    for (int j = 0; j < p.n_; j++) {
+      u.c_[i]->c_[j] = decompress(p.q_, u.c_[i]->c_[j], p.du_);
+    }
+  }
+  coefficient_vector nu(p.q_, p.n_);
+  if (!byte_decode_to_vector(p.dv_, p.n_, len, c2, nu.c_)) {
+    return false;
+  }
+  for (int j = 0; j < p.n_; j++) {
+    nu.c_[j] = decompress(p.q_, nu.c_[j], p.dv_);
+  }
+
+  module_vector s(p.q_, p.n_, p.k_);
+  for (int i = 0; i < p.k_; i++) {
+    if (!byte_decode_to_vector(p.du_, p.n_, dk_len, dk, s.c_[i]->c_)) {
+      return false;
+    }
+  }
+
+  module_vector u_ntt(p.q_, p.n_, p.k_);
+  module_vector s_transposed(p.q_, p.n_, p.k_);
+  module_vector products(p.q_, p.n_, p.k_);
+  module_vector products_inv(p.q_, p.n_, p.k_);
+  module_vector w(p.q_, p.n_, p.k_);
+  for (int i = 0; i < p.k_; i++) {
+      if (!ntt(g, *u.c_[i], u_ntt.c_[i])) {
+      printf("kyber_decrypt: ntt (1) failed\n");
+      return false;
+    }
+    if (!module_vector_dot_product_first_transposed(s_transposed, u_ntt, products.c_[i])) {
+        return false;
+    }
+
+    if (!ntt_inv(g, *products.c_[i], products_inv.c_[i])) {
+      printf("kyber_decrypt: ntt_inv failed\n");
+      return false;
+    }
+    for (int j = 0; j < p.n_; j++) {
+      products_inv.c_[i]->c_[j] = (p.q_ - products_inv.c_[i]->c_[j]) % p.q_;
+    }
+    if (!coefficient_add(nu, *products_inv.c_[i], w.c_[i])) {
+      return false;
+    }
+  }
+
+  coefficient_vector m_vec(p.q_, p.n_);
+  for (int j = 0; j < p.n_; j++) {
+    w.c_[0]->c_[j]= compress(p.q_, w.c_[0]->c_[j], 1);
+  }
+#if 0
+  if (!byte_encode_from_vector(1, p.n_, m_vec.c_, m_len, m)) {
+    return false;
+  }
+#endif
   return true;
 }
 

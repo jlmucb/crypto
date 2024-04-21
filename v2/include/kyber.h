@@ -153,6 +153,7 @@ bool module_vector_is_zero(module_vector& in);
 bool make_module_vector_zero(module_vector* out);
 bool module_vector_equal(module_vector& in1, module_vector& in2);
 bool module_vector_dot_product(module_vector& in1, module_vector& in2, coefficient_vector* out);
+bool module_vector_dot_product_first_transposed(module_vector& in1, module_vector& in2, coefficient_vector* out);
 void print_module_vector(module_vector& mv);
 
 bool ntt_module_apply_array(int g, module_array& A, module_vector& v, module_vector* out);
@@ -165,7 +166,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
 bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
       int m_len, byte* m, int b_r_len, byte* b_r, int* c_len, byte* c);
 bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
-      int c_len, byte* c, module_vector& s, int* m_len, byte* m);
+      int c_len, byte* c, int* m_len, byte* m);
 
 bool kyber_kem_keygen(kyber_parameters& p, int* kem_ek_len, byte* kem_ek,
       int* kem_dk_len, byte* kem_dk);
