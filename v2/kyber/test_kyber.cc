@@ -56,8 +56,8 @@ bool test_kyber1() {
   memset(m, 0, m_len);
   memset(c, 0, c_len);
   memset(r, 0, r_len);
-  if (!kyber_encrypt(p, ek_len, ek, m_len, m, A, t,
-          r_len, r, &c_len, c)) {
+  if (!kyber_encrypt(p, ek_len, ek, m_len, m,
+          &c_len, c)) {
     printf("Could not init kyber_encrypt\n");
     return false;
   }
@@ -403,7 +403,7 @@ bool test_kyber_support() {
     printf("\n");
   }
 
-  int sample_cbd_b_len = 256;
+  int sample_cbd_b_len = 64 * p.eta1_;
   byte sample_cbd_b[sample_cbd_b_len];
   memset(sample_cbd_b, 0, sample_cbd_b_len);
   coefficient_vector sample_cbd_out(p.q_, p.n_);

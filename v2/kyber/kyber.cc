@@ -438,8 +438,11 @@ bool sample_ntt(int q, int l, int b_len, byte* b, vector<int>& out) {
   return true;
 }
 
+// random input bytes are 64*eta bytes long
+// l is poly length
 bool sample_poly_cbd(int q, int eta, int l, int b_len, byte* b,
         vector<int>& out) {
+
   if (b_len * NBITSINBYTE < l)
     return false;
 
@@ -447,7 +450,7 @@ bool sample_poly_cbd(int q, int eta, int l, int b_len, byte* b,
     int x = 0;
     for (int j = 0; j < eta; j++)
       x += bit_in_byte_stream(2*i*eta+j, l, b);
-    short int y = 0;
+    int y = 0;
     for (int j = 0; j < eta; j++)
       y += bit_in_byte_stream(2*i*eta+eta+j, l, b);
     out[i] = (q + x - y) % q;
