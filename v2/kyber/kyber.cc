@@ -22,6 +22,9 @@ using namespace std;
 
 // For 256 bit seal (ML-KEM-1024)
 //    n =256, q=3329, k=4, eta1=2, eta2=2, du=11, dv=5
+//    R_q = Z_q[x]/(x^n + 1)
+//    17^128 = -1 (mod q)
+//    x^n + 1 = prod_k=0^127 (x^2- 17^(2k+1))
 
 int round(int a, int b) {
   double t = ((double)a)/((double) b);
@@ -54,10 +57,10 @@ bool kyber_parameters::init_kyber(int ks) {
     gamma_ = 17;
     du_ = 11;
     dv_ = 5;
-    dt_;
     eta1_ = 2;
     eta2_ = 2;
-    beta_;
+    // beta_;
+    // dt_;
     return true;
   }
   return false;
@@ -450,10 +453,10 @@ void print_kyber_parameters(kyber_parameters& p) {
   printf("k: %d\n", p.k_);
   printf("du: %d\n", p.du_);
   printf("dv: %d\n", p.dv_);
-  printf("dt: %d\n", p.dt_);
   printf("eta1: %d\n", p.eta1_);
   printf("eta2: %d\n", p.eta2_);
-  printf("beta: %d\n", p.beta_);
+  // printf("beta: %d\n", p.beta_);
+  // printf("dt: %d\n", p.dt_);
 }
 
 void print_coefficient_vector(coefficient_vector& v) {
