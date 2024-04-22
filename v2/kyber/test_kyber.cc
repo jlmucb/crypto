@@ -90,7 +90,7 @@ bool test_kyber1() {
   int kem_dk_len = 768 * p.k_ + 96;
   byte kem_dk[kem_dk_len];
   memset(kem_dk, 0, kem_dk_len);
-  if (!kyber_kem_keygen(p, &kem_ek_len, kem_ek, &kem_dk_len, kem_dk)) {
+  if (!kyber_kem_keygen(g, p, &kem_ek_len, kem_ek, &kem_dk_len, kem_dk)) {
     printf("Could not init kem_keygen\n");
     return false;
   }
@@ -100,7 +100,7 @@ bool test_kyber1() {
   int kem_k_len = 32;
   byte kem_k[kem_k_len];
   memset(kem_k, 0, kem_k_len);
-  if (!kyber_kem_encaps(p, kem_ek_len, kem_ek, &kem_k_len,
+  if (!kyber_kem_encaps(g, p, kem_ek_len, kem_ek, &kem_k_len,
                           kem_k, &kem_c_len, kem_c)) {
     printf("Could not init kem_encaps\n");
     return false;
@@ -108,7 +108,7 @@ bool test_kyber1() {
   int recovered_k_len = 32;
   byte recovered_k[recovered_k_len];
   memset(recovered_k, 0, recovered_k_len);
-  if (!kyber_kem_decaps(p, kem_dk_len, kem_dk, kem_c_len, kem_c,
+  if (!kyber_kem_decaps(g, p, kem_dk_len, kem_dk, kem_c_len, kem_c,
                            &recovered_k_len, recovered_k)) {
     printf("Could not init kem_decaps\n");
     return false;

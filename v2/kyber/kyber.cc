@@ -1493,7 +1493,7 @@ bool kyber_kem_encaps(int g, kyber_parameters& p, int kem_ek_len, byte* kem_ek,
 //  m' := Kyber.Dec(dk, c)
 //  (K', r') := G(m'|| h)
 //  K-bar = J(z||c, 32)
-//  c' := Kyber.Enc(A,t,m',r')
+//  c' := Kyber.Enc(m',r')
 //  if c != c'
 //    K' := K-bar
 //  else
@@ -1505,6 +1505,43 @@ bool kyber_kem_decaps(int g, kyber_parameters& p, int kem_dk_len, byte* kem_dk,
   byte* ek = &kem_dk[48];
   byte* h = &kem_dk[128];
   byte* z = &kem_dk[160];
+
+  int m_prime_len = 32;
+  byte m_prime[m_prime_len];
+  if (!kyber_decrypt(g, p, 48, dk, c_len, c, &m_prime_len, m_prime)) {
+    return false;
+  }
+  int ek_len = 80;
+  byte h_to_hash[ek_len + 32];
+  memcpy(h_to_hash, m_prime, 32);
+  memcpy(&h_to_hash[32], h, 32);
+
+  //  (K_prime, r_prime) := G(H(pk), m)
+  byte K_r_prime[64];
+  if (!G(ek_len + 32, h_to_hash, 64, K_r_prime)) {
+    return false;
+  }
+  byte K_bar[32];
+  sha3 h_o;
+  if (!h_o.init(512, 256)) {
+    return false;
+  }
+  h_o.add_to_hash(32, z);
+  h_o.add_to_hash(c_len, c);
+  h_o.shake_finalize();
+  h_o.get_digest(32, K_bar);
+
+  int c_prime_len = 48 * p.k_;
+  byte c_prime[c_prime_len];
+  if (!kyber_encrypt(g, p, 80, ek, 32, m_prime, 32,
+          &K_r_prime[32], &c_prime_len, c_prime)) {
+    return false;
+  }
+  if (memcmp(c, c_prime, c_prime_len) == 0) {
+    return false;
+  }
+  memcpy(k, K_bar, 32);
+  *k_len = 32;
   return true;
 }
 
