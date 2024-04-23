@@ -47,6 +47,14 @@ bool test_kyber1() {
     printf("Could not init kyber_keygen\n");
     return false;
   }
+  if (FLAGS_print_all) {
+    printf("ek:\n");
+    print_bytes(ek_len, ek);
+    printf("\n");
+    printf("dk:\n");
+    print_bytes(dk_len, dk);
+    printf("\n");
+  }
   return true;
 
   int m_len = 32;
@@ -490,13 +498,93 @@ bool test_kyber_support() {
     printf("Could not inverse ntt_mult\n");
     return false;
   }
-  printf("\n");
-  print_coefficient_vector(ntt_in);
-  printf(" x_ntt\n");
-  print_coefficient_vector(ntt_in);
-  printf(" =\n");
-  print_coefficient_vector(m_out);
-  printf("\n");
+  if (FLAGS_print_all) {
+    printf("\n");
+    print_coefficient_vector(ntt_in);
+    printf(" x_ntt\n");
+    print_coefficient_vector(ntt_in);
+    printf(" =\n");
+    print_coefficient_vector(m_out);
+    printf("\n");
+  }
+
+  module_array B(p.q_, p.n_, 4, 4);
+  module_vector vb1(p.q_, p.n_, 4);
+  module_vector vb2(p.q_, p.n_, 4);
+
+  if (!make_module_array_zero(B)) {
+    return false;
+  }
+  if (!make_module_vector_zero(&vb1)) {
+    return false;
+  }
+  if (!make_module_vector_zero(&vb2)) {
+    return false;
+  }
+  for (int i = 0; i < 4; i++) {
+    B.c_[B.index(i,i)]->c_[0] = 1;
+  }
+  B.c_[B.index(0,1)]->c_[0] = 1;
+
+  vb1.c_[0]->c_[0] = 1;
+  vb1.c_[1]->c_[0] = 1;
+  vb1.c_[2]->c_[0] = 1;
+  vb1.c_[3]->c_[0] = 1;
+  if (!module_apply_array(B, vb1, &vb2)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("First apply:\n");
+    print_module_vector(vb2);
+    printf("\n");
+  }
+  if (vb2.c_[0]->c_[0] != 2 || vb2.c_[1]->c_[0] != 1) {
+    printf("module_apply_array failed\n");
+    return false;
+  }
+  if (!make_module_vector_zero(&vb2)) {
+    return false;
+  }
+  if (!module_apply_transposed_array(B, vb1, &vb2)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("Second apply:\n");
+    print_module_vector(vb2);
+    printf("\n");
+  }
+  if (vb2.c_[0]->c_[0] != 1 || vb2.c_[1]->c_[0] != 2) {
+    printf("module_apply_transposed_array failed\n");
+    return false;
+  }
+
+  vb1.c_[0]->c_[0] = 1;
+  vb1.c_[1]->c_[0] = 1;
+  vb1.c_[2]->c_[0] = 1;
+  vb1.c_[3]->c_[0] = 1;
+  vb2.c_[0]->c_[0] = 1;
+  vb2.c_[1]->c_[0] = -1;
+  vb2.c_[2]->c_[0] = 1;
+  vb2.c_[3]->c_[0] = 1;
+  coefficient_vector cv1(p.q_, p.n_);
+  coefficient_vector_zero(&cv1);
+  if (!module_vector_dot_product(vb1, vb2, &cv1)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("Dot product:\n");
+    print_coefficient_vector(cv1);
+    printf("\n");
+  }
+  coefficient_vector_zero(&cv1);
+  if (!module_vector_dot_product_first_transposed(vb1, vb2, &cv1)) {
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("Dot product transposed:\n");
+    print_coefficient_vector(cv1);
+    printf("\n");
+  }
 
   return true;
 }

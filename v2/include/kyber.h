@@ -141,6 +141,7 @@ bool coefficient_vector_add_to(coefficient_vector& in, coefficient_vector* out);
 bool coefficient_equal(coefficient_vector& in1, coefficient_vector& in2);
 bool coefficient_apply_array(coefficient_array& A, coefficient_vector& v, coefficient_vector* out);
 
+bool make_module_array_zero(module_array& B);
 void print_module_array(module_array& ma);
 bool module_vector_mult_by_scalar(coefficient_vector& in1, module_vector& in2,
     module_vector* out);
@@ -149,6 +150,7 @@ bool module_vector_add(module_vector& in1, module_vector& in2,
 bool module_vector_subtract(module_vector& in1, module_vector& in2,
     module_vector* out);
 bool module_apply_array(module_array& A, module_vector& v, module_vector* out);
+bool module_apply_transposed_array(module_array& A, module_vector& v, module_vector* out);
 bool module_vector_is_zero(module_vector& in);
 bool make_module_vector_zero(module_vector* out);
 bool module_vector_equal(module_vector& in1, module_vector& in2);

@@ -260,6 +260,26 @@ bool module_vector_subtract(module_vector& in1, module_vector& in2, module_vecto
   return module_vector_add(in1, neg_in2, out);
 }
 
+bool make_module_vector_zero(module_vector* v) {
+  for( int i = 0; i < v->dim_; i++) {
+      if (!coefficient_vector_zero(v->c_[i])) {
+        return false;
+      }
+  }
+  return true;
+}
+
+bool make_module_array_zero(module_array& B) {
+  for( int i = 0; i < B.nr_; i++) {
+    for( int j = 0; j < B.nc_; j++) {
+      if (!coefficient_vector_zero(B.c_[B.index(i,j)])) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 bool module_apply_array(module_array& A, module_vector& v, module_vector* out) {
   if ((A.nc_ != v.dim_) || A.nr_ != out->dim_) {
     printf("mismatch, nc: %d, v: %d, nr: %d, out: %d\n", A.nc_,  v.dim_, A.nr_, out->dim_);
@@ -285,6 +305,33 @@ bool module_apply_array(module_array& A, module_vector& v, module_vector* out) {
   }
   return true;
 }
+
+bool module_apply_transposed_array(module_array& A, module_vector& v, module_vector* out) {
+  if ((A.nr_ != v.dim_) || A.nc_ != out->dim_) {
+    printf("mismatch, nc: %d, v: %d, nr: %d, out: %d\n", A.nc_,  v.dim_, A.nr_, out->dim_);
+    return false;
+  }
+
+  coefficient_vector acc(v.q_, v.n_);
+  coefficient_vector t(v.q_, v.n_);
+
+  for (int i = 0; i < A.nr_; i++) {
+    if (!coefficient_vector_zero(&acc))
+      return false;
+    for (int j = 0; j < v.dim_; j++) {
+      if (!coefficient_vector_zero(&t))
+        return false;
+      if (!coefficient_mult(*A.c_[A.index(j,i)], *v.c_[j], &t))
+        return false;
+      if (!coefficient_vector_add_to(t, &acc))
+        return false;
+    }
+    if (!coefficient_set_vector(acc, out->c_[i]))
+      return false;
+  }
+  return true;
+}
+
 
 bool ntt_module_apply_array(int g, module_array& A, module_vector& v, module_vector* out) {
   if ((A.nc_ != v.dim_) || A.nr_ != out->dim_) {
@@ -770,10 +817,11 @@ bool prf(int eta, int in1_len, byte* in1, int in2_len, byte* in2, int bit_out_le
 
 // XOF(ρ, i, j) := SHAKE128(ρ||i|| j)
 bool xof(int eta, int in1_len, byte* in1, int i, int j, int bit_out_len, byte* out) {
+#if 0
   sha3 h;
 
   if (!h.init(256, bit_out_len)) {
-    printf("xof init failed\n");
+    printf("xof init failed %d\n", bit_out_len);
     return false;
   }
   h.add_to_hash(in1_len, in1);
@@ -784,6 +832,10 @@ bool xof(int eta, int in1_len, byte* in1, int i, int j, int bit_out_len, byte* o
     printf("xof failed\n");
     return false;
   }
+#else
+  // test only
+  int l = crypto_get_random_bytes(bit_out_len / NBITSINBYTE, out);
+#endif
   return true;
 }
 
@@ -948,12 +1000,14 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     printf("kyber_keygen: crypto_get_random_bytes failed\n");
     return false;
   }
+#if 1
   printf("\n kyber_keygen\n");
   printf("d: ");
   print_bytes(32, d);
   printf("sigma || rho: ");
   print_bytes(64, parameters);
   printf("\n");
+#endif
 
   module_vector e(p.q_, p.n_, p.k_);
   module_vector s(p.q_, p.n_, p.k_);
@@ -964,7 +1018,6 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   module_vector t_ntt(p.q_, p.n_, p.k_);
   module_vector r_ntt(p.q_, p.n_, p.k_);
 
-  return true;
   int N = 0;
   for (int i = 0; i < p.k_; i++) {
     for (int j = 0; j < p.k_; j++) {
@@ -999,13 +1052,14 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     }
     N++;
   }
-  for (int i = 0; i < p.k_; i++) {
+return true;  // FIX
+  for (int i = 0; i < e.dim_; i++) {
     int b_prf_len = 64;
     byte b_prf[b_prf_len];
     memset(b_prf, 0, b_prf_len);
     if (!prf(p.eta1_, 32, &parameters[32], sizeof(int), (byte*)&N,
           NBITSINBYTE * 64 * p.eta1_, b_prf)) {
-       printf("kyber_keygen: prf (1) failed\n");
+       printf("kyber_keygen: prf (2) failed\n");
       return false;
     }
     if (!sample_poly_cbd(p.q_, p.eta1_, p.k_, b_prf_len, b_prf, e.c_[i]->c_)) {
@@ -1014,18 +1068,24 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     }
     N++;
   }
+return true;  // FIX
 
-  for (int i = 0; i < s_ntt.dim_; i++) {
+#if 1
+  printf("s: ");
+  print_module_vector(s);
+  printf("\n");
+  printf("e: ");
+  print_module_vector(e);
+  printf("\n");
+#endif
+
+  for (int i = 0; i < s.dim_; i++) {
     if (!ntt(g, *s.c_[i], s_ntt.c_[i])) {
-        printf("kyber_keygen: ntt (1) failed\n");
-        return false;
-      }
-  }
-  for (int i = 0; i < e_ntt.dim_; i++) {
+      return false;
+    }
     if (!ntt(g, *e.c_[i], e_ntt.c_[i])) {
-        printf("kyber_keygen: ntt (2) failed\n");
-        return false;
-      }
+      return false;
+    }
   }
 
   // t^ := A^(s^)+e^
@@ -1043,6 +1103,12 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     printf("kyber_keygen: module_vector_add failed\n");
     return false;
   }
+
+#if 1
+  printf("t^: ");
+  print_module_vector(t_ntt);
+  printf("\n");
+#endif
 
   // ek := byte_encode(12) (t^) || rho
   for (int i = 0; i < t_ntt.dim_; i++) {
