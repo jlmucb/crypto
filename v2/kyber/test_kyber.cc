@@ -31,12 +31,10 @@ bool test_kyber1() {
   print_kyber_parameters(p);
   int g = 17;
 
-  // int ek_len = 384 * p.k_ + 32;
-  int ek_len = 48 * p.k_ + 32;
+  int ek_len = 384 * p.k_ + 32;
   byte ek[ek_len];
   memset(ek, 0, ek_len);
-  int dk_len = 96 * p.k_ + 96;
-  // int dk_len = 384 * p.k_;
+  int dk_len = 384 * p.k_ + 96;
   byte dk[dk_len];
   memset(dk, 0, dk_len);
 

@@ -1112,24 +1112,30 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
 #endif
 
 return true;
+  byte* pek = ek;
   // ek := byte_encode(12) (t^) || rho
-  // FIX: byte encode produces 1.5 bytes
   for (int i = 0; i < t_ntt.dim_; i++) {
-    if (!byte_encode_from_vector(12, p.n_, t_ntt.c_[i]->c_, ek)) {
+    if (!byte_encode_from_vector(12, p.n_, t_ntt.c_[i]->c_, pek)) {
       printf("kyber_keygen: byte_encode (2) failed\n");
       return false;
     }
+    pek += 48;
   }
   memcpy(&ek[*ek_len], parameters, 32);
-  *ek_len += 32;
+  *ek_len += t_ntt.dim_ * 48 + 32;
 
+return true;
   // dk := byte_encode(12) (s^)
+  byte* pdk = dk;
   for (int i = 0; i < s_ntt.dim_; i++) {
     if (!byte_encode_from_vector(12, p.n_, s_ntt.c_[i]->c_, dk)) {
       printf("kyber_keygen: byte_encode (3) failed\n");
       return false;
     }
+    pdk += 48;
   }
+  *dk_len += s_ntt.dim_ * 48;
+  return true;
 
 #if 0
   // Simple version
