@@ -817,25 +817,28 @@ bool prf(int eta, int in1_len, byte* in1, int in2_len, byte* in2, int bit_out_le
 
 // XOF(ρ, i, j) := SHAKE128(ρ||i|| j)
 bool xof(int eta, int in1_len, byte* in1, int i, int j, int bit_out_len, byte* out) {
-#if 0
   sha3 h;
 
-  if (!h.init(256, bit_out_len)) {
+  if (!h.init(256)) {
     printf("xof init failed %d\n", bit_out_len);
     return false;
   }
   h.add_to_hash(in1_len, in1);
   h.add_to_hash(sizeof(int), (byte*)&i);
   h.add_to_hash(sizeof(int), (byte*)&j);
-  h.shake_finalize();
-  if (!h.get_digest((bit_out_len + NBITSINBYTE - 1) / NBITSINBYTE, out)) {
-    printf("xof failed\n");
-    return false;
+  h.shake_squeeze_finalize();
+  
+  int bytes_to_go = (bit_out_len + NBITSINBYTE - 1) / NBITSINBYTE;
+  int bytes_out_so_far = 0;
+  while (bytes_to_go > 0) {
+    int size = bytes_to_go;
+    if (bytes_to_go > h.rb_)
+      size = h.rb_;
+    h.squeeze();
+    memcpy(out, h.state_, size);
+    bytes_to_go -= size;
+    bytes_out_so_far += size;
   }
-#else
-  // test only
-  int l = crypto_get_random_bytes(bit_out_len / NBITSINBYTE, out);
-#endif
   return true;
 }
 
@@ -1052,9 +1055,8 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     }
     N++;
   }
-return true;  // FIX
   for (int i = 0; i < e.dim_; i++) {
-    int b_prf_len = 64;
+    int b_prf_len = 64 * p.eta1_;
     byte b_prf[b_prf_len];
     memset(b_prf, 0, b_prf_len);
     if (!prf(p.eta1_, 32, &parameters[32], sizeof(int), (byte*)&N,
@@ -1068,7 +1070,6 @@ return true;  // FIX
     }
     N++;
   }
-return true;  // FIX
 
 #if 1
   printf("s: ");
@@ -1110,7 +1111,9 @@ return true;  // FIX
   printf("\n");
 #endif
 
+return true;
   // ek := byte_encode(12) (t^) || rho
+  // FIX: byte encode produces 1.5 bytes
   for (int i = 0; i < t_ntt.dim_; i++) {
     if (!byte_encode_from_vector(12, p.n_, t_ntt.c_[i]->c_, ek)) {
       printf("kyber_keygen: byte_encode (2) failed\n");
@@ -1123,7 +1126,7 @@ return true;  // FIX
   // dk := byte_encode(12) (s^)
   for (int i = 0; i < s_ntt.dim_; i++) {
     if (!byte_encode_from_vector(12, p.n_, s_ntt.c_[i]->c_, dk)) {
-      printf("kyber_keygen: byte_encode (1) failed\n");
+      printf("kyber_keygen: byte_encode (3) failed\n");
       return false;
     }
   }

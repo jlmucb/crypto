@@ -49,9 +49,12 @@ class sha3 : public crypto_hash {
   void transform_block(const uint64_t*, int);
 
   bool init(int c, int num_bytes_out);
+  bool init(int c);
   void add_to_hash(int size, const byte* in);
   bool get_digest(int size, byte* out);
   void finalize();
   void shake_finalize();
+  void shake_squeeze_finalize();
+  bool squeeze();  // for xof
 };
 #endif

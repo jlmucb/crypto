@@ -321,6 +321,20 @@ bool sha3::init(int c, int num_bits_out) {
   return true;
 }
 
+bool sha3::init(int c) {
+  c_ = c;
+  cb_ = c_ / NBITSINBYTE;
+  r_ = b_ - c;
+  rb_ = r_ / NBITSINBYTE;
+  memset(bytes_waiting_, 0, BUFFERBYTESIZE);
+  for (int i = 0; i < 25; i++)
+    state_[i] = 0ULL;
+  num_bytes_waiting_ = 0;
+  num_bits_processed_ = 0;
+  finalized_ = false;
+  return true;
+}
+
 void sha3::add_to_hash(int size, const byte* in) {
 #if 0
   printf("add_to_hash(%d), %d\n", size, num_bytes_waiting_);
@@ -420,6 +434,14 @@ void sha3::finalize() {
   finalized_ = true;
 }
 
+bool sha3::squeeze() {
+  if (!finalized_) return false;
+  uint64_t zero[rb_ / sizeof(uint64_t)];
+  memset((byte*)zero, 0, rb_ / sizeof(uint64_t));
+  transform_block(zero,  rb_ / sizeof(uint64_t));
+  return true;
+}
+
 // for shake, add bitstring 1111 to message plus pad
 void sha3::shake_finalize() {
 #if 0
@@ -447,5 +469,32 @@ void sha3::shake_finalize() {
   num_bytes_waiting_ = 0;
   memset(digest_, 0, 128);
   memcpy(digest_, state_, num_out_bytes_);
+  finalized_ = true;
+}
+
+void sha3::shake_squeeze_finalize() {
+#if 0
+  printf("shake_finalize(), %d\n", num_bytes_waiting_);
+#endif
+  bytes_waiting_[num_bytes_waiting_++] = 0x1f;  // 0x3e?
+  memset(&bytes_waiting_[num_bytes_waiting_], 0,
+         rb_ - num_bytes_waiting_);
+  bytes_waiting_[rb_ - 1] |= 0x80;
+#if 0
+  printf("in:\n");
+  print_bytes(rb_, (byte*)bytes_waiting_);
+  printf("\n");
+  printf("State before transform\n");
+  print_bytes(200, (byte*)state_);
+  printf("\n");
+#endif
+  transform_block((const uint64_t*)bytes_waiting_,
+                 rb_ / sizeof(uint64_t));
+#if 0
+  printf("After transform\n");
+  print_bytes(200, (byte*)state_);
+  printf("\n");
+#endif
+  num_bytes_waiting_ = 0;
   finalized_ = true;
 }
