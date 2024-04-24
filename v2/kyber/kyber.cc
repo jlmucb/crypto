@@ -1111,7 +1111,6 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   printf("\n");
 #endif
 
-return true;
   byte* pek = ek;
   // ek := byte_encode(12) (t^) || rho
   for (int i = 0; i < t_ntt.dim_; i++) {
@@ -1121,10 +1120,9 @@ return true;
     }
     pek += 48;
   }
-  memcpy(&ek[*ek_len], parameters, 32);
-  *ek_len += t_ntt.dim_ * 48 + 32;
+  memcpy(pek, parameters, 32);
+  *ek_len = t_ntt.dim_ * 48 + 32;
 
-return true;
   // dk := byte_encode(12) (s^)
   byte* pdk = dk;
   for (int i = 0; i < s_ntt.dim_; i++) {
@@ -1134,7 +1132,7 @@ return true;
     }
     pdk += 48;
   }
-  *dk_len += s_ntt.dim_ * 48;
+  *dk_len = s_ntt.dim_ * 48;
   return true;
 
 #if 0
