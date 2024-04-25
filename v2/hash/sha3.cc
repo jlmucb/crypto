@@ -437,7 +437,7 @@ void sha3::finalize() {
 bool sha3::squeeze() {
   if (!finalized_) return false;
   uint64_t zero[rb_ / sizeof(uint64_t)];
-  memset((byte*)zero, 0, rb_ / sizeof(uint64_t));
+  memset((byte*)zero, 0, rb_);
   transform_block(zero,  rb_ / sizeof(uint64_t));
   return true;
 }

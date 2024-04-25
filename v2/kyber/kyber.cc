@@ -1025,6 +1025,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
         printf("kyber_keygen: xof failed\n");
         return false;
       }
+if (i==0 && j==0) {printf("keygen xof %d\n", b_xof_len); print_bytes(b_xof_len, b_xof); printf("\n");}
       if (!sample_ntt(p.q_, p.n_, b_xof_len, b_xof,
                       A_ntt.c_[A_ntt.index(i, j)]->c_)) {
         printf("kyber_keygen: sample_ntt failed\n");
@@ -1238,6 +1239,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
         printf("kyber_keygen: xof failed\n");
         return false;
       }
+if (i==0 && j==0) {printf("encrypt xof %d\n", b_xof_len); print_bytes(b_xof_len, b_xof); printf("\n");}
       if (!sample_ntt(p.q_, p.n_, b_xof_len, b_xof,
                       A_ntt.c_[A_ntt.index(i, j)]->c_)) {
         printf("kyber_keygen: sample_ntt failed\n");
