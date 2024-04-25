@@ -1072,10 +1072,9 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   }
 
 #if 1
-  printf("s: ");
+  printf("\nkeygen s:\n");
   print_module_vector(s);
-  printf("\n");
-  printf("e: ");
+  printf("\nkeygen e:\n");
   print_module_vector(e);
   printf("\n");
 #endif
@@ -1106,7 +1105,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   }
 
 #if 1
-  printf("t^: ");
+  printf("\nkeygen t^:");
   print_module_vector(t_ntt);
   printf("\n");
 #endif
@@ -1135,10 +1134,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   *dk_len = s_ntt.dim_ * 384;
 
 #if 1
-  printf("t_ntt:\n");
-  print_coefficient_vector(*t_ntt.c_[0]);
-  printf("\n");
-  printf("rho: ");
+  printf("\nrho: ");
   print_bytes(32, &ek[*ek_len - 32]);
   printf("\n");
 #endif
@@ -1230,11 +1226,11 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   memcpy(rho, p_b, 32);
 
 #if 1
-  printf("t_ntt:\n");
-  print_coefficient_vector(*t_ntt.c_[0]);
-  printf("\n");
-  printf("rho: ");
+  printf("\nencrypt, rho:\n");
   print_bytes(32, &ek[ek_len - 32]);
+  printf("\n");
+  printf("encrypt, t^:\n");
+  print_module_vector(t_ntt);
   printf("\n");
 #endif
   return true;
