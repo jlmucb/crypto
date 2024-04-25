@@ -602,6 +602,7 @@ byte bit_in_byte_stream(int k, int l, byte* b) {
 // l is 256
 // b_len is 384
 bool sample_ntt(int q, int l, int b_len, byte* b, vector<int>& out) {
+
   int i = 0;
   int j = 0;
   int loop = 0;
@@ -612,8 +613,8 @@ bool sample_ntt(int q, int l, int b_len, byte* b, vector<int>& out) {
   }
 
   while (j < l) {
-    int d1 = b[i] + 256 * (b[i+1] % 16);
-    int d2 = (b[i+1] / 16) + 16 * b[i+2];
+    int d1 = (int)b[i] + 256 * ((int)b[i+1] % 16);
+    int d2 = ((int)b[i+1] / 16) + 16 * (int)b[i+2];
     if (d1 < q) {
       out[j] = d1;
       j++;
@@ -1025,7 +1026,6 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
         printf("kyber_keygen: xof failed\n");
         return false;
       }
-if (i==0 && j==0) {printf("keygen xof %d\n", b_xof_len); print_bytes(b_xof_len, b_xof); printf("\n");}
       if (!sample_ntt(p.q_, p.n_, b_xof_len, b_xof,
                       A_ntt.c_[A_ntt.index(i, j)]->c_)) {
         printf("kyber_keygen: sample_ntt failed\n");
@@ -1099,7 +1099,7 @@ if (i==0 && j==0) {printf("keygen xof %d\n", b_xof_len); print_bytes(b_xof_len, 
   printf("t^:");
   print_module_vector(t_ntt);
   printf("\n");
-  printf("\nA_ntt:\n");
+  printf("keygen A_ntt:\n");
   print_module_array(A_ntt);
   printf("\n");
   printf("\nr_ntt:\n");
@@ -1239,7 +1239,6 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
         printf("kyber_keygen: xof failed\n");
         return false;
       }
-if (i==0 && j==0) {printf("encrypt xof %d\n", b_xof_len); print_bytes(b_xof_len, b_xof); printf("\n");}
       if (!sample_ntt(p.q_, p.n_, b_xof_len, b_xof,
                       A_ntt.c_[A_ntt.index(i, j)]->c_)) {
         printf("kyber_keygen: sample_ntt failed\n");
