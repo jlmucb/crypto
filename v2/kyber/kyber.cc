@@ -1367,7 +1367,6 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   print_bytes(m_len, m);
   printf("mu:\n");
   print_coefficient_vector(mu);
-  return true;
 #endif
 
   if (!coefficient_vector_zero(&nu)) {
@@ -1389,28 +1388,29 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
       return false;
   }
 
+#if 1
+  printf("nu:\n");
+  print_coefficient_vector(mu);
+#endif
 
   module_vector compressed_u(p.q_, p.n_, p.k_);
-  for (int i = 0; i < p.k_; i++) {
-    for (int j = 0; j < p.n_; j++) {
-      compressed_u.c_[i]->c_[j] = compress(p.q_, u.c_[i]->c_[j], p.du_);
-    }
-  }
-
   int c1_b_len = (p.du_ * 256 * p.k_) / NBITSINBYTE;
   byte b_c1[c1_b_len];
   byte* pp = b_c1;
   for (int i = 0; i < p.k_; i++) {
-    int len = (p.du_ * 256) / NBITSINBYTE;
-    if (!byte_encode_from_vector(p.du_, 256, compressed_u.c_[i]->c_, pp)) {
+    for (int j = 0; j < p.n_; j++) {
+      compressed_u.c_[i]->c_[j] = compress(p.q_, u.c_[i]->c_[j], p.du_);
+    }
+    if (!byte_encode_from_vector(p.du_, p.n_, compressed_u.c_[i]->c_, pp)) {
         return false;
     }
-    pp += p.du_ * 32;
+    int len = (p.du_ * 256) / NBITSINBYTE;
+    pp += len;
   }
 
   coefficient_vector compressed_nu(p.q_, p.n_);
   int c2_b_len = (p.dv_ * 256) / NBITSINBYTE;
-  byte b_c2[c1_b_len];
+  byte b_c2[c2_b_len];
   for (int j = 0; j < compressed_nu.len_; j++) {
     compressed_nu.c_[j] = compress(p.q_, nu.c_[j], p.dv_);
   }
@@ -1425,6 +1425,16 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   *c_len = c1_b_len + c2_b_len;
   memcpy(c, b_c1, c1_b_len);
   memcpy(&c[c1_b_len], b_c2, c2_b_len);
+
+#if 1
+  printf("c1 (%d):\n", c1_b_len);
+  print_bytes(c1_b_len, b_c1);
+  printf("\n");
+  printf("c2 (%d):\n", c2_b_len);
+  print_bytes(c2_b_len, b_c2);
+  printf("\n");
+#endif
+
   return true;
 }
 
