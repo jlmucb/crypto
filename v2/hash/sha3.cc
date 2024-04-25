@@ -473,9 +473,6 @@ void sha3::shake_finalize() {
 }
 
 void sha3::shake_squeeze_finalize() {
-#if 0
-  printf("shake_finalize(), %d\n", num_bytes_waiting_);
-#endif
   bytes_waiting_[num_bytes_waiting_++] = 0x1f;  // 0x3e?
   memset(&bytes_waiting_[num_bytes_waiting_], 0,
          rb_ - num_bytes_waiting_);
