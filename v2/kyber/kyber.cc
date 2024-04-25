@@ -1118,21 +1118,30 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
       printf("kyber_keygen: byte_encode (2) failed\n");
       return false;
     }
-    pek += 48;
+    pek += 384;
   }
   memcpy(pek, parameters, 32);
-  *ek_len = t_ntt.dim_ * 48 + 32;
+  *ek_len = t_ntt.dim_ * 384 + 32;
 
   // dk := byte_encode(12) (s^)
   byte* pdk = dk;
   for (int i = 0; i < s_ntt.dim_; i++) {
-    if (!byte_encode_from_vector(12, p.n_, s_ntt.c_[i]->c_, dk)) {
+    if (!byte_encode_from_vector(12, p.n_, s_ntt.c_[i]->c_, pdk)) {
       printf("kyber_keygen: byte_encode (3) failed\n");
       return false;
     }
-    pdk += 48;
+    pdk += 384;
   }
-  *dk_len = s_ntt.dim_ * 48;
+  *dk_len = s_ntt.dim_ * 384;
+
+#if 1
+  printf("t_ntt:\n");
+  print_coefficient_vector(*t_ntt.c_[0]);
+  printf("\n");
+  printf("rho: ");
+  print_bytes(32, &ek[*ek_len - 32]);
+  printf("\n");
+#endif
   return true;
 
 #if 0
@@ -1212,13 +1221,22 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
 
   byte* p_b = ek;
   for (int i = 0; i < t_ntt.dim_; i++) {
-    if (!byte_decode_to_vector(12, p.n_, 48, p_b, t_ntt.c_[i]->c_)) {
+    if (!byte_decode_to_vector(12, p.n_, 384, p_b, t_ntt.c_[i]->c_)) {
       printf("kyber_encrypt: byte_decode_to_vector (1) failed\n");
       return false;
     }
-    p_b += 48;
+    p_b += 384;
   }
   memcpy(rho, p_b, 32);
+
+#if 1
+  printf("t_ntt:\n");
+  print_coefficient_vector(*t_ntt.c_[0]);
+  printf("\n");
+  printf("rho: ");
+  print_bytes(32, &ek[ek_len - 32]);
+  printf("\n");
+#endif
   return true;
 
   int N = 0;
@@ -1485,7 +1503,7 @@ bool kyber_kem_keygen(int g, kyber_parameters& p, int* kem_ek_len, byte* kem_ek,
     printf("kyber_kem_keygen crypto_get_random_bytes returne wrong nuber of bytes\n");
     return false;
   }
-  int dk_PKE_len = 48 * p.k_;
+  int dk_PKE_len = 384 * p.k_;
   byte dk_PKE[dk_PKE_len];
   if (! kyber_keygen(g, p, kem_ek_len, kem_ek, &dk_PKE_len, dk_PKE)) {
     return false;

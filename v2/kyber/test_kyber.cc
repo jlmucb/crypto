@@ -48,14 +48,13 @@ bool test_kyber1() {
     return false;
   }
   if (FLAGS_print_all) {
-    printf("ek:\n");
+    printf("ek (%d): \n",ek_len);
     print_bytes(ek_len, ek);
     printf("\n");
-    printf("dk:\n");
+    printf("dk (%d):\n", dk_len);
     print_bytes(dk_len, dk);
     printf("\n");
   }
-  return true;
 
   int m_len = 32;
   byte m[m_len];
@@ -80,6 +79,7 @@ bool test_kyber1() {
     printf("Could not init kyber_encrypt\n");
     return false;
   }
+return true;
   int recovered_m_len = 32;
   byte recovered_m[m_len];
   memset(recovered_m, 0, recovered_m_len);
