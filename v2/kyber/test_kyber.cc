@@ -73,6 +73,10 @@ bool test_kyber1() {
     printf("wrong return from crypto_get_random_bytes\n");
     return false;
   }
+  m[1] = 0xff;
+  m[3] = 0x0f;
+  m[5] = 0x10;
+  m[7] = 0x11;
 
   if (!kyber_encrypt(g, p, ek_len, ek, m_len, m,
           b_r_len, b_r, &c_len, c)) {

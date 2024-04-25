@@ -165,7 +165,7 @@ bool ntt_module_vector_dot_product_first_transposed(module_vector& in1,
 void print_module_vector(module_vector& mv);
 
 bool ntt_module_apply_array(int g, module_array& A, module_vector& v, module_vector* out);
-bool ntt_module_apply_transpose_array(int g, module_array& A, module_vector& v, module_vector* out);
+bool ntt_module_apply_transposed_array(int g, module_array& A, module_vector& v, module_vector* out);
 
 void print_kyber_parameters(kyber_parameters& p);
 

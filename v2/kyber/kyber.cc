@@ -360,7 +360,7 @@ bool ntt_module_apply_array(int g, module_array& A, module_vector& v, module_vec
   return true;
 }
 
-bool ntt_module_apply_array_transpose(int g, module_array& A, module_vector& v, module_vector* out) {
+bool ntt_module_apply_transposed_array(int g, module_array& A, module_vector& v, module_vector* out) {
   if ((A.nc_ != v.dim_) || A.nr_ != out->dim_) {
     printf("mismatch, nc: %d, v: %d, nr: %d, out: %d\n", A.nc_,  v.dim_, A.nr_, out->dim_);
     return false;
@@ -1325,10 +1325,9 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   printf("\ne2:\n");
   print_coefficient_vector(e2);
   printf("\n");
-  return true;
 #endif
  
-  if (!ntt_module_apply_transpose_array(g, A_ntt, r_ntt, &s)) {
+  if (!ntt_module_apply_transposed_array(g, A_ntt, r_ntt, &s)) {
     printf("kyber_encrypt: ntt_module_apply_transpose_array) failed\n");
     return false;
   }
@@ -1352,13 +1351,29 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   coefficient_vector mu(p.q_, p.n_);
   coefficient_vector nu(p.q_, p.n_);
   coefficient_vector nu_ntt(p.q_, p.n_);
+  if (!coefficient_vector_zero(&mu)) {
+      return false;
+  }
+  // mu = decompress(1, byte_decode(m))
+  if (!byte_decode_to_vector(1, p.n_, m_len, m, mu.c_)) {
+    return false;
+  }
+  for (int i = 0; i < p.n_; i++) {
+    mu.c_[i] = decompress(p.q_, mu.c_[i], 1);
+  }
+
+#if 1
+  printf("m: ");
+  print_bytes(m_len, m);
+  printf("mu:\n");
+  print_coefficient_vector(mu);
+  return true;
+#endif
+
   if (!coefficient_vector_zero(&nu)) {
       return false;
   }
   if (!coefficient_vector_zero(&nu_ntt)) {
-      return false;
-  }
-  if (!coefficient_vector_zero(&mu)) {
       return false;
   }
   if (!ntt_module_vector_dot_product(t_ntt, r_ntt, &nu_ntt)) {
@@ -1374,9 +1389,6 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
       return false;
   }
 
-  if (!byte_decode_to_vector(1, p.n_, m_len, m, mu.c_)) {
-    return false;
-  }
 
   module_vector compressed_u(p.q_, p.n_, p.k_);
   for (int i = 0; i < p.k_; i++) {
