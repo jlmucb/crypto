@@ -991,7 +991,7 @@ bool byte_decode_to_vector(int d, int n, int in_len, byte* in, vector<int>& v) {
 //    t^ := A^(s^)+e^
 //    ek := byte_encode(12) (t^) || rho
 //    dk := byte_encode(12) (s^)
-//    return (ek, dk)
+//    return (ek, dk) [384k+32, 384k] bytes
 bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
         int* dk_len, byte* dk) {
 
@@ -1011,17 +1011,20 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     return false;
   }
 
-  module_vector e(p.q_, p.n_, p.k_);
-  module_vector s(p.q_, p.n_, p.k_);
+  module_vector s(p.q_, p.n_, p.k_);                    // secret
+  module_vector e(p.q_, p.n_, p.k_);                    // noise
+  module_array A_ntt(p.q_, p.n_, p.k_, p.k_);           // ntt domain array
+  module_vector e_ntt(p.q_, p.n_, p.k_);                // ntt domain noise
+  module_vector s_ntt(p.q_, p.n_, p.k_);                // ntt domain secret
+  module_vector t_ntt(p.q_, p.n_, p.k_);                // ntt domain public key (As+e)
+                                                        //
   module_vector t(p.q_, p.n_, p.k_);
-  module_array A_ntt(p.q_, p.n_, p.k_, p.k_);
-  module_vector e_ntt(p.q_, p.n_, p.k_);
-  module_vector s_ntt(p.q_, p.n_, p.k_);
-  module_vector t_ntt(p.q_, p.n_, p.k_);
   module_vector r_ntt(p.q_, p.n_, p.k_);
 
   int N = 0;
   byte* rho= parameters;
+
+  // Generate A_ntt
   for (int i = 0; i < p.k_; i++) {
     for (int j = 0; j < p.k_; j++) {
       int b_xof_len = 384;
@@ -1041,6 +1044,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     }
   }
 
+  // Generate secret polynomial
   for (int i = 0; i < s.dim_; i++) {
     int b_prf_len = 64 * p.eta1_;
     byte b_prf[b_prf_len];
@@ -1057,6 +1061,8 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     }
     N++;
   }
+
+  // Generate noise
   for (int i = 0; i < e.dim_; i++) {
     int b_prf_len = 64 * p.eta1_;
     byte b_prf[b_prf_len];
@@ -1073,6 +1079,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     N++;
   }
 
+  // Secret and noise to ntt domain
   for (int i = 0; i < s.dim_; i++) {
     if (!ntt(g, *s.c_[i], s_ntt.c_[i])) {
       return false;
@@ -1082,6 +1089,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     }
   }
 
+  // Generate public key
   // t^ := A^(s^)+e^
   if (!make_module_vector_zero(&r_ntt)) {
     return false;
@@ -1090,10 +1098,10 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     return false;
   }
 
+  // Calculate t_ntt = A_ntt(s_ntt)+e_ntt
   if (!ntt_module_apply_array(g, A_ntt, s_ntt, &r_ntt)) {
     return false;
   }
-
   if (!module_vector_add(r_ntt, e_ntt, &t_ntt)) {
     printf("kyber_keygen: module_vector_add failed\n");
     return false;
@@ -1107,22 +1115,22 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   print_bytes(64, parameters);
   printf("rho: ");
   print_bytes(32, parameters);
-  printf("t_ntt:");
+  printf("t_ntt (public key):");
   print_module_vector(t_ntt);
   printf("\n");
-  printf("keygen A_ntt:\n");
+  printf("A_ntt:\n");
   print_module_array(A_ntt);
   printf("\n");
-  printf("\nr_ntt:\n");
-  print_module_vector(r_ntt);
-  printf("e:\n");
+  printf("e (noise):\n");
   print_module_vector(e);
+  printf("\n");
+  printf("s (secret polynomial): \n");
+  print_module_vector(s);
   printf("\n");
   printf("\ns_ntt:\n");
   print_module_vector(s_ntt);
-  printf("\n");
-  printf("\ns: \n");
-  print_module_vector(s);
+  printf("\nr_ntt:\n");
+  print_module_vector(r_ntt);
   printf("\n");
 #endif
 
@@ -1153,32 +1161,6 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   printf("\nrho: ");
   print_bytes(32, &ek[*ek_len - 32]);
   printf("\n");
-#endif
-  return true;
-
-#if 0
-  // Simple version
-  if (!fill_random_module_array(A)) {
-    printf("fill_random_array failed on A\n");
-    return false;
-  }
-  if (!rand_module_coefficients(p.eta1_, *s)) {
-    printf("rand_coefficients failed\n");
-    return false;
-  }
-  if (!rand_module_coefficients(p.eta1_, *e)) {
-    printf("rand_coefficients failed\n");
-    return false;
-  }
-  module_vector r(p.q_, p.n_, p.k_);
-  if (!module_apply_array(*A, *s, &r)) {
-    printf("module_apply_array failed\n");
-    return false;
-  }
-  if (!module_vector_add(r, *e, t)) {
-    printf("module_vector_add failed\n");
-    return false;
-  }
 #endif
   return true;
 }
@@ -1213,23 +1195,24 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
 //    u = ntt_inv(A^^T(r^) + e1
 //    mu = decompress(1, byte_encode(1,u))
 //    nu = ntt_inv(t^^T r^) +e2 + mu
-//    c1 = byte_encode(du, compress(du,u))
-//    c2 = byte_encode(dv, compress(dv,nu))
+//    c1 = byte_encode(du, compress(du,u)) [32(du * k)] bytes
+//    c2 = byte_encode(dv, compress(dv,nu)) [32dv bytes]
 //    return (c1, c2)
 bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
       int m_len, byte* m, int b_r_len, byte* b_r, int* c_len, byte* c) {
 
-  module_array A_ntt(p.q_, p.n_, p.k_, p.k_);
-  module_vector t_ntt(p.q_, p.n_, p.k_);
-  module_vector r(p.q_, p.n_, p.k_);
-  module_vector r_ntt(p.q_, p.n_, p.k_);
-  module_vector e1(p.q_, p.n_, p.k_);
-  module_vector u(p.q_, p.n_, p.k_);
-  module_vector u_ntt(p.q_, p.n_, p.k_);
-  coefficient_vector e2(p.q_, p.n_);
+  module_array A_ntt(p.q_, p.n_, p.k_, p.k_);   // A^ matrix
+  module_vector t_ntt(p.q_, p.n_, p.k_);        // public key
+  module_vector r(p.q_, p.n_, p.k_);            // noise vector generated fro, b_r
+  module_vector r_ntt(p.q_, p.n_, p.k_);        // transfomed into ntt domain
+  module_vector e1(p.q_, p.n_, p.k_);           // noise module vector
+  module_vector u(p.q_, p.n_, p.k_);            // u (c1) as in spac
+  coefficient_vector e2(p.q_, p.n_);            // noise
+ 
   byte rho[32];
   memset(rho, 0, 32);
 
+  // Recover public key
   byte* p_b = ek;
   for (int i = 0; i < t_ntt.dim_; i++) {
     if (!byte_decode_to_vector(12, p.n_, 384, p_b, t_ntt.c_[i]->c_)) {
@@ -1242,6 +1225,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
 
   int N = 0;
 
+  // Recover A_ntt
   for (int i = 0; i < p.k_; i++) {
     for (int j = 0; j < p.k_; j++) {
       int b_xof_len = 384;
@@ -1261,6 +1245,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     }
   }
 
+  // Generate encryption randomness (r)
   for (int i = 0; i < r.dim_; i++) {
     int b_prf_len = 64 * p.eta1_;
     byte b_prf[b_prf_len];
@@ -1277,6 +1262,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
       }
     N++;
   }
+  // transform to ntt domain
   for (int i = 0; i < r.dim_; i++) {
     if (!ntt(g, *r.c_[i], r_ntt.c_[i])) {
         printf("kyber_encrypt: ntt (1) failed\n");
@@ -1298,6 +1284,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   printf("\n");
 #endif
 
+  // Generate noise element (e1)
   for (int i = 0; i < e1.dim_; i++) {
     int b_prf_len = 64 * p.eta1_;
     byte b_prf[b_prf_len];
@@ -1315,7 +1302,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     N++;
   }
 
-
+  // Generate noise element (e2)
   {
     int b_prf_len = 64 * p.eta2_;
     byte b_prf[b_prf_len];
@@ -1333,24 +1320,21 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     N++;
   }
 
-#if 1
-  printf("\ne1:\n");
-  print_module_vector(e1);
-  printf("\ne2:\n");
-  print_coefficient_vector(e2);
-  printf("\n");
-#endif
- 
   module_vector tmp1(p.q_, p.n_, p.k_);
   module_vector tmp2(p.q_, p.n_, p.k_);
   if (!make_module_vector_zero(&tmp1)) {
     return false;
   }
-  if (!ntt_module_apply_transposed_array(g, A_ntt, r_ntt, &tmp1)) {
-    printf("kyber_encrypt: ntt_module_apply_transpose_array) failed\n");
+  if (!make_module_vector_zero(&tmp2)) {
     return false;
   }
-  if (!make_module_vector_zero(&tmp2)) {
+  if (!make_module_vector_zero(&u)) {
+    return false;
+  }
+
+  // Compute u = ntt_inv(A_ntt^T r_ntt) + e1
+  if (!ntt_module_apply_transposed_array(g, A_ntt, r_ntt, &tmp1)) {
+    printf("kyber_encrypt: ntt_module_apply_transpose_array) failed\n");
     return false;
   }
   for (int i = 0; i < p.k_; i++) {
@@ -1358,15 +1342,17 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
       return false;
     }
   }
-  if (!make_module_vector_zero(&u)) {
-    return false;
-  }
   if (!module_vector_add(tmp2, e1, &u)) {
     printf("kyber_encrypt: module_vector_add failed\n");
     return false;
   }
 
 #if 1
+  printf("\ne1:\n");
+  print_module_vector(e1);
+  printf("\ne2:\n");
+  print_coefficient_vector(e2);
+  printf("\n");
   printf("u:\n");
   print_module_vector(u);
   printf("\n");
@@ -1376,7 +1362,8 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   if (!coefficient_vector_zero(&mu)) {
       return false;
   }
-  // mu = decompress(1, byte_decode(m))
+
+  // Compute mu = decompress(1, byte_decode(m)), encoded message
   if (!byte_decode_to_vector(1, p.n_, m_len, m, mu.c_)) {
     return false;
   }
@@ -1384,13 +1371,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     mu.c_[i] = decompress(p.q_, mu.c_[i], 1);
   }
 
-#if 1
-  printf("m: ");
-  print_bytes(m_len, m);
-  printf("mu:\n");
-  print_coefficient_vector(mu);
-#endif
-
+  // compress and encode u (c1)
   module_vector compressed_u(p.q_, p.n_, p.k_);
   int c1_b_len = (p.du_ * 256 * p.k_) / NBITSINBYTE;
   byte b_c1[c1_b_len];
@@ -1406,7 +1387,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     pp += len;
   }
 
-
+  // compress and encode nu = ntt_inv(t_ntt dot r_ntt) + e2 + mu
   coefficient_vector nu_ntt(p.q_, p.n_);
   coefficient_vector nu(p.q_, p.n_);
   if (!coefficient_vector_zero(&nu_ntt)) {
@@ -1428,6 +1409,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
       return false;
   }
 
+  // Compress and encode nu (c2)
   coefficient_vector compressed_nu(p.q_, p.n_);
   int c2_b_len = (p.dv_ * 256) / NBITSINBYTE;
   byte b_c2[c2_b_len];
@@ -1438,13 +1420,6 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     return false;
   }
 
-#if 1
-  printf("nu:\n");
-  print_coefficient_vector(nu);
-  printf("compressed nu:\n");
-  print_coefficient_vector(compressed_nu);
-#endif
-
   if (*c_len < (c1_b_len + c2_b_len)) {
     printf("kyber_encrypt: output too small\n");
     return false;
@@ -1454,6 +1429,14 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   memcpy(&c[c1_b_len], b_c2, c2_b_len);
 
 #if 1
+  printf("m: ");
+  print_bytes(m_len, m);
+  printf("mu:\n");
+  print_coefficient_vector(mu);
+  printf("nu:\n");
+  print_coefficient_vector(nu);
+  printf("compressed nu:\n");
+  print_coefficient_vector(compressed_nu);
   printf("c1 (%d):\n", c1_b_len);
   print_bytes(c1_b_len, b_c1);
   printf("\n");
@@ -1478,8 +1461,10 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
 //    s^ = byte_decode(12, dek)
 //    w := nu - ntt_inv(s^^T NTT(u))
 //    m := byte_encode(1, compress(1,w))
+//    dk is as in keygen
 bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
       int c_len, byte* c, int* m_len, byte* m) {
+
   if (c_len != 32 * (p.du_ * p.k_ + p.dv_)) {
     printf("kyber_decrypt: wrong input size\n");
     return false;
@@ -1490,6 +1475,8 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
   byte* p_c1 = c1;
   int len = 32;
   module_vector u(p.q_, p.n_, p.k_);
+
+  // Recover u from c1
   for (int i = 0; i < p.k_; i++) {
     if (!byte_decode_to_vector(p.du_, p.n_, len, p_c1, u.c_[i]->c_)) {
       return false;
@@ -1500,6 +1487,7 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
     }
   }
 
+  // Recover nu from c2
   coefficient_vector compressed_nu(p.q_, p.n_);
   coefficient_vector nu(p.q_, p.n_);
   if (!byte_decode_to_vector(p.dv_, p.n_, len, c2, compressed_nu.c_)) {
@@ -1509,6 +1497,7 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
     nu.c_[j] = decompress(p.q_, compressed_nu.c_[j], p.dv_);
   }
 
+  // Recover s_ntt from dk
   module_vector s_ntt(p.q_, p.n_, p.k_);
   for (int i = 0; i < p.k_; i++) {
     if (!byte_decode_to_vector(12, p.n_, dk_len, dk, s_ntt.c_[i]->c_)) {
@@ -1520,7 +1509,7 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
   printf("\ns_ntt:\n");
   print_module_vector(s_ntt);
   printf("\n");
-  printf("\nu:\n");
+  printf("u:\n");
   print_module_vector(u);
   printf("\n");
   printf("\nnu:\n");
@@ -1532,12 +1521,16 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
   coefficient_vector tw(p.q_, p.n_);
   coefficient_vector w(p.q_, p.n_);
   coefficient_vector compressed_w(p.q_, p.n_);
+
+  // Transform u to ntt domain
   for (int i = 0; i < p.k_; i++) {
       if (!ntt(g, *u.c_[i], u_ntt.c_[i])) {
       printf("kyber_decrypt: ntt (1) failed\n");
       return false;
     }
   }
+
+  // Compute w = nu - ntt_inv(s_ntt dot ntt(u))
   if (!ntt_module_vector_dot_product(s_ntt, u_ntt, &tw)) {
       return false;
   }
@@ -1545,13 +1538,15 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
     printf("kyber_decrypt: ntt_inv failed\n");
     return false;
   }
-
+  // w = -w
   for (int j = 0; j < w.len_; j++) {
     w.c_[j] = (w.q_ - w.c_[j]) % w.q_;
   }
   if (!coefficient_vector_add_to(nu, &w)) {
     return false;
   }
+
+  // compress and encode output message into 
   for (int j = 0; j < p.n_; j++) {
     compressed_w.c_[j] = compress(p.q_, w.c_[j], 1);
   }
