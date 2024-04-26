@@ -1457,6 +1457,18 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   }
   printf("recovered m from mu: ");
   print_bytes(32, checked_m);
+
+  printf("\n\ntest, decompressed nu\n");
+  coefficient_vector t_nu(p.q_, p.n_);
+  if (!byte_decode_to_vector(p.dv_, 256, c2_b_len, b_c2, t_nu.c_)) {
+    return false;
+  }
+  for (int j = 0; j < p.n_; j++) {
+    t_nu.c_[j] = decompress(p.q_, t_nu.c_[j], p.dv_);
+  }
+  printf("Recovered nu\n");
+  print_coefficient_vector(t_nu);
+  printf("\n");
 #endif
 
   return true;
