@@ -1108,7 +1108,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   }
 
 #if 1
-  printf("\n kyber_keygen\n");
+  printf("\nKeygen\n");
   printf("d: ");
   print_bytes(32, d);
   printf("rho || sigma: ");
@@ -1271,7 +1271,8 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   }
 
 #if 1
-  printf("\nencrypt, rho:\n");
+  printf("Encrypt\n");
+  printf("encrypt, rho:\n");
   print_bytes(32, &ek[ek_len - 32]);
   printf("\n");
   printf("encrypt, t_ntt:\n");
@@ -1443,6 +1444,19 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   printf("c2 (%d):\n", c2_b_len);
   print_bytes(c2_b_len, b_c2);
   printf("\n");
+
+  printf("\n\ntest, decompressed mu\n");
+  coefficient_vector t_compressed_mu(p.q_, p.n_);
+  byte checked_m[32];
+  memset(checked_m, 0, 32);
+  for (int j = 0; j < p.n_; j++) {
+    t_compressed_mu.c_[j] = compress(p.q_, mu.c_[j], 1);
+  }
+  if (!byte_encode_from_vector(1, 256, t_compressed_mu.c_, checked_m)) {
+    return false;
+  }
+  printf("recovered m from mu: ");
+  print_bytes(32, checked_m);
 #endif
 
   return true;
@@ -1506,6 +1520,7 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
   }
 
 #if 1
+  printf("\n\nDecrypt\n");
   printf("\ns_ntt:\n");
   print_module_vector(s_ntt);
   printf("\n");
@@ -1546,7 +1561,7 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
     return false;
   }
 
-  // compress and encode output message into 
+  // compress and encode output message into  m
   for (int j = 0; j < p.n_; j++) {
     compressed_w.c_[j] = compress(p.q_, w.c_[j], 1);
   }
@@ -1556,7 +1571,7 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
   *m_len = 32;
 
 #if 1
-  printf("\ndecrypt w:\n");
+  printf("\nw:\n");
   print_coefficient_vector(w);
   printf("\n");
   printf("\ncompressed w:\n");
