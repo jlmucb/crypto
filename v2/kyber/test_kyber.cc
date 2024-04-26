@@ -83,7 +83,6 @@ bool test_kyber1() {
     printf("Could not init kyber_encrypt\n");
     return false;
   }
-return true;
   int recovered_m_len = 32;
   byte recovered_m[m_len];
   memset(recovered_m, 0, recovered_m_len);
@@ -91,6 +90,9 @@ return true;
     printf("Could not init kyber_decrypt\n");
     return false;
   }
+printf("recovered m: \n");
+print_bytes(recovered_m_len, recovered_m);
+return true;
   if (memcmp(m, recovered_m, m_len) != 0) {
     printf("message and recovered message dont match\n");
     return false;
