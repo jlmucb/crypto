@@ -126,7 +126,6 @@ bool sample_poly_cbd(int q, int eta, int l, int b_len, byte* b, vector<int>& out
 
 bool ntt(int g, coefficient_vector& in, coefficient_vector* out);
 bool ntt_inv(int g, coefficient_vector& in, coefficient_vector* out);
-bool ntt_mult(int g, coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out);
 bool multiply_ntt(int g, coefficient_vector& in1, coefficient_vector& in2,
         coefficient_vector* out);
 

@@ -503,7 +503,7 @@ bool test_kyber_support() {
 
   coefficient_vector m_out(p.q_, p.n_);
   if (!multiply_ntt(g, ntt_in, ntt_in, &m_out)) {
-    printf("Could not inverse ntt_mult\n");
+    printf("Could not inverse multiply_ntt\n");
     return false;
   }
   if (FLAGS_print_all) {

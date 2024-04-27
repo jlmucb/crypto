@@ -348,7 +348,7 @@ bool ntt_module_apply_array(int g, module_array& A, module_vector& v, module_vec
     for (int j = 0; j < v.dim_; j++) {
       if (!coefficient_vector_zero(&t))
         return false;
-      if (!ntt_mult(g, *A.c_[A.index(i,j)], *v.c_[j], &t)) {
+      if (!multiply_ntt(g, *A.c_[A.index(i,j)], *v.c_[j], &t)) {
         return false;
       }
       if (!coefficient_vector_add_to(t, &acc))
@@ -375,7 +375,7 @@ bool ntt_module_apply_transposed_array(int g, module_array& A, module_vector& v,
     for (int j = 0; j < v.dim_; j++) {
       if (!coefficient_vector_zero(&t))
         return false;
-      if (!ntt_mult(g, *A.c_[A.index(j,i)], *v.c_[i], &t)) {
+      if (!multiply_ntt(g, *A.c_[A.index(j,i)], *v.c_[i], &t)) {
         return false;
       }
       if (!coefficient_vector_add_to(t, &acc))
@@ -566,22 +566,6 @@ bool ntt_base_mult(int q, int zeta, int& in1a, int& in1b,
   return true;
 }
 
-bool multiply_ntt(int g, coefficient_vector& in1, coefficient_vector& in2,
-    coefficient_vector* out) {
-  int zeta;
-  for (int j = 0; j < in1.len_ / 2; j += 2) {
-    int k =((int) bit_reverse((j/2)) >> 1);
-    k = 2 * k + 1;
-    zeta = exp_in_ntt(in1.q_, k, g);
-    if (!ntt_base_mult(in1.q_, zeta, in1.c_[j], in1.c_[j + 1],
-          in2.c_[j], in2.c_[j + 1],
-          &(out->c_[j]), &(out->c_[j + 1]))) {
-      return false;
-    }
-  }
-  return true;
-}
-
 int exp_in_ntt(int q, int e, int base) {
   int r = 1;
   int t = base;
@@ -715,21 +699,18 @@ bool ntt_inv(int g, coefficient_vector& in, coefficient_vector* out) {
   return true;
 }
 
-bool ntt_mult(int g, coefficient_vector& in1, coefficient_vector& in2, coefficient_vector* out) {
-  if (in1.len_ != in2.len_ || in1.len_ != out->len_)
-    return false;
-  if (in1.q_ != in2.q_ || in1.q_ != out->q_)
-    return false;
-  int t = 0;
-  for (int i = 0; i < in1.len_; i += 2) {
-    int e = (short int)(bit_reverse(i/2)>>1);
-    e *= 2;
-    e += 1;
-    t = exp_in_ntt(in1.q_, e, g);
-    if (!ntt_base_mult(in1.q_, g, in1.c_[i], in1.c_[i + 1],
-            in2.c_[i], in2.c_[i + 1],
-            &(out->c_[i]), &(out->c_[i + 1])))
+bool multiply_ntt(int g, coefficient_vector& in1, coefficient_vector& in2,
+    coefficient_vector* out) {
+  int zeta;
+  for (int j = 0; j < in1.len_ / 2; j += 2) {
+    int k =((int) bit_reverse((j/2)) >> 1);
+    k = 2 * k + 1;
+    zeta = exp_in_ntt(in1.q_, k, g);
+    if (!ntt_base_mult(in1.q_, zeta, in1.c_[j], in1.c_[j + 1],
+          in2.c_[j], in2.c_[j + 1],
+          &(out->c_[j]), &(out->c_[j + 1]))) {
       return false;
+    }
   }
   return true;
 }
