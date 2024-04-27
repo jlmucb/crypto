@@ -714,7 +714,7 @@ bool ntt_inv(int g, coefficient_vector& in, coefficient_vector* out) {
 bool multiply_ntt(int g, coefficient_vector& in1, coefficient_vector& in2,
     coefficient_vector* out) {
   int zeta;
-  for (int j = 0; j < in1.len_ / 2; j += 2) {
+  for (int j = 0; j < in1.len_; j += 2) {
     int k =((int) bit_reverse((j/2)) >> 1);
     k = 2 * k + 1;
     zeta = exp_in_ntt(in1.q_, k, g);

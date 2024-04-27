@@ -619,6 +619,7 @@ bool test_kyber_support() {
     return false;
   }
 
+  int prod = 1;
   // int gamma[128];
   for (int i = 0; i < 128; i++) {
     int z;
@@ -630,9 +631,10 @@ bool test_kyber_support() {
       printf("g: %d, i: %3d, bit_rev(7,i): %3d, 2 * bitrev(i) + 1: %3d, g^(%3d): %4d\n",
           g, i, ((int) bit_reverse(i) >> 1), k, k, z);
     }
+    prod = (z * prod) % p.q_;
   }
   if (FLAGS_print_all) {
-    printf("\n");
+    printf("prod: %d\n\n", prod);
   }
 
   // check that f x h (in normal domain) = ntt_inv(f_ntt x h_ntt)) where mult is in ntt_domain
@@ -711,7 +713,20 @@ bool test_kyber_support() {
     print_coefficient_vector(product);
     printf("\n");
   }
+  if (!coefficient_vector_zero(&f)) {
+    return false;
+  }
+  if (!coefficient_vector_zero(&h)) {
+    return false;
+  }
+  if (!coefficient_vector_zero(&product)) {
+    return false;
+  }
 
+#if 0
+  f.c_[0] = 1;
+  h.c_[0] = 1;
+#else
   for (int i = 0; i < f.len_; i++) {
     /*
     f.c_[i] = i;
@@ -720,6 +735,7 @@ bool test_kyber_support() {
     f.c_[i] = 1;
     h.c_[i] = 1;
   }
+#endif
   if (!ntt(g, f, &f_ntt)) {
     printf("f x h ntt transform fails\n");
     return false;
