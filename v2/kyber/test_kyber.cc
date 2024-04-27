@@ -782,6 +782,10 @@ bool test_kyber_support() {
   }
 
   // product and transformed_product_ntt should be the same
+  if (!coefficient_equal(product, transformed_product_ntt)) {
+    printf("f x h != ntt_inv(f_ntt x h_ntt\n");
+    return false;
+  }
 
   return true;
 }

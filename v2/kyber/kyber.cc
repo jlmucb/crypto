@@ -1590,9 +1590,6 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
   printf("compressed w:\n");
   print_coefficient_vector(compressed_w);
   printf("\n");
-  printf("m:\n");
-  print_bytes(32, m);
-  printf("\n");
 #endif
   return true;
 }
