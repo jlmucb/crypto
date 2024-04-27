@@ -619,15 +619,20 @@ bool test_kyber_support() {
     return false;
   }
 
-  int gamma[128];
+  // int gamma[128];
   for (int i = 0; i < 128; i++) {
     int z;
     int k =((int) bit_reverse(i) >> 1);
     k = 2 * k + 1;
     z = exp_in_ntt(in1.q_, k, g);
-    gamma[i] = z;
-    printf("g: %d, i: %3d, bit_rev(7,i): %3d, 2 * bitrev(i) + 1: %3d, g^(%3d): %4d\n",
-        g, i, ((int) bit_reverse(i) >> 1), k, k, z);
+    // gamma[i] = z;
+    if (FLAGS_print_all) {
+      printf("g: %d, i: %3d, bit_rev(7,i): %3d, 2 * bitrev(i) + 1: %3d, g^(%3d): %4d\n",
+          g, i, ((int) bit_reverse(i) >> 1), k, k, z);
+    }
+  }
+  if (FLAGS_print_all) {
+    printf("\n");
   }
 
   // check that f x h (in normal domain) = ntt_inv(f_ntt x h_ntt)) where mult is in ntt_domain
