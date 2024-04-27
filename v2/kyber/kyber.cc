@@ -507,18 +507,30 @@ void print_kyber_parameters(kyber_parameters& p) {
 }
 
 void print_coefficient_vector(coefficient_vector& v) {
+  bool something_printed = false;
+  int num_printed = 0;
+
   if (v.c_.size() == 0)
     return;
+
   int k = (int)v.c_.size() - 1;
   while (v.c_[k] == 0 && k > 0)
     k--; 
-  if (k > 0)
+  if (k > 0) {
     printf("(%d[%d] + ", v.c_[k], k);
+    something_printed = true;
+    num_printed++;
+  }
   else
     printf("(");
+
   for (int i = k - 1; i > 0; i--) {
+    if (v.c_[i] == 0)
+      continue;
     printf("%d[%d] + ", v.c_[i], i);
-    if ((i%8) ==0)
+    something_printed = true;
+    num_printed++;
+    if ((num_printed%8) ==0)
       printf("\n  ");
   }
   printf("%d[%d])\n", v.c_[0], 0);

@@ -644,9 +644,81 @@ bool test_kyber_support() {
   coefficient_vector product_ntt(p.q_, p.n_);
   coefficient_vector transformed_product_ntt(p.q_, p.n_);
 
+  if (!coefficient_vector_zero(&f)) {
+    return false;
+  }
+  if (!coefficient_vector_zero(&h)) {
+    return false;
+  }
+  if (!coefficient_vector_zero(&product)) {
+    return false;
+  }
+  f.c_[255] = 1;
+  h.c_[1] = 1;
+  if (!coefficient_mult(f, h, &product)) {
+    printf("f x h coefficient_mult fails\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("f:\n");
+    print_coefficient_vector(f);
+    printf("\n");
+    printf("h:\n");
+    print_coefficient_vector(h);
+    printf("\n");
+    printf("f x h:\n");
+    print_coefficient_vector(product);
+    printf("\n");
+  }
+  if (product.c_[0] != (p.q_ - 1)) {
+    printf("wrong answer f x h\n");
+    return false;
+  }
+
+  h.c_[2] = 1;
+  if (!coefficient_mult(f, h, &product)) {
+    printf("f x h coefficient_mult fails\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("f:\n");
+    print_coefficient_vector(f);
+    printf("\n");
+    printf("h:\n");
+    print_coefficient_vector(h);
+    printf("\n");
+    printf("f x h:\n");
+    print_coefficient_vector(product);
+    printf("\n");
+  }
+
+  if (!coefficient_vector_zero(&product)) {
+    return false;
+  }
+  h.c_[255] = 1;
+  if (!coefficient_mult(f, h, &product)) {
+    printf("f x h coefficient_mult fails\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("f:\n");
+    print_coefficient_vector(f);
+    printf("\n");
+    printf("h:\n");
+    print_coefficient_vector(h);
+    printf("\n");
+    printf("f x h:\n");
+    print_coefficient_vector(product);
+    printf("\n");
+  }
+
   for (int i = 0; i < f.len_; i++) {
+    /*
     f.c_[i] = i;
     h.c_[i] = f.len_ - i;
+     */
+    f.c_[i] = 1;
+    h.c_[i] = 1;
   }
   if (!ntt(g, f, &f_ntt)) {
     printf("f x h ntt transform fails\n");
