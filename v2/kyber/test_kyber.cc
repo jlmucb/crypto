@@ -90,8 +90,10 @@ bool test_kyber1() {
     printf("Could not init kyber_decrypt\n");
     return false;
   }
-printf("recovered m: \n");
-print_bytes(recovered_m_len, recovered_m);
+  if (FLAGS_print_all) {
+    printf("recovered m: \n");
+    print_bytes(recovered_m_len, recovered_m);
+  }
 return true;
   if (memcmp(m, recovered_m, m_len) != 0) {
     printf("message and recovered message dont match\n");
@@ -592,6 +594,101 @@ bool test_kyber_support() {
     print_coefficient_vector(cv1);
     printf("\n");
   }
+
+  int a1, a2;
+  int m1, m2;
+  int r1, r2;
+  int z;
+
+  z = 17;
+  a1 = 1;
+  a2 = 2;
+  m1 = 3;
+  m2 = 4;
+  if (!ntt_base_mult(p.q_, z, a1, a2, m1, m2, &r1, &r2)) {
+    printf("ntt_base_mult failed\n");
+    return false;
+  }
+  if (FLAGS_print_all) {
+    printf("\nntt_base_mult(mod(%d), %d, [%d + %dX] x [%d + %dX] = [%d + %dX] mod(x^2 - %d)\n",
+        p.q_, z, a1, a2, m1, m2, r1, r2, z);
+    printf("\n");
+  }
+  if (r1 != 139 || r2 != 10) {
+    printf("ntt_base_mult got wrong answer\n");
+    return false;
+  }
+
+  int gamma[128];
+  for (int i = 0; i < 128; i++) {
+    int z;
+    int k =((int) bit_reverse(i) >> 1);
+    k = 2 * k + 1;
+    z = exp_in_ntt(in1.q_, k, g);
+    gamma[i] = z;
+    printf("g: %d, i: %3d, bit_rev(7,i): %3d, 2 * bitrev(i) + 1: %3d, g^(%3d): %4d\n",
+        g, i, ((int) bit_reverse(i) >> 1), k, k, z);
+  }
+
+  // check that f x h (in normal domain) = ntt_inv(f_ntt x h_ntt)) where mult is in ntt_domain
+  coefficient_vector f(p.q_, p.n_);
+  coefficient_vector h(p.q_, p.n_);
+  coefficient_vector f_ntt(p.q_, p.n_);
+  coefficient_vector h_ntt(p.q_, p.n_);
+  coefficient_vector product(p.q_, p.n_);
+  coefficient_vector product_ntt(p.q_, p.n_);
+  coefficient_vector transformed_product_ntt(p.q_, p.n_);
+
+  for (int i = 0; i < f.len_; i++) {
+    f.c_[i] = i;
+    h.c_[i] = f.len_ - i;
+  }
+  if (!ntt(g, f, &f_ntt)) {
+    printf("f x h ntt transform fails\n");
+    return false;
+  }
+  if (!ntt(g, h, &h_ntt)) {
+    printf("f x h ntt transform fails\n");
+    return false;
+  }
+  if (!coefficient_mult(f, h, &product)) {
+    printf("f x h coefficient_mult fails\n");
+    return false;
+  }
+  if (!multiply_ntt(g, f_ntt, h_ntt, &product_ntt)) {
+    printf("f x h multiply_ntt fails\n");
+    return false;
+  }
+  if (!ntt_inv(g, product_ntt, &transformed_product_ntt)) {
+    printf("f x h ntt transform fails\n");
+    return false;
+  }
+
+  if (FLAGS_print_all) {
+    printf("f:\n");
+    print_coefficient_vector(f);
+    printf("\n");
+    printf("h:\n");
+    print_coefficient_vector(h);
+    printf("\n");
+    printf("f x h:\n");
+    print_coefficient_vector(product);
+    printf("\n");
+    printf("f_ntt:\n");
+    print_coefficient_vector(f_ntt);
+    printf("\n");
+    printf("h_ntt:\n");
+    print_coefficient_vector(h_ntt);
+    printf("\n");
+    printf("f_ntt x h_ntt:\n");
+    print_coefficient_vector(product_ntt);
+    printf("\n");
+    printf("ntt_inv(f_ntt x h_ntt):\n");
+    print_coefficient_vector(transformed_product_ntt);
+    printf("\n");
+  }
+
+  // product and transformed_product_ntt should be the same
 
   return true;
 }

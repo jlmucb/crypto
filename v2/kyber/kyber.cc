@@ -557,10 +557,10 @@ byte bit_reverse(byte b) {
   return r;
 }
 
-bool ntt_base_mult(int q, int g, int& in1a, int& in1b,
+bool ntt_base_mult(int q, int zeta, int& in1a, int& in1b,
         int& in2a, int& in2b, int* outa, int* outb) {
-  int u1 = ((in1a * in2a) % q + (((in1b * in2b) %q) * g) % q) % q;
-  int u2 = (((in1a * in2b) % q) + ((in2a * in1a) %q)) % q;
+  int u1 = ((in1a * in2a) % q + (((in1b * in2b) % q) * zeta) % q) % q;
+  int u2 = (((in1a * in2b) % q) + ((in2a * in1b) % q)) % q;
   *outa = u1;
   *outb = u2;
   return true;
@@ -568,8 +568,12 @@ bool ntt_base_mult(int q, int g, int& in1a, int& in1b,
 
 bool multiply_ntt(int g, coefficient_vector& in1, coefficient_vector& in2,
     coefficient_vector* out) {
+  int zeta;
   for (int j = 0; j < in1.len_ / 2; j += 2) {
-    if (!ntt_base_mult(in1.q_, g, in1.c_[j], in1.c_[j + 1],
+    int k =((int) bit_reverse((j/2)) >> 1);
+    k = 2 * k + 1;
+    zeta = exp_in_ntt(in1.q_, k, g);
+    if (!ntt_base_mult(in1.q_, zeta, in1.c_[j], in1.c_[j + 1],
           in2.c_[j], in2.c_[j + 1],
           &(out->c_[j]), &(out->c_[j + 1]))) {
       return false;
@@ -1432,12 +1436,16 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
 #if 1
   printf("m: ");
   print_bytes(m_len, m);
+  printf("\n");
   printf("mu:\n");
   print_coefficient_vector(mu);
+  printf("\n");
   printf("nu:\n");
   print_coefficient_vector(nu);
+  printf("\n");
   printf("compressed nu:\n");
   print_coefficient_vector(compressed_nu);
+  printf("\n");
   printf("c1 (%d):\n", c1_b_len);
   print_bytes(c1_b_len, b_c1);
   printf("\n");
@@ -1539,7 +1547,7 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
   printf("u:\n");
   print_module_vector(u);
   printf("\n");
-  printf("\nnu:\n");
+  printf("nu:\n");
   print_coefficient_vector(nu);
   printf("\n");
 #endif
@@ -1586,9 +1594,10 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
   printf("\nw:\n");
   print_coefficient_vector(w);
   printf("\n");
-  printf("\ncompressed w:\n");
+  printf("compressed w:\n");
   print_coefficient_vector(compressed_w);
-  printf("\nm:\n");
+  printf("\n");
+  printf("m:\n");
   print_bytes(32, m);
   printf("\n");
 #endif
