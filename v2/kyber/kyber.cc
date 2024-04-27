@@ -1065,7 +1065,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     byte b_prf[b_prf_len];
     memset(b_prf, 0, b_prf_len);
     if (!prf(p.eta1_, 32, sigma, sizeof(int), (byte*)&N,
-          NBITSINBYTE * 64 * p.eta1_, b_prf)) {
+          NBITSINBYTE * b_prf_len, b_prf)) {
        printf("kyber_keygen: prf (2) failed\n");
       return false;
     }
@@ -1240,11 +1240,11 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     memset(b_prf, 0, b_prf_len);
 
     if (!prf(p.eta1_, 32, rho, sizeof(int), (byte*)&N,
-          NBITSINBYTE * 64 * p.eta1_, b_prf)) {
+          NBITSINBYTE * b_prf_len, b_prf)) {
       printf("kyber_encrypt: prf (1) failed\n");
       return false;
     }
-    if (!sample_poly_cbd(p.q_, p.eta1_, 64 * p.eta1_, b_prf, r.c_[i]->c_)) {
+    if (!sample_poly_cbd(p.q_, p.eta1_, b_prf_len, b_prf, r.c_[i]->c_)) {
         printf("kyber_encrypt: sample_poly_cdb (1) failed\n");
         return false;
       }
@@ -1265,11 +1265,11 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     memset(b_prf, 0, b_prf_len);
 
     if (!prf(p.eta2_, 32, rho, sizeof(int), (byte*)&N,
-          NBITSINBYTE * 64 * p.eta2_, b_prf)) {
+          NBITSINBYTE * b_prf_len, b_prf)) {
        printf("kyber_encrypt: prf (1) failed\n");
       return false;
     }
-    if (!sample_poly_cbd(p.q_, p.eta2_, 64 * p.eta2_, b_prf, e1.c_[i]->c_)) {
+    if (!sample_poly_cbd(p.q_, p.eta2_, b_prf_len, b_prf, e1.c_[i]->c_)) {
         printf("kyber_encrypt: sample_poly_cdb (1) failed\n");
         return false;
       }
@@ -1283,11 +1283,11 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     memset(b_prf, 0, b_prf_len);
 
     if (!prf(p.eta2_, 32, rho, sizeof(int), (byte*)&N,
-          NBITSINBYTE * 64 * p.eta2_, b_prf)) {
+          NBITSINBYTE * b_prf_len, b_prf)) {
        printf("kyber_encrypt: prf (1) failed\n");
       return false;
     }
-    if (!sample_poly_cbd(p.q_, p.eta2_, 64 * p.eta2_, b_prf, e2.c_)) {
+    if (!sample_poly_cbd(p.q_, p.eta2_, b_prf_len, b_prf, e2.c_)) {
         printf("kyber_encrypt: sample_poly_cdb (1) failed\n");
         return false;
       }
