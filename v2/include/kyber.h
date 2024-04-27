@@ -122,7 +122,7 @@ bool ntt_base_mult(int q, int g, int& in1a, int& in1b,
 int exp_in_ntt(int q, int e, int base);
 
 bool sample_ntt(int q, int l, int b_len, byte* b, vector<int>& out);
-bool sample_poly_cbd(int q, int eta, int l, int b_len, byte* b, vector<int>& out);
+bool sample_poly_cbd(int q, int eta, int b_len, byte* b, vector<int>& out);
 
 bool ntt(int g, coefficient_vector& in, coefficient_vector* out);
 bool ntt_inv(int g, coefficient_vector& in, coefficient_vector* out);

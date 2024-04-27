@@ -438,7 +438,7 @@ bool test_kyber_support() {
     sample_cbd_out.c_[i] = 0;
   }
   n_b = crypto_get_random_bytes(sample_cbd_b_len, sample_cbd_b);
-  if (!sample_poly_cbd(p.q_, p.eta1_, p.n_, sample_cbd_b_len, sample_cbd_b,
+  if (!sample_poly_cbd(p.q_, p.eta1_, sample_cbd_b_len, sample_cbd_b,
         sample_cbd_out.c_)) {
     printf("Could not sample_poly_cbd\n");
     return false;
@@ -635,6 +635,10 @@ bool test_kyber_support() {
   }
   if (FLAGS_print_all) {
     printf("prod: %d\n\n", prod);
+  }
+  if (prod != 1) {
+    printf("product of poly const terms is wrong\n");
+    return false;
   }
 
   // check that f x h (in normal domain) = ntt_inv(f_ntt x h_ntt)) where mult is in ntt_domain

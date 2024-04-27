@@ -507,7 +507,6 @@ void print_kyber_parameters(kyber_parameters& p) {
 }
 
 void print_coefficient_vector(coefficient_vector& v) {
-  bool something_printed = false;
   int num_printed = 0;
 
   if (v.c_.size() == 0)
@@ -518,7 +517,6 @@ void print_coefficient_vector(coefficient_vector& v) {
     k--; 
   if (k > 0) {
     printf("(%d[%d] + ", v.c_[k], k);
-    something_printed = true;
     num_printed++;
   }
   else
@@ -528,7 +526,6 @@ void print_coefficient_vector(coefficient_vector& v) {
     if (v.c_[i] == 0)
       continue;
     printf("%d[%d] + ", v.c_[i], i);
-    something_printed = true;
     num_printed++;
     if ((num_printed%8) ==0)
       printf("\n  ");
@@ -637,21 +634,24 @@ d2 %= q;
 }
 
 // random input bytes are 64*eta bytes long
-// l is poly length
-bool sample_poly_cbd(int q, int eta, int l, int b_len, byte* b,
+// output is always 256 ints
+bool sample_poly_cbd(int q, int eta, int b_len, byte* b,
         vector<int>& out) {
 
-  if (b_len * NBITSINBYTE < l)
+  int l = 64 * eta;
+  if (b_len < l) {
+    printf("sample_poly_cbd: bit array too small\n");
     return false;
+  }
 
-  for (int i = 0; i < l; i++) {
+  for (int i = 0; i < 256; i++) {
     int x = 0;
-    for (int j = 0; j < eta; j++)
-      x += bit_in_byte_stream(2*i*eta+j, l, b);
     int y = 0;
-    for (int j = 0; j < eta; j++)
-      y += bit_in_byte_stream(2*i*eta+eta+j, l, b);
-    out[i] = (q + x - y) % q;
+    for (int j = 0; j < eta; j++) {
+      x += bit_in_byte_stream(2 * i * eta + j, l, b);
+      y += bit_in_byte_stream(2 * i * eta + eta + j, l, b);
+    }
+    out[i] = (x + eta - y) % q;
   }
   return true;
 }
@@ -1014,7 +1014,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   module_vector e_ntt(p.q_, p.n_, p.k_);                // ntt domain noise
   module_vector s_ntt(p.q_, p.n_, p.k_);                // ntt domain secret
   module_vector t_ntt(p.q_, p.n_, p.k_);                // ntt domain public key (As+e)
-                                                        //
+  
   module_vector t(p.q_, p.n_, p.k_);
   module_vector r_ntt(p.q_, p.n_, p.k_);
 
@@ -1048,11 +1048,11 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     memset(b_prf, 0, b_prf_len);
 
     if (!prf(p.eta1_, 32, &parameters[32], sizeof(int), (byte*)&N,
-          NBITSINBYTE * 64 * p.eta1_, b_prf)) {
+          NBITSINBYTE * b_prf_len, b_prf)) {
        printf("kyber_keygen: prf (1) failed\n");
       return false;
     }
-    if (!sample_poly_cbd(p.q_, p.eta1_, p.k_, b_prf_len, b_prf, s.c_[i]->c_)) {
+    if (!sample_poly_cbd(p.q_, p.eta1_, b_prf_len, b_prf, s.c_[i]->c_)) {
        printf("kyber_keygen: sample_poly_cdb (1) failed\n");
       return false;
     }
@@ -1069,7 +1069,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
        printf("kyber_keygen: prf (2) failed\n");
       return false;
     }
-    if (!sample_poly_cbd(p.q_, p.eta1_, p.k_, b_prf_len, b_prf, e.c_[i]->c_)) {
+    if (!sample_poly_cbd(p.q_, p.eta1_, b_prf_len, b_prf, e.c_[i]->c_)) {
        printf("kyber_keygen: sample_poly_cdb (1) failed\n");
       return false;
     }
@@ -1104,33 +1104,6 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     return false;
   }
 
-#if 1
-  printf("\nKeygen\n");
-  printf("d: ");
-  print_bytes(32, d);
-  printf("rho || sigma: ");
-  print_bytes(64, parameters);
-  printf("rho: ");
-  print_bytes(32, parameters);
-  printf("t_ntt (public key):");
-  print_module_vector(t_ntt);
-  printf("\n");
-  printf("A_ntt:\n");
-  print_module_array(A_ntt);
-  printf("\n");
-  printf("e (noise):\n");
-  print_module_vector(e);
-  printf("\n");
-  printf("s (secret polynomial): \n");
-  print_module_vector(s);
-  printf("\n");
-  printf("\ns_ntt:\n");
-  print_module_vector(s_ntt);
-  printf("\nr_ntt:\n");
-  print_module_vector(r_ntt);
-  printf("\n");
-#endif
-
   byte* pek = ek;
   // ek := byte_encode(12) (t^) || rho
   for (int i = 0; i < t_ntt.dim_; i++) {
@@ -1155,8 +1128,26 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   *dk_len = s_ntt.dim_ * 384;
 
 #if 1
-  printf("\nrho: ");
-  print_bytes(32, &ek[*ek_len - 32]);
+  printf("\n\nKeygen\n\n");
+  printf("d: ");
+  print_bytes(32, d);
+  printf("rho || sigma: ");
+  print_bytes(64, parameters);
+  printf("rho: ");
+  print_bytes(32, parameters);
+  printf("\n");
+  printf("t_ntt (public key):");
+  print_module_vector(t_ntt);
+  printf("A_ntt:\n");
+  print_module_array(A_ntt);
+  printf("e (noise):\n");
+  print_module_vector(e);
+  printf("s (secret polynomial): \n");
+  print_module_vector(s);
+  printf("s_ntt:\n");
+  print_module_vector(s_ntt);
+  printf("r_ntt:\n");
+  print_module_vector(r_ntt);
   printf("\n");
 #endif
   return true;
@@ -1205,9 +1196,6 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   module_vector e1(p.q_, p.n_, p.k_);           // noise module vector
   module_vector u(p.q_, p.n_, p.k_);            // u (c1) as in spac
   coefficient_vector e2(p.q_, p.n_);            // noise
- 
-  byte rho[32];
-  memset(rho, 0, 32);
 
   // Recover public key
   byte* p_b = ek;
@@ -1218,6 +1206,9 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     }
     p_b += 384;
   }
+ 
+  byte rho[32];
+  memset(rho, 0, 32);
   memcpy(rho, p_b, 32);
 
   int N = 0;
@@ -1242,7 +1233,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     }
   }
 
-  // Generate encryption randomness (r)
+  // Generate encryption randomness poly (r)
   for (int i = 0; i < r.dim_; i++) {
     int b_prf_len = 64 * p.eta1_;
     byte b_prf[b_prf_len];
@@ -1250,10 +1241,10 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
 
     if (!prf(p.eta1_, 32, rho, sizeof(int), (byte*)&N,
           NBITSINBYTE * 64 * p.eta1_, b_prf)) {
-       printf("kyber_encrypt: prf (1) failed\n");
+      printf("kyber_encrypt: prf (1) failed\n");
       return false;
     }
-    if (!sample_poly_cbd(p.q_, p.eta1_, p.k_, NBITSINBYTE * 64 * p.eta1_, b_prf, r.c_[i]->c_)) {
+    if (!sample_poly_cbd(p.q_, p.eta1_, 64 * p.eta1_, b_prf, r.c_[i]->c_)) {
         printf("kyber_encrypt: sample_poly_cdb (1) failed\n");
         return false;
       }
@@ -1267,21 +1258,6 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
       }
   }
 
-#if 1
-  printf("Encrypt\n");
-  printf("encrypt, rho:\n");
-  print_bytes(32, &ek[ek_len - 32]);
-  printf("\n");
-  printf("encrypt, t_ntt:\n");
-  print_module_vector(t_ntt);
-  printf("\n");
-  printf("\nencrypt A_ntt:\n");
-  print_module_array(A_ntt);
-  printf("\nr_ntt:\n");
-  print_module_vector(r_ntt);
-  printf("\n");
-#endif
-
   // Generate noise element (e1)
   for (int i = 0; i < e1.dim_; i++) {
     int b_prf_len = 64 * p.eta1_;
@@ -1293,7 +1269,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
        printf("kyber_encrypt: prf (1) failed\n");
       return false;
     }
-    if (!sample_poly_cbd(p.q_, p.eta2_, p.k_, NBITSINBYTE * 64 * p.eta2_, b_prf, e1.c_[i]->c_)) {
+    if (!sample_poly_cbd(p.q_, p.eta2_, 64 * p.eta2_, b_prf, e1.c_[i]->c_)) {
         printf("kyber_encrypt: sample_poly_cdb (1) failed\n");
         return false;
       }
@@ -1311,7 +1287,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
        printf("kyber_encrypt: prf (1) failed\n");
       return false;
     }
-    if (!sample_poly_cbd(p.q_, p.eta2_, p.k_, NBITSINBYTE * 64 * p.eta2_, b_prf, e2.c_)) {
+    if (!sample_poly_cbd(p.q_, p.eta2_, 64 * p.eta2_, b_prf, e2.c_)) {
         printf("kyber_encrypt: sample_poly_cdb (1) failed\n");
         return false;
       }
@@ -1344,17 +1320,6 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     printf("kyber_encrypt: module_vector_add failed\n");
     return false;
   }
-
-#if 1
-  printf("\ne1:\n");
-  print_module_vector(e1);
-  printf("\ne2:\n");
-  print_coefficient_vector(e2);
-  printf("\n");
-  printf("u:\n");
-  print_module_vector(u);
-  printf("\n");
-#endif
 
   coefficient_vector mu(p.q_, p.n_);
   if (!coefficient_vector_zero(&mu)) {
@@ -1427,6 +1392,25 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   memcpy(&c[c1_b_len], b_c2, c2_b_len);
 
 #if 1
+  printf("\nEncrypt\n\n");
+  printf("rho: ");
+  print_bytes(32, rho);
+  printf("\n");
+  printf("t_ntt:\n");
+  print_module_vector(t_ntt);
+  printf("A_ntt:\n");
+  print_module_array(A_ntt);
+  printf("r:\n");
+  print_module_vector(r);
+  printf("r_ntt:\n");
+  print_module_vector(r_ntt);
+  printf("e1:\n");
+  print_module_vector(e1);
+  printf("e2:\n");
+  print_coefficient_vector(e2);
+  printf("\n");
+  printf("u:\n");
+  print_module_vector(u);
   printf("m: ");
   print_bytes(m_len, m);
   printf("\n");
@@ -1471,7 +1455,6 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   print_coefficient_vector(t_nu);
   printf("\n");
 #endif
-
   return true;
 }
 
@@ -1532,19 +1515,6 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
     }
   }
 
-#if 1
-  printf("\n\nDecrypt\n");
-  printf("\ns_ntt:\n");
-  print_module_vector(s_ntt);
-  printf("\n");
-  printf("u:\n");
-  print_module_vector(u);
-  printf("\n");
-  printf("nu:\n");
-  print_coefficient_vector(nu);
-  printf("\n");
-#endif
-
   module_vector u_ntt(p.q_, p.n_, p.k_);
   coefficient_vector tw(p.q_, p.n_);
   coefficient_vector w(p.q_, p.n_);
@@ -1584,7 +1554,15 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
   *m_len = 32;
 
 #if 1
-  printf("\nw:\n");
+  printf("\n\nDecrypt\n\n");
+  printf("s_ntt:\n");
+  print_module_vector(s_ntt);
+  printf("u:\n");
+  print_module_vector(u);
+  printf("nu:\n");
+  print_coefficient_vector(nu);
+  printf("\n");
+  printf("w:\n");
   print_coefficient_vector(w);
   printf("\n");
   printf("compressed w:\n");
