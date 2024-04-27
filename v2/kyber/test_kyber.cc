@@ -232,7 +232,7 @@ bool test_kyber_support() {
   memset(g_out, 0, g_out_len);
   int i1 = 1;
   int i2 = 2;
-  if (!xof(5, strlen(str), (byte*) str, i1, i2, NBITSINBYTE * g_out_len, g_out)) {
+  if (!xof(strlen(str), (byte*) str, i1, i2, NBITSINBYTE * g_out_len, g_out)) {
     printf("xof failed\n");
     return false;
   }

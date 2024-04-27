@@ -820,7 +820,7 @@ bool prf(int eta, int in1_len, byte* in1, int in2_len, byte* in2, int bit_out_le
 }
 
 // XOF(ρ, i, j) := SHAKE128(ρ||i|| j)
-bool xof(int eta, int in1_len, byte* in1, int i, int j, int bit_out_len, byte* out) {
+bool xof(int in1_len, byte* in1, int i, int j, int bit_out_len, byte* out) {
   sha3 h;
 
   if (!h.init(256)) {
@@ -995,7 +995,6 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   byte d[32];
   byte parameters[64];  // (rho, sigma)
   memset(d, 0, 32);
-  // parameters := rho || sigma
   memset(parameters, 0, 64);
 
   int n_b = crypto_get_random_bytes(32, d);
@@ -1019,7 +1018,8 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   module_vector r_ntt(p.q_, p.n_, p.k_);
 
   int N = 0;
-  byte* rho= parameters;
+  byte* rho = parameters;
+  byte* sigma = &parameters[32];
 
   // Generate A_ntt
   for (int i = 0; i < p.k_; i++) {
@@ -1028,7 +1028,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
       byte b_xof[b_xof_len];
       memset(b_xof, 0, b_xof_len);
 
-      if (!xof(p.eta1_, 32, rho, i, j, b_xof_len * NBITSINBYTE, b_xof)) {
+      if (!xof(32, rho, i, j, b_xof_len * NBITSINBYTE, b_xof)) {
         printf("kyber_keygen: xof failed\n");
         return false;
       }
@@ -1047,7 +1047,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     byte b_prf[b_prf_len];
     memset(b_prf, 0, b_prf_len);
 
-    if (!prf(p.eta1_, 32, &parameters[32], sizeof(int), (byte*)&N,
+    if (!prf(p.eta1_, 32, sigma, sizeof(int), (byte*)&N,
           NBITSINBYTE * b_prf_len, b_prf)) {
        printf("kyber_keygen: prf (1) failed\n");
       return false;
@@ -1064,7 +1064,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     int b_prf_len = 64 * p.eta1_;
     byte b_prf[b_prf_len];
     memset(b_prf, 0, b_prf_len);
-    if (!prf(p.eta1_, 32, &parameters[32], sizeof(int), (byte*)&N,
+    if (!prf(p.eta1_, 32, sigma, sizeof(int), (byte*)&N,
           NBITSINBYTE * 64 * p.eta1_, b_prf)) {
        printf("kyber_keygen: prf (2) failed\n");
       return false;
@@ -1220,7 +1220,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
       byte b_xof[b_xof_len];
       memset(b_xof, 0, b_xof_len);
 
-      if (!xof(p.eta1_, 32, rho, i, j, b_xof_len * NBITSINBYTE, b_xof)) {
+      if (!xof(32, rho, i, j, b_xof_len * NBITSINBYTE, b_xof)) {
         printf("kyber_encrypt: xof failed\n");
         return false;
       }

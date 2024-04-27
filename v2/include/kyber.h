@@ -35,7 +35,7 @@ bool byte_decode_to_vector(int d, int n, int in_len, byte* in, vector<int>& v);
 
 bool G(int in_len, byte* in, int bit_out_len, byte* out);
 bool prf(int eta, int in1_len, byte* in1, int in2_len, byte* in2, int bit_out_len, byte* out);
-bool xof(int eta, int in1_len, byte* in1, int i, int j, int bit_out_len, byte* out);
+bool xof(int in1_len, byte* in1, int i, int j, int bit_out_len, byte* out);
 
 class kyber_parameters {
 public:
