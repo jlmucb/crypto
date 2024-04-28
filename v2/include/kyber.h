@@ -155,11 +155,7 @@ bool make_module_vector_zero(module_vector* out);
 bool module_vector_equal(module_vector& in1, module_vector& in2);
 bool module_vector_dot_product(module_vector& in1, module_vector& in2,
 	coefficient_vector* out);
-bool module_vector_dot_product_first_transposed(module_vector& in1,
-	module_vector& in2, coefficient_vector* out);
 bool ntt_module_vector_dot_product(module_vector& in1,
-	module_vector& in2, coefficient_vector* out);
-bool ntt_module_vector_dot_product_first_transposed(module_vector& in1,
 	module_vector& in2, coefficient_vector* out);
 void print_module_vector(module_vector& mv);
 

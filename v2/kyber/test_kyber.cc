@@ -585,15 +585,6 @@ bool test_kyber_support() {
     print_coefficient_vector(cv1);
     printf("\n");
   }
-  coefficient_vector_zero(&cv1);
-  if (!module_vector_dot_product_first_transposed(vb1, vb2, &cv1)) {
-    return false;
-  }
-  if (FLAGS_print_all) {
-    printf("Dot product transposed:\n");
-    print_coefficient_vector(cv1);
-    printf("\n");
-  }
 
   int a1, a2;
   int m1, m2;
