@@ -93,10 +93,15 @@ bool test_kyber1() {
   if (FLAGS_print_all) {
     printf("recovered m: ");
     print_bytes(recovered_m_len, recovered_m);
+    printf("\n\nkyber complete\n\n");
   }
   if (memcmp(m, recovered_m, m_len) != 0) {
     printf("message and recovered message dont match\n");
     return false;
+  }
+
+  if (FLAGS_print_all) {
+    printf("\n\nkem\n\n");
   }
 
   int kem_ek_len = 384 * p.k_ + 32;
@@ -120,7 +125,7 @@ bool test_kyber1() {
   memset(kem_k, 0, kem_k_len);
 
   if (FLAGS_print_all) {
-     printf("\n\nken_keygen\n\n");
+     printf("\n\nkem_keygen\n\n");
      printf("kem_ek (%d):\n", kem_ek_len);
      print_bytes(kem_ek_len, kem_ek);
      printf("\n");
@@ -136,9 +141,9 @@ bool test_kyber1() {
   }
 
   if (FLAGS_print_all) {
-     printf("\n\nken_encaps\n\n");
-     printf("k (%d):\n", kem_k_len);
-     print_bytes(kem_ek_len, kem_ek);
+     printf("\n\nkem_encaps\n\n");
+     printf("k (%d): ", kem_k_len);
+     print_bytes(kem_k_len, kem_k);
      printf("\n");
      printf("c (%d):\n", kem_c_len);
      print_bytes(kem_c_len, kem_c);
@@ -162,7 +167,6 @@ bool test_kyber1() {
      printf("recovered key (%d): ", recovered_k_len);
      print_bytes(recovered_k_len, recovered_k);
   }
-  return true;
 
   if (memcmp(kem_k, recovered_k, recovered_k_len) != 0) {
     printf("Generated and encapsulated keys don't match\n");
