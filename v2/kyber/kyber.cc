@@ -59,8 +59,6 @@ bool kyber_parameters::init_kyber(int ks) {
     dv_ = 5;
     eta1_ = 2;
     eta2_ = 2;
-    // beta_;
-    // dt_;
     return true;
   }
   return false;
@@ -651,7 +649,7 @@ bool sample_poly_cbd(int q, int eta, int b_len, byte* b,
       x += bit_in_byte_stream(2 * i * eta + j, l, b);
       y += bit_in_byte_stream(2 * i * eta + eta + j, l, b);
     }
-    out[i] = (x + eta - y) % q;
+    out[i] = (x + eta - y) % eta;
   }
   return true;
 }
@@ -1150,6 +1148,36 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   printf("r_ntt:\n");
   print_module_vector(r_ntt);
   printf("\n");
+
+  // Compare s_ntt dot (A_ntt^T r_ntt) and r_ntt dot (A_ntt s_ntt)
+  module_vector s1(p.q_, p.n_, p.k_);
+  module_vector s2(p.q_, p.n_, p.k_);
+  coefficient_vector r1(p.q_, p.n_);
+  coefficient_vector r2(p.q_, p.n_);
+  coefficient_vector r3(p.q_, p.n_);
+
+  if (!ntt_module_apply_transposed_array(g, A_ntt, r_ntt, &s1)) {
+    printf("test ntt_module_apply_transposed_array fail\n");
+    return false;
+  }
+  if (!ntt_module_apply_array(g, A_ntt, s_ntt, &s2)) {
+    printf("test ntt_module_apply_array fail\n");
+    return false;
+  }
+  if (!module_vector_dot_product(s_ntt, s1, &r1)) {
+    printf("test module_vector_dot_product (1) fail\n");
+    return false;
+  }
+  if (!module_vector_dot_product(r_ntt, s2, &r2)) {
+    printf("test module_vector_dot_product (3) fail\n");
+    return false;
+  }
+  for (int j = 0; j < 256; j++) {
+    r3.c_[j] = (p.q_ + r1.c_[j] - r1.c_[j]) % p.q_;
+  }
+  printf("COMPARISON test\n");
+  print_coefficient_vector(r3);
+  printf("\n");
 #endif
   return true;
 }
@@ -1158,7 +1186,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
 //  abbreviated
 //    r := {0,1}^256
 //    t := Decompress(q, t, dt)
-//    (e1, e2) := beta_eta^k x beta_eta^k
+//    (e1, e2) := noise
 //    u := Compress(q, A^T r +e1, du)
 //    v := Compress(q,t^tr + e2 + closest(q/2)n, dv)
 //    return c=(u,v)
@@ -1172,14 +1200,14 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
 //      }
 //    }
 //    for (i = 0; i < k; i++) {
-//      r[i] = sample_poly_cdb(eta1,(PRF(eta1, r,N)))
+//      r[i] = sample_poly_cdb(eta1,(PRF(eta1, r, N)))
 //      n++;
 //    }
 //    for (i = 0; i < k; i++) {
-//      e1[i] = sample_poly_cdb(eta2,(PRF(eta2, r,N)))
+//      e1[i] = sample_poly_cdb(eta2,(PRF(eta2, r, N)))
 //      n++;
 //    }
-//    e1 = sample_poly_cdb(eta2,(PRF(eta2, r,N)))
+//    e2 = sample_poly_cdb(eta2,(PRF(eta2, r, N)))
 //    r^ = ntt(r)
 //    u = ntt_inv(A^^T(r^) + e1
 //    mu = decompress(1, byte_encode(1,u))
