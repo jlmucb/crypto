@@ -882,7 +882,7 @@ bool byte_encode_from_vector(int d, int n, vector<int>& v, byte* out) {
   int k = 0;  // bit position in output byte
   int m = 0;  // current output byte number
   int out_len = (num_bits + NBITSINBYTE - 1) / NBITSINBYTE;
-  memset(out, 0, out_len);
+  memset(out, 0, (size_t)out_len);
   for (int i = 0; i < num_bits; i++) {
     t = (int)bit_from_int_vector(d, i, v);
     r |= t << k;
@@ -1698,6 +1698,7 @@ bool kyber_kem_decaps(int g, kyber_parameters& p, int kem_dk_len, byte* kem_dk,
 
 // ------------------------------------------------------------------------------------
 
+#ifdef LONG_DEBUG
 bool special_test_1(kyber_parameters& p, coefficient_vector& mu,
                   coefficient_vector& nu,
                   int len_m, byte* m, int len_c2, byte*c2) {
@@ -1705,7 +1706,7 @@ bool special_test_1(kyber_parameters& p, coefficient_vector& mu,
   printf("\n\ntest, decompressed mu\n");
   coefficient_vector t_compressed_mu(p.q_, p.n_);
   byte checked_m[32];
-  memset(checked_m, 0, 32);
+  memset(checked_m, 0, (size_t)32);
 
   for (int j = 0; j < p.n_; j++) {
     t_compressed_mu.c_[j] = compress(p.q_, mu.c_[j], 1);
@@ -1785,6 +1786,7 @@ if (!coefficient_equal(r1, r2)) {
 }
 return true;
 }
+#endif
 
 // ------------------------------------------------------------------------------------
 

@@ -417,6 +417,10 @@ bool test_kyber_support() {
     sample_ntt_out.c_[i] = 0;
   }
   int n_b = crypto_get_random_bytes(sample_ntt_b_len, sample_ntt_b);
+  if (n_b != sample_ntt_b_len) {
+    printf("Could not get enough random bits\n");
+    return false;
+  }
   if (!sample_ntt(p.q_, p.n_, sample_ntt_b_len, 
                   sample_ntt_b, sample_ntt_out.c_)) {
     printf("Could not sample_ntt\n");
