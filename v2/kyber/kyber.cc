@@ -367,13 +367,13 @@ bool ntt_module_apply_transposed_array(int g, module_array& A, module_vector& v,
   coefficient_vector acc(v.q_, v.n_);
   coefficient_vector t(v.q_, v.n_);
 
-  for (int i = 0; i < A.nr_; i++) {
+  for (int i = 0; i < A.nc_; i++) {
     if (!coefficient_vector_zero(&acc))
       return false;
-    for (int j = 0; j < v.dim_; j++) {
+    for (int j = 0; j < A.nr_; j++) {
       if (!coefficient_vector_zero(&t))
         return false;
-      if (!multiply_ntt(g, *A.c_[A.index(j,i)], *v.c_[i], &t)) {
+      if (!multiply_ntt(g, *A.c_[A.index(j,i)], *v.c_[j], &t)) {
         return false;
       }
       if (!coefficient_vector_add_to(t, &acc))
@@ -406,7 +406,7 @@ bool module_vector_dot_product(module_vector& in1, module_vector& in2,
   return true;
 }
 
-bool ntt_module_vector_dot_product(module_vector& in1, module_vector& in2,
+bool ntt_module_vector_dot_product(int g, module_vector& in1, module_vector& in2,
         coefficient_vector* out) {
 
   if (in1.n_ != in2.n_ || out->len_ != in2.n_ || in1.dim_ != in2.dim_) {
@@ -420,7 +420,7 @@ bool ntt_module_vector_dot_product(module_vector& in1, module_vector& in2,
       if (!coefficient_vector_zero(&t)) {
         return false;
       }
-      if (!multiply_ntt(17, *in1.c_[i], *in2.c_[i], &t)) {
+      if (!multiply_ntt(g, *in1.c_[i], *in2.c_[i], &t)) {
         return false;
       }
       if (!coefficient_vector_add_to(t, out)) {
@@ -1336,7 +1336,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   if (!coefficient_vector_zero(&nu)) {
       return false;
   }
-  if (!ntt_module_vector_dot_product(t_ntt, r_ntt, &nu_ntt)) {
+  if (!ntt_module_vector_dot_product(g, t_ntt, r_ntt, &nu_ntt)) {
       return false;
   }
   if (!ntt_inv(g, nu_ntt, &nu)) {
@@ -1495,7 +1495,7 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
   }
 
   // Compute w = nu - ntt_inv(s_ntt dot ntt(u))
-  if (!ntt_module_vector_dot_product(s_ntt, u_ntt, &w_ntt)) {
+  if (!ntt_module_vector_dot_product(g, s_ntt, u_ntt, &w_ntt)) {
     printf("kyber_decrypt: ntt_module_vector_dot_product failed\n");
     return false;
   }
@@ -1752,19 +1752,19 @@ coefficient_vector r1(p.q_, p.n_);
 coefficient_vector r2(p.q_, p.n_);
 coefficient_vector r3(p.q_, p.n_);
 
-if (!module_apply_transposed_array(A_ntt, r_ntt, &s1)) {
-  printf("test ntt_module_apply_transposed_array fail\n");
-  return false;
-}
-if (!module_apply_array(A_ntt, s_ntt, &s2)) {
+if (!ntt_module_apply_array(g, A_ntt, s_ntt, &s1)) {
   printf("test ntt_module_apply_array fail\n");
   return false;
 }
-if (!module_vector_dot_product(s_ntt, s1, &r1)) {
+if (!ntt_module_apply_transposed_array(g, A_ntt, r_ntt, &s2)) {
+  printf("test ntt_module_apply_transposed_array fail\n");
+  return false;
+}
+if (!ntt_module_vector_dot_product(g, r_ntt, s1, &r1)) {
   printf("test module_vector_dot_product (1) fail\n");
   return false;
 }
-if (!module_vector_dot_product(r_ntt, s2, &r2)) {
+if (!ntt_module_vector_dot_product(g, s_ntt, s2, &r2)) {
   printf("test module_vector_dot_product (3) fail\n");
   return false;
 }
