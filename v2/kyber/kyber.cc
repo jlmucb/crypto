@@ -1466,7 +1466,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   for (int j = 0; j < p.n_; j++) {
     t_compressed_mu.c_[j] = compress(p.q_, mu.c_[j], 1);
   }
-  if (!byte_encode_from_vector(1, 256, t_compressed_mu.c_, checked_m)) {
+  if (!byte_encode_from_vector(1, p.n_, t_compressed_mu.c_, checked_m)) {
     return false;
   }
   printf("recovered m from mu: ");
@@ -1474,7 +1474,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
 
   printf("\n\ntest, decompressed nu\n");
   coefficient_vector t_nu(p.q_, p.n_);
-  if (!byte_decode_to_vector(p.dv_, 256, c2_b_len, b_c2, t_nu.c_)) {
+  if (!byte_decode_to_vector(p.dv_, p.n_, c2_b_len, b_c2, t_nu.c_)) {
     return false;
   }
   for (int j = 0; j < p.n_; j++) {
@@ -1559,7 +1559,8 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
 
   // Compute w = nu - ntt_inv(s_ntt dot ntt(u))
   if (!ntt_module_vector_dot_product(s_ntt, u_ntt, &tw)) {
-      return false;
+    printf("kyber_decrypt: ntt_module_vector_dot_product failed\n");
+    return false;
   }
   if (!ntt_inv(g, tw, &w)) {
     printf("kyber_decrypt: ntt_inv failed\n");
@@ -1570,6 +1571,7 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
     w.c_[j] = (w.q_ - w.c_[j]) % w.q_;
   }
   if (!coefficient_vector_add_to(nu, &w)) {
+    printf("kyber_decrypt: coefficient_vector_add_to (3) failed\n");
     return false;
   }
 
@@ -1578,6 +1580,7 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
     compressed_w.c_[j] = compress(p.q_, w.c_[j], 1);
   }
   if (!byte_encode_from_vector(1, p.n_, compressed_w.c_, m)) {
+    printf("kyber_decrypt: byte_encode_from_vector (3) failed\n");
     return false;
   }
   *m_len = 32;
