@@ -94,11 +94,11 @@ bool test_kyber1() {
     printf("recovered m: ");
     print_bytes(recovered_m_len, recovered_m);
   }
-return true;
   if (memcmp(m, recovered_m, m_len) != 0) {
     printf("message and recovered message dont match\n");
     return false;
   }
+return true;
 
   int kem_ek_len = 384 * p.k_ + 32;
   byte kem_ek[kem_ek_len];

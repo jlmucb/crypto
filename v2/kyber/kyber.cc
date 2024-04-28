@@ -55,8 +55,8 @@ bool kyber_parameters::init_kyber(int ks) {
     q_ = 3329;
     k_ = 4;
     gamma_ = 17;
-    du_ = 12; // remove 11;
-    dv_ = 12; // remove 5;
+    du_ = 11;
+    dv_ = 5;
     eta1_ = 2;
     eta2_ = 2;
     return true;
@@ -1036,9 +1036,6 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     N++;
   }
 
-  // remove
-  make_module_vector_zero(&e);
-
   // Secret and noise to ntt domain
   for (int i = 0; i < s.dim_; i++) {
     if (!ntt(g, *s.c_[i], s_ntt.c_[i])) {
@@ -1090,7 +1087,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   }
   *dk_len = s_ntt.dim_ * 384;
 
-#if 1
+#ifdef DEBUG
   printf("\n\nKeygen\n\n");
   printf("A_ntt:\n");
   print_module_array(A_ntt);
@@ -1102,7 +1099,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   printf("e (noise):\n");
   print_module_vector(e);
 #endif
-#if 0
+#ifdef LONG_DEBUG
   printf("d: ");
   print_bytes(32, d);
   printf("rho || sigma: ");
@@ -1253,9 +1250,6 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     N++;
   }
 
-  //remove
-  make_module_vector_zero(&e1);
-
   // Generate noise element (e2)
   {
     int b_prf_len = 64 * p.eta2_;
@@ -1273,9 +1267,6 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
       }
     N++;
   }
-
-  // remove
-  coefficient_vector_zero(&e2);
 
   module_vector tmp1(p.q_, p.n_, p.k_);
   module_vector tmp2(p.q_, p.n_, p.k_);
@@ -1376,7 +1367,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   memcpy(c, b_c1, c1_b_len);
   memcpy(&c[c1_b_len], b_c2, c2_b_len);
 
-#if 1
+#ifdef DEBUG
   printf("\nEncrypt\n\n");
   printf("r:\n");
   print_module_vector(r);
@@ -1389,7 +1380,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   printf("nu:\n");
   print_coefficient_vector(nu);
 #endif
-#if 0
+#ifdef LONG_DEBUG
   printf("rho: ");
   print_bytes(32, rho);
   printf("\n");
@@ -1528,7 +1519,7 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
   }
   *m_len = 32;
 
-#if 1
+#ifdef DEBUG
   printf("\n\nDecrypt\n\n");
   printf("s_ntt:\n");
   print_module_vector(s_ntt);
@@ -1540,7 +1531,7 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
   printf("compressed w:\n");
   print_coefficient_vector(compressed_w);
 #endif
-#if 0
+#ifdef LONG_DEBUG
   print_coefficient_vector(compressed_w);
   print_coefficient_vector(nu);
   printf("\n");
