@@ -974,7 +974,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   module_vector t_ntt(p.q_, p.n_, p.k_);                // ntt domain public key (As+e)
   
   module_vector t(p.q_, p.n_, p.k_);
-  module_vector r_ntt(p.q_, p.n_, p.k_);
+  module_vector tmp1(p.q_, p.n_, p.k_);
 
   int N = 0;
   byte* rho = parameters;
@@ -1051,7 +1051,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
 
   // Generate public key
   // t^ := A^(s^)+e^
-  if (!make_module_vector_zero(&r_ntt)) {
+  if (!make_module_vector_zero(&tmp1)) {
     return false;
   }
   if (!make_module_vector_zero(&t_ntt)) {
@@ -1059,10 +1059,10 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   }
 
   // Calculate t_ntt = A_ntt(s_ntt)+e_ntt
-  if (!ntt_module_apply_array(g, A_ntt, s_ntt, &r_ntt)) {
+  if (!ntt_module_apply_array(g, A_ntt, s_ntt, &tmp1)) {
     return false;
   }
-  if (!module_vector_add(r_ntt, e_ntt, &t_ntt)) {
+  if (!module_vector_add(tmp1, e_ntt, &t_ntt)) {
     printf("kyber_keygen: module_vector_add failed\n");
     return false;
   }
@@ -1092,32 +1092,41 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
 
 #if 1
   printf("\n\nKeygen\n\n");
-  printf("d: ");
-  print_bytes(32, d);
-  printf("rho || sigma: ");
-  print_bytes(64, parameters);
-  printf("rho: ");
-  print_bytes(32, parameters);
-  printf("\n");
-  printf("t_ntt (public key):");
-  print_module_vector(t_ntt);
-  printf("A_ntt:\n");
-  print_module_array(A_ntt);
-  printf("e (noise):\n");
-  print_module_vector(e);
-  printf("s (secret polynomial): \n");
-  print_module_vector(s);
+  // printf("d: ");
+  // print_bytes(32, d);
+  // printf("rho || sigma: ");
+  // print_bytes(64, parameters);
+  // printf("rho: ");
+  // print_bytes(32, parameters);
+  // printf("\n");
+  // printf("A_ntt:\n");
+  // print_module_array(A_ntt);
+  // printf("e (noise):\n");
+  // print_module_vector(e);
+  // printf("s (secret polynomial): \n");
+  // print_module_vector(s);
   printf("s_ntt:\n");
   print_module_vector(s_ntt);
-  printf("r_ntt:\n");
-  print_module_vector(r_ntt);
+  printf("A_ntt(s_ntt):\n");
+  print_module_vector(tmp1);
+  printf("t_ntt (public key):");
+  print_module_vector(t_ntt);
   printf("\n");
+
+#if 0
+  module_vector r_ntt(p.q_, p.n_, p.k_);
+  for (int i = 0; i < p.k_; i++) {
+    for (int j = 0; j < p.n_; j++) {
+      r_ntt.c_[i]->c_[j] = (s_ntt.c_[i]->c_[j] + i + j) % p.q_;
+    }
+  }
   extern bool special_test_2(kyber_parameters& p, int g, module_array& A_ntt,
         module_vector& s_ntt, module_vector& r_ntt);
   if (!special_test_2(p, g, A_ntt, s_ntt, r_ntt)) {
     printf("********special_test_2 failed\n");
     return false;
   }
+#endif
 
 #endif
   return true;
@@ -1343,6 +1352,10 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     return false;
   }
 
+printf("t_ntt:\n");
+print_module_vector(t_ntt);
+printf("r_ntt:\n");
+print_module_vector(r_ntt);
 printf("t_ntt dot r_ntt:\n");
 print_coefficient_vector(nu_ntt);
 printf("t dot r:\n");
@@ -1376,43 +1389,44 @@ print_coefficient_vector(nu);
 
 #if 1
   printf("\nEncrypt\n\n");
-  printf("rho: ");
-  print_bytes(32, rho);
-  printf("\n");
-  printf("t_ntt:\n");
-  print_module_vector(t_ntt);
-  printf("A_ntt:\n");
-  print_module_array(A_ntt);
+  //printf("rho: ");
+  //print_bytes(32, rho);
+  //printf("\n");
+  //printf("t_ntt:\n");
+  //print_module_vector(t_ntt);
+  //printf("A_ntt:\n");
+  //print_module_array(A_ntt);
   printf("r:\n");
   print_module_vector(r);
   printf("r_ntt:\n");
   print_module_vector(r_ntt);
-  printf("e1:\n");
-  print_module_vector(e1);
-  printf("e2:\n");
-  print_coefficient_vector(e2);
-  printf("\n");
+  //printf("e1:\n");
+  //print_module_vector(e1);
+  //printf("e2:\n");
+  //print_coefficient_vector(e2);
+  //printf("\n");
   printf("u:\n");
   print_module_vector(u);
-  printf("m: ");
-  print_bytes(m_len, m);
-  printf("\n");
-  printf("mu:\n");
-  print_coefficient_vector(mu);
-  printf("\n");
-  printf("nu:\n");
-  print_coefficient_vector(nu);
-  printf("\n");
-  printf("compressed nu:\n");
-  print_coefficient_vector(compressed_nu);
-  printf("\n");
-  printf("c1 (%d):\n", c1_b_len);
-  print_bytes(c1_b_len, b_c1);
-  printf("\n");
-  printf("c2 (%d):\n", c2_b_len);
-  print_bytes(c2_b_len, b_c2);
-  printf("\n");
+  //printf("m: ");
+  //print_bytes(m_len, m);
+  //printf("\n");
+  //printf("mu:\n");
+  //print_coefficient_vector(mu);
+  //printf("\n");
+  //printf("nu:\n");
+  //print_coefficient_vector(nu);
+  //printf("\n");
+  //printf("compressed nu:\n");
+  //print_coefficient_vector(compressed_nu);
+  //printf("\n");
+  //printf("c1 (%d):\n", c1_b_len);
+  //print_bytes(c1_b_len, b_c1);
+  //printf("\n");
+  //printf("c2 (%d):\n", c2_b_len);
+  //print_bytes(c2_b_len, b_c2);
+  //printf("\n");
 
+#if 0
   extern bool special_test_1(kyber_parameters& p, coefficient_vector& mu,
                   coefficient_vector& nu,
                   int len_m, byte* m, int len_c2, byte*c2);
@@ -1420,6 +1434,7 @@ print_coefficient_vector(nu);
     printf("****special_test_1 failed\n");
     return false;
   }
+#endif
 #endif
   return true;
 }
@@ -1475,10 +1490,13 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
 
   // Recover s_ntt from dk
   module_vector s_ntt(p.q_, p.n_, p.k_);
+  int len_vec = (12 * p.n_) / NBITSINBYTE;
+  byte* pp_vec = dk;
   for (int i = 0; i < p.k_; i++) {
-    if (!byte_decode_to_vector(12, p.n_, dk_len, dk, s_ntt.c_[i]->c_)) {
+    if (!byte_decode_to_vector(12, p.n_, len_vec, pp_vec, s_ntt.c_[i]->c_)) {
       return false;
     }
+    pp_vec += len_vec;
   }
 
   module_vector u_ntt(p.q_, p.n_, p.k_);
@@ -1504,6 +1522,10 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
     return false;
   }
 
+printf("s_ntt:\n");
+print_module_vector(s_ntt);
+printf("u_ntt:\n");
+print_module_vector(u_ntt);
 printf("s_ntt dot u_ntt:\n");
 print_coefficient_vector(w_ntt);
 printf("s dot u:\n");
@@ -1529,20 +1551,20 @@ print_coefficient_vector(w);
   *m_len = 32;
 
 #if 1
-  printf("\n\nDecrypt\n\n");
+  //printf("\n\nDecrypt\n\n");
   printf("s_ntt:\n");
   print_module_vector(s_ntt);
   printf("u:\n");
   print_module_vector(u);
   printf("nu:\n");
-  print_coefficient_vector(nu);
-  printf("\n");
-  printf("w:\n");
-  print_coefficient_vector(w);
-  printf("\n");
-  printf("compressed w:\n");
-  print_coefficient_vector(compressed_w);
-  printf("\n");
+  //print_coefficient_vector(nu);
+  //printf("\n");
+  //printf("w:\n");
+  //print_coefficient_vector(w);
+  //printf("\n");
+  //printf("compressed w:\n");
+  //print_coefficient_vector(compressed_w);
+  //printf("\n");
 #endif
   return true;
 }
@@ -1745,6 +1767,13 @@ bool special_test_2(kyber_parameters& p, int g, module_array& A_ntt,
       module_vector& s_ntt, module_vector& r_ntt) {
 
 printf("special_test_2\n");
+printf("s_ntt:\n");
+print_module_vector(s_ntt);
+printf("r_ntt:\n");
+print_module_vector(r_ntt);
+printf("\n");
+
+
 // Compare s_ntt dot (A_ntt^T r_ntt) and r_ntt dot (A_ntt s_ntt)
 module_vector s1(p.q_, p.n_, p.k_);
 module_vector s2(p.q_, p.n_, p.k_);
