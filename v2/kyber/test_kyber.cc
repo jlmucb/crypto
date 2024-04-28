@@ -91,7 +91,7 @@ bool test_kyber1() {
     return false;
   }
   if (FLAGS_print_all) {
-    printf("recovered m: \n");
+    printf("recovered m: ");
     print_bytes(recovered_m_len, recovered_m);
   }
 return true;
