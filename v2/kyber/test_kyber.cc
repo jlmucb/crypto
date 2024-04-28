@@ -98,37 +98,72 @@ bool test_kyber1() {
     printf("message and recovered message dont match\n");
     return false;
   }
-return true;
 
   int kem_ek_len = 384 * p.k_ + 32;
   byte kem_ek[kem_ek_len];
   memset(kem_ek, 0, kem_ek_len);
   int kem_dk_len = 768 * p.k_ + 96;
+
   byte kem_dk[kem_dk_len];
   memset(kem_dk, 0, kem_dk_len);
   if (!kyber_kem_keygen(g, p, &kem_ek_len, kem_ek, &kem_dk_len, kem_dk)) {
     printf("Could not init kem_keygen\n");
     return false;
   }
+
   int kem_c_len = 32 * (p.du_ * p.k_ + p.dv_);
   byte kem_c[kem_dk_len];
   memset(kem_c, 0, kem_c_len);
+
   int kem_k_len = 32;
   byte kem_k[kem_k_len];
   memset(kem_k, 0, kem_k_len);
+
+  if (FLAGS_print_all) {
+     printf("\n\nken_keygen\n\n");
+     printf("kem_ek (%d):\n", kem_ek_len);
+     print_bytes(kem_ek_len, kem_ek);
+     printf("\n");
+     printf("kem_dk (%d):\n", kem_dk_len);
+     print_bytes(kem_dk_len, kem_dk);
+     printf("\n");
+  }
+
   if (!kyber_kem_encaps(g, p, kem_ek_len, kem_ek, &kem_k_len,
                           kem_k, &kem_c_len, kem_c)) {
     printf("Could not init kem_encaps\n");
     return false;
   }
+
+  if (FLAGS_print_all) {
+     printf("\n\nken_encaps\n\n");
+     printf("k (%d):\n", kem_k_len);
+     print_bytes(kem_ek_len, kem_ek);
+     printf("\n");
+     printf("c (%d):\n", kem_c_len);
+     print_bytes(kem_c_len, kem_c);
+     printf("\n");
+  }
+
   int recovered_k_len = 32;
   byte recovered_k[recovered_k_len];
   memset(recovered_k, 0, recovered_k_len);
+
   if (!kyber_kem_decaps(g, p, kem_dk_len, kem_dk, kem_c_len, kem_c,
                            &recovered_k_len, recovered_k)) {
     printf("Could not init kem_decaps\n");
     return false;
   }
+
+  if (FLAGS_print_all) {
+     printf("\n\nkem_decaps\n\n");
+     printf("key           (%d): ", kem_k_len);
+     print_bytes(kem_k_len, kem_k);
+     printf("recovered key (%d): ", recovered_k_len);
+     print_bytes(recovered_k_len, recovered_k);
+  }
+  return true;
+
   if (memcmp(kem_k, recovered_k, recovered_k_len) != 0) {
     printf("Generated and encapsulated keys don't match\n");
     return false;
