@@ -1064,6 +1064,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     int b_prf_len = 64 * p.eta1_;
     byte b_prf[b_prf_len];
     memset(b_prf, 0, b_prf_len);
+
     if (!prf(p.eta1_, 32, sigma, sizeof(int), (byte*)&N,
           NBITSINBYTE * b_prf_len, b_prf)) {
        printf("kyber_keygen: prf (2) failed\n");
@@ -1260,7 +1261,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
 
   // Generate noise element (e1)
   for (int i = 0; i < e1.dim_; i++) {
-    int b_prf_len = 64 * p.eta1_;
+    int b_prf_len = 64 * p.eta2_;
     byte b_prf[b_prf_len];
     memset(b_prf, 0, b_prf_len);
 
@@ -1336,7 +1337,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
 
   // compress and encode u (c1)
   module_vector compressed_u(p.q_, p.n_, p.k_);
-  int c1_b_len = (p.du_ * 256 * p.k_) / NBITSINBYTE;
+  int c1_b_len = (p.du_ * p.n_ * p.k_) / NBITSINBYTE;
   byte b_c1[c1_b_len];
   byte* pp = b_c1;
   for (int i = 0; i < p.k_; i++) {
@@ -1346,7 +1347,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     if (!byte_encode_from_vector(p.du_, p.n_, compressed_u.c_[i]->c_, pp)) {
         return false;
     }
-    int len = (p.du_ * 256) / NBITSINBYTE;
+    int len = (p.du_ * p.n_) / NBITSINBYTE;
     pp += len;
   }
 
@@ -1548,7 +1549,7 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
   for (int j = 0; j < p.n_; j++) {
     compressed_w.c_[j] = compress(p.q_, w.c_[j], 1);
   }
-  if (!byte_encode_from_vector(1, 256, compressed_w.c_, m)) {
+  if (!byte_encode_from_vector(1, p.n_, compressed_w.c_, m)) {
     return false;
   }
   *m_len = 32;
