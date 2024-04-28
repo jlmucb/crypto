@@ -1112,7 +1112,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     }
     pek += 384;
   }
-  memcpy(pek, parameters, 32);
+  memcpy(pek, rho, 32);
   *ek_len = t_ntt.dim_ * 384 + 32;
 
   // dk := byte_encode(12) (s^)
@@ -1545,7 +1545,7 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
   }
 
   module_vector u_ntt(p.q_, p.n_, p.k_);
-  coefficient_vector tw(p.q_, p.n_);
+  coefficient_vector w_ntt(p.q_, p.n_);
   coefficient_vector w(p.q_, p.n_);
   coefficient_vector compressed_w(p.q_, p.n_);
 
@@ -1558,11 +1558,11 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
   }
 
   // Compute w = nu - ntt_inv(s_ntt dot ntt(u))
-  if (!ntt_module_vector_dot_product(s_ntt, u_ntt, &tw)) {
+  if (!ntt_module_vector_dot_product(s_ntt, u_ntt, &w_ntt)) {
     printf("kyber_decrypt: ntt_module_vector_dot_product failed\n");
     return false;
   }
-  if (!ntt_inv(g, tw, &w)) {
+  if (!ntt_inv(g, w_ntt, &w)) {
     printf("kyber_decrypt: ntt_inv failed\n");
     return false;
   }
