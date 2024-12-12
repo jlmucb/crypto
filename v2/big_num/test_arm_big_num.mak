@@ -28,7 +28,7 @@ ifndef LOCAL_LIB
 LOCAL_LIB=/usr/local/lib
 endif
 ifndef TARGET_MACHINE_TYPE
-TARGET_MACHINE_TYPE= arm64
+TARGET_MACHINE_TYPE=ARM64
 endif
 
 S= $(SRC_DIR)/big_num

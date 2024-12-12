@@ -29,14 +29,20 @@ bool test_rsa1(int num_bits) {
   int byte_size = num_bits / NBITSINBYTE;
   rsa r;
 
-  if (!r.generate_rsa(num_bits))
+  if (!r.generate_rsa(num_bits)) {
+    printf("generate fails\n");
     return false;
-  if (!r.make_rsa_key("rsa-tst-key1", "testing", 86400.0 * 365.0))
+  }
+  if (!r.make_rsa_key("rsa-tst-key1", "testing", 86400.0 * 365.0)) {
+    printf("make_rsa_key fails\n");
     return false;
+  }
 
   string ser;
-  if (!r.get_serialized_key_message(&ser))
+  if (!r.get_serialized_key_message(&ser)) {
+    printf("serialize fails\n");
     return false;
+  }
 
   key_message* km = r.get_key();
   if (FLAGS_print_all) {
@@ -56,10 +62,14 @@ bool test_rsa1(int num_bits) {
   int size_out1 = byte_size;
   int size_out2 = byte_size;
 
-  if(!r.encrypt(64, msg_in, &size_out1, msg_out, 0))
+  if(!r.encrypt(64, msg_in, &size_out1, msg_out, 0)){
+    printf("encrypt fails\n");
     return false;
-  if (!r.decrypt(size_out1, msg_out, &size_out2, msg_recovered, 0))
+  }
+  if (!r.decrypt(size_out1, msg_out, &size_out2, msg_recovered, 0)) {
+    printf("decrypt fails\n");
     return false;
+  }
 
   if (FLAGS_print_all) {
     printf("\n");

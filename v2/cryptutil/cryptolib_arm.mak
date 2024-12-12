@@ -9,7 +9,7 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License
-#    File: cryptolib.mak
+#    File: cryptolib_arm.mak
 
 
 SRC_DIR=$(HOME)/src/github.com/jlmucb/crypto/v2
@@ -45,8 +45,8 @@ S_MISC=$(SRC_DIR)/misc
 O= $(OBJ_DIR)/cryptolib
 INCLUDE= -I$(SRC_DIR)/include -I$(S_SUPPORT) -I/usr/local/include
 
-CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
-CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -D ARM64
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -D ARM64
 
 CC=g++
 LINK=g++

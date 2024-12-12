@@ -9,7 +9,7 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License
-#    File: cryptutil.mak
+#    File: cryptutil_arm.mak
 
 SRC_DIR=$(HOME)/src/github.com/jlmucb/crypto/v2
 ifndef SRC_DIR
@@ -28,7 +28,7 @@ ifndef LOCAL_LIB
 LOCAL_LIB=/usr/local/lib
 endif
 ifndef TARGET_MACHINE_TYPE
-TARGET_MACHINE_TYPE= x64
+TARGET_MACHINE_TYPE=ARM64
 endif
 
 S= $(SRC_DIR)/cryptutil
@@ -44,8 +44,8 @@ S_MISC=$(SRC_DIR)/misc
 O= $(OBJ_DIR)/cryptutil
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(S_SUPPORT) -I/usr/local/include
 
-CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
-CFLAGS1=$(INCLUDE) -O3 -g -Wall -std=c++11
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -D ARM64
+CFLAGS1=$(INCLUDE) -O3 -g -Wall -std=c++11 -D ARM64
 
 CC=g++
 LINK=g++

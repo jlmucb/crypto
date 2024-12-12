@@ -1414,10 +1414,10 @@ int main(int an, char** av) {
       h.finalize();
       h.get_digest(hash_size_bytes, hash);
     } else if (strcmp("sha3", FLAGS_algorithm.c_str()) == 0) {
-      sha3 h(512);
+      sha3 h;
  
-      hash_size_bytes = h.DIGESTBYTESIZE; 
-      h.init();
+      hash_size_bytes = 32;
+      h.init(512, 256);
       h.add_to_hash(size_in, in);
       h.finalize();
       h.get_digest(hash_size_bytes, hash);

@@ -596,6 +596,7 @@ int main(int an, char** av) {
     printf("aes ni not present\n");
 #endif
 
+  printf("Starting\n");
   if (!init_crypto()) {
     printf("init_crypto failed\n");
     return 1;
