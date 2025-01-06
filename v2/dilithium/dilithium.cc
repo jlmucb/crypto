@@ -435,7 +435,7 @@ int module_array::index(int r, int c) {
 bool rand_coefficient(int top, coefficient_vector& v) {
   for (int k = 0; k < (int)v.c_.size(); k++) {
     int s = 0;
-    int m = crypto_get_random_bytes(3, (byte*)&s);
+    int m = crypto_get_random_bytes(3, (::byte*)&s);
     s %= top;
     v.c_[k] = s;
   }
@@ -473,7 +473,7 @@ bool module_vector_equal(module_vector& in1, module_vector& in2) {
   return true;
 }
 
-bool fill_module_vector_hash(module_vector& v, int size_coeff, int* sz_buf, byte* buf) {
+bool fill_module_vector_hash(module_vector& v, int size_coeff, int* sz_buf, ::byte* buf) {
 
   // todo: compress coefficients
   if ((v.dim_ * size_coeff * (int)sizeof(int)) > *sz_buf)
@@ -481,7 +481,7 @@ bool fill_module_vector_hash(module_vector& v, int size_coeff, int* sz_buf, byte
   int sz = 0;
   for (int i = 0; i < v.dim_; i++) {
     for (int j = 0; j < size_coeff; j++) {
-      memcpy(&buf[i * size_coeff + j], (byte*)&(v.c_[i]->c_[j]), sizeof(int));
+      memcpy(&buf[i * size_coeff + j], (::byte*)&(v.c_[i]->c_[j]), sizeof(int));
       sz += (int)sizeof(int);
     }
   }
@@ -503,13 +503,13 @@ bool module_vector_mult_by_scalar(coefficient_vector& in1, module_vector& in2, m
 int rand_int_in_range(int i) {
   // pick # between 0 and i, inclusive
   int s = 0;
-  int m = crypto_get_random_bytes(3, (byte*)&s);
+  int m = crypto_get_random_bytes(3, (::byte*)&s);
   s %= i;
   return s;
 }
 
-bool c_from_h(int size_in, byte* H, int* c) {
-  byte s[60];
+bool c_from_h(int size_in, ::byte* H, int* c) {
+  ::byte s[60];
 
   for (int i = 0; i < 60; i++) {
       int k = i / NBITSINBYTE;
@@ -563,7 +563,7 @@ bool dilithium_keygen(dilithium_parameters& params, module_array* A,
     for (int c = 0; c < params.l_; c++) {
       for (int k = 0; k < params.n_; k++) {
             int s = 0;
-            int l = crypto_get_random_bytes(3, (byte*)&s);
+            int l = crypto_get_random_bytes(3, (::byte*)&s);
             s %= params.q_;
             A->c_[A->index(r, c)]->c_[k] = s;
       }
@@ -605,7 +605,7 @@ bool dilithium_keygen(dilithium_parameters& params, module_array* A,
 //    if (||z||_inf > g1-beta or lowbits(Ay-cs2, 2g_1)>= g1-beta then z := no
 // }
 bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vector& t,
-                module_vector& s1, module_vector& s2, int m_len, byte* M,
+                module_vector& s1, module_vector& s2, int m_len, ::byte* M,
                 module_vector* z, int len_cc, int* cc) {
 
   // y: dim l_
@@ -628,7 +628,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
 
   bool done = false;
   int w_h_len = params.k_ * params.n_ * sizeof(int);
-  byte w_h[w_h_len];
+  ::byte w_h[w_h_len];
   memset(w_h, 0, w_h_len);
   sha3 H;
 
@@ -646,7 +646,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
     for (int i = 0; i < (int)params.l_; i++) {
       for (int j = 0; j < (int)params.n_; j++) {
         unsigned s = 0;
-        int l = crypto_get_random_bytes(3, (byte*)&s);
+        int l = crypto_get_random_bytes(3, (::byte*)&s);
         s %= params.gamma_1_;
         y.c_[i]->c_[j] = (int) s;
       }
@@ -689,7 +689,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
     H.shake_finalize();
 
     int t_len = 128;
-    byte t_c[t_len];
+    ::byte t_c[t_len];
     memset(t_c, 0, t_len);
 
     if (!H.get_digest(H.num_out_bytes_, t_c)) {
@@ -697,7 +697,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
       return false;
     }
 
-    memset((byte*)cc, 0, 256 * sizeof(int));
+    memset((::byte*)cc, 0, 256 * sizeof(int));
     if (!c_from_h(t_len, t_c, cc)) {
       return false;
     }
@@ -805,7 +805,7 @@ bool dilithium_sign(dilithium_parameters& params,  module_array& A,  module_vect
 // w_1 := highbits(Az-ct, 2g2)
 // return ||z||_inf < g1-beta and c == H(M||w1)
 bool dilithium_verify(dilithium_parameters& params,  module_array& A,
-        module_vector& t, int m_len, byte* M,
+        module_vector& t, int m_len, ::byte* M,
         module_vector& z, int len_cc, int* cc) {
 
   if (len_cc != 256) {
@@ -818,14 +818,14 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A,
   // tv2 = tv1-tu, dim k
   // w1 = high_bits(tv2), dim k
   int w_h_len = params.k_ * params.n_ * (int)sizeof(int);
-  byte w_h[w_h_len];
+  ::byte w_h[w_h_len];
   memset(w_h, 0, w_h_len);
   int w_len = sizeof(int) * params.n_;
-  byte added_w[w_len];
+  ::byte added_w[w_len];
   sha3 H;
 
   int t_len = 128;
-  byte t_c[t_len];
+  ::byte t_c[t_len];
   memset(t_c, 0, t_len);
 
   module_vector tv1(params.q_, params.n_, params.k_);
@@ -887,7 +887,7 @@ bool dilithium_verify(dilithium_parameters& params,  module_array& A,
 #endif
 
   int v_cc[256];
-  memset((byte*)v_cc, 0, 256 * sizeof(int));
+  memset((::byte*)v_cc, 0, 256 * sizeof(int));
   if (!c_from_h(t_len, t_c, v_cc)) {
     return false;
   }
