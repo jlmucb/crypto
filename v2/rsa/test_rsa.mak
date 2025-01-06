@@ -30,6 +30,7 @@ endif
 ifndef TARGET_MACHINE_TYPE
 TARGET_MACHINE_TYPE= x64
 endif
+NEWPROTOBUF=1
 
 S= $(SRC_DIR)/rsa
 O= $(OBJ_DIR)/rsa
@@ -37,13 +38,25 @@ S_SUPPORT=$(SRC_DIR)/crypto_support
 S_BIG_NUM=$(SRC_DIR)/big_num
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(S_SUPPORT) -I/usr/local/include
 
+ifndef NEWPROTOBUF
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable
 CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable
+else
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++17 -Wno-unused-variable
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++17 -Wno-unused-variable
+endif
+
 CC=g++
 LINK=g++
 PROTO=protoc
 AR=ar
+
+ifndef NEWPROTOBUF
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
+else
+export LD_LIBRARY_PATH=/usr/local/lib
+LDFLAGS= -L/usr/local/lib `pkg-config --cflags --libs protobuf` -lgtest -lgflags -lpthread
+endif
 
 dobj=	$(O)/test_rsa.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o $(O)/rsa.o \
 	$(O)/globals.o $(O)/big_num.o $(O)/intel_digit_arith.o $(O)/basic_arith.o $(O)/number_theory.o

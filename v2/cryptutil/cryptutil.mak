@@ -30,6 +30,7 @@ endif
 ifndef TARGET_MACHINE_TYPE
 TARGET_MACHINE_TYPE= x64
 endif
+NEWPROTOBUF=1
 
 S= $(SRC_DIR)/cryptutil
 S_SUPPORT=$(SRC_DIR)/crypto_support
@@ -44,12 +45,23 @@ S_MISC=$(SRC_DIR)/misc
 O= $(OBJ_DIR)/cryptutil
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(S_SUPPORT) -I/usr/local/include
 
+ifndef NEWPROTOBUF
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
 CFLAGS1=$(INCLUDE) -O3 -g -Wall -std=c++11
+else
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++17
+CFLAGS1=$(INCLUDE) -O3 -g -Wall -std=c++17
+endif
 
 CC=g++
 LINK=g++
+
+ifndef NEWPROTOBUF
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
+else
+export LD_LIBRARY_PATH=/usr/local/lib
+LDFLAGS= -L/usr/local/lib `pkg-config --cflags --libs protobuf` -lgtest -lgflags -lpthread
+endif
 
 CRYPTOLIB= $(OBJ_DIR)/jlmcryptolib.a
 

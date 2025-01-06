@@ -32,16 +32,26 @@ endif
 ifndef TARGET_MACHINE_TYPE
 TARGET_MACHINE_TYPE= x64
 endif
+NEWPROTOBUF=1
 
 O= $(OBJ_DIR)/cryptolib
 INCLUDE= -I$(SRC_DIR)/include -I/usr/local/include -I$(SRC_DIR)/crypto_support -I$(GOOGLE_INCLUDE) 
 
+ifndef NEWPROTOBUF
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
 CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
+else
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++17
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++17
+endif
 
 CC=g++
 LINK=g++
+
+ifndef NEWPROTOBUF
 LDFLAGS=  #$(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
+else
+endif
 
 dobj=	$(O)/big_num.o $(O)/basic_arith.o $(O)/number_theory.o \
 	$(O)/intel_digit_arith.o $(O)/globals.o $(O)/rc4.o \

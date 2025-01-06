@@ -30,6 +30,7 @@ endif
 ifndef TARGET_MACHINE_TYPE
 TARGET_MACHINE_TYPE= x64
 endif
+NEWPROTOBUF=1
 
 S= $(SRC_DIR)/encryption_scheme
 O= $(OBJ_DIR)/encryption_scheme
@@ -40,13 +41,25 @@ S_BIGNUM=$(SRC_DIR)/big_num
 
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(S_SUPPORT) -I/usr/local/include
 
+ifndef NEWPROTOBUF
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable
 CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable
+else
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++17 -Wno-unused-variable
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++17 -Wno-unused-variable
+endif
+
 CC=g++
 LINK=g++
 PROTO=protoc
 AR=ar
+
+ifndef NEWPROTOBUF
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
+else
+export LD_LIBRARY_PATH=/usr/local/lib
+LDFLAGS= -L/usr/local/lib `pkg-config --cflags --libs protobuf` -lgtest -lgflags -lpthread
+endif
 
 dobj=   $(O)/test_encryption_scheme.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o \
 	$(O)/symmetric_cipher.o $(O)/aes.o $(O)/twofish.o $(O)/hash.o $(O)/sha256.o \

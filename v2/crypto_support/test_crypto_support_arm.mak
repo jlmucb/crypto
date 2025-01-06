@@ -41,7 +41,7 @@ CC=g++
 LINK=g++
 PROTO=protoc
 AR=ar
-#export LD_LIBRARY_PATH=/usr/local/lib
+export LD_LIBRARY_PATH=/usr/local/lib
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=	$(O)/test_crypto_support.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o
