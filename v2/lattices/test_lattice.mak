@@ -36,14 +36,22 @@ O= $(OBJ_DIR)/lattices
 S_SUPPORT=$(SRC_DIR)/crypto_support
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(S_SUPPORT) -I/usr/local/include
 
-CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable
-CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable
+NEWPROTOBUF=1
+ifndef NEWPROTOBUF
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable -D X64
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable -D X64
+LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
+else
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++17 -Wno-unused-variable -D X64
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++17 -Wno-unused-variable -D X64
+export LD_LIBRARY_PATH=/usr/local/lib
+LDFLAGS= -L/usr/local/lib `pkg-config --cflags --libs protobuf` -lgtest -lgflags -lpthread
+endif
 
 CC=g++
 LINK=g++
 PROTO=protoc
 AR=ar
-LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=	$(O)/test_lattice.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o $(O)/lll.o \
 	$(O)/lwe.o $(O)/ntru.o

@@ -40,6 +40,7 @@ INCLUDE= -I$(SRC_DIR)/include -I/usr/local/include -I$(SRC_DIR)/crypto_support -
 ifndef NEWPROTOBUF
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
 CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
+LDFLAGS=  -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
 else
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++17
 CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++17
@@ -49,7 +50,6 @@ CC=g++
 LINK=g++
 
 ifndef NEWPROTOBUF
-LDFLAGS=  #$(LOCAL_LIB)/libprotobuf.a -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
 else
 endif
 

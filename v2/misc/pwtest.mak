@@ -41,10 +41,18 @@ CC=g++
 LINK=g++
 PROTO=protoc
 AR=ar
-export LD_LIBRARY_PATH=/usr/local/lib
-CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
-CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11
+
+NEWPROTOBUF=1
+ifndef NEWPROTOBUF
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable -D X64
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable -D X64
 LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
+else
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++17 -Wno-unused-variable -D X64
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++17 -Wno-unused-variable -D X64
+export LD_LIBRARY_PATH=/usr/local/lib
+LDFLAGS= -L/usr/local/lib `pkg-config --cflags --libs protobuf` -lgtest -lgflags -lpthread
+endif
 
 dobj=	$(O)/pwutil.o $(O)/pwutil.pb.o $(O)/tokenizer.o
 

@@ -30,34 +30,31 @@ endif
 ifndef TARGET_MACHINE_TYPE
 TARGET_MACHINE_TYPE= x64
 endif
-NEWPROTOBUF=on
+
+NEWPROTOBUF=1
+
+ifndef NEWPROTOBUF
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable -D X64
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable -D X64
+export LD_LIBRARY_PATH=/usr/local/lib
+LDFLAGS= -L/usr/local/lib -lprotobuf -lgtest -lgflags -lpthread
+else
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++17 -Wno-unused-variable -D X64
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++17 -Wno-unused-variable -D X64
+export LD_LIBRARY_PATH=/usr/local/lib
+LDFLAGS= -L/usr/local/lib `pkg-config --cflags --libs protobuf` -lgtest -lgflags -lpthread
+endif
 
 S= $(SRC_DIR)/crypto_support
 O= $(OBJ_DIR)/crypto_support
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include
-ifndef NEWPROTOBUF
-CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable -D X64
-CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable -D X64
-else
-CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++17 -Wno-unused-variable -D X64
-CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++17 -Wno-unused-variable -D X64
-endif
 
 CC=g++
 LINK=g++
 PROTO=protoc
 AR=ar
 
-ifdef NEWPROTOBUF
-export LD_LIBRARY_PATH=/usr/local/lib
-LDFLAGS= -L/usr/local/lib `pkg-config --cflags --libs protobuf` -lgtest -lgflags -lpthread
-else
-export LD_LIBRARY_PATH=/usr/local/lib
-LDFLAGS= -L/usr/local/lib -lprotobuf -lgtest -lgflags -lpthread
-endif
-
 dobj=	$(O)/test_crypto_support.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o
-
 
 all:	test_crypto_support.exe
 clean:

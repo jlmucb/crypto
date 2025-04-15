@@ -30,31 +30,27 @@ endif
 ifndef TARGET_MACHINE_TYPE
 TARGET_MACHINE_TYPE= x64
 endif
-NEWPROTOBUF=1
 
 S= $(SRC_DIR)/hash
 O= $(OBJ_DIR)/hash
 S_SUPPORT=$(SRC_DIR)/crypto_support
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(S_SUPPORT) -I/usr/local/include
 
+NEWPROTOBUF=1
 ifndef NEWPROTOBUF
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable
 CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable
+LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 else
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++17 -Wno-unused-variable
 CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++17 -Wno-unused-variable
+LDFLAGS= -L/usr/local/lib `pkg-config --cflags --libs protobuf` -lgtest -lgflags -lpthread
 endif
 
 CC=g++
 LINK=g++
 PROTO=protoc
 AR=ar
-
-ifndef NEWPROTOBUF
-LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
-else
-LDFLAGS= -L/usr/local/lib `pkg-config --cflags --libs protobuf` -lgtest -lgflags -lpthread
-endif
 
 dobj=	$(O)/test_hash.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/crypto_names.o $(O)/hash.o \
         $(O)/sha1.o $(O)/sha256.o $(O)/hmac_sha256.o $(O)/pkcs.o $(O)/pbkdf2.o $(O)/sha3.o

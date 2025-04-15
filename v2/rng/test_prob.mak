@@ -43,13 +43,23 @@ O= $(OBJ_DIR)/rng
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(S_SUPPORT) -I/usr/local/include
 S_SUPPORT=$(SRC_DIR)/crypto_support
 
+NEWPROTOBUF= 1
+ifndef NEWPROTOBUF
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable -D X64
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable -D X64
+export LD_LIBRARY_PATH=/usr/local/lib
+LDFLAGS= -L/usr/local/lib `pkg-config --cflags --libs protobuf` -lgtest -lgflags -lpthread
+else
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++17 -Wno-unused-variable -D X64
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++17 -Wno-unused-variable -D X64
+export LD_LIBRARY_PATH=/usr/local/lib
+LDFLAGS= -L/usr/local/lib -lprotobuf -lgtest -lgflags -lpthread
+endif
+
 CC=g++
 LINK=g++
-CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable -DX64
-CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable -DX64
 PROTO=protoc
 AR=ar
-LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj=	$(O)/test_prob.o $(O)/support.pb.o $(O)/crypto_support.o $(O)/probability_support.o $(O)/lz77.o
 

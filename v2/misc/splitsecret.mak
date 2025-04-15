@@ -35,13 +35,21 @@ S= $(SRC_DIR)/splitsecret
 O= $(OBJ_DIR)/splitsecret
 INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE) -I$(SRC_DIR)/keys
 
-CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11
-CFLAGS1=$(INCLUDE) -O3 -g -Wall -std=c++11
+NEWPROTOBUF=1
+ifndef NEWPROTOBUF
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable -D X64
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable -D X64
+LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
+else
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++17 -Wno-unused-variable -D X64
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++17 -Wno-unused-variable -D X64
+export LD_LIBRARY_PATH=/usr/local/lib
+LDFLAGS= -L/usr/local/lib `pkg-config --cflags --libs protobuf` -lgtest -lgflags -lpthread
+endif
 
 CC=g++
 LINK=g++
 export LD_LIBRARY_PATH=/usr/local/lib
-LDFLAGS= -lprotobuf -lgtest -lgflags -lpthread
 
 dobj_gf2_common_test=$(O)/gf2_common.o $(O)/gf2_common_test.o $(O)/splitsecret.pb.o
 dobj_splitsecret=$(O)/gf2_common.o $(O)/splitsecret.pb.o $(O)/splitsecret.o

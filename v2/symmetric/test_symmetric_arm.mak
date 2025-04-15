@@ -9,7 +9,7 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License
-#    File: test_symmetric.mak
+#    File: test_symmetric_arm.mak
 
 
 ifndef SRC_DIR
