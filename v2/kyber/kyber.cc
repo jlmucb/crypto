@@ -514,11 +514,11 @@ int module_inf_norm(module_vector& mv) {
   return max;
 }
 
-byte bit_reverse(byte b) {
-  byte r = 0;
+byte_t bit_reverse(byte_t b) {
+  byte_t r = 0;
 
   for (int i = 0; i < 8; i++) {
-    byte bb = b&0x1;
+    byte_t bb = b&0x1;
     r = (r<<1) | bb;
     b >>= 1;
   }
@@ -548,16 +548,16 @@ int exp_in_ntt(int q, int e, int base) {
   return r;
 }
 
-byte bit_in_byte_stream(int k, int l, byte* b) {
+byte_t bit_in_byte_stream(int k, int l, byte_t* b) {
   if ((k+7)/8 > l)
     return 0;
-  byte t = b[k/8];
+  byte_t t = b[k/8];
   return (t>>(k%8))&1;
 }
 
 // l is 256
 // b_len is 384
-bool sample_ntt(int q, int l, int b_len, byte* b, vector<int>& out) {
+bool sample_ntt(int q, int l, int b_len, byte_t* b, vector<int>& out) {
 
   int i = 0;
   int j = 0;
@@ -594,7 +594,7 @@ d2 %= q;
 
 // random input bytes are 64*eta bytes long
 // output is always 256 ints
-bool sample_poly_cbd(int q, int eta, int b_len, byte* b,
+bool sample_poly_cbd(int q, int eta, int b_len, byte_t* b,
         vector<int>& out) {
 
   int l = 64 * eta;
@@ -626,7 +626,7 @@ bool ntt(int g, coefficient_vector& in, coefficient_vector* out) {
 
   for (int l = 128; l >= 2; l /= 2) {
     for (int s = 0; s < in.len_; s+= 2 * l) {
-      byte bb = bit_reverse((byte)k);
+      byte_t bb = bit_reverse((byte_t)k);
       bb >>= 1;
       int z = exp_in_ntt(in.q_, (int) bb, g);
       k++;
@@ -651,7 +651,7 @@ bool ntt_inv(int g, coefficient_vector& in, coefficient_vector* out) {
 
   for (int l = 2; l <= 128; l *= 2) {
     for (int s = 0; s < 256; s += 2 * l) {
-      byte bb = bit_reverse((byte)k);
+      byte_t bb = bit_reverse((byte_t)k);
       bb >>= 1;
       int z = exp_in_ntt(in.q_, (int)bb, g);
       k--;
@@ -690,7 +690,7 @@ bool fill_random_coefficient_array(coefficient_array* ma) {
   for (int r = 0; r < ma->nr_; r++) {
     for (int c = 0; c < ma->nc_; c++) {
       int s = 0;
-      int l = crypto_get_random_bytes(3, (byte*)&s);
+      int l = crypto_get_random_bytes(3, (byte_t*)&s);
       s %= ma->q_;
       ma->a_[ma->index(r, c)] = s;
     }
@@ -701,7 +701,7 @@ bool fill_random_coefficient_array(coefficient_array* ma) {
 bool rand_coefficient(int top, coefficient_vector& v) {
   for (int k = 0; k < (int)v.c_.size(); k++) {
     int s = 0;
-    int m = crypto_get_random_bytes(3, (byte*)&s);
+    int m = crypto_get_random_bytes(3, (byte_t*)&s);
     s %= top;
     v.c_[k] = s;
   }
@@ -713,7 +713,7 @@ bool fill_random_module_array(module_array* ma) {
     for (int c = 0; c < ma->nc_; c++) {
       for (int j = 0; j < ma->n_; c++) {
         int s = 0;
-        int l = crypto_get_random_bytes(3, (byte*)&s);
+        int l = crypto_get_random_bytes(3, (byte_t*)&s);
         s %= ma->q_;
         ma->c_[ma->index(r, c)]->c_[j] = s;
       }
@@ -726,7 +726,7 @@ bool rand_module_coefficients(int top, module_vector& v) {
   for (int k = 0; k < (int)v.dim_; k++) {
     for (int j = 0; j < v.n_; j++) {
       int s = 0;
-      int m = crypto_get_random_bytes(3, (byte*)&s);
+      int m = crypto_get_random_bytes(3, (byte_t*)&s);
       s %= top;
       v.c_[k]->c_[j] = s;
     }
@@ -746,7 +746,7 @@ bool rand_module_coefficients(int top, module_vector& v) {
 // XOF(ρ, i, j) := SHAKE128(ρ||i|| j)
 
 // G(s) := SHA3-512(s)
-bool G(int in_len, byte* in, int bit_out_len, byte* out) {
+bool G(int in_len, byte_t* in, int bit_out_len, byte_t* out) {
   sha3 h;
 
   if (!h.init(512, bit_out_len)) {
@@ -761,7 +761,7 @@ bool G(int in_len, byte* in, int bit_out_len, byte* out) {
 }
 
 // PRF(eta)(s, b) := SHAKE256(s||b, 64 · eta),
-bool prf(int eta, int in1_len, byte* in1, int in2_len, byte* in2, int bit_out_len, byte* out) {
+bool prf(int eta, int in1_len, byte_t* in1, int in2_len, byte_t* in2, int bit_out_len, byte_t* out) {
   sha3 h;
 
   if (!h.init(512, bit_out_len)) {
@@ -779,7 +779,7 @@ bool prf(int eta, int in1_len, byte* in1, int in2_len, byte* in2, int bit_out_le
 }
 
 // XOF(ρ, i, j) := SHAKE128(ρ||i|| j)
-bool xof(int in1_len, byte* in1, int i, int j, int bit_out_len, byte* out) {
+bool xof(int in1_len, byte_t* in1, int i, int j, int bit_out_len, byte_t* out) {
   sha3 h;
 
   if (!h.init(256)) {
@@ -787,8 +787,8 @@ bool xof(int in1_len, byte* in1, int i, int j, int bit_out_len, byte* out) {
     return false;
   }
   h.add_to_hash(in1_len, in1);
-  h.add_to_hash(sizeof(int), (byte*)&i);
-  h.add_to_hash(sizeof(int), (byte*)&j);
+  h.add_to_hash(sizeof(int), (byte_t*)&i);
+  h.add_to_hash(sizeof(int), (byte_t*)&j);
   h.shake_squeeze_finalize();
   
   int bytes_to_go = (bit_out_len + NBITSINBYTE - 1) / NBITSINBYTE;
@@ -806,24 +806,24 @@ bool xof(int in1_len, byte* in1, int i, int j, int bit_out_len, byte* out) {
 }
 
 // least significant bit first
-byte bit_from_ints(int bits_in_int, int bit_numb, int* pi) {
+byte_t bit_from_ints(int bits_in_int, int bit_numb, int* pi) {
   int i = bit_numb / bits_in_int;
   int j =  bit_numb - (i * bits_in_int);
   int t = pi[i]>>j;
-  byte b = t & 1;
+  byte_t b = t & 1;
   return b;
 }
 
 // least significant bit first
-byte bit_from_int_vector(int bits_in_int, int bit_numb, vector<int>& v) {
+byte_t bit_from_int_vector(int bits_in_int, int bit_numb, vector<int>& v) {
   int i = bit_numb / bits_in_int;
   int j =  bit_numb - (i * bits_in_int);
   int t = v[i]>>j;
-  byte b = t & 1;
+  byte_t b = t & 1;
   return b;
 }
 
-byte bit_from_bytes(int bit_numb, byte* buf) {
+byte_t bit_from_bytes(int bit_numb, byte_t* buf) {
   int i = bit_numb / NBITSINBYTE;
   int j =  bit_numb - i * NBITSINBYTE;
   int b = buf[i]>>j;
@@ -831,10 +831,10 @@ byte bit_from_bytes(int bit_numb, byte* buf) {
 }
 
 // encode n d-bit integers into byte array
-bool byte_encode(int d, int n, int* pi, byte* out) {
+bool byte_encode(int d, int n, int* pi, byte_t* out) {
   int num_bits = d * n;
-  byte t = 0;
-  byte r = 0;
+  byte_t t = 0;
+  byte_t r = 0;
   int k = 0;  // bit position in output byte
   int m = 0;  // current output byte number
   memset(out, 0, ((d * n) + NBITSINBYTE - 1) / NBITSINBYTE);
@@ -853,13 +853,13 @@ bool byte_encode(int d, int n, int* pi, byte* out) {
 }
 
 // decode byte array into n d-bit integers
-bool byte_decode(int d, int n, int in_len, byte* in, int* pi) {
+bool byte_decode(int d, int n, int in_len, byte_t* in, int* pi) {
   int num_bits = d * n;
   int t = 0;
   int r = 0;
   int k = 0;  // bit position in int
   int m = 0;  // current output int
-  memset((byte*)pi, 0, n * sizeof(int));
+  memset((byte_t*)pi, 0, n * sizeof(int));
   for (int i = 0; i < num_bits; i++) {
     t = (int)bit_from_bytes(i, in);
     r |= t << k;
@@ -875,10 +875,10 @@ bool byte_decode(int d, int n, int in_len, byte* in, int* pi) {
 }
 
 // encode n d-bit integers into byte array
-bool byte_encode_from_vector(int d, int n, vector<int>& v, byte* out) {
+bool byte_encode_from_vector(int d, int n, vector<int>& v, byte_t* out) {
   int num_bits = d * n;
-  byte t = 0;
-  byte r = 0;
+  byte_t t = 0;
+  byte_t r = 0;
   int k = 0;  // bit position in output byte
   int m = 0;  // current output byte number
   int out_len = (num_bits + NBITSINBYTE - 1) / NBITSINBYTE;
@@ -898,7 +898,7 @@ bool byte_encode_from_vector(int d, int n, vector<int>& v, byte* out) {
 }
 
 // decode byte array into n d-bit integers
-bool byte_decode_to_vector(int d, int n, int in_len, byte* in, vector<int>& v) {
+bool byte_decode_to_vector(int d, int n, int in_len, byte_t* in, vector<int>& v) {
   int num_bits = d * n;
   int t = 0;
   int r = 0;
@@ -948,11 +948,11 @@ bool byte_decode_to_vector(int d, int n, int in_len, byte* in, vector<int>& v) {
 //    ek := byte_encode(12) (t^) || rho
 //    dk := byte_encode(12) (s^)
 //    return (ek, dk) [384k+32, 384k] bytes
-bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
-        int* dk_len, byte* dk) {
+bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte_t* ek,
+        int* dk_len, byte_t* dk) {
 
-  byte d[32];
-  byte parameters[64];  // (rho, sigma)
+  byte_t d[32];
+  byte_t parameters[64];  // (rho, sigma)
   memset(d, 0, 32);
   memset(parameters, 0, 64);
 
@@ -977,14 +977,14 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   module_vector tmp1(p.q_, p.n_, p.k_);
 
   int N = 0;
-  byte* rho = parameters;
-  byte* sigma = &parameters[32];
+  byte_t* rho = parameters;
+  byte_t* sigma = &parameters[32];
 
   // Generate A_ntt
   for (int i = 0; i < p.k_; i++) {
     for (int j = 0; j < p.k_; j++) {
       int b_xof_len = 384;
-      byte b_xof[b_xof_len];
+      byte_t b_xof[b_xof_len];
       memset(b_xof, 0, b_xof_len);
 
       if (!xof(32, rho, i, j, b_xof_len * NBITSINBYTE, b_xof)) {
@@ -1003,10 +1003,10 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   // Generate secret polynomial
   for (int i = 0; i < s.dim_; i++) {
     int b_prf_len = 64 * p.eta1_;
-    byte b_prf[b_prf_len];
+    byte_t b_prf[b_prf_len];
     memset(b_prf, 0, b_prf_len);
 
-    if (!prf(p.eta1_, 32, sigma, sizeof(int), (byte*)&N,
+    if (!prf(p.eta1_, 32, sigma, sizeof(int), (byte_t*)&N,
           NBITSINBYTE * b_prf_len, b_prf)) {
        printf("kyber_keygen: prf (1) failed\n");
       return false;
@@ -1021,10 +1021,10 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   // Generate noise
   for (int i = 0; i < e.dim_; i++) {
     int b_prf_len = 64 * p.eta1_;
-    byte b_prf[b_prf_len];
+    byte_t b_prf[b_prf_len];
     memset(b_prf, 0, b_prf_len);
 
-    if (!prf(p.eta1_, 32, sigma, sizeof(int), (byte*)&N,
+    if (!prf(p.eta1_, 32, sigma, sizeof(int), (byte_t*)&N,
           NBITSINBYTE * b_prf_len, b_prf)) {
        printf("kyber_keygen: prf (2) failed\n");
       return false;
@@ -1064,7 +1064,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
     return false;
   }
 
-  byte* pek = ek;
+  byte_t* pek = ek;
   // ek := byte_encode(12) (t^) || rho
   for (int i = 0; i < t_ntt.dim_; i++) {
     if (!byte_encode_from_vector(12, p.n_, t_ntt.c_[i]->c_, pek)) {
@@ -1077,7 +1077,7 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
   *ek_len = t_ntt.dim_ * 384 + 32;
 
   // dk := byte_encode(12) (s^)
-  byte* pdk = dk;
+  byte_t* pdk = dk;
   for (int i = 0; i < s_ntt.dim_; i++) {
     if (!byte_encode_from_vector(12, p.n_, s_ntt.c_[i]->c_, pdk)) {
       printf("kyber_keygen: byte_encode (3) failed\n");
@@ -1160,8 +1160,8 @@ bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
 //    c1 = byte_encode(du, compress(du,u)) [32(du * k)] bytes
 //    c2 = byte_encode(dv, compress(dv,nu)) [32dv bytes]
 //    return (c1, c2)
-bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
-      int m_len, byte* m, int b_r_len, byte* b_r, int* c_len, byte* c) {
+bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte_t* ek,
+      int m_len, byte_t* m, int b_r_len, byte_t* b_r, int* c_len, byte_t* c) {
 
   module_array A_ntt(p.q_, p.n_, p.k_, p.k_);   // A^ matrix
   module_vector t_ntt(p.q_, p.n_, p.k_);        // public key
@@ -1172,7 +1172,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   coefficient_vector e2(p.q_, p.n_);            // noise
 
   // Recover public key
-  byte* p_b = ek;
+  byte_t* p_b = ek;
   for (int i = 0; i < t_ntt.dim_; i++) {
     if (!byte_decode_to_vector(12, p.n_, 384, p_b, t_ntt.c_[i]->c_)) {
       printf("kyber_encrypt: byte_decode_to_vector (1) failed\n");
@@ -1181,7 +1181,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
     p_b += 384;
   }
  
-  byte rho[32];
+  byte_t rho[32];
   memset(rho, 0, 32);
   memcpy(rho, p_b, 32);
 
@@ -1191,7 +1191,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   for (int i = 0; i < p.k_; i++) {
     for (int j = 0; j < p.k_; j++) {
       int b_xof_len = 384;
-      byte b_xof[b_xof_len];
+      byte_t b_xof[b_xof_len];
       memset(b_xof, 0, b_xof_len);
 
       if (!xof(32, rho, i, j, b_xof_len * NBITSINBYTE, b_xof)) {
@@ -1210,10 +1210,10 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   // Generate encryption randomness poly (r)
   for (int i = 0; i < r.dim_; i++) {
     int b_prf_len = 64 * p.eta1_;
-    byte b_prf[b_prf_len];
+    byte_t b_prf[b_prf_len];
     memset(b_prf, 0, b_prf_len);
 
-    if (!prf(p.eta1_, 32, rho, sizeof(int), (byte*)&N,
+    if (!prf(p.eta1_, 32, rho, sizeof(int), (byte_t*)&N,
           NBITSINBYTE * b_prf_len, b_prf)) {
       printf("kyber_encrypt: prf (1) failed\n");
       return false;
@@ -1235,10 +1235,10 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   // Generate noise element (e1)
   for (int i = 0; i < e1.dim_; i++) {
     int b_prf_len = 64 * p.eta2_;
-    byte b_prf[b_prf_len];
+    byte_t b_prf[b_prf_len];
     memset(b_prf, 0, b_prf_len);
 
-    if (!prf(p.eta2_, 32, rho, sizeof(int), (byte*)&N,
+    if (!prf(p.eta2_, 32, rho, sizeof(int), (byte_t*)&N,
           NBITSINBYTE * b_prf_len, b_prf)) {
        printf("kyber_encrypt: prf (1) failed\n");
       return false;
@@ -1253,10 +1253,10 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   // Generate noise element (e2)
   {
     int b_prf_len = 64 * p.eta2_;
-    byte b_prf[b_prf_len];
+    byte_t b_prf[b_prf_len];
     memset(b_prf, 0, b_prf_len);
 
-    if (!prf(p.eta2_, 32, rho, sizeof(int), (byte*)&N,
+    if (!prf(p.eta2_, 32, rho, sizeof(int), (byte_t*)&N,
           NBITSINBYTE * b_prf_len, b_prf)) {
        printf("kyber_encrypt: prf (1) failed\n");
       return false;
@@ -1311,8 +1311,8 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   // compress and encode u (c1)
   module_vector compressed_u(p.q_, p.n_, p.k_);
   int c1_b_len = (p.du_ * p.n_ * p.k_) / NBITSINBYTE;
-  byte b_c1[c1_b_len];
-  byte* pp = b_c1;
+  byte_t b_c1[c1_b_len];
+  byte_t* pp = b_c1;
   int len = (p.du_ * p.n_) / NBITSINBYTE;
 
   for (int i = 0; i < p.k_; i++) {
@@ -1351,7 +1351,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
   // Compress and encode nu (c2)
   coefficient_vector compressed_nu(p.q_, p.n_);
   int c2_b_len = (p.dv_ * p.n_) / NBITSINBYTE;
-  byte b_c2[c2_b_len];
+  byte_t b_c2[c2_b_len];
   for (int j = 0; j < compressed_nu.len_; j++) {
     compressed_nu.c_[j] = compress(p.q_, nu.c_[j], p.dv_);
   }
@@ -1408,7 +1408,7 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
 
   extern bool special_test_1(kyber_parameters& p, coefficient_vector& mu,
                   coefficient_vector& nu,
-                  int len_m, byte* m, int len_c2, byte*c2);
+                  int len_m, byte_t* m, int len_c2, byte_t*c2);
   if (!special_test_1(p, mu, nu, m_len, m, c2_b_len, b_c2)) {
     printf("****special_test_1 failed\n");
     return false;
@@ -1431,17 +1431,17 @@ bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
 //    w := nu - ntt_inv(s^^T NTT(u))
 //    m := byte_encode(1, compress(1,w))
 //    dk is as in keygen
-bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
-      int c_len, byte* c, int* m_len, byte* m) {
+bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte_t* dk,
+      int c_len, byte_t* c, int* m_len, byte_t* m) {
 
   if (c_len != 32 * (p.du_ * p.k_ + p.dv_)) {
     printf("kyber_decrypt: wrong input size\n");
     return false;
   }
-  byte* c1= c;
-  byte* c2 = &c[32 * p.du_ * p.k_];
+  byte_t* c1= c;
+  byte_t* c2 = &c[32 * p.du_ * p.k_];
 
-  byte* p_c1 = c1;
+  byte_t* p_c1 = c1;
   module_vector u(p.q_, p.n_, p.k_);
 
   // Recover u from c1
@@ -1469,7 +1469,7 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
   // Recover s_ntt from dk
   module_vector s_ntt(p.q_, p.n_, p.k_);
   int len_vec = (12 * p.n_) / NBITSINBYTE;
-  byte* pp_vec = dk;
+  byte_t* pp_vec = dk;
   for (int i = 0; i < p.k_; i++) {
     if (!byte_decode_to_vector(12, p.n_, len_vec, pp_vec, s_ntt.c_[i]->c_)) {
       return false;
@@ -1551,10 +1551,10 @@ bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
 //    kem_ek := ek
 //    kem_dk := dk || ek || H(ek) || z
 //  full
-bool kyber_kem_keygen(int g, kyber_parameters& p, int* kem_ek_len, byte* kem_ek,
-      int* kem_dk_len, byte* kem_dk) {
+bool kyber_kem_keygen(int g, kyber_parameters& p, int* kem_ek_len, byte_t* kem_ek,
+      int* kem_dk_len, byte_t* kem_dk) {
 
-  byte z[32];
+  byte_t z[32];
   int n_b = crypto_get_random_bytes(32, z);
   if (n_b != 32) {
     printf("kyber_kem_keygen: crypto_get_random_bytes returne wrong nuber of bytes\n");
@@ -1562,7 +1562,7 @@ bool kyber_kem_keygen(int g, kyber_parameters& p, int* kem_ek_len, byte* kem_ek,
   }
 
   int dk_PKE_len = 384 * p.k_;
-  byte dk_PKE[dk_PKE_len];
+  byte_t dk_PKE[dk_PKE_len];
   if (!kyber_keygen(g, p, kem_ek_len, kem_ek, &dk_PKE_len, dk_PKE)) {
     printf("kyber_kem_keygen: kyber_keygen failed\n");
     return false;
@@ -1583,10 +1583,10 @@ bool kyber_kem_keygen(int g, kyber_parameters& p, int* kem_ek_len, byte* kem_ek,
   h.add_to_hash(*kem_ek_len, kem_ek);
   h.finalize();
   h.get_digest(32, &kem_dk[len]);
-  byte* ph = &kem_dk[len];
+  byte_t* ph = &kem_dk[len];
   len += 32;
 
-  byte* pz = &kem_dk[len];
+  byte_t* pz = &kem_dk[len];
   memcpy(&kem_dk[len], z, 32);
   len += 32;
 
@@ -1617,10 +1617,10 @@ bool kyber_kem_keygen(int g, kyber_parameters& p, int* kem_ek_len, byte* kem_ek,
 //  (K, r) := G(H(pk), m)
 //  (u,v) := Kyber.Enc(ek, m, r)
 //  return K, c
-bool kyber_kem_encaps(int g, kyber_parameters& p, int kem_ek_len, byte* kem_ek,
-      int* k_len, byte* k, int* kem_c_len, byte* kem_c) {
+bool kyber_kem_encaps(int g, kyber_parameters& p, int kem_ek_len, byte_t* kem_ek,
+      int* k_len, byte_t* k, int* kem_c_len, byte_t* kem_c) {
 
-  byte m[32];
+  byte_t m[32];
   int n_b = crypto_get_random_bytes(32, m);
   if (n_b != 32) {
     printf("kyber_kem_encaps: crypto_get_random_bytes return wrong nuber of bytes\n");
@@ -1632,7 +1632,7 @@ bool kyber_kem_encaps(int g, kyber_parameters& p, int kem_ek_len, byte* kem_ek,
   print_bytes(32, m);
 #endif
 
-  byte ek_hash[32];
+  byte_t ek_hash[32];
   memset(ek_hash, 0, 32);
 
   sha3 h;
@@ -1644,18 +1644,18 @@ bool kyber_kem_encaps(int g, kyber_parameters& p, int kem_ek_len, byte* kem_ek,
   h.finalize();
   h.get_digest(32, ek_hash);
 
-  byte G_input[64];
+  byte_t G_input[64];
   memcpy(G_input, m, 32);
   memcpy(&G_input[32], ek_hash, 32);
 
   // (K, r) := G(H(pk), m)
-  byte K_r[64];
+  byte_t K_r[64];
   if (!G(64, G_input, 512, K_r)) {
     printf("kyber_kem_encaps: Can't compute G\n");
     return false;
   }
-  byte* pK= K_r;
-  byte* pr = &K_r[32];
+  byte_t* pK= K_r;
+  byte_t* pr = &K_r[32];
 
   int len_c = 32 * (p.du_* p.k_ + p.dv_);
   if (*kem_c_len < len_c) {
@@ -1690,14 +1690,14 @@ bool kyber_kem_encaps(int g, kyber_parameters& p, int kem_ek_len, byte* kem_ek,
 //  else
 //   error
 //  return K
-bool kyber_kem_decaps(int g, kyber_parameters& p, int kem_dk_len, byte* kem_dk,
-      int c_len, byte* c, int* k_len, byte* k) {
+bool kyber_kem_decaps(int g, kyber_parameters& p, int kem_dk_len, byte_t* kem_dk,
+      int c_len, byte_t* c, int* k_len, byte_t* k) {
   int ek_PKE_len = 384 * p.k_ + 32;
   int dk_PKE_len = 384 * p.k_;
-  byte* dk_PKE = kem_dk;
-  byte* ek_PKE = &kem_dk[dk_PKE_len];
-  byte* h = &kem_dk[ek_PKE_len + dk_PKE_len];
-  byte* z = &kem_dk[ek_PKE_len + dk_PKE_len + 32];
+  byte_t* dk_PKE = kem_dk;
+  byte_t* ek_PKE = &kem_dk[dk_PKE_len];
+  byte_t* h = &kem_dk[ek_PKE_len + dk_PKE_len];
+  byte_t* z = &kem_dk[ek_PKE_len + dk_PKE_len + 32];
 
 #ifdef LONG_DEBUG
   printf("\nkey_decaps\n");
@@ -1712,7 +1712,7 @@ bool kyber_kem_decaps(int g, kyber_parameters& p, int kem_dk_len, byte* kem_dk,
 #endif
 
   int m_prime_len = 32;
-  byte m_prime[m_prime_len];
+  byte_t m_prime[m_prime_len];
   if (!kyber_decrypt(g, p, dk_PKE_len, dk_PKE, c_len, c, &m_prime_len, m_prime)) {
     printf("kyber_kem_decaps: PKE decrypt failed\n");
     return false;
@@ -1723,19 +1723,19 @@ bool kyber_kem_decaps(int g, kyber_parameters& p, int kem_dk_len, byte* kem_dk,
   print_bytes(32, m_prime);
 #endif
 
-  byte G_to_hash[64];
+  byte_t G_to_hash[64];
   memcpy(G_to_hash, m_prime, 32);
   memcpy(&G_to_hash[32], h, 32);
 
   //  (K_prime, r_prime) := G(H(pk), m)
-  byte K_r_prime[64];
+  byte_t K_r_prime[64];
   if (!G(64, G_to_hash, 512, K_r_prime)) {
     printf("kyber_kem_decaps: G failed\n");
     return false;
   }
-  byte* pK_prime = K_r_prime;
-  byte* pr_prime = &K_r_prime[32];
-  byte K_bar[32];
+  byte_t* pK_prime = K_r_prime;
+  byte_t* pr_prime = &K_r_prime[32];
+  byte_t K_bar[32];
 
 #ifdef LONG_DEBUG
   printf("K_prime: ");
@@ -1754,7 +1754,7 @@ bool kyber_kem_decaps(int g, kyber_parameters& p, int kem_dk_len, byte* kem_dk,
   h_o.get_digest(32, K_bar);
 
   int c_prime_len = 32 * (p.du_ * p.k_ + p.dv_);
-  byte c_prime[c_prime_len];
+  byte_t c_prime[c_prime_len];
   if (!kyber_encrypt(g, p, ek_PKE_len, ek_PKE, 32, m_prime, 32,
           pr_prime, &c_prime_len, c_prime)) {
     printf("kyber_kem_decaps: kyber_encrypt failed\n");
@@ -1775,11 +1775,11 @@ bool kyber_kem_decaps(int g, kyber_parameters& p, int kem_dk_len, byte* kem_dk,
 #ifdef LONG_DEBUG
 bool special_test_1(kyber_parameters& p, coefficient_vector& mu,
                   coefficient_vector& nu,
-                  int len_m, byte* m, int len_c2, byte*c2) {
+                  int len_m, byte_t* m, int len_c2, byte_t*c2) {
 
   printf("\n\ntest, decompressed mu\n");
   coefficient_vector t_compressed_mu(p.q_, p.n_);
-  byte checked_m[32];
+  byte_t checked_m[32];
   memset(checked_m, 0, (size_t)32);
 
   for (int j = 0; j < p.n_; j++) {

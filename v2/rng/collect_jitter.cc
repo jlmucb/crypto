@@ -56,7 +56,7 @@ volatile void inline simple_jitter_block_1(int num_loops) {
   t /= 2;
 }
 
-volatile void inline simple_jitter_block_2(int num_loops, int size_buf, byte* buf) {
+volatile void inline simple_jitter_block_2(int num_loops, int size_buf, byte_t* buf) {
   int index = size_buf / num_loops;
 
   for (int j = 0; j < 4; j++) {
@@ -70,7 +70,7 @@ volatile void inline simple_jitter_block_2(int num_loops, int size_buf, byte* bu
 const int SIZE_L1 = 32<<10;  // changes on different cpus
 int mem_shift = 0;
 // size should be bigger than SIZE_L1
-volatile void inline memory_jitter_block(int num_loops, int size, byte* buf) {
+volatile void inline memory_jitter_block(int num_loops, int size, byte_t* buf) {
   mem_shift++;
   int inc = size / 100;
   if (inc == 0)
@@ -84,11 +84,11 @@ volatile void inline memory_jitter_block(int num_loops, int size, byte* buf) {
 
 // hash timing
 const int SIZE_HASH_BUF = 128;
-volatile void inline hash_jitter_block(int num_loops, int size, byte* to_hash) {
-  sha3 hash_obj(1024);
+volatile void inline hash_jitter_block(int num_loops, int size, byte_t* to_hash) {
+  sha3 hash_obj;
 
   for (int i = 0; i < num_loops; i++) {
-    hash_obj.init();
+    hash_obj.init(size);
     hash_obj.add_to_hash(size, to_hash);
     hash_obj.finalize();
   }
@@ -133,14 +133,14 @@ int main(int an, char** av) {
     "Hash jitter test",
   };
   
-  byte sample_buf[FLAGS_num_samples];
+  byte_t sample_buf[FLAGS_num_samples];
   if (FLAGS_test_set == 0) {
     for (int i = 0; i < FLAGS_num_samples; i++) {
       t1 = read_rdtsc();
       simple_jitter_block_0(FLAGS_num_loops);
       t2 = read_rdtsc();
       delta = t2 - t1;
-      sample_buf[i] = (byte) ((delta / 2) & 0xff);
+      sample_buf[i] = (byte_t) ((delta / 2) & 0xff);
     }
   } else if (FLAGS_test_set == 1) {
     for (int i = 0; i < FLAGS_num_samples; i++) {
@@ -148,29 +148,29 @@ int main(int an, char** av) {
       simple_jitter_block_1(FLAGS_num_loops);
       t2 = read_rdtsc();
       delta = t2 - t1;
-      sample_buf[i] = (byte) ((delta / 2) & 0xff);
+      sample_buf[i] = (byte_t) ((delta / 2) & 0xff);
     }
   } else if (FLAGS_test_set == 2) {
-    byte buf[SIZE_L1];
+    byte_t buf[SIZE_L1];
     for (int i = 0; i < FLAGS_num_samples; i++) {
       t1 = read_rdtsc();
       simple_jitter_block_2(FLAGS_num_loops, SIZE_L1, buf);
       t2 = read_rdtsc();
       delta = t2 - t1;
-      sample_buf[i] = (byte) ((delta / 2) & 0xff);
+      sample_buf[i] = (byte_t) ((delta / 2) & 0xff);
     }
   } else if (FLAGS_test_set == 3) {
-    byte buf_mem[SIZE_L1];
+    byte_t buf_mem[SIZE_L1];
     memset(buf_mem, 0, SIZE_L1);
     for (int i = 0; i < FLAGS_num_samples; i++) {
       t1 = read_rdtsc();
       memory_jitter_block(FLAGS_num_loops, SIZE_L1, buf_mem);
       t2 = read_rdtsc();
       delta = t2 - t1;
-      sample_buf[i] = (byte) ((delta / 2) & 0xff);
+      sample_buf[i] = (byte_t) ((delta / 2) & 0xff);
     }
   } else if (FLAGS_test_set == 4) {
-    byte buf_hash[SIZE_HASH_BUF];
+    byte_t buf_hash[SIZE_HASH_BUF];
     for (int i = 0; i < SIZE_HASH_BUF; i++)
       buf_hash[i] = i;
     for (int i = 0; i < FLAGS_num_samples; i++) {
@@ -178,7 +178,7 @@ int main(int an, char** av) {
       hash_jitter_block(FLAGS_num_loops, SIZE_HASH_BUF, buf_hash);
       t2 = read_rdtsc();
       delta = t2 - t1;
-      sample_buf[i] = (byte) ((delta / 2) & 0xff);
+      sample_buf[i] = (byte_t) ((delta / 2) & 0xff);
     }
   } else {
     printf("unknown test\n");

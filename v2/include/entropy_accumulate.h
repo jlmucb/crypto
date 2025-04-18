@@ -25,7 +25,7 @@ public:
   double current_entropy_in_pool_;
   int current_size_pool_;     // bytes in pool buffer
   int pool_size_;             // total pool size
-  byte pool_[MAXPOOL_SIZE];
+  byte_t pool_[MAXPOOL_SIZE];
 
   entropy_accumulate();
   ~entropy_accumulate();
@@ -33,9 +33,9 @@ public:
   int current_pool_size() {return current_size_pool_;};
   int max_pool_size() {return pool_size_;};
   double entropy_estimate();
-  bool add_samples(int num_samples, byte* samples, double est_ent_per_byte);
+  bool add_samples(int num_samples, byte_t* samples, double est_ent_per_byte);
   void mix_entropy();
-  bool empty_pool(int* size_of_pool, byte* pool, double* ent);
+  bool empty_pool(int* size_of_pool, byte_t* pool, double* ent);
 };
 #endif
 

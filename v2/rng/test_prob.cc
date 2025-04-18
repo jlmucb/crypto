@@ -45,7 +45,7 @@ bool test_sampling() {
   int divisor = 2;
   int num_bits = 6;
   uint32_t data_uint32[num_samples];
-  byte data_byte[num_samples];
+  byte_t data_byte[num_samples];
 
   zero_uint32_array(num_samples, data_uint32);
   zero_byte_array(num_samples, data_byte);
@@ -113,9 +113,9 @@ bool test_graph() {
 bool test_conversion() {
   int num_bytes = 256;
   int num_bits = NBITSINBYTE * num_bytes;
-  byte bytes_in[num_bytes];
-  byte bits[num_bits];
-  byte bytes_out[num_bytes];
+  byte_t bytes_in[num_bytes];
+  byte_t bits[num_bits];
+  byte_t bytes_out[num_bytes];
 
   zero_byte_array(num_bytes, bytes_in);
   zero_byte_array(num_bytes, bytes_out);
@@ -187,7 +187,7 @@ bool test_health_tests() {
     printf("\nHealth tests\n");
 
   int num_samples = 512;
-  byte data[num_samples];
+  byte_t data[num_samples];
   zero_byte_array(num_samples, data);
   if (crypto_get_random_bytes(num_samples, data) <= 0) {
     printf("Can't generate samples\n");
@@ -249,7 +249,7 @@ bool test_binomial(double alpha) {
   p = 1.0 / 6.0;
   alpha = .05;
   int num_rolls = 48;
-  byte dice_roll[num_rolls];
+  byte_t dice_roll[num_rolls];
   double residual = 0.0;
 
   int r;
@@ -257,10 +257,10 @@ bool test_binomial(double alpha) {
     r = non_binary_random(6);
     if (r < 0)
       return false;
-    dice_roll[i] = (byte)r;
+    dice_roll[i] = (byte_t)r;
   }
 
-  byte roll_count[6];
+  byte_t roll_count[6];
   if (!bin_raw_byte_data(num_rolls, dice_roll, 6, roll_count)) {
     printf("Can't bin dice data\n");
     return false;
@@ -307,7 +307,7 @@ bool test_binomial(double alpha) {
     return false;
   }
 
-  byte success = 1;
+  byte_t success = 1;
   if (binomial_test(num_rolls, dice_roll, success, p, alpha, &residual)) {
     printf("Binomial test for dice succeeds, success: %d, residual: %lf\n", success, residual);
   } else {
@@ -323,7 +323,7 @@ bool test_statistical_tests() {
   int divisor = 2;
   int num_bits = 6;
   uint32_t data_uint32[num_samples];
-  byte data_byte[num_samples];
+  byte_t data_byte[num_samples];
 
   zero_uint32_array(num_samples, data_uint32);
   zero_byte_array(num_samples, data_byte);
@@ -349,7 +349,7 @@ bool test_statistical_tests() {
   double residual = 0.0;
   double alpha = .01;
   int tmp_num_samples = 256;
-  byte most_common = most_common_byte(tmp_num_samples, data_byte);
+  byte_t most_common = most_common_byte(tmp_num_samples, data_byte);
   double p_test =  1.0 / ((double)(1 << num_bits));
   alpha = .01;
 
@@ -405,13 +405,13 @@ bool test_statistical_tests() {
   }
 
   int n = 256; 
-  byte values[n];
+  byte_t values[n];
   int nbins = 16;
   double p[nbins];
 
   double epsilon = .003;
   for (int i = 0; i < n; i++) {
-      values[i] = (byte) (i % 16);
+      values[i] = (byte_t) (i % 16);
   }
   for (int i = 0; i < nbins; i++) {
     if ((i%2) == 0)

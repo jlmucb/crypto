@@ -48,7 +48,7 @@ void entropy_collection::set_policy(double entropy_per_sample) {
 }
 
 // samples are always 8 bits
-bool entropy_collection::append_samples(int num_samples, byte* samples) {
+bool entropy_collection::append_samples(int num_samples, byte_t* samples) {
   if (!initialized_)
     return false;
 
@@ -60,7 +60,7 @@ bool entropy_collection::append_samples(int num_samples, byte* samples) {
   return true;
 }
 
-bool entropy_collection::add_samples(int num_samples, byte* samples) {
+bool entropy_collection::add_samples(int num_samples, byte_t* samples) {
   int total = num_samples + current_size_pool_;
   int fits = 0;
   int left_over = 0;
@@ -102,7 +102,7 @@ double entropy_collection::entropy_estimate() {
   return current_entropy_in_pool_ + compressed_entropy_ent_;
 }
 
-bool entropy_collection::empty_pool(int* size_of_output, byte* data, double* ent) {
+bool entropy_collection::empty_pool(int* size_of_output, byte_t* data, double* ent) {
   if (*size_of_output < current_size_pool_) {
     printf("output too small, size of data:  %d, size of pool: %d\n", *size_of_output, current_size_pool_);
     return false;

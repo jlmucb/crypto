@@ -48,8 +48,8 @@ class rsa {
   bool extract_key_message_from_serialized(string& s);
   bool generate_rsa(int num_bits);
   bool make_rsa_key(const char* name, const char* purpose, double secondstolive);
-  bool encrypt(int size_in, byte* in, int* size_out, byte* out, int speed);
-  bool decrypt(int size_in, byte* in, int* size_out, byte* out, int speed);
+  bool encrypt(int size_in, byte_t* in, int* size_out, byte_t* out, int speed);
+  bool decrypt(int size_in, byte_t* in, int* size_out, byte_t* out, int speed);
   key_message* get_key() {return rsa_key_;}
 };
 #endif

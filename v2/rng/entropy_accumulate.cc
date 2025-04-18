@@ -84,7 +84,7 @@ double entropy_estimate_from_samples(int n_in, int n_out, int nw, double h_in) {
   return h_out;
 }
 
-bool entropy_accumulate::add_samples(int num_samples, byte* samples, double est_ent_per_byte) {
+bool entropy_accumulate::add_samples(int num_samples, byte_t* samples, double est_ent_per_byte) {
   // copy samples into buffer, compress if we read pool size
   int samples_remaining = num_samples;
   int samples_used_so_far = 0;
@@ -113,7 +113,7 @@ double entropy_accumulate::entropy_estimate() {
   return current_entropy_in_pool_;
 }
 
-bool entropy_accumulate::empty_pool(int* size_of_output, byte* data, double* ent) {
+bool entropy_accumulate::empty_pool(int* size_of_output, byte_t* data, double* ent) {
   if (current_size_pool_ > *size_of_output)
     return false;
   memcpy(data, pool_, current_size_pool_);

@@ -23,9 +23,9 @@ class sha256 : public crypto_hash {
  public:
   enum { BLOCKBYTESIZE = 64, DIGESTBYTESIZE = 32 };
   int num_bytes_waiting_;
-  byte bytes_waiting_[BLOCKBYTESIZE];
+  byte_t bytes_waiting_[BLOCKBYTESIZE];
   uint32_t state_[DIGESTBYTESIZE / sizeof(uint32_t)];
-  byte digest_[DIGESTBYTESIZE];
+  byte_t digest_[DIGESTBYTESIZE];
   uint64_t num_bits_processed_;
 
   sha256();
@@ -34,8 +34,8 @@ class sha256 : public crypto_hash {
   void transform_block(const uint32_t* data);
 
   bool init();
-  void add_to_hash(int size, const byte* in);
-  bool get_digest(int size, byte* out);
+  void add_to_hash(int size, const byte_t* in);
+  bool get_digest(int size, byte_t* out);
   void finalize();
 };
 #endif

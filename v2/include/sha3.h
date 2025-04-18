@@ -36,10 +36,10 @@ class sha3 : public crypto_hash {
   int rb_;
   int num_out_bytes_;
   int num_bytes_waiting_;
-  byte bytes_waiting_[BUFFERBYTESIZE];
+  byte_t bytes_waiting_[BUFFERBYTESIZE];
   alignas(uint64_t)
   uint64_t state_[5 * 5];  // 1600 bits
-  byte digest_[sha3::DIGESTBYTESIZE];
+  byte_t digest_[sha3::DIGESTBYTESIZE];
   uint64_t num_bits_processed_;
   bool finalized_;
 
@@ -50,8 +50,8 @@ class sha3 : public crypto_hash {
 
   bool init(int c, int num_bytes_out);
   bool init(int c);
-  void add_to_hash(int size, const byte* in);
-  bool get_digest(int size, byte* out);
+  void add_to_hash(int size, const byte_t* in);
+  bool get_digest(int size, byte_t* out);
   void finalize();
   void shake_finalize();
   void shake_squeeze_finalize();

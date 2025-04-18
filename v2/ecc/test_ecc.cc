@@ -448,9 +448,9 @@ bool test_ecc_class() {
 
 bool test_ecc_encrypt_decrypt() {
 
-  byte plain_in[64];
-  byte cipher_out[64];
-  byte recovered[64];
+  byte_t plain_in[64];
+  byte_t cipher_out[64];
+  byte_t recovered[64];
 
   memset(plain_in, 0, 64);
   memset(cipher_out, 0, 64);
@@ -496,7 +496,7 @@ bool test_ecc_encrypt_decrypt() {
     
   int size_in = 6;
   int size_out = 64;
-  memcpy(plain_in, (byte*)"hello", size_in);
+  memcpy(plain_in, (byte_t*)"hello", size_in);
 
   big_num nonce(10, 0x48283746882294);
   nonce.normalize();

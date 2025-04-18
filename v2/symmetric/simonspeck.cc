@@ -28,23 +28,23 @@ simon128::simon128() {
 }
 
 simon128::~simon128() {
-  memset((byte*)simon_key_, 0, sizeof(uint64_t) * 4);
-  memset((byte*)round_key_, 0, sizeof(uint64_t) * 72);
+  memset((byte_t*)simon_key_, 0, sizeof(uint64_t) * 4);
+  memset((byte_t*)round_key_, 0, sizeof(uint64_t) * 72);
   initialized_ = false;
 }
 
-static byte s_z2[64] = {1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0,
+static byte_t s_z2[64] = {1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0,
                         0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0,
                         1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1,
                         1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0};
 /*
-static byte s_z3[64] = {
+static byte_t s_z3[64] = {
   1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0,
   0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0,
   0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1,
   0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0
 };
-static byte s_z4[64] = {
+static byte_t s_z4[64] = {
   1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0,
   1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0,
   0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0,
@@ -52,7 +52,7 @@ static byte s_z4[64] = {
 };
  */
 
-uint64_t convert_to_64(byte* in) {
+uint64_t convert_to_64(byte_t* in) {
   uint64_t x = 0ULL;
 
   for (int i = 0; i < 64; i++) x = (x << 1) | in[i];
@@ -86,7 +86,7 @@ bool simon128::calculate_ks() {
   return true;
 }
 
-bool simon128::init(int key_bit_size, byte* key, int directionflag) {
+bool simon128::init(int key_bit_size, byte_t* key, int directionflag) {
   size_ = 0;
   key_size_in_bits_ = key_bit_size;
   secret_.assign((char*)key, key_size_in_bits_ / NBITSINBYTE);
@@ -96,7 +96,7 @@ bool simon128::init(int key_bit_size, byte* key, int directionflag) {
     case 128:
       size_ = 2;
       num_rounds_ = 68;
-      memcpy((byte*)simon_key_, key, sizeof(uint64_t) * size_);
+      memcpy((byte_t*)simon_key_, key, sizeof(uint64_t) * size_);
       break;
     case 192:
     case 256:
@@ -112,7 +112,7 @@ bool simon128::init(int key_bit_size, byte* key, int directionflag) {
   return initialized_;
 }
 
-void simon128::encrypt_block(const byte* in, byte* out) {
+void simon128::encrypt_block(const byte_t* in, byte_t* out) {
   uint64_t x = *((uint64_t*)in);
   uint64_t y = *((uint64_t*)(in + sizeof(uint64_t)));
   uint64_t t;
@@ -128,7 +128,7 @@ void simon128::encrypt_block(const byte* in, byte* out) {
   *((uint64_t*)(out + sizeof(uint64_t))) = y;
 }
 
-void simon128::decrypt_block(const byte* in, byte* out) {
+void simon128::decrypt_block(const byte_t* in, byte_t* out) {
   uint64_t x = *((uint64_t*)in);
   uint64_t y = *((uint64_t*)(in + sizeof(uint64_t)));
   uint64_t t;
@@ -144,7 +144,7 @@ void simon128::decrypt_block(const byte* in, byte* out) {
   *((uint64_t*)(out + sizeof(uint64_t))) = y;
 }
 
-void simon128::encrypt(int size, byte* in, byte* out) {
+void simon128::encrypt(int size, byte_t* in, byte_t* out) {
   while (size > 0) {
     encrypt_block(in, out);
     size -= BLOCKBYTESIZE;
@@ -153,7 +153,7 @@ void simon128::encrypt(int size, byte* in, byte* out) {
   }
 }
 
-void simon128::decrypt(int size, byte* in, byte* out) {
+void simon128::decrypt(int size, byte_t* in, byte_t* out) {
   while (size > 0) {
     decrypt_block(in, out);
     size -= BLOCKBYTESIZE;

@@ -25,16 +25,16 @@ class hmac_sha256 {
   enum { BLOCKBYTESIZE = 64, MACBYTESIZE = 32 };
 
   bool macvalid_;
-  byte key_[BLOCKBYTESIZE];
-  byte mac_[MACBYTESIZE];
+  byte_t key_[BLOCKBYTESIZE];
+  byte_t mac_[MACBYTESIZE];
   sha256 inner_sha256_;
 
   hmac_sha256();
   ~hmac_sha256();
 
-  bool init(int size, byte* key);
-  void add_to_inner_hash(int size, byte* in);
-  bool get_hmac(int size, byte* out);
+  bool init(int size, byte_t* key);
+  void add_to_inner_hash(int size, byte_t* in);
+  bool get_hmac(int size, byte_t* out);
   void finalize();
 };
 #endif

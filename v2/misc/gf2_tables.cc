@@ -39,7 +39,7 @@ int main(int an, char** av) {
 
   uint16_t gen_poly = FLAGS_minpoly;
   int size_min_poly = 16;
-  byte min_poly[16];
+  byte_t min_poly[16];
 
   EXPECT_TRUE(to_internal_representation(gen_poly, &size_min_poly, min_poly));
   printf("Min poly: "); print_poly(size_min_poly, min_poly); printf("\n");

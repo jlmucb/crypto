@@ -101,7 +101,7 @@ int main(int an, char** av) {
   }
 
   printf("\nChi squared test on differences:\n");
-  byte values[num_samples];
+  byte_t values[num_samples];
   zero_byte_array(num_samples, values);
   if (uint32_to_bytes(num_samples, diffs, values)) {
 
@@ -129,7 +129,7 @@ int main(int an, char** av) {
 
     // bitstring estimate
     int num_bit_samples = num_bits * num_samples;
-    byte the_bits[num_bit_samples];
+    byte_t the_bits[num_bit_samples];
     if (!byte_to_bits(num_samples, values, num_bits,
                   num_bit_samples, the_bits)) {
       printf("Can't convert to bits\n");

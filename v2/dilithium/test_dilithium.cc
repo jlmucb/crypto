@@ -185,7 +185,7 @@ bool random_module_vector_fill(module_vector* v, int k_h) {
     }
     for (int k = 0; k < k_h; k++) {
       unsigned t = 0;
-      int l = crypto_get_random_bytes(3, (byte*)&t);
+      int l = crypto_get_random_bytes(3, (byte_t*)&t);
       t %= v->q_;
       v->c_[i]->c_[k] = (int)t;
     }
@@ -220,7 +220,7 @@ bool test_module_arith() {
     for (int c = 0; c < A.nc_; c++) {
       for (int k = 0; k < params.n_; k++) {
         unsigned t = 0;
-        int l = crypto_get_random_bytes(4, (byte*)&t);
+        int l = crypto_get_random_bytes(4, (byte_t*)&t);
         t %= params.q_;
         if (A.c_[A.index(r, c)] == nullptr)
           continue;
@@ -385,7 +385,7 @@ bool test_dilithium1() {
     for (int c = 0; c < A.nc_; c++) {
       for (int k = 0; k < params.n_; k++) {
         unsigned t = 0;
-        int l = crypto_get_random_bytes(4, (byte*)&t);
+        int l = crypto_get_random_bytes(4, (byte_t*)&t);
         t %= params.q_;
         if (A.c_[A.index(r, c)] == nullptr)
           continue;
@@ -415,7 +415,7 @@ bool test_dilithium1() {
   }
 
   int m_len = 3;
-  byte M[3] = {0x1, 0x2, 0x3};
+  byte_t M[3] = {0x1, 0x2, 0x3};
 
   if (FLAGS_print_all) {
     printf("\n\nsign******\n");
@@ -426,7 +426,7 @@ bool test_dilithium1() {
   }
 
   int len_c = 32;
-  byte c[len_c];
+  byte_t c[len_c];
   int len_cc = 256;
   int cc[256];
   memset(c, 0, len_c);

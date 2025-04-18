@@ -335,7 +335,7 @@ bool sha3::init(int c) {
   return true;
 }
 
-void sha3::add_to_hash(int size, const byte* in) {
+void sha3::add_to_hash(int size, const byte_t* in) {
 #if 0
   printf("add_to_hash(%d), %d\n", size, num_bytes_waiting_);
 #endif
@@ -394,7 +394,7 @@ void sha3::add_to_hash(int size, const byte* in) {
   }
 }
 
-bool sha3::get_digest(int size, byte* out) {
+bool sha3::get_digest(int size, byte_t* out) {
   if (!finalized_) return false;
   if (size < num_out_bytes_) return false;
   memcpy(out, digest_, num_out_bytes_);
@@ -437,7 +437,7 @@ void sha3::finalize() {
 bool sha3::squeeze() {
   if (!finalized_) return false;
   uint64_t zero[rb_ / sizeof(uint64_t)];
-  memset((byte*)zero, 0, rb_);
+  memset((byte_t*)zero, 0, rb_);
   transform_block(zero,  rb_ / sizeof(uint64_t));
   return true;
 }

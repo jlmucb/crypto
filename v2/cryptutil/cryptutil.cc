@@ -164,7 +164,7 @@ bool read_key(const char* file, key_message* km) {
     }
     int size_in = in_file.bytes_in_file();
     in_file.close();
-    byte in[size_in];
+    byte_t in[size_in];
     if (!in_file.read_file(file, size_in, in)) {
       printf("read_key: Can't read %s\n", FLAGS_key_file.c_str());
       return false;
@@ -184,7 +184,7 @@ bool read_scheme(scheme_message* msg) {
     return false;
   }
   int size_in = in_file.bytes_in_file();
-  byte in_buf[size_in];
+  byte_t in_buf[size_in];
   in_file.close();
   if (in_file.read_file(FLAGS_scheme_file.c_str(), size_in, in_buf) < size_in) {
     printf("Can't read %s\n", FLAGS_scheme_file.c_str());
@@ -196,7 +196,7 @@ bool read_scheme(scheme_message* msg) {
   return true;
 }
 
-bool keys_from_pass_phrase(const char* phrase, int* size, byte* key) {
+bool keys_from_pass_phrase(const char* phrase, int* size, byte_t* key) {
   sha256 h;
   memset(key,0, *size);
 
@@ -205,13 +205,13 @@ bool keys_from_pass_phrase(const char* phrase, int* size, byte* key) {
     return false;
   }
   int num_passes = (*size) / h.DIGESTBYTESIZE;
-  byte salt_buf[32];
+  byte_t salt_buf[32];
   for (int i = 0; i < num_passes; i++) {
     h.init();
     sprintf((char*)salt_buf, "JLM_salt_%d", i + 3);
-    h.add_to_hash(strlen((char*)salt_buf), (byte*)salt_buf);
-    h.add_to_hash(strlen(phrase), (byte*)phrase);
-    h.add_to_hash(strlen((char*)salt_buf), (byte*)salt_buf);
+    h.add_to_hash(strlen((char*)salt_buf), (byte_t*)salt_buf);
+    h.add_to_hash(strlen(phrase), (byte_t*)phrase);
+    h.add_to_hash(strlen((char*)salt_buf), (byte_t*)salt_buf);
     h.finalize();
     h.get_digest(h.DIGESTBYTESIZE, &key[i * h.DIGESTBYTESIZE]);
   }
@@ -219,8 +219,8 @@ bool keys_from_pass_phrase(const char* phrase, int* size, byte* key) {
   return true;
 }
 
-bool encrypt_aes(int size_in, byte* in,
-                 int size_out, byte* out) {
+bool encrypt_aes(int size_in, byte_t* in,
+                 int size_out, byte_t* out) {
   key_message km;
 
   if (!read_key(FLAGS_key_file.c_str(), &km)) {
@@ -236,7 +236,7 @@ bool encrypt_aes(int size_in, byte* in,
     return false;
   }
   int key_size_bits = km.key_size();
-  byte* key = (byte*)km.secret().data();
+  byte_t* key = (byte_t*)km.secret().data();
 
   aes t;
   if (!t.init(key_size_bits, key, aes::BOTH)) {
@@ -247,8 +247,8 @@ bool encrypt_aes(int size_in, byte* in,
   return true;
 }
 
-bool decrypt_aes(int size_in, byte* in,
-                 int size_out, byte* out) {
+bool decrypt_aes(int size_in, byte_t* in,
+                 int size_out, byte_t* out) {
   key_message km;
 
   if (!read_key(FLAGS_key_file.c_str(), &km)) {
@@ -264,7 +264,7 @@ bool decrypt_aes(int size_in, byte* in,
     return false;
   }
   int key_size_bits = km.key_size();
-  byte* key = (byte*)km.secret().data();
+  byte_t* key = (byte_t*)km.secret().data();
 
   aes t;
   if (!t.init(key_size_bits, key, aes::BOTH)) {
@@ -275,8 +275,8 @@ bool decrypt_aes(int size_in, byte* in,
   return true;
 }
 
-bool encrypt_rsa(int size_in, byte* in,
-                 int size_out, byte* out) {
+bool encrypt_rsa(int size_in, byte_t* in,
+                 int size_out, byte_t* out) {
 
   rsa rk;
   rk.rsa_key_ = new key_message;
@@ -303,8 +303,8 @@ bool encrypt_rsa(int size_in, byte* in,
   return rk.encrypt(size_in, in, &size_out, out, 0);
 }
 
-bool decrypt_rsa(int size_in, byte* in,
-                 int size_out, byte* out) {
+bool decrypt_rsa(int size_in, byte_t* in,
+                 int size_out, byte_t* out) {
   rsa rk;
   rk.rsa_key_ = new key_message;
 
@@ -330,7 +330,7 @@ bool decrypt_rsa(int size_in, byte* in,
   return rk.decrypt(size_in, in, &size_out, out, 0);
 }
 
-bool encrypt_ecc(int size_in, byte* in,
+bool encrypt_ecc(int size_in, byte_t* in,
                  curve_point* pt1, curve_point* pt2) {
 
   ecc ek;
@@ -358,7 +358,7 @@ bool encrypt_ecc(int size_in, byte* in,
   int byte_size = ek.prime_bit_size_ / NBITSINBYTE;
   byte_size /= 2;
   big_num k(8);
-  if (crypto_get_random_bytes(byte_size, (byte*)k.value_ptr()) < byte_size) {
+  if (crypto_get_random_bytes(byte_size, (byte_t*)k.value_ptr()) < byte_size) {
     printf("Can't get random bytes\n");
     return false;
   }
@@ -367,7 +367,7 @@ bool encrypt_ecc(int size_in, byte* in,
 }
 
 bool decrypt_ecc(curve_point& pt1, curve_point& pt2,
-                 int size_out, byte* out) {
+                 int size_out, byte_t* out) {
 
   ecc ek;
   ek.ecc_key_ = new key_message;
@@ -400,11 +400,11 @@ printf("p              : ");ek.c_->curve_p_->print();printf("\n");
   return ek.decrypt(pt1, pt2, &size_out, out);
 }
 
-bool pkcs_sign_rsa_hash(const char* hash_alg, rsa& rk, byte* digest, int block_size,
+bool pkcs_sign_rsa_hash(const char* hash_alg, rsa& rk, byte_t* digest, int block_size,
                    string* s_signature) {
 
-  byte signature[block_size];
-  byte signature_block[block_size];
+  byte_t signature[block_size];
+  byte_t signature_block[block_size];
   memset(signature_block, 0, block_size);
   memset(signature, 0, block_size);
 
@@ -423,14 +423,14 @@ bool pkcs_sign_rsa_hash(const char* hash_alg, rsa& rk, byte* digest, int block_s
   return true;
 }
 
-bool pkcs_verify_hash(const char* hash_alg, rsa& rk, byte* digest, int block_size,
+bool pkcs_verify_hash(const char* hash_alg, rsa& rk, byte_t* digest, int block_size,
                    string& signature) {
 
-  byte unsealed_signature[block_size];
+  byte_t unsealed_signature[block_size];
   memset(unsealed_signature, 0, block_size);
   int signature_size = block_size;
 
-  if (!rk.encrypt((int)signature.size(), (byte*)signature.data(), &signature_size, unsealed_signature, 0)) {
+  if (!rk.encrypt((int)signature.size(), (byte_t*)signature.data(), &signature_size, unsealed_signature, 0)) {
       printf("Can't verify signature block\n");
   } 
 
@@ -477,7 +477,7 @@ int main(int an, char** av) {
       goto done;
     }
     int size_in = in_file.bytes_in_file();
-    byte in_buf[size_in];
+    byte_t in_buf[size_in];
     in_file.close();
     if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in_buf) < size_in) {
       printf("Can't read %s\n", FLAGS_input_file.c_str());
@@ -495,7 +495,7 @@ int main(int an, char** av) {
 
     file_util out_file;
     if (!out_file.write_file(FLAGS_output_file.c_str(), (int) base64.size(),
-            (byte*) base64.data())) {
+            (byte_t*) base64.data())) {
       printf("Can't write %s\n", FLAGS_output_file.c_str());
       ret = 1;
       goto done;
@@ -511,7 +511,7 @@ int main(int an, char** av) {
       goto done;
     }
     int size_in = in_file.bytes_in_file();
-    byte in_buf[size_in];
+    byte_t in_buf[size_in];
     in_file.close();
     if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in_buf) < size_in) {
       printf("Can't read %s\n", FLAGS_input_file.c_str());
@@ -527,7 +527,7 @@ int main(int an, char** av) {
       goto done;
     }
     if (!out_file.write_file(FLAGS_output_file.c_str(), (int) base64.size(),
-            (byte*) base64.data())) {
+            (byte_t*) base64.data())) {
       printf("Can't write %s\n", FLAGS_output_file.c_str());
       ret = 1;
       goto done;
@@ -546,7 +546,7 @@ int main(int an, char** av) {
     }
     int size_in = in_file.bytes_in_file();
 
-    byte in_buf[size_in];
+    byte_t in_buf[size_in];
     in_file.close();
     if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in_buf) < size_in) {
       printf("Can't read %s\n", FLAGS_input_file.c_str());
@@ -559,7 +559,7 @@ int main(int an, char** av) {
 
     string bytes;
     bytes.assign((char*)in_buf, size_in);
-    printf("bytes in: "); print_bytes((int)bytes.size(), (byte*)bytes.data());
+    printf("bytes in: "); print_bytes((int)bytes.size(), (byte_t*)bytes.data());
 
     if (bytes_to_u64_array(bytes, n.capacity(), n.value_ptr()) < 0) {
       printf("Can't convert to uint array\n");
@@ -593,7 +593,7 @@ int main(int an, char** av) {
     int size_in = in_file.bytes_in_file();
     in_file.close();
 
-    byte in_buf[size_in + 1];
+    byte_t in_buf[size_in + 1];
     in_buf[size_in] = 0;
     if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in_buf) < size_in) {
       printf("Can't read %s\n", FLAGS_input_file.c_str());
@@ -642,7 +642,7 @@ int main(int an, char** av) {
 
     file_util out_file;
     if (!out_file.write_file(FLAGS_output_file.c_str(), (int) bytes.size(),
-            (byte*) bytes.data())) {
+            (byte_t*) bytes.data())) {
       printf("Can't write %s\n", FLAGS_output_file.c_str());
       ret = 1;
       goto done;
@@ -650,7 +650,7 @@ int main(int an, char** av) {
     if (sign)
       n->toggle_sign();
     printf("number          :"); n->print(); printf("\n");
-    printf("bytes           :"); print_bytes((int) bytes.size(), (byte*)bytes.data());
+    printf("bytes           :"); print_bytes((int) bytes.size(), (byte_t*)bytes.data());
     delete n;
     goto done;
 
@@ -664,7 +664,7 @@ int main(int an, char** av) {
       goto done;
     }
     int size_in = in_file.bytes_in_file();
-    byte in_buf[size_in];
+    byte_t in_buf[size_in];
     in_file.close();
     if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in_buf) < size_in) {
       printf("Can't read %s\n", FLAGS_input_file.c_str());
@@ -680,7 +680,7 @@ int main(int an, char** av) {
       goto done;
     }
     if (!out_file.write_file(FLAGS_output_file.c_str(), (int) hex.size(),
-            (byte*) hex.data())) {
+            (byte_t*) hex.data())) {
       printf("Can't write %s\n", FLAGS_output_file.c_str());
       ret = 1;
       goto done;
@@ -696,7 +696,7 @@ int main(int an, char** av) {
       goto done;
     }
     int size_in = in_file.bytes_in_file();
-    byte in_buf[size_in];
+    byte_t in_buf[size_in];
     in_file.close();
     if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in_buf) < size_in) {
       printf("Can't read %s\n", FLAGS_input_file.c_str());
@@ -712,7 +712,7 @@ int main(int an, char** av) {
       goto done;
     }
     if (!out_file.write_file(FLAGS_output_file.c_str(), (int) bytes.size(),
-            (byte*) bytes.data())) {
+            (byte_t*) bytes.data())) {
       printf("Can't write %s\n", FLAGS_output_file.c_str());
       ret = 1;
       goto done;
@@ -768,8 +768,8 @@ int main(int an, char** av) {
     printf("block_size: %d\n", block_size);
 
     int in_out_size = block_size * ((size_in + block_size - 1) / block_size);
-    byte in[in_out_size];
-    byte out[in_out_size];
+    byte_t in[in_out_size];
+    byte_t out[in_out_size];
     memset(in, 0, in_out_size);
     memset(out, 0, in_out_size);
     curve_point pt1(8);
@@ -816,7 +816,7 @@ int main(int an, char** av) {
       size_in2 = in_file.bytes_in_file();
       in_file.close();
 
-      byte in2[size_in2];
+      byte_t in2[size_in2];
       if (in_file.read_file(FLAGS_input2_file.c_str(), size_in2, in2) < size_in2) {
         printf("Can't open %s\n", FLAGS_input2_file.c_str());
         ret = 1;
@@ -950,9 +950,9 @@ int main(int an, char** av) {
       cpm2.SerializeToString(&serialized_pt2);
 
       out_file.write_file(FLAGS_output_file.c_str(), (int)serialized_pt1.size(),
-                          (byte*)serialized_pt1.data());
+                          (byte_t*)serialized_pt1.data());
       out_file.write_file(FLAGS_output2_file.c_str(), (int)serialized_pt2.size(),
-                          (byte*)serialized_pt2.data());
+                          (byte_t*)serialized_pt2.data());
       printf("in            : "); print_bytes(in_out_size, in);
       printf("out           : "); pt1.print(); printf(", "); pt2.print(); printf("\n");
     } else if (strcmp(alg, "ecc") == 0 && strcmp(FLAGS_operation.c_str(), "decrypt_with_key") == 0) {
@@ -970,9 +970,9 @@ int main(int an, char** av) {
     int size_nonce = 128 / NBITSINBYTE;
     int size_enc_key = FLAGS_encrypt_key_size / NBITSINBYTE;
     int size_hmac_key = FLAGS_mac_key_size / NBITSINBYTE;
-    byte e_key[size_enc_key];
-    byte m_key[size_hmac_key];
-    byte n_key[size_enc_key];
+    byte_t e_key[size_enc_key];
+    byte_t m_key[size_hmac_key];
+    byte_t n_key[size_enc_key];
     string enc_key;
     string mac_key;
     string nonce;
@@ -1043,7 +1043,7 @@ int main(int an, char** av) {
     msg->SerializeToString(&serialized);
     file_util out_file;
      if (!out_file.write_file(FLAGS_scheme_file.c_str(), (int) serialized.size(),
-          (byte*) serialized.data())) {
+          (byte_t*) serialized.data())) {
       printf("Can't write %s\n", FLAGS_scheme_file.c_str());
       ret = 1;
       goto done;
@@ -1059,7 +1059,7 @@ int main(int an, char** av) {
     print_scheme_message(msg);
 
   } else if ("get_random" == FLAGS_operation) {
-    byte buf[FLAGS_random_size];
+    byte_t buf[FLAGS_random_size];
     int byte_size = (FLAGS_random_size + NBITSINBYTE - 1) / NBITSINBYTE;
     if (crypto_get_random_bytes(byte_size, buf) < byte_size) {
       printf("Can't generate random\n");
@@ -1105,7 +1105,7 @@ int main(int an, char** av) {
     }
     int size_in = in_file.bytes_in_file();
     in_file.close();
-    byte in[size_in];
+    byte_t in[size_in];
     if (!in_file.read_file(FLAGS_input_file.c_str(), size_in, in)) {
       printf("Can't read %s\n", FLAGS_input_file.c_str());
       ret = 1;
@@ -1113,7 +1113,7 @@ int main(int an, char** av) {
     }
     if ("scheme_encrypt" == FLAGS_operation) {
       int size_out = size_in + 3 * scheme.get_block_size() + scheme.get_mac_size();
-      byte out[size_out];
+      byte_t out[size_out];
       printf("\n");
       printf("Plain (%d)    : ", size_in);
       print_bytes(size_in, in);
@@ -1130,7 +1130,7 @@ int main(int an, char** av) {
       printf("\n");
     } else {
       int size_out = size_in;
-      byte out[size_out];
+      byte_t out[size_out];
       printf("\n");
       printf("Cipher (%d)  : ", size_in);
       print_bytes(size_in, in);
@@ -1182,10 +1182,10 @@ int main(int an, char** av) {
     string mac_key;
 
     int tmp_key_size = size_enc_key_bytes + size_hmac_key_bytes + 128;
-    byte tmp_key[tmp_key_size];
+    byte_t tmp_key[tmp_key_size];
     memset(tmp_key, 0, tmp_key_size);
 
-    if (!pbkdf2(FLAGS_pass.c_str(), strlen(salt_str), (byte*)salt_str,
+    if (!pbkdf2(FLAGS_pass.c_str(), strlen(salt_str), (byte_t*)salt_str,
                 num_iter, tmp_key_size, tmp_key)) {
         printf("Password derivation failed\n");
         ret = 1;
@@ -1210,19 +1210,19 @@ int main(int an, char** av) {
     }
     int size_in = in_file.bytes_in_file();
     in_file.close();
-    byte in[size_in];
+    byte_t in[size_in];
     if (!in_file.read_file(FLAGS_input_file.c_str(), size_in, in)) {
       printf("Can't read %s\n", FLAGS_input_file.c_str());
       ret = 1;
       goto done;
     }
 
-    printf("Derived encryption key: "); print_bytes((int)enc_key.size(), (byte*)enc_key.data());
-    printf("Derived mac key: "); print_bytes((int)mac_key.size(), (byte*)mac_key.data());
+    printf("Derived encryption key: "); print_bytes((int)enc_key.size(), (byte_t*)enc_key.data());
+    printf("Derived mac key: "); print_bytes((int)mac_key.size(), (byte_t*)mac_key.data());
 
     if ("encrypt_with_password" == FLAGS_operation) {
       int size_out = size_in + 3 * scheme.get_block_size() + scheme.get_mac_size();
-      byte out[size_out];
+      byte_t out[size_out];
       printf("\n");
       printf("Plain (%d)      : ", size_in);
       print_bytes(size_in, in);
@@ -1239,7 +1239,7 @@ int main(int an, char** av) {
       printf("\n");
     } else {
       int size_out = size_in;
-      byte out[size_out];
+      byte_t out[size_out];
       printf("\nCipher (%d)    : ", size_in);
       print_bytes(size_in, in);
       printf("\n");
@@ -1335,9 +1335,9 @@ int main(int an, char** av) {
     string mac_key;
 
     int tmp_key_size = size_enc_key_bytes + size_hmac_key_bytes + 128;
-    byte tmp_key[tmp_key_size];
+    byte_t tmp_key[tmp_key_size];
     memset(tmp_key, 0, tmp_key_size);
-    if (!pbkdf2(FLAGS_pass.c_str(), strlen(salt_str), (byte*)salt_str,
+    if (!pbkdf2(FLAGS_pass.c_str(), strlen(salt_str), (byte_t*)salt_str,
                 num_iter, tmp_key_size, tmp_key)) {
         printf("Password derivation failed\n");
         ret = 1;
@@ -1354,8 +1354,8 @@ int main(int an, char** av) {
       goto done;
     }
 
-    printf("Derived encryption key: "); print_bytes((int)enc_key.size(), (byte*)enc_key.data());
-    printf("Derived mac key: "); print_bytes((int)mac_key.size(), (byte*)mac_key.data());
+    printf("Derived encryption key: "); print_bytes((int)enc_key.size(), (byte_t*)enc_key.data());
+    printf("Derived mac key: "); print_bytes((int)mac_key.size(), (byte_t*)mac_key.data());
 
     if ("encrypt_file_with_password" == FLAGS_operation) {
       if (!scheme.encrypt_file(FLAGS_input_file.c_str(), FLAGS_output_file.c_str())) {
@@ -1388,13 +1388,13 @@ int main(int an, char** av) {
     }
     int size_in = in_file.bytes_in_file();
     in_file.close();
-    byte in[size_in];
+    byte_t in[size_in];
     if (!in_file.read_file(FLAGS_input_file.c_str(), size_in, in)) {
       printf("Can't read %s\n", FLAGS_input_file.c_str());
       ret = 1;
       goto done;
     }
-    byte hash[max_hash];
+    byte_t hash[max_hash];
     int hash_size_bytes = 0;
 
     if (strcmp("sha1", FLAGS_algorithm.c_str()) == 0) {
@@ -1450,7 +1450,7 @@ int main(int an, char** av) {
           strcmp(FLAGS_algorithm.c_str(), "twofish") == 0 ||
           strcmp(FLAGS_algorithm.c_str(), "tea") == 0 ||
           strcmp(FLAGS_algorithm.c_str(), "rc4") == 0) {
-        byte key[byte_size];
+        byte_t key[byte_size];
         memset(key, 0, byte_size);
 
       if (crypto_get_random_bytes(byte_size, key) < byte_size) {
@@ -1586,7 +1586,7 @@ int main(int an, char** av) {
       string s;
       km->SerializeToString(&s);
       file_util out_file;
-      if (!out_file.write_file(FLAGS_key_file.c_str(), (int) s.size(), (byte*) s.data())) {
+      if (!out_file.write_file(FLAGS_key_file.c_str(), (int) s.size(), (byte_t*) s.data())) {
         printf("Can't write %s\n", FLAGS_key_file.c_str());
         ret = 1;
         goto done;
@@ -1633,7 +1633,7 @@ int main(int an, char** av) {
         goto done;
       }
       file_util out_file;
-      if (!out_file.write_file(FLAGS_key_file.c_str(), (int) s.size(), (byte*) s.data())) {
+      if (!out_file.write_file(FLAGS_key_file.c_str(), (int) s.size(), (byte_t*) s.data())) {
         printf("Can't write %s\n", FLAGS_key_file.c_str());
         ret = 1;
         goto done;
@@ -1653,7 +1653,7 @@ int main(int an, char** av) {
     string s;
     km->SerializeToString(&s);
     file_util out_file;
-    if (!out_file.write_file(FLAGS_key_file.c_str(), (int) s.size(), (byte*) s.data())) {
+    if (!out_file.write_file(FLAGS_key_file.c_str(), (int) s.size(), (byte_t*) s.data())) {
       printf("Can't write %s\n", FLAGS_key_file.c_str());
       ret = 1;
       goto done;
@@ -1676,7 +1676,7 @@ int main(int an, char** av) {
     file_util in_file;
 
     int byte_size = (FLAGS_key_size + NBITSINBYTE - 1) / NBITSINBYTE;
-    byte hmac_key[byte_size];
+    byte_t hmac_key[byte_size];
     if (!in_file.read_file(FLAGS_key_file.c_str(), byte_size, hmac_key)) {
       printf("Can't read %s\n", FLAGS_key_file.c_str());
       ret = 1;
@@ -1691,13 +1691,13 @@ int main(int an, char** av) {
     int size_in = in_file.bytes_in_file();
     in_file.close();
 
-    byte in[size_in];
+    byte_t in[size_in];
     if (!in_file.read_file(FLAGS_input_file.c_str(), size_in, in)) {
       printf("Can't read %s\n", FLAGS_input_file.c_str());
       ret = 1;
       goto done;
     }
-    byte hmac[max_hash];
+    byte_t hmac[max_hash];
     int mac_size;
 
     if (strcmp(FLAGS_algorithm.c_str(), "hmac-sha256") == 0) {
@@ -1732,7 +1732,7 @@ int main(int an, char** av) {
         goto done;
       }
     } else {
-      byte recovered_hmac[mac_size];
+      byte_t recovered_hmac[mac_size];
       if (!in_file.read_file(FLAGS_input2_file.c_str(), byte_size, recovered_hmac)) {
         printf("Can't read %s\n", FLAGS_input2_file.c_str());
         ret = 1;
@@ -1755,7 +1755,7 @@ int main(int an, char** av) {
       goto done;
     }
     int size_in = in_file.bytes_in_file();
-    byte in[size_in];
+    byte_t in[size_in];
     in_file.close();
     if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in) < size_in) {
       printf("Can't read %s\n", FLAGS_input_file.c_str());
@@ -1792,7 +1792,7 @@ int main(int an, char** av) {
         goto done;
       }
 
-    byte digest[hash_size];
+    byte_t digest[hash_size];
     memset(digest, 0, hash_size);
     sha256 h;
 
@@ -1820,7 +1820,7 @@ int main(int an, char** av) {
 
     file_util out_file;
     if (!out_file.write_file(FLAGS_signature_file.c_str(), (int) serialized_signature.size(),
-            (byte*) serialized_signature.data())) {
+            (byte_t*) serialized_signature.data())) {
       printf("Can't write %s\n", FLAGS_signature_file.c_str());
       ret = 1;
       goto done;
@@ -1834,7 +1834,7 @@ int main(int an, char** av) {
       goto done;
     }
     int size_in = in_file.bytes_in_file();
-    byte in[size_in];
+    byte_t in[size_in];
     in_file.close();
     if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in) < size_in) {
       printf("Can't read %s\n", FLAGS_input_file.c_str());
@@ -1869,7 +1869,7 @@ int main(int an, char** av) {
         goto done;
       }
 
-    byte digest[hash_size];
+    byte_t digest[hash_size];
     memset(digest, 0, hash_size);
     sha256 h;
 
@@ -1885,7 +1885,7 @@ int main(int an, char** av) {
       goto done;
     }
     int size_sig = in_file.bytes_in_file();
-    byte sig[size_sig];
+    byte_t sig[size_sig];
     in_file.close();
     if (in_file.read_file(FLAGS_signature_file.c_str(), size_sig, sig) < size_sig) {
       printf("Can't read %s\n", FLAGS_signature_file.c_str());
@@ -1972,12 +1972,12 @@ int main(int an, char** av) {
     string s_body;
     cbm->SerializeToString(&s_body);
 
-    byte digest[hash_size];
+    byte_t digest[hash_size];
     memset(digest, 0, hash_size);
     sha256 h;
 
     h.init();
-    h.add_to_hash((int)s_body.size(), (byte*)s_body.data());
+    h.add_to_hash((int)s_body.size(), (byte_t*)s_body.data());
     h.finalize();
     h.get_digest(hash_size, digest);
 
@@ -2013,7 +2013,7 @@ int main(int an, char** av) {
 
     file_util out_file;
     if (!out_file.write_file(FLAGS_output_file.c_str(), (int) s_cert.size(),
-            (byte*) s_cert.data())) {
+            (byte_t*) s_cert.data())) {
       printf("Can't write %s\n", FLAGS_output_file.c_str());
       ret = 1;
       goto done;
@@ -2029,7 +2029,7 @@ int main(int an, char** av) {
       goto done;
     }
     int size_in = in_file.bytes_in_file();
-    byte in[size_in];
+    byte_t in[size_in];
     in_file.close();
     if (in_file.read_file(FLAGS_input_file.c_str(), size_in, in) < size_in) {
       printf("Can't read %s\n", FLAGS_input_file.c_str());
@@ -2064,12 +2064,12 @@ int main(int an, char** av) {
         goto done;
       }
 
-    byte digest[hash_size];
+    byte_t digest[hash_size];
     memset(digest, 0, hash_size);
     sha256 h;
 
     h.init();
-    h.add_to_hash((int)s_body.size(), (byte*)s_body.data());
+    h.add_to_hash((int)s_body.size(), (byte_t*)s_body.data());
     h.finalize();
     h.get_digest(hash_size, digest);
 

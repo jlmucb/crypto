@@ -79,7 +79,7 @@ public:
 
 
   // initialize objects from recovered data
-  bool init_nonce(int size, byte* value);
+  bool init_nonce(int size, byte_t* value);
   bool init();
   bool init(const char* alg, const char* id_name,
       const char* mode, const char* pad, const char* purpose,
@@ -88,22 +88,23 @@ public:
       const char* enc_key_name, const char* hmac_alg,
       int size_hmac_key,  string& hmac_key);
 
-  void ctr_encrypt_step(byte* in, byte* out);
-  void ctr_decrypt_step(byte* in, byte* out);
-  void cbc_encrypt_step(byte* in, byte* out);
-  void cbc_decrypt_step(byte* in, byte* out);
-  void update_nonce(int size, byte* buf);
-  bool get_nonce_data(int size_in, byte* in);
+  void ctr_encrypt_step(byte_t* in, byte_t* out);
+  void ctr_decrypt_step(byte_t* in, byte_t* out);
+  void cbc_encrypt_step(byte_t* in, byte_t* out);
+  void cbc_decrypt_step(byte_t* in, byte_t* out);
+  void update_nonce(int size, byte_t* buf);
+  bool get_nonce_data(int size_in, byte_t* in);
 
-  bool encrypt_block(int size_in, byte* in, byte* out);
-  bool decrypt_block(int size_in, byte* in, byte* out);
+  bool encrypt_block(int size_in, byte_t* in, byte_t* out);
+  bool decrypt_block(int size_in, byte_t* in, byte_t* out);
 
-  bool finalize_encrypt(int size_final, byte* final_in, int* size_out, byte* out);
-  bool finalize_decrypt(int size_final, byte* final_in,
-        int* size_out, byte* out, byte* computed_mac);
+  bool finalize_encrypt(int size_final, byte_t* final_in,
+                        int* size_out, byte_t* out);
+  bool finalize_decrypt(int size_final, byte_t* final_in,
+        int* size_out, byte_t* out, byte_t* computed_mac);
 
-  bool encrypt_message(int size_in, byte* in, int size_out, byte* out);
-  bool decrypt_message(int size_in, byte* in, int size_out, byte* out);
+   bool encrypt_message(int size_in, byte_t* in, int size_out, byte_t* out);
+  bool decrypt_message(int size_in, byte_t* in, int size_out, byte_t* out);
 
   bool encrypt_file(const char* file_in, const char* file_out);
   bool decrypt_file(const char* file_in, const char* file_out);

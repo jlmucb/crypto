@@ -39,7 +39,7 @@
 
 #define SELECT_BYTE_FROM_UINT32_IN_MEMORY 0
 #if SELECT_BYTE_FROM_UINT32_IN_MEMORY
-#define SELECT_BYTE(X, b) (((byte*)(&(X)))[BYTE_OFFSET(b)])
+#define SELECT_BYTE(X, b) (((byte_t*)(&(X)))[BYTE_OFFSET(b)])
 #else
 #define SELECT_BYTE(X, b) (((X) >> (8 * (b))) & 0xff)
 #endif
@@ -57,14 +57,14 @@
   ((uint32_t)((p)[0]) | (uint32_t)((p)[1]) << 8 | (uint32_t)((p)[2]) << 16 | \
    (uint32_t)((p)[3]) << 24)
 #define PUT32(v, p)                    \
-  (p)[0] = (byte)(((v)) & 0xff);       \
-  (p)[1] = (byte)(((v) >> 8) & 0xff);  \
-  (p)[2] = (byte)(((v) >> 16) & 0xff); \
-  (p)[3] = (byte)(((v) >> 24) & 0xff)
+  (p)[0] = (byte_t)(((v)) & 0xff);       \
+  (p)[1] = (byte_t)(((v) >> 8) & 0xff);  \
+  (p)[2] = (byte_t)(((v) >> 16) & 0xff); \
+  (p)[3] = (byte_t)(((v) >> 24) & 0xff)
 
 #endif
 
-static const byte t_table[2][4][16] = {
+static const byte_t t_table[2][4][16] = {
     {{0x8, 0x1, 0x7, 0xD, 0x6, 0xF, 0x3, 0x2, 0x0, 0xB, 0x5, 0x9, 0xE, 0xC, 0xA,
       0x4},
      {0xE, 0xC, 0xB, 0x8, 0x1, 0x2, 0x3, 0x5, 0xF, 0x4, 0xA, 0x6, 0x7, 0x0, 0x9,
@@ -90,11 +90,11 @@ two_fish::two_fish() {
   key_ = nullptr;
 }
 
-two_fish::~two_fish() { memset((byte*)&round_data, 0, sizeof(round_data)); }
+two_fish::~two_fish() { memset((byte_t*)&round_data, 0, sizeof(round_data)); }
 
 #define ROR4BY1(x) (((x) >> 1) | (((x) << 3) & 0x8))
 
-static void make_q_table(const byte t[4][16], byte q[256]) {
+static void make_q_table(const byte_t t[4][16], byte_t q[256]) {
   int ae, be, ao, bo;
   int i;
   for (i = 0; i < 256; i++) {
@@ -108,7 +108,7 @@ static void make_q_table(const byte t[4][16], byte q[256]) {
     bo = ae ^ ROR4BY1(be) ^ ((ae << 3) & 8);
     ae = t[2][ao];
     be = t[3][bo];
-    q[i] = (byte)((be << 4) | ae);
+    q[i] = (byte_t)((be << 4) | ae);
   }
 }
 
@@ -154,7 +154,7 @@ void two_fish::initialise_mds_tables() {
 #define H24(y, L) H23(q0[y] ^ L[26], L)
 #define H34(y, L) H33(q1[y] ^ L[27], L)
 
-uint32_t two_fish::h(int k, byte L[], int kCycles) {
+uint32_t two_fish::h(int k, byte_t L[], int kCycles) {
   switch (kCycles) {
     case 2:
       return H02(k, L) ^ H12(k, L) ^ H22(k, L) ^ H32(k, L);
@@ -167,7 +167,7 @@ uint32_t two_fish::h(int k, byte L[], int kCycles) {
   }
 }
 
-void two_fish::fill_keyed_sboxes(byte S[], int kCycles, two_fishKey* xkey) {
+void two_fish::fill_keyed_sboxes(byte_t S[], int kCycles, two_fishKey* xkey) {
   int i;
 
   switch (kCycles) {
@@ -201,15 +201,15 @@ void two_fish::fill_keyed_sboxes(byte S[], int kCycles, two_fishKey* xkey) {
 static unsigned int rs_poly_const[] = {0, 0x14d};
 static unsigned int rs_poly_div_const[] = {0, 0xa6};
 
-void two_fish::init_key(int key_len, const byte key[], two_fishKey* xkey) {
-  byte K[32 + 32 + 4];
+void two_fish::init_key(int key_len, const byte_t key[], two_fishKey* xkey) {
+  byte_t K[32 + 32 + 4];
   int kCycles;
   int i;
   uint32_t A, B;
-  byte* kptr;
-  byte* sptr;
-  byte* t;
-  byte b, bx, bxx;
+  byte_t* kptr;
+  byte_t* sptr;
+  byte_t* t;
+  byte_t b, bx, bxx;
 
   if (key_len < 0 || key_len > 32) {
     return;
@@ -240,8 +240,8 @@ void two_fish::init_key(int key_len, const byte key[], two_fishKey* xkey) {
     t = sptr + 11;
     while (t > sptr + 3) {
       b = *t;
-      bx = (byte)((b << 1) ^ rs_poly_const[b >> 7]);
-      bxx = (byte)((b >> 1) ^ rs_poly_div_const[b & 1] ^ bx);
+      bx = (byte_t)((b << 1) ^ rs_poly_const[b >> 7]);
+      bxx = (byte_t)((b >> 1) ^ rs_poly_div_const[b & 1] ^ bx);
       t[-1] ^= bxx;
       t[-2] ^= bx;
       t[-3] ^= bxx;
@@ -255,7 +255,7 @@ void two_fish::init_key(int key_len, const byte key[], two_fishKey* xkey) {
   memset(K, 0, sizeof(K));
 }
 
-bool two_fish::init(int key_bit_size, byte* key, int direction) {
+bool two_fish::init(int key_bit_size, byte_t* key, int direction) {
   key_size_in_bits_= key_bit_size;
   algorithm_.assign("twofish");
 
@@ -263,7 +263,7 @@ bool two_fish::init(int key_bit_size, byte* key, int direction) {
     return false;
   }
   secret_.assign((char*)key, key_size_in_bits_ / NBITSINBYTE);
-  key_ = (byte*) secret_.data();
+  key_ = (byte_t*) secret_.data();
   initialise_q_boxes();
   initialise_mds_tables();
   init_key(key_size_in_bits_ / NBITSINBYTE, key_, &round_data);
@@ -340,7 +340,7 @@ bool two_fish::init(int key_bit_size, byte* key, int direction) {
   PUT32(C, dst + 8);                            \
   PUT32(D, dst + 12)
 
-void two_fish::encrypt_block(byte* p, byte* c) {
+void two_fish::encrypt_block(byte_t* p, byte_t* c) {
   volatile uint32_t A, B, C, D, T0, T1;
   const two_fishKey* xkey = &round_data;
 
@@ -349,7 +349,7 @@ void two_fish::encrypt_block(byte* p, byte* c) {
   PUT_OUTPUT(C, D, A, B, c, xkey, 4);
 }
 
-void two_fish::decrypt_block(byte* c, byte* p) {
+void two_fish::decrypt_block(byte_t* c, byte_t* p) {
   volatile uint32_t A, B, C, D, T0, T1;
   const two_fishKey* xkey = &round_data;
 
@@ -358,7 +358,7 @@ void two_fish::decrypt_block(byte* c, byte* p) {
   PUT_OUTPUT(C, D, A, B, p, xkey, 0);
 }
 
-void two_fish::encrypt(int size, byte* p, byte* c) {
+void two_fish::encrypt(int size, byte_t* p, byte_t* c) {
   volatile uint32_t A, B, C, D, T0, T1;
   const two_fishKey* xkey = &round_data;
 
@@ -367,7 +367,7 @@ void two_fish::encrypt(int size, byte* p, byte* c) {
   PUT_OUTPUT(C, D, A, B, c, xkey, 4);
 }
 
-void two_fish::decrypt(int size, byte* c, byte* p) {
+void two_fish::decrypt(int size, byte_t* c, byte_t* p) {
   volatile uint32_t A, B, C, D, T0, T1;
   const two_fishKey* xkey = &round_data;
 

@@ -178,7 +178,7 @@ void sha1::transform_block(const uint32_t* block) {
   state_[4] += e;
 }
 
-void sha1::add_to_hash(int size, const byte* in) {
+void sha1::add_to_hash(int size, const byte_t* in) {
   if (num_bytes_waiting_ > 0) {
     int needed = BLOCKBYTESIZE - num_bytes_waiting_;
     if (size < needed) {
@@ -205,7 +205,7 @@ void sha1::add_to_hash(int size, const byte* in) {
   }
 }
 
-bool sha1::get_digest(int size, byte* out) {
+bool sha1::get_digest(int size, byte_t* out) {
   if (!finalized_) return false;
   if (size < DIGESTBYTESIZE) return false;
   memcpy(out, digest_, DIGESTBYTESIZE);
@@ -235,6 +235,6 @@ void sha1::finalize() {
 #endif
   transform_block((const uint32_t*)bytes_waiting_);
   // 8 bytes of length (bit length)
-  memcpy(digest_, (byte*)state_, DIGESTBYTESIZE);
+  memcpy(digest_, (byte_t*)state_, DIGESTBYTESIZE);
   finalized_ = true;
 }

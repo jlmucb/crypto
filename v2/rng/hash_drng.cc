@@ -99,12 +99,12 @@ double hash_drng::current_entropy() {
   return current_entropy_;
 }
 
-bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization,
-      byte* personalization, int entropy_width, byte* material, double ent) {
+bool hash_drng::init(int size_nonce, byte_t* nonce, int size_personalization,
+      byte_t* personalization, int entropy_width, byte_t* material, double ent) {
   reseed_ctr_ = 0;
   int seed_material_size = entropy_width + size_nonce + size_personalization;
 
-  byte seed_material[seed_material_size];
+  byte_t seed_material[seed_material_size];
   memset(seed_material, 0, seed_material_size);
   memcpy(seed_material, material, entropy_width);
 #if 0
@@ -124,14 +124,14 @@ bool hash_drng::init(int size_nonce, byte* nonce, int size_personalization,
   return initialized_;
 }
 
-void hash_drng::hash_gen(int num_requested_bits, byte* out) {
+void hash_drng::hash_gen(int num_requested_bits, byte_t* out) {
   int size_output_bytes = (num_requested_bits + NBITSINBYTE - 1) / NBITSINBYTE;
   int m = size_output_bytes / hash_byte_output_size_;
-  byte data[seed_len_bytes_ + 1];  // to fill to uint64_t boundary
+  byte_t data[seed_len_bytes_ + 1];  // to fill to uint64_t boundary
   memset(data, 0, seed_len_bytes_ + 1);
   memcpy(data, V_, seed_len_bytes_);
   int bytes_so_far = 0;
-  byte extra_out[hash_byte_output_size_];
+  byte_t extra_out[hash_byte_output_size_];
   memset(extra_out, 0, hash_byte_output_size_);
   sha256 hash_obj;
 
@@ -159,17 +159,17 @@ void hash_drng::hash_gen(int num_requested_bits, byte* out) {
   }
 }
 
-bool hash_drng::generate_random_bits(int num_bits_needed, byte* out, int size_add_in_bits,
-            byte* add_in_bits) {
+bool hash_drng::generate_random_bits(int num_bits_needed, byte_t* out, int size_add_in_bits,
+            byte_t* add_in_bits) {
   sha256 hash_obj;
 
   int add_in_byte_size = (size_add_in_bits + NBITSINBYTE - 1) / NBITSINBYTE;
 
   if (size_add_in_bits > 0) {
     // w = Hash(0x02 || V_||add_in_bits)
-    byte w[hash_byte_output_size_];
+    byte_t w[hash_byte_output_size_];
     memset(w, 0, hash_byte_output_size_);
-    byte two = 0x02;
+    byte_t two = 0x02;
     hash_obj.init();
     hash_obj.add_to_hash(1, &two);
     hash_obj.add_to_hash(seed_len_bytes_, V_);
@@ -183,16 +183,16 @@ bool hash_drng::generate_random_bits(int num_bits_needed, byte* out, int size_ad
     int size_v = (seed_len_bytes_ + sizeof(uint64_t) - 1) / sizeof(uint64_t);
     uint64_t t[size_v];
     big_add(size_v, (uint64_t*) V_, 4, (uint64_t*) w, size_v, t);
-    reverse_bytes(55, (byte*)t, V_);
+    reverse_bytes(55, (byte_t*)t, V_);
     reverse_bytes_in_place(32, w);
   }
 
   hash_gen(num_bits_needed, out);
 
   // H = Hash(0x03||V_)
-  byte H[hash_byte_output_size_];
+  byte_t H[hash_byte_output_size_];
   memset(H, 0, hash_byte_output_size_);
-  byte three = 0x03;
+  byte_t three = 0x03;
   hash_obj.init();
   hash_obj.add_to_hash(1, &three);
   hash_obj.add_to_hash(seed_len_bytes_, V_);

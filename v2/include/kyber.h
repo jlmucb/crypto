@@ -24,18 +24,18 @@ int round(int a, int b);
 int compress(int q, int x, int d);
 int decompress(int q, int x, int d);
 
-byte bit_from_ints(int bits_in_int, int bit_numb, int* pi);
-byte bit_from_bytes(int bit_numb, byte* buf);
-bool byte_encode(int d, int n, int* pi, byte* out);
-bool byte_decode(int d, int n, int in_len, byte* in, int* pi);
+byte_t bit_from_ints(int bits_in_int, int bit_numb, int* pi);
+byte_t bit_from_bytes(int bit_numb, byte_t* buf);
+bool byte_encode(int d, int n, int* pi, byte_t* out);
+bool byte_decode(int d, int n, int in_len, byte_t* in, int* pi);
 
-byte bit_from_int_vector(int bits_in_int, int bit_numb, vector<int>& v);
-bool byte_encode_from_vector(int d, int n, vector<int>& v, byte* out);
-bool byte_decode_to_vector(int d, int n, int in_len, byte* in, vector<int>& v);
+byte_t bit_from_int_vector(int bits_in_int, int bit_numb, vector<int>& v);
+bool byte_encode_from_vector(int d, int n, vector<int>& v, byte_t* out);
+bool byte_decode_to_vector(int d, int n, int in_len, byte_t* in, vector<int>& v);
 
-bool G(int in_len, byte* in, int bit_out_len, byte* out);
-bool prf(int eta, int in1_len, byte* in1, int in2_len, byte* in2, int bit_out_len, byte* out);
-bool xof(int in1_len, byte* in1, int i, int j, int bit_out_len, byte* out);
+bool G(int in_len, byte_t* in, int bit_out_len, byte_t* out);
+bool prf(int eta, int in1_len, byte_t* in1, int in2_len, byte_t* in2, int bit_out_len, byte_t* out);
+bool xof(int in1_len, byte_t* in1, int i, int j, int bit_out_len, byte_t* out);
 
 class kyber_parameters {
 public:
@@ -110,8 +110,8 @@ public:
   coefficient_vector** c_;
 };
 
-byte bit_reverse(byte b);
-byte bit_in_byte_stream(int k, int l, byte* b);
+byte_t bit_reverse(byte_t b);
+byte_t bit_in_byte_stream(int k, int l, byte_t* b);
 bool rand_coefficient(int top, coefficient_vector& v);
 bool fill_random_coefficient_array(coefficient_array* ma);
 bool fill_random_module_array(module_array* ma);
@@ -121,8 +121,8 @@ bool ntt_base_mult(int q, int g, int& in1a, int& in1b,
         int& in2a, int& in2b, int* outa, int* outb);
 int exp_in_ntt(int q, int e, int base);
 
-bool sample_ntt(int q, int l, int b_len, byte* b, vector<int>& out);
-bool sample_poly_cbd(int q, int eta, int b_len, byte* b, vector<int>& out);
+bool sample_ntt(int q, int l, int b_len, byte_t* b, vector<int>& out);
+bool sample_poly_cbd(int q, int eta, int b_len, byte_t* b, vector<int>& out);
 
 bool ntt(int g, coefficient_vector& in, coefficient_vector* out);
 bool ntt_inv(int g, coefficient_vector& in, coefficient_vector* out);
@@ -164,19 +164,19 @@ bool ntt_module_apply_transposed_array(int g, module_array& A, module_vector& v,
 
 void print_kyber_parameters(kyber_parameters& p);
 
-bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte* ek,
-      int* dk_len, byte* dk);
-bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte* ek,
-      int m_len, byte* m, int b_r_len, byte* b_r, int* c_len, byte* c);
-bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte* dk,
-      int c_len, byte* c, int* m_len, byte* m);
+bool kyber_keygen(int g, kyber_parameters& p, int* ek_len, byte_t* ek,
+      int* dk_len, byte_t* dk);
+bool kyber_encrypt(int g, kyber_parameters& p, int ek_len, byte_t* ek,
+      int m_len, byte_t* m, int b_r_len, byte_t* b_r, int* c_len, byte_t* c);
+bool kyber_decrypt(int g, kyber_parameters& p, int dk_len, byte_t* dk,
+      int c_len, byte_t* c, int* m_len, byte_t* m);
 
-bool kyber_kem_keygen(int g, kyber_parameters& p, int* kem_ek_len, byte* kem_ek,
-      int* kem_dk_len, byte* kem_dk);
-bool kyber_kem_encaps(int g, kyber_parameters& p, int kem_ek_len, byte* kem_ek,
-      int* k_len, byte* k, int* c_len, byte* c);
-bool kyber_kem_decaps(int g, kyber_parameters& p, int kem_dk_len, byte* kem_dk,
-      int c_len, byte* c, int* k_len, byte* k);
+bool kyber_kem_keygen(int g, kyber_parameters& p, int* kem_ek_len, byte_t* kem_ek,
+      int* kem_dk_len, byte_t* kem_dk);
+bool kyber_kem_encaps(int g, kyber_parameters& p, int kem_ek_len, byte_t* kem_ek,
+      int* k_len, byte_t* k, int* c_len, byte_t* c);
+bool kyber_kem_decaps(int g, kyber_parameters& p, int kem_dk_len, byte_t* kem_dk,
+      int c_len, byte_t* c, int* k_len, byte_t* k);
 #endif
 
 #if 0

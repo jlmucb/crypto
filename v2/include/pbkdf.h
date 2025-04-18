@@ -19,6 +19,6 @@
 #ifndef _CRYPTO_PBKDF_H__
 #define _CRYPTO_PBKDF_H__
 
-bool pbkdf2(const char* pass, int saltLen, byte* salt, int iter, int out_size,
-            byte* out);
+bool pbkdf2(const char* pass, int saltLen, byte_t* salt, int iter, int out_size,
+            byte_t* out);
 #endif

@@ -62,7 +62,7 @@ char map_c[256] = {
   '$', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U'
   };
 
-char bytes_to_char(byte b) {
+char bytes_to_char(byte_t b) {
   return map_c[b];
 }
 
@@ -86,9 +86,9 @@ int main(int an, char** av) {
   int pw_size = 14;
   sscanf(FLAGS_length.c_str(), "%d", &pw_size);
   int out_size = pw_size;
-  byte out[out_size];
+  byte_t out[out_size];
   memset(out, 0, out_size);
-  if (!pbkdf2(password_and_site.c_str(), salt_bytes.size(), (byte*)salt_bytes.data(), iter, out_size, out)) {
+  if (!pbkdf2(password_and_site.c_str(), salt_bytes.size(), (byte_t*)salt_bytes.data(), iter, out_size, out)) {
     printf("pbkdf2 fails\n");
     return 1;
   }
@@ -97,7 +97,7 @@ int main(int an, char** av) {
     printf("password: %s\n", FLAGS_password.c_str());
     printf("site: %s\n", FLAGS_site.c_str());
     printf("salt: ");
-    print_bytes((int)salt_bytes.size(), (byte*)salt_bytes.data());
+    print_bytes((int)salt_bytes.size(), (byte_t*)salt_bytes.data());
     printf("password_and_site: %s\n", password_and_site.c_str());
     printf("out bytes: ");
     print_bytes(out_size, out);

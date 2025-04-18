@@ -170,7 +170,7 @@ double binomial_value(int n, double p, int observed, bool tail_upper_direction) 
   return accum;
 }
 
-bool get_most_common_row_value(int m, int n, byte* a, int row, byte* value, int* count) {
+bool get_most_common_row_value(int m, int n, byte_t* a, int row, byte_t* value, int* count) {
   int counts[256];
 
   for (int i = 0; i < 256; i++)
@@ -188,7 +188,7 @@ bool get_most_common_row_value(int m, int n, byte* a, int row, byte* value, int*
   return true;
 }
 
-bool get_most_common_col_value(int m, int n, byte* a, int col, byte* value, int* count) {
+bool get_most_common_col_value(int m, int n, byte_t* a, int col, byte_t* value, int* count) {
   int counts[256];
 
   for (int i = 0; i < 256; i++)
@@ -212,17 +212,17 @@ bool get_most_common_col_value(int m, int n, byte* a, int col, byte* value, int*
 //    Apply binomial test to rows and columns
 //    return value is revised entropy, 0 means failure requiring restart
 //    alpha = .000005
-double restart_test(int m, int n, byte* a, double h_min, double alpha) {
-  byte most_common_row_value = 0;
+double restart_test(int m, int n, byte_t* a, double h_min, double alpha) {
+  byte_t most_common_row_value = 0;
   int most_common_row_count = 0;
-  byte most_common_col_value = 0;
+  byte_t most_common_col_value = 0;
   int most_common_col_count = 0;
   int highest_row = 0;
   int highest_col = 0;
   int highest_row_count = 0;
   int highest_col_count = 0;
   int row, col;
-  byte value;
+  byte_t value;
   int count = 0;
   double h_c = h_min;
   double h_r = h_min;

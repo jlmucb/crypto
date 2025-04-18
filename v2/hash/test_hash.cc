@@ -30,14 +30,14 @@
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
 // sha 1 tests
-const byte* sha1_test1_input= (const byte*)"abc";
+const byte_t* sha1_test1_input= (const byte_t*)"abc";
 int sha1_test1_size= 3;
 uint32_t sha1_test1_answer[5] = {
   0xA9993E36, 0x4706816A, 0xBA3E2571,
   0x7850C26C, 0x9CD0D89D
 };
-const byte* sha1_test2_input=
-    (const byte*)"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+const byte_t* sha1_test2_input=
+    (const byte_t*)"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
 uint32_t sha1_test2_answer[5] = {
   0x84983E44, 0x1C3BD26E, 0xBAAE4AA1,
   0xF95129E5, 0xE54670F1
@@ -45,22 +45,22 @@ uint32_t sha1_test2_answer[5] = {
 int sha1_test2_size = 56;
 
 // sha256 tests
-const byte* sha256_test1_input = (const byte*)"abc";
+const byte_t* sha256_test1_input = (const byte_t*)"abc";
 int sha256_test1_size= 3;
 uint32_t sha256_test1_answer[8] = {
   0xBA7816BF, 0x8F01CFEA, 0x414140DE, 0x5DAE2223,
   0xB00361A3, 0x96177A9C, 0xB410FF61, 0xF20015AD
 };
-const byte* sha256_test2_input=
-    (const byte*)"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
+const byte_t* sha256_test2_input=
+    (const byte_t*)"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq";
 uint32_t sha256_test2_answer[8] = {
   0x248D6A61, 0xD20638B8, 0xE5C02693, 0x0C3E6039, 
   0xA33CE459, 0x64FF2167, 0xF6ECEDD4, 0x19DB06C1
 };
 int sha256_test2_size= 56;
 
-const byte* sha256_test3_input=
-      (const byte*)"abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu";
+const byte_t* sha256_test3_input=
+      (const byte_t*)"abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu";
 int sha256_test3_size= 112;
 uint32_t sha256_test3_answer[8] = {
   0xcf5b16a7, 0x78af8380, 0x036ce59e, 0x7b049237, 
@@ -70,7 +70,7 @@ uint32_t sha256_test3_answer[8] = {
 // sha-3
 
 const int sha3_testa_size = 0;
-const byte sha3_testa_answer[128] = {
+const byte_t sha3_testa_answer[128] = {
   0xb7, 0x51, 0x85, 0x0b, 0x1a, 0x57, 0x16, 0x8a,
   0x56, 0x93, 0xcd, 0x92, 0x4b, 0x6b, 0x09, 0x6e,
   0x08, 0xf6, 0x21, 0x82, 0x74, 0x44, 0xf7, 0x0d,
@@ -83,8 +83,8 @@ const byte sha3_testa_answer[128] = {
 
 
 const int sha3_test0_size = 3;
-const byte sha3_test0_input[3] = {0x61, 0x62, 0x63};
-const byte sha3_test0_answer[128] = {
+const byte_t sha3_test0_input[3] = {0x61, 0x62, 0x63};
+const byte_t sha3_test0_answer[128] = {
   0xb7, 0x51, 0x85, 0x0b, 0x1a, 0x57, 0x16, 0x8a,
   0x56, 0x93, 0xcd, 0x92, 0x4b, 0x6b, 0x09, 0x6e,
   0x08, 0xf6, 0x21, 0x82, 0x74, 0x44, 0xf7, 0x0d,
@@ -97,8 +97,8 @@ const byte sha3_test0_answer[128] = {
 
 // sha-3 256
 const int sha3_test0a_size = 3;
-const byte sha3_test0a_input[3] = {0x61, 0x62, 0x63};
-const byte sha3_test0a_answer[128] = {
+const byte_t sha3_test0a_input[3] = {0x61, 0x62, 0x63};
+const byte_t sha3_test0a_answer[128] = {
     0x3a, 0x98, 0x5d, 0xa7, 0x4f, 0xe2, 0x25, 0xb2,
     0x04, 0x5c, 0x17, 0x2d, 0x6b, 0xd3, 0x90, 0xbd,
     0x85, 0x5f, 0x08, 0x6e, 0x3e, 0x9d, 0x52, 0x5b,
@@ -107,8 +107,8 @@ const byte sha3_test0a_answer[128] = {
 
 // c = 1024, d=64
 const int sha3_test1_size = 1;
-const byte sha3_test1_input[1] = {0xCC};
-const byte sha3_test1_answer[64] = {
+const byte_t sha3_test1_input[1] = {0xCC};
+const byte_t sha3_test1_answer[64] = {
     0x39, 0x39, 0xFC, 0xC8, 0xB5, 0x7B, 0x63, 0x61,
     0x25, 0x42, 0xDA, 0x31, 0xA8, 0x34, 0xE5, 0xDC,
     0xC3, 0x6E, 0x2E, 0xE0, 0xF6, 0x52, 0xAC, 0x72,
@@ -121,8 +121,8 @@ const byte sha3_test1_answer[64] = {
 
 // c = 512, d=32
 const int sha3_test1a_size = 1;
-const byte sha3_test1a_input[1] = {0xCC};
-const byte sha3_test1a_answer[32] = {
+const byte_t sha3_test1a_input[1] = {0xCC};
+const byte_t sha3_test1a_answer[32] = {
     0x67, 0x70, 0x35, 0x39, 0x1C, 0xD3, 0x70, 0x12,
     0x93, 0xD3, 0x85, 0xF0, 0x37, 0xBA, 0x32, 0x79,
     0x62, 0x52, 0xBB, 0x7C, 0xE1, 0x80, 0xB0, 0x0B,
@@ -131,16 +131,16 @@ const byte sha3_test1a_answer[32] = {
 
 // shake-128
 const int shake128_test1_size = 1;
-const byte shake128_test1_input[1] = {0x0e};
-const byte shake128_test1_answer[16] = {
+const byte_t shake128_test1_input[1] = {0x0e};
+const byte_t shake128_test1_answer[16] = {
     0xfa, 0x99, 0x6d, 0xaf, 0xaa, 0x20, 0x8d, 0x72,
     0x28, 0x7c, 0x23, 0xbc, 0x4e, 0xd4, 0xbf, 0xd5
 };
 
 // shake-256
 const int shake256_test1_size = 1;
-const byte shake256_test1_input[1] = {0x0f};
-const byte shake256_test1_answer[32] = {
+const byte_t shake256_test1_input[1] = {0x0f};
+const byte_t shake256_test1_answer[32] = {
     0xaa, 0xbb, 0x07, 0x48, 0x8f, 0xf9, 0xed, 0xd0,
     0x5d, 0x6a, 0x60, 0x3b, 0x77, 0x91, 0xb6, 0x0a,
     0x16, 0xd4, 0x50, 0x93, 0x60, 0x8f, 0x1b, 0xad,
@@ -149,44 +149,44 @@ const byte shake256_test1_answer[32] = {
 
 
 int hmacsha256_test1_keysize = 20;
-byte hmacsha256_test1_key[] = {
+byte_t hmacsha256_test1_key[] = {
     0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
     0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
     0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b
 };
-byte* hmacsha256_test1_input = (byte*)"Hi There";
+byte_t* hmacsha256_test1_input = (byte_t*)"Hi There";
 int hmacsha256_test1_size_input = 8;
-byte hmacsha256_test1_mac[32] = {
+byte_t hmacsha256_test1_mac[32] = {
     0xb0, 0x34, 0x4c, 0x61, 0xd8, 0xdb, 0x38, 0x53, 0x5c, 0xa8, 0xaf,
     0xce, 0xaf, 0x0b, 0xf1, 0x2b, 0x88, 0x1d, 0xc2, 0x00, 0xc9, 0x83,
     0x3d, 0xa7, 0x26, 0xe9, 0x37, 0x6c, 0x2e, 0x32, 0xcf, 0xf7
 };
 
 int hmacsha256_test2_keysize = 4;
-byte* hmacsha256_test2_key = (byte*)"Jefe";
-byte* hmacsha256_test2_input = (byte*)"what do ya want for nothing?";
+byte_t* hmacsha256_test2_key = (byte_t*)"Jefe";
+byte_t* hmacsha256_test2_input = (byte_t*)"what do ya want for nothing?";
 int hmacsha256_test2_size_input = 28;
-byte hmacsha256_test2_mac[32] = {
+byte_t hmacsha256_test2_mac[32] = {
     0x5b, 0xdc, 0xc1, 0x46, 0xbf, 0x60, 0x75, 0x4e, 0x6a, 0x04, 0x24,
     0x26, 0x08, 0x95, 0x75, 0xc7, 0x5a, 0x00, 0x3f, 0x08, 0x9d, 0x27,
     0x39, 0x83, 0x9d, 0xec, 0x58, 0xb9, 0x64, 0xec, 0x38, 0x43
 };
 
 int hmacsha256_test3_keysize = 20;
-byte hmacsha256_test3_key[20] = {
+byte_t hmacsha256_test3_key[20] = {
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa
 };
 int hmacsha256_test3_size_input = 50;
-byte hmacsha256_test3_input[50] = {
+byte_t hmacsha256_test3_input[50] = {
     0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
     0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
     0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
     0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
     0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd
 };
-byte hmacsha256_test3_mac[32] = {
+byte_t hmacsha256_test3_mac[32] = {
     0x77, 0x3e, 0xa9, 0x1e, 0x36, 0x80, 0x0e, 0x46, 0x85, 0x4d, 0xb8,
     0xeb, 0xd0, 0x91, 0x81, 0xa7, 0x29, 0x59, 0x09, 0x8b, 0x3e, 0xf8,
     0xc1, 0x22, 0xd9, 0x63, 0x55, 0x14, 0xce, 0xd5, 0x65, 0xfe
@@ -196,8 +196,8 @@ byte hmacsha256_test3_mac[32] = {
 bool test_sha1() {
   sha1 hash_object;
 
-  byte digest1[hash_object.DIGESTBYTESIZE];
-  byte digest2[hash_object.DIGESTBYTESIZE];
+  byte_t digest1[hash_object.DIGESTBYTESIZE];
+  byte_t digest2[hash_object.DIGESTBYTESIZE];
 
   if (!hash_object.init())
     return false;
@@ -206,8 +206,8 @@ bool test_sha1() {
   if (!hash_object.get_digest(hash_object.DIGESTBYTESIZE, digest1))
     return false;
   if (FLAGS_print_all) {
-    printf("Bytes to hash  : "); print_bytes(sha1_test1_size, (byte*)sha1_test1_input);
-    printf("Correct digest : "); print_bytes(hash_object.DIGESTBYTESIZE, (byte*)sha1_test1_answer);
+    printf("Bytes to hash  : "); print_bytes(sha1_test1_size, (byte_t*)sha1_test1_input);
+    printf("Correct digest : "); print_bytes(hash_object.DIGESTBYTESIZE, (byte_t*)sha1_test1_answer);
     printf("Computed digest: "); print_bytes(hash_object.DIGESTBYTESIZE, digest1);
   }
   if (memcmp((const void *)sha1_test1_answer,
@@ -221,8 +221,8 @@ bool test_sha1() {
   if (!hash_object.get_digest(hash_object.DIGESTBYTESIZE, digest2))
     return false;
   if (FLAGS_print_all) {
-    printf("Bytes to hash  : "); print_bytes(sha1_test2_size, (byte*)sha1_test2_input);
-    printf("Correct digest : "); print_bytes(hash_object.DIGESTBYTESIZE, (byte*)sha1_test2_answer);
+    printf("Bytes to hash  : "); print_bytes(sha1_test2_size, (byte_t*)sha1_test2_input);
+    printf("Correct digest : "); print_bytes(hash_object.DIGESTBYTESIZE, (byte_t*)sha1_test2_answer);
     printf("Computed digest: "); print_bytes(hash_object.DIGESTBYTESIZE, digest2);
   }
   if (memcmp((const void *)sha1_test2_answer,
@@ -235,8 +235,8 @@ bool test_sha1() {
 bool test_sha256() {
   sha256 hash_object;
 
-  byte digest1[hash_object.DIGESTBYTESIZE];
-  byte digest2[hash_object.DIGESTBYTESIZE];
+  byte_t digest1[hash_object.DIGESTBYTESIZE];
+  byte_t digest2[hash_object.DIGESTBYTESIZE];
 
   if (!hash_object.init())
     return false;
@@ -245,8 +245,8 @@ bool test_sha256() {
   if (!hash_object.get_digest(hash_object.DIGESTBYTESIZE, digest1))
     return false;
   if (FLAGS_print_all) {
-    printf("Bytes to hash  : "); print_bytes(sha256_test1_size, (byte*)sha256_test1_input);
-    printf("Correct digest : "); print_bytes(hash_object.DIGESTBYTESIZE, (byte*)sha256_test1_answer);
+    printf("Bytes to hash  : "); print_bytes(sha256_test1_size, (byte_t*)sha256_test1_input);
+    printf("Correct digest : "); print_bytes(hash_object.DIGESTBYTESIZE, (byte_t*)sha256_test1_answer);
     printf("Computed digest: "); print_bytes(hash_object.DIGESTBYTESIZE, digest1);
   }
   if (memcmp((const void *)sha256_test1_answer,
@@ -260,8 +260,10 @@ bool test_sha256() {
   if (!hash_object.get_digest(hash_object.DIGESTBYTESIZE, digest2))
     return false;
   if (FLAGS_print_all) {
-    printf("Bytes to hash  : "); print_bytes(sha256_test2_size, (byte*)sha256_test2_input);
-    printf("Correct digest : "); print_bytes(hash_object.DIGESTBYTESIZE, (byte*)sha256_test2_answer);
+    printf("Bytes to hash  : "); print_bytes(sha256_test2_size,
+                                             (byte_t*)sha256_test2_input);
+    printf("Correct digest : "); print_bytes(hash_object.DIGESTBYTESIZE,
+                                             (byte_t*)sha256_test2_answer);
     printf("Computed digest: "); print_bytes(hash_object.DIGESTBYTESIZE, digest2);
   }
   if (memcmp((const void *)sha256_test2_answer,
@@ -273,7 +275,7 @@ bool test_sha256() {
 
 bool test_sha3() {
   sha3 hash_object;
-  byte digest[1024 / NBITSINBYTE];
+  byte_t digest[1024 / NBITSINBYTE];
 
   if (FLAGS_print_all) {
     printf("Sha3 test0\n");
@@ -282,7 +284,7 @@ bool test_sha3() {
   if (!hash_object.init(1024, 256)) {
     return false;
   }
-  hash_object.add_to_hash(sizeof(sha3_test0_input), (byte*)sha3_test0_input);
+  hash_object.add_to_hash(sizeof(sha3_test0_input), (byte_t*)sha3_test0_input);
   hash_object.finalize();
   if (!hash_object.get_digest(hash_object.num_out_bytes_, digest)) {
     return false;
@@ -290,14 +292,14 @@ bool test_sha3() {
   if (FLAGS_print_all) {
     printf("SHA-3(c= %d, r= %d), hash size: %d\n", hash_object.c_, hash_object.r_, hash_object.num_out_bytes_);
     printf("\tInput        : ");
-    print_bytes(sizeof(sha3_test0_input), (byte*)sha3_test0_input);
+    print_bytes(sizeof(sha3_test0_input), (byte_t*)sha3_test0_input);
     printf("\tComputed hash: ");
     print_bytes(hash_object.num_out_bytes_, digest);
     printf("\tCorrect hash:  ");
-    print_bytes(hash_object.num_out_bytes_, (byte*)sha3_test0_answer);
+    print_bytes(hash_object.num_out_bytes_, (byte_t*)sha3_test0_answer);
     printf("\n");
   }
-  if (memcmp((byte*)sha3_test0_answer, digest, hash_object.num_out_bytes_) != 0) return false;
+  if (memcmp((byte_t*)sha3_test0_answer, digest, hash_object.num_out_bytes_) != 0) return false;
 
   if (FLAGS_print_all) {
     printf("Sha3 test0a\n");
@@ -306,7 +308,7 @@ bool test_sha3() {
   if (!hash_object.init(512, 256)) {
     return false;
   }
-  hash_object.add_to_hash(sizeof(sha3_test0a_input), (byte*)sha3_test0a_input);
+  hash_object.add_to_hash(sizeof(sha3_test0a_input), (byte_t*)sha3_test0a_input);
   hash_object.finalize();
   if (!hash_object.get_digest(hash_object.num_out_bytes_, digest)) {
     return false;
@@ -314,14 +316,14 @@ bool test_sha3() {
   if (FLAGS_print_all) {
     printf("SHA-3(c= %d, r= %d), hash size: %d\n", hash_object.c_, hash_object.r_, hash_object.num_out_bytes_);
     printf("\tInput        : ");
-    print_bytes(sizeof(sha3_test0a_input), (byte*)sha3_test0a_input);
+    print_bytes(sizeof(sha3_test0a_input), (byte_t*)sha3_test0a_input);
     printf("\tComputed hash: ");
     print_bytes(hash_object.num_out_bytes_, digest);
     printf("\tCorrect hash:  ");
-    print_bytes(hash_object.num_out_bytes_, (byte*)sha3_test0a_answer);
+    print_bytes(hash_object.num_out_bytes_, (byte_t*)sha3_test0a_answer);
     printf("\n");
   }
-  if (memcmp((byte*)sha3_test0a_answer, digest, hash_object.num_out_bytes_) != 0) return false;
+  if (memcmp((byte_t*)sha3_test0a_answer, digest, hash_object.num_out_bytes_) != 0) return false;
 
   if (FLAGS_print_all) {
     printf("Sha3 test1\n");
@@ -330,7 +332,7 @@ bool test_sha3() {
   if (!hash_object.init(1024, 512)) {
     return false;
   }
-  hash_object.add_to_hash(sizeof(sha3_test1_input), (byte*)sha3_test1_input);
+  hash_object.add_to_hash(sizeof(sha3_test1_input), (byte_t*)sha3_test1_input);
   hash_object.finalize();
   if (!hash_object.get_digest(hash_object.num_out_bytes_, digest)) {
     return false;
@@ -338,14 +340,14 @@ bool test_sha3() {
   if (FLAGS_print_all) {
     printf("SHA-3(c= %d, r= %d), hash size: %d\n", hash_object.c_, hash_object.r_, hash_object.num_out_bytes_);
     printf("\tInput        : ");
-    print_bytes(sizeof(sha3_test1_input), (byte*)sha3_test1_input);
+    print_bytes(sizeof(sha3_test1_input), (byte_t*)sha3_test1_input);
     printf("\tComputed hash: ");
     print_bytes(hash_object.num_out_bytes_, digest);
     printf("\tCorrect hash:  ");
-    print_bytes(hash_object.num_out_bytes_, (byte*)sha3_test1_answer);
+    print_bytes(hash_object.num_out_bytes_, (byte_t*)sha3_test1_answer);
     printf("\n");
   }
-  if (memcmp((byte*)sha3_test1_answer, digest, hash_object.num_out_bytes_) != 0) return false;
+  if (memcmp((byte_t*)sha3_test1_answer, digest, hash_object.num_out_bytes_) != 0) return false;
 
   if (FLAGS_print_all) {
     printf("Sha3 test1a\n");
@@ -354,7 +356,7 @@ bool test_sha3() {
   if (!hash_object.init(512, 256)) {
     return false;
   }
-  hash_object.add_to_hash(sizeof(sha3_test1a_input), (byte*)sha3_test1a_input);
+  hash_object.add_to_hash(sizeof(sha3_test1a_input), (byte_t*)sha3_test1a_input);
   hash_object.finalize();
   if (!hash_object.get_digest(hash_object.num_out_bytes_, digest)) {
     return false;
@@ -362,14 +364,14 @@ bool test_sha3() {
   if (FLAGS_print_all) {
     printf("SHA-3(c= %d, r= %d), hash size: %d\n", hash_object.c_, hash_object.r_, hash_object.num_out_bytes_);
     printf("\tInput        : ");
-    print_bytes(sizeof(sha3_test1a_input), (byte*)sha3_test1a_input);
+    print_bytes(sizeof(sha3_test1a_input), (byte_t*)sha3_test1a_input);
     printf("\tComputed hash: ");
     print_bytes(hash_object.num_out_bytes_, digest);
     printf("\tCorrect hash:  ");
-    print_bytes(hash_object.num_out_bytes_, (byte*)sha3_test1a_answer);
+    print_bytes(hash_object.num_out_bytes_, (byte_t*)sha3_test1a_answer);
     printf("\n");
   }
-  if (memcmp((byte*)sha3_test1a_answer, digest, hash_object.num_out_bytes_) != 0) return false;
+  if (memcmp((byte_t*)sha3_test1a_answer, digest, hash_object.num_out_bytes_) != 0) return false;
 
   if (FLAGS_print_all) {
     printf("Shake256 test1\n");
@@ -378,7 +380,7 @@ bool test_sha3() {
   if (!hash_object.init(512, 256)) {
     return false;
   }
-  hash_object.add_to_hash(sizeof(shake256_test1_input), (byte*)shake256_test1_input);
+  hash_object.add_to_hash(sizeof(shake256_test1_input), (byte_t*)shake256_test1_input);
   hash_object.shake_finalize();
   if (!hash_object.get_digest(hash_object.num_out_bytes_, digest)) {
     return false;
@@ -386,14 +388,14 @@ bool test_sha3() {
   if (FLAGS_print_all) {
     printf("Shake256(c= %d, r= %d), hash size: %d\n", hash_object.c_, hash_object.r_, hash_object.num_out_bytes_);
     printf("\tInput        : ");
-    print_bytes(sizeof(shake256_test1_input), (byte*)shake256_test1_input);
+    print_bytes(sizeof(shake256_test1_input), (byte_t*)shake256_test1_input);
     printf("\tComputed hash: ");
     print_bytes(hash_object.num_out_bytes_, digest);
     printf("\tCorrect hash:  ");
-    print_bytes(hash_object.num_out_bytes_, (byte*)shake256_test1_answer);
+    print_bytes(hash_object.num_out_bytes_, (byte_t*)shake256_test1_answer);
     printf("\n");
   }
-  if (memcmp((byte*)shake256_test1_answer, digest, hash_object.num_out_bytes_) != 0) return false;
+  if (memcmp((byte_t*)shake256_test1_answer, digest, hash_object.num_out_bytes_) != 0) return false;
 
 
   return true;
@@ -404,9 +406,9 @@ bool test_ghash() {
 }
 
 bool test_hmac_sha256() {
-  byte test1_hmac[sha256::DIGESTBYTESIZE];
-  byte test2_hmac[sha256::DIGESTBYTESIZE];
-  byte test3_hmac[sha256::DIGESTBYTESIZE];
+  byte_t test1_hmac[sha256::DIGESTBYTESIZE];
+  byte_t test2_hmac[sha256::DIGESTBYTESIZE];
+  byte_t test3_hmac[sha256::DIGESTBYTESIZE];
   hmac_sha256 mac1;
   hmac_sha256 mac2;
   hmac_sha256 mac3;
@@ -416,20 +418,20 @@ bool test_hmac_sha256() {
   }
   mac1.add_to_inner_hash(hmacsha256_test1_size_input, hmacsha256_test1_input);
   mac1.finalize();
-  if (!mac1.get_hmac(sha256::DIGESTBYTESIZE, (byte*)test1_hmac)) {
+  if (!mac1.get_hmac(sha256::DIGESTBYTESIZE, (byte_t*)test1_hmac)) {
     return false;
   }
   if (FLAGS_print_all) {
     printf("\tMac key     : ");
-    print_bytes(hmacsha256_test1_keysize, (byte*)hmacsha256_test1_key);
+    print_bytes(hmacsha256_test1_keysize, (byte_t*)hmacsha256_test1_key);
     printf("\tMac input   : ");
     print_bytes(hmacsha256_test1_size_input, hmacsha256_test1_input);
     printf("\tComputed mac: ");
-    print_bytes(sha256::DIGESTBYTESIZE, (byte*)test1_hmac);
+    print_bytes(sha256::DIGESTBYTESIZE, (byte_t*)test1_hmac);
     printf("\tCorrect mac : ");
-    print_bytes(sha256::DIGESTBYTESIZE, (byte*)hmacsha256_test1_mac);
+    print_bytes(sha256::DIGESTBYTESIZE, (byte_t*)hmacsha256_test1_mac);
   }
-  if (memcmp((byte*)test1_hmac, (byte*)hmacsha256_test1_mac, sha256::DIGESTBYTESIZE) != 0) {
+  if (memcmp((byte_t*)test1_hmac, (byte_t*)hmacsha256_test1_mac, sha256::DIGESTBYTESIZE) != 0) {
     return false;
   }
 
@@ -438,20 +440,20 @@ bool test_hmac_sha256() {
   }
   mac2.add_to_inner_hash(hmacsha256_test2_size_input, hmacsha256_test2_input);
   mac2.finalize();
-  if (!mac2.get_hmac(sha256::DIGESTBYTESIZE, (byte*)test2_hmac)) {
+  if (!mac2.get_hmac(sha256::DIGESTBYTESIZE, (byte_t*)test2_hmac)) {
     return false;
   }
   if (FLAGS_print_all) {
     printf("\tMac key     : ");
-    print_bytes(hmacsha256_test2_keysize, (byte*)hmacsha256_test2_key);
+    print_bytes(hmacsha256_test2_keysize, (byte_t*)hmacsha256_test2_key);
     printf("\tMac input   : ");
     print_bytes(hmacsha256_test2_size_input, hmacsha256_test2_input);
     printf("\tComputed mac: ");
-    print_bytes(sha256::DIGESTBYTESIZE, (byte*)test2_hmac);
+    print_bytes(sha256::DIGESTBYTESIZE, (byte_t*)test2_hmac);
     printf("\tCorrect mac : ");
-    print_bytes(sha256::DIGESTBYTESIZE, (byte*)hmacsha256_test2_mac);
+    print_bytes(sha256::DIGESTBYTESIZE, (byte_t*)hmacsha256_test2_mac);
   }
-  if (memcmp((byte*)test2_hmac, (byte*)hmacsha256_test2_mac, sha256::DIGESTBYTESIZE) != 0) {
+  if (memcmp((byte_t*)test2_hmac, (byte_t*)hmacsha256_test2_mac, sha256::DIGESTBYTESIZE) != 0) {
     return false;
   }
 
@@ -460,20 +462,20 @@ bool test_hmac_sha256() {
   }
   mac3.add_to_inner_hash(hmacsha256_test3_size_input, hmacsha256_test3_input);
   mac3.finalize();
-  if (!mac3.get_hmac(sha256::DIGESTBYTESIZE, (byte*)test3_hmac)) {
+  if (!mac3.get_hmac(sha256::DIGESTBYTESIZE, (byte_t*)test3_hmac)) {
     return false;
   }
   if (FLAGS_print_all) {
     printf("\tMac key     : ");
-    print_bytes(hmacsha256_test3_keysize, (byte*)hmacsha256_test3_key);
+    print_bytes(hmacsha256_test3_keysize, (byte_t*)hmacsha256_test3_key);
     printf("\tMac input   : ");
     print_bytes(hmacsha256_test3_size_input, hmacsha256_test3_input);
     printf("\tComputed mac: ");
-    print_bytes(sha256::DIGESTBYTESIZE, (byte*)test3_hmac);
+    print_bytes(sha256::DIGESTBYTESIZE, (byte_t*)test3_hmac);
     printf("\tCorrect mac : ");
-    print_bytes(sha256::DIGESTBYTESIZE, (byte*)hmacsha256_test3_mac);
+    print_bytes(sha256::DIGESTBYTESIZE, (byte_t*)hmacsha256_test3_mac);
   }
-  if (memcmp((byte*)test3_hmac, (byte*)hmacsha256_test3_mac, sha256::DIGESTBYTESIZE) != 0) {
+  if (memcmp((byte_t*)test3_hmac, (byte_t*)hmacsha256_test3_mac, sha256::DIGESTBYTESIZE) != 0) {
     return false;
   }
 
@@ -481,10 +483,10 @@ bool test_hmac_sha256() {
 }
 
 bool test_pkcs() {
-  byte in[64];
-  byte out[256];
+  byte_t in[64];
+  byte_t out[256];
   int new_out_size = 256;
-  byte new_out[256];
+  byte_t new_out[256];
 
   random_source rs;
 
@@ -533,9 +535,9 @@ bool test_pkcs() {
 }
 
 bool test_pkdf2() {
-  byte out[256];
+  byte_t out[256];
   int salt_size = 24;
-  byte salt[256];
+  byte_t salt[256];
   
   memset(out, 0, 256); 
   memset(salt, 0x09, salt_size);

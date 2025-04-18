@@ -35,14 +35,14 @@ public:
   int reseed_ctr() {if (drng_.initialized_) return drng_.reseed_ctr_; return -1;}
   int required_entropy_to_extract() {return required_entropy_to_extract_;}
 
-  bool collect_samples(int num_samples, byte* samples);
+  bool collect_samples(int num_samples, byte_t* samples);
 
   bool initialize_drng();
-  int extract_random_number(int num_bits, byte* rn);
+  int extract_random_number(int num_bits, byte_t* rn);
 
   bool reseed();
-  bool restart_test(int num_samples, byte* samples);
-  bool health_test(int num_samples, byte* samples);
+  bool restart_test(int num_samples, byte_t* samples);
+  bool health_test(int num_samples, byte_t* samples);
 };
 #endif
 

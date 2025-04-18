@@ -34,13 +34,13 @@ bool nist_hash_rng::initialize(int n_sample, double entropy_per_sample,
   return true;
 }
 
-bool nist_hash_rng::collect_samples(int num_samples, byte* samples) {
+bool nist_hash_rng::collect_samples(int num_samples, byte_t* samples) {
   return raw_entropy_.add_samples(num_samples, samples);
 }
 
 bool nist_hash_rng::initialize_drng() {
   int size_init_data = raw_entropy_.pool_size_ + sha256::DIGESTBYTESIZE;
-  byte data[size_init_data];
+  byte_t data[size_init_data];
   double pool_entropy = 0;
 
   memset(data, 0, size_init_data);
@@ -53,7 +53,7 @@ bool nist_hash_rng::initialize_drng() {
   return true;
 }
 
-int nist_hash_rng::extract_random_number(int num_bits, byte* rn) {
+int nist_hash_rng::extract_random_number(int num_bits, byte_t* rn) {
   return drng_.generate_random_bits(num_bits, rn, 0, nullptr);
 }
 
@@ -61,11 +61,11 @@ bool nist_hash_rng::reseed() {
   return true;
 }
 
-bool nist_hash_rng::health_test(int num_samples, byte* samples) {
+bool nist_hash_rng::health_test(int num_samples, byte_t* samples) {
   return true;
 }
 
-bool nist_hash_rng::restart_test(int num_samples, byte* samples) {
+bool nist_hash_rng::restart_test(int num_samples, byte_t* samples) {
   return true;
 }
 

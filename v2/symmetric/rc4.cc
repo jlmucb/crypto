@@ -18,8 +18,8 @@
 #include <iostream>
 #include "rc4.h"
 
-inline void swap(byte* a, byte* b) {
-  byte c = *a;
+inline void swap(byte_t* a, byte_t* b) {
+  byte_t c = *a;
   *a = *b;
   *b = c;
 }
@@ -28,7 +28,7 @@ rc4::rc4() { initialized_ = false; }
 
 rc4::~rc4() { initialized_ = false; }
 
-bool rc4::init(int size, byte* key) {
+bool rc4::init(int size, byte_t* key) {
   int i;
 
   key_bit_size_ = size;
@@ -50,14 +50,14 @@ bool rc4::init(int size, byte* key) {
   return true;
 }
 
-byte rc4::next() {
+byte_t rc4::next() {
   index1_ = (index1_ + 1) % 256;
   index2_ = (index2_ + state_[index1_]) % 256;
   swap(&state_[index1_], &state_[index2_]);
   return state_[(state_[index1_] + state_[index2_]) % 256];
 }
 
-void rc4::encrypt(int size, byte* in, byte* out) {
+void rc4::encrypt(int size, byte_t* in, byte_t* out) {
   int i;
 
   for (i = 0; i < size; i++) out[i] = in[i] ^ next();

@@ -28,8 +28,8 @@ class rc4 {
   bool initialized_;
   int key_bit_size_;
   int key_size_;
-  byte key_[256];
-  byte state_[256];
+  byte_t key_[256];
+  byte_t state_[256];
   int index1_;
   int index2_;
 
@@ -37,8 +37,8 @@ class rc4 {
   rc4();
   ~rc4();
 
-  bool init(int size, byte* key);
-  byte next();
-  void encrypt(int size, byte* in, byte* out);
+  bool init(int size, byte_t* key);
+  byte_t next();
+  void encrypt(int size, byte_t* in, byte_t* out);
 };
 #endif

@@ -18,7 +18,7 @@
 
 #if 1
 // remove this when we compile cryptsupport
-void reverse_bytes_in_place(int size, byte* b) {
+void reverse_bytes_in_place(int size, byte_t* b) {
   byte t;
 
   for (int i = 0; i < (size / 2); i++) {

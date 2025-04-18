@@ -46,16 +46,16 @@
  *          EM = 0x00 || 0x02 || PS || 0x00 || M.
  */
 
-byte sha512_digest_info[] = {0x30, 0x51, 0x30, 0x0d, 0x06, 0x09, 0x60,
+byte_t sha512_digest_info[] = {0x30, 0x51, 0x30, 0x0d, 0x06, 0x09, 0x60,
                              0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02,
                              0x03, 0x05, 0x00, 0x04, 0x40};
-byte sha256_digest_info[] = {0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60,
+byte_t sha256_digest_info[] = {0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60,
                              0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02,
                              0x01, 0x05, 0x00, 0x04, 0x20};
-byte sha1_digest_info[] = {0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e,
+byte_t sha1_digest_info[] = {0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e,
                            0x03, 0x02, 0x1a, 0x05, 0x00, 0x04, 0x14};
 
-bool pkcs_encode(const char* hash_alg, byte* hash, int out_size, byte* out) {
+bool pkcs_encode(const char* hash_alg, byte_t* hash, int out_size, byte_t* out) {
   int m = 0;
   int n = 0;
   int size_pad = 0;
@@ -107,7 +107,7 @@ bool pkcs_encode(const char* hash_alg, byte* hash, int out_size, byte* out) {
   }
 }
 
-bool pkcs_verify(const char* hash_alg, byte* hash, int in_size, byte* in) {
+bool pkcs_verify(const char* hash_alg, byte_t* hash, int in_size, byte_t* in) {
   int m = 0;
   int n = 0;
   int size_pad = 0;
@@ -153,7 +153,7 @@ bool pkcs_verify(const char* hash_alg, byte* hash, int in_size, byte* in) {
   }
 }
 
-bool pkcs_embed(int in_size, byte* in, int out_size, byte* out) {
+bool pkcs_embed(int in_size, byte_t* in, int out_size, byte_t* out) {
   int m = 0;
   int pad_size = 0;
 
@@ -171,7 +171,7 @@ bool pkcs_embed(int in_size, byte* in, int out_size, byte* out) {
   return true;
 }
 
-bool pkcs_extract(int in_size, byte* in, int* out_size, byte* out) {
+bool pkcs_extract(int in_size, byte_t* in, int* out_size, byte_t* out) {
   int m = 0;
   int n = 0;
   int size_pad = 0;

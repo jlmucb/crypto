@@ -36,14 +36,14 @@ hmac_sha256::~hmac_sha256() {
   macvalid_ = false;
 }
 
-bool hmac_sha256::init(int size, byte* key) {
+bool hmac_sha256::init(int size, byte_t* key) {
 
   if (size <= 0 || key == nullptr)
     return false;
   macvalid_ = false;
 
   int i;
-  byte padded[sha256::BLOCKBYTESIZE];
+  byte_t padded[sha256::BLOCKBYTESIZE];
   memset(key_, 0, sha256::BLOCKBYTESIZE);
   memset(padded, 0, sha256::BLOCKBYTESIZE);
 
@@ -61,15 +61,15 @@ bool hmac_sha256::init(int size, byte* key) {
   if (!inner_sha256_.init()) {
     return false;
   }
-  inner_sha256_.add_to_hash(sha256::BLOCKBYTESIZE, (byte*)padded);
+  inner_sha256_.add_to_hash(sha256::BLOCKBYTESIZE, (byte_t*)padded);
   return true;
 }
 
-void hmac_sha256::add_to_inner_hash(int size, byte* in) {
+void hmac_sha256::add_to_inner_hash(int size, byte_t* in) {
   inner_sha256_.add_to_hash(size, in);
 }
 
-bool hmac_sha256::get_hmac(int size, byte* out) {
+bool hmac_sha256::get_hmac(int size, byte_t* out) {
   if (size < MACBYTESIZE)
     return false;
 #ifndef BIGENDIAN
@@ -85,10 +85,10 @@ bool hmac_sha256::get_hmac(int size, byte* out) {
 
 void hmac_sha256::finalize() {
   int i;
-  byte padded[BLOCKBYTESIZE];
-  byte inner_hash[sha256::DIGESTBYTESIZE];
+  byte_t padded[BLOCKBYTESIZE];
+  byte_t inner_hash[sha256::DIGESTBYTESIZE];
 #ifndef BIGENDIAN
-  byte inner_hash2[sha256::DIGESTBYTESIZE];
+  byte_t inner_hash2[sha256::DIGESTBYTESIZE];
 #endif
 
   inner_sha256_.finalize();

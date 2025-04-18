@@ -13,7 +13,7 @@
 
 
 ifndef SRC_DIR
-SRC_DIR=$(HOME)/crypto/v2
+SRC_DIR=$(HOME)/src/github.com/jlmucb/crypto/v2
 endif
 ifndef OBJ_DIR
 OBJ_DIR=$(HOME)/cryptoobj/v2
@@ -31,8 +31,8 @@ ifndef TARGET_MACHINE_TYPE
 TARGET_MACHINE_TYPE= x64
 endif
 
-S= $(SRC_DIR)/pwutil
-O= $(OBJ_DIR)/pwutil
+S= $(SRC_DIR)/misc
+O= $(OBJ_DIR)/misc
 INCLUDE= -I$(SRC_DIR)/include -I$(SRC_DIR)/keys -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE)
 
 CRYPTOLIB= $(OBJ_DIR)/jlmcryptolib.a

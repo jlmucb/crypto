@@ -51,14 +51,14 @@ bool test_rsa1(int num_bits) {
       print_key_message(*km);
   }
 
-  byte msg_in[byte_size];
-  byte msg_out[byte_size];
-  byte msg_recovered[byte_size];
+  byte_t msg_in[byte_size];
+  byte_t msg_out[byte_size];
+  byte_t msg_recovered[byte_size];
   memset(msg_in, 0, byte_size);
   memset(msg_out, 0, byte_size);
   memset(msg_recovered, 0, byte_size);
 
-  memcpy(msg_in, (byte*)"hello", 6);
+  memcpy(msg_in, (byte_t*)"hello", 6);
   int size_out1 = byte_size;
   int size_out2 = byte_size;
 

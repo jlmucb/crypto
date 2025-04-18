@@ -51,7 +51,7 @@ int main(int an, char** av) {
 
   // append some samples
   int num_samples = 100;
-  byte samples[num_samples];
+  byte_t samples[num_samples];
   if (crypto_get_random_bytes(num_samples, samples) < 0) {
     printf("Can't get crypto bytes\n");
     return 1;
@@ -75,7 +75,7 @@ int main(int an, char** av) {
 
   // empty pool and init drng
   int size_init_pool = num_samples;
-  byte init_pool[num_samples];
+  byte_t init_pool[num_samples];
   double ent_in_pool= 0.0;
   if (!the_rng.raw_entropy_.empty_pool(&size_init_pool, init_pool, &ent_in_pool)) {
     printf("Can't empty pool\n");

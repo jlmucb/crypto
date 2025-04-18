@@ -490,7 +490,7 @@ done:
   return success;
 }
 
-bool rsa::encrypt(int size_in, byte* in, int* size_out, byte* out,
+bool rsa::encrypt(int size_in, byte_t* in, int* size_out, byte_t* out,
                      int speed) {
   int bytes_in_block = bit_size_modulus_ / NBITSINBYTE;
 
@@ -507,7 +507,7 @@ bool rsa::encrypt(int size_in, byte* in, int* size_out, byte* out,
   big_num int_outp(1 + 4 * new_byte_size / sizeof(uint64_t));
   big_num int_outq(1 + 4 * new_byte_size / sizeof(uint64_t));
 
-  reverse_bytes(new_byte_size, in, (byte*)int_in.value_);
+  reverse_bytes(new_byte_size, in, (byte_t*)int_in.value_);
   int_in.normalize();
   if (speed == 0) {
     if (!big_mod_exp(int_in, *e_, *m_, int_out)) {
@@ -556,12 +556,12 @@ bool rsa::encrypt(int size_in, byte* in, int* size_out, byte* out,
   } else {
     return false;
   }
-  reverse_bytes(new_byte_size, (byte*)int_out.value_, out);
+  reverse_bytes(new_byte_size, (byte_t*)int_out.value_, out);
   *size_out = new_byte_size;
   return true;
 }
 
-bool rsa::decrypt(int size_in, byte* in, int* size_out, byte* out,
+bool rsa::decrypt(int size_in, byte_t* in, int* size_out, byte_t* out,
                      int speed) {
   int bytes_in_block = bit_size_modulus_ / NBITSINBYTE;
 
@@ -578,7 +578,7 @@ bool rsa::decrypt(int size_in, byte* in, int* size_out, byte* out,
   big_num int_outp(1 + 4 * new_byte_size / sizeof(uint64_t));
   big_num int_outq(1 + 4 * new_byte_size / sizeof(uint64_t));
 
-  reverse_bytes(new_byte_size, in, (byte*)int_in.value_);
+  reverse_bytes(new_byte_size, in, (byte_t*)int_in.value_);
   int_in.normalize();
   if (speed == 0) {
     if (!big_mod_exp(int_in, *d_, *m_, int_out)) {
@@ -624,7 +624,7 @@ bool rsa::decrypt(int size_in, byte* in, int* size_out, byte* out,
   } else {
     return false;
   }
-  reverse_bytes(new_byte_size, (byte*)int_out.value_, (byte*)out);
+  reverse_bytes(new_byte_size, (byte_t*)int_out.value_, (byte_t*)out);
   *size_out = new_byte_size;
 
   return true;

@@ -849,7 +849,7 @@ bool digit_convert_to_decimal(int size_n, uint64_t* n, string* s) {
     s->append(1, '0' + r);
   }
 
-  reverse_bytes_in_place(s->size(), (byte*) s->data());
+  reverse_bytes_in_place(s->size(), (byte_t*) s->data());
   s->append(1, '\0');
 
 done:

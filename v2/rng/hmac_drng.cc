@@ -39,10 +39,10 @@ double hmac_drng::current_entropy() {
   return current_entropy_;
 }
 
-bool hmac_drng::update(int size_data, byte* data) {
+bool hmac_drng::update(int size_data, byte_t* data) {
   hmac_sha256 h;
   int buf_size = h.MACBYTESIZE + 1 + size_data;
-  byte buf[buf_size];
+  byte_t buf[buf_size];
   memset(buf, 0, buf_size);
 
   if (!h.init(h.MACBYTESIZE, K_))
@@ -74,12 +74,12 @@ bool hmac_drng::update(int size_data, byte* data) {
   return true;
 }
 
-bool hmac_drng::init(int size_nonce, byte* nonce, int size_personalization,
-      byte* personalization, int entropy_width, byte* material, double ent) {
+bool hmac_drng::init(int size_nonce, byte_t* nonce, int size_personalization,
+      byte_t* personalization, int entropy_width, byte_t* material, double ent) {
   reseed_ctr_ = 0;
   int seed_material_size = entropy_width + size_nonce + size_personalization;
 
-  byte seed_material[seed_material_size];
+  byte_t seed_material[seed_material_size];
   memset(seed_material, 0, seed_material_size);
 
   int  n = 0;
@@ -102,8 +102,8 @@ bool hmac_drng::init(int size_nonce, byte* nonce, int size_personalization,
   return initialized_;
 }
 
-bool hmac_drng::generate(int num_bytes_needed, byte* out, int size_add_in_bytes,
-            byte* add_in_bytes) {
+bool hmac_drng::generate(int num_bytes_needed, byte_t* out, int size_add_in_bytes,
+            byte_t* add_in_bytes) {
   hmac_sha256 h;
 
   update(size_add_in_bytes, add_in_bytes);

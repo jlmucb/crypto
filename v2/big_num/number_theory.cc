@@ -360,7 +360,8 @@ bool big_gen_prime(big_num& p, uint64_t num_bits, int prime_trys) {
 
   for (i = 0; i < prime_trys; i++) {
     p.zero_num();
-    if (crypto_get_random_bytes((num_bits + NBITSINBYTE -1) / NBITSINBYTE, (byte*)p.value_) < 0)
+    if (crypto_get_random_bytes((num_bits + NBITSINBYTE -1) / NBITSINBYTE,
+                                (byte_t*)p.value_) < 0)
       return false;
     p.normalize();
     p.value_[p.size_ - 1] |= (1ULL) << 63;
@@ -438,7 +439,7 @@ bool big_is_prime(big_num& n) {
   }
   for (int j = 0; j < 20; j++) {
     random_a[j] = new big_num(20);
-    if (crypto_get_random_bytes(n.size(), (byte*)random_a[j]->value_ptr()) < 0)
+    if (crypto_get_random_bytes(n.size(), (byte_t*)random_a[j]->value_ptr()) < 0)
       return false;
     random_a[j]->normalize();
   }
@@ -536,7 +537,7 @@ bool big_mod_tonelli_shanks(big_num& a, big_num& p, big_num& nr, big_num& s) {
   } else {
     for(;;) {
       n.zero_num();
-      int k = crypto_get_random_bytes(p.size_ * sizeof(uint64_t), (byte*)n.value_);
+      int k = crypto_get_random_bytes(p.size_ * sizeof(uint64_t), (byte_t*)n.value_);
       if (k < 0)
         return false;
       n.normalize();

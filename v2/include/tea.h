@@ -29,10 +29,10 @@ class tea : public symmetric_cipher {
   tea();
   ~tea();
 
-  bool init(int key_bit_size, byte* key, int direction);
-  void encrypt_block(const byte* in, byte* out);
-  void decrypt_block(const byte* in, byte* out);
-  void encrypt(int size, byte* in, byte* out);
-  void decrypt(int size, byte* in, byte* out);
+  bool init(int key_bit_size, byte_t* key, int direction);
+  void encrypt_block(const byte_t* in, byte_t* out);
+  void decrypt_block(const byte_t* in, byte_t* out);
+  void encrypt(int size, byte_t* in, byte_t* out);
+  void decrypt(int size, byte_t* in, byte_t* out);
 };
 #endif

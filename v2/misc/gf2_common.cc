@@ -41,7 +41,7 @@ int max(int a, int b) {
   return b;
 }
 
-int real_size(int size_in, byte* in) {
+int real_size(int size_in, byte_t* in) {
   for (int i = (size_in - 1); i > 0; i--) {
     if (in[i] != 0) {
       return i + 1;
@@ -50,16 +50,16 @@ int real_size(int size_in, byte* in) {
   return 1;
 }
 
-bool gf2_add(int size_in1, byte* in1, int size_in2, byte* in2,
-             int size_min_poly, byte* min_poly, int* size_out, byte* out) {
+bool gf2_add(int size_in1, byte_t* in1, int size_in2, byte_t* in2,
+             int size_min_poly, byte_t* min_poly, int* size_out, byte_t* out) {
   int m = max(size_in1, size_in1);
 
   if (m > *size_out)
     return false;
   int size_big_in;
-  byte* big_in;
+  byte_t* big_in;
   int size_small_in;
-  byte* small_in;
+  byte_t* small_in;
 
   if (size_in1 > size_in2) {
     size_big_in = size_in1;
@@ -85,10 +85,10 @@ bool gf2_add(int size_in1, byte* in1, int size_in2, byte* in2,
   return true;
 }
 
-bool gf2_mult(int size_in1, byte* in1, int size_in2, byte* in2,
-              int size_min_poly, byte* min_poly, int* size_out, byte* out) {
+bool gf2_mult(int size_in1, byte_t* in1, int size_in2, byte_t* in2,
+              int size_min_poly, byte_t* min_poly, int* size_out, byte_t* out) {
   int size_out_t = size_in1 + size_in2;
-  byte* out_t = new byte[size_out_t];
+  byte_t* out_t = new byte_t[size_out_t];
 
   for (int i = 0; i < size_out_t; i++)
     out_t[i] = 0;
@@ -119,8 +119,8 @@ bool gf2_mult(int size_in1, byte* in1, int size_in2, byte* in2,
   return true;
 }
 
-bool gf2_reduce(int size_min_poly, byte* min_poly,
-                int* size_in_out, byte* in_out) {
+bool gf2_reduce(int size_min_poly, byte_t* min_poly,
+                int* size_in_out, byte_t* in_out) {
   int k = real_size(*size_in_out, in_out);
   int n = k;
   while (n >= size_min_poly) {
@@ -136,12 +136,12 @@ bool gf2_reduce(int size_min_poly, byte* min_poly,
   return true;
 }
 
-void add_col_to_multiple_of_col(int n, int size_min_poly, byte* min_poly,
-                int c1, int c2, byte x, gf2_8* a) {
+void add_col_to_multiple_of_col(int n, int size_min_poly, byte_t* min_poly,
+                int c1, int c2, byte_t x, gf2_8* a) {
   uint16_t w = (uint16_t)x;
   gf2_8 r, s, t;
   int size = 16;
-  byte c[16];
+  byte_t c[16];
 
   for (int i = 0; i< 16; i++)
     c[i] = 0;
@@ -165,12 +165,12 @@ void add_col_to_multiple_of_col(int n, int size_min_poly, byte* min_poly,
   }
 }
 
-void add_row_to_multiple_of_row(int n, int size_min_poly, byte* min_poly, 
-              int r1, int r2, byte x, gf2_8* a) {
+void add_row_to_multiple_of_row(int n, int size_min_poly, byte_t* min_poly, 
+              int r1, int r2, byte_t x, gf2_8* a) {
   uint16_t w = (uint16_t)x;
   gf2_8 r, s, t;
   int size = 16;
-  byte c[16];
+  byte_t c[16];
 
   for (int i = 0; i< 16; i++)
     c[i] = 0;
@@ -198,9 +198,9 @@ void add_row_to_multiple_of_row(int n, int size_min_poly, byte* min_poly,
 
 int g_rd = -1;
 static int g_num_rand = 0;
-byte g_rand_array[128];
+byte_t g_rand_array[128];
 
-bool get_random_byte(bool non_zero, byte* y) {
+bool get_random_byte(bool non_zero, byte_t* y) {
   if (g_rd < 0) {
     g_rd = open("/dev/random", O_RDONLY);
     if (g_rd < 0) {
@@ -223,7 +223,7 @@ bool get_random_byte(bool non_zero, byte* y) {
   return true;
 }
 
-bool generate_invertible_matrix(int n, int size_min_poly, byte* min_poly,
+bool generate_invertible_matrix(int n, int size_min_poly, byte_t* min_poly,
         gf2_8* a) {
 
   // Zero.
@@ -233,10 +233,10 @@ bool generate_invertible_matrix(int n, int size_min_poly, byte* min_poly,
   // First get non-zero stuff on diagonal
   uint16_t w;
   int size;
-  byte c[16];
+  byte_t c[16];
   for (int i = 0; i < n; i++) {
     w = 0;
-    if (!get_random_byte(true, (byte*)&w)) {
+    if (!get_random_byte(true, (byte_t*)&w)) {
       return false;
     }
     size = 16;
@@ -250,7 +250,7 @@ bool generate_invertible_matrix(int n, int size_min_poly, byte* min_poly,
   for (int i = 0; i < n; i++) {
     for (int j = (i + 1); j < n; j++) {
       w = 0;
-      if (!get_random_byte(false, (byte*)&w)) {
+      if (!get_random_byte(false, (byte_t*)&w)) {
         return false;
       }
       size = 16;
@@ -269,15 +269,15 @@ bool generate_invertible_matrix(int n, int size_min_poly, byte* min_poly,
 
   // Combine row and columns to get full matrix.
   int c1, c2, r1, r2;
-  byte x, y;
+  byte_t x, y;
   for (int i = 0; i < 384; i++) {
-    if (!get_random_byte(false, (byte*)&r1))
+    if (!get_random_byte(false, (byte_t*)&r1))
       return false;
-    if (!get_random_byte(false, (byte*)&r2))
+    if (!get_random_byte(false, (byte_t*)&r2))
       return false;
-    if (!get_random_byte(false, (byte*)&c1))
+    if (!get_random_byte(false, (byte_t*)&c1))
       return false;
-    if (!get_random_byte(false, (byte*)&c2))
+    if (!get_random_byte(false, (byte_t*)&c2))
       return false;
     r1 %= 48;
     r2 %= 48;
@@ -300,7 +300,7 @@ bool generate_invertible_matrix(int n, int size_min_poly, byte* min_poly,
   return true;
 }
 
-void print_poly(int size_in, byte* in) {
+void print_poly(int size_in, byte_t* in) {
   for (int i = (size_in - 1); i > 0; i--) {
     if (in[i] != 0)
       printf("x^%d + ", i);
@@ -311,18 +311,18 @@ void print_poly(int size_in, byte* in) {
     printf("0");
 }
 
-bool to_internal_representation(uint16_t in, int* size_out, byte* out) {
+bool to_internal_representation(uint16_t in, int* size_out, byte_t* out) {
     if (*size_out < 16)
       return false;
     for (int i = 0; i < 16; i++) {
-        out[i] = (byte) (in & 1);
+        out[i] = (byte_t) (in & 1);
         in >>= 1;
     }
     *size_out = real_size(16, out);
     return true;
 }
 
-bool from_internal_representation(int size_in, byte* in, uint16_t* out) {
+bool from_internal_representation(int size_in, byte_t* in, uint16_t* out) {
   if (real_size(size_in, in) > 16)
     return false;
   uint16_t t = 1;
@@ -336,7 +336,7 @@ bool from_internal_representation(int size_in, byte* in, uint16_t* out) {
   return true;
 }
 
-bool byte_8_equal(byte* a, byte* b) {
+bool byte_8_equal(byte_t* a, byte_t* b) {
   for (int i = 0; i < 8; i++) {
       if (a[i] != b[i])
         return false;
@@ -348,7 +348,7 @@ bool gf2_8_equal(gf2_8& a, gf2_8& b) {
   return byte_8_equal(a.v_, b.v_);
 }
 
-void byte_8_copy(byte* a, byte* b) {
+void byte_8_copy(byte_t* a, byte_t* b) {
   for (int i = 0; i < 8; i++) 
     b[i] = a[i];
 }
@@ -357,7 +357,7 @@ void gf2_8_copy(gf2_8& a, gf2_8& b) {
   byte_8_copy(a.v_, b.v_);
 }
 
-void byte_8_zero(byte* a) {
+void byte_8_zero(byte_t* a) {
   for (int i = 0; i < 8; i++)
     a[i] = 0;
 }
@@ -366,23 +366,23 @@ void gf2_8_zero(gf2_8& a) {
     byte_8_zero(a.v_);
 }
 
-void byte_16_zero(byte* a) {
+void byte_16_zero(byte_t* a) {
   for (int i = 0; i < 16; i++)
     a[i] = 0;
 }
 
-bool init_inverses(int size_min_poly, byte* min_poly) {
+bool init_inverses(int size_min_poly, byte_t* min_poly) {
   for (int j = 0; j < 256; j++) {
     gf2_8_zero(g_gf2_inverse[j]);
   }
   g_gf2_inverse[1].v_[0] = 1;
 
   int size_a = 16;
-  byte a[16];
+  byte_t a[16];
   int size_b = 16;
-  byte b[16];
+  byte_t b[16];
   int size_c = 32;
-  byte c[32];
+  byte_t c[32];
 
   for (uint16_t x = 2; x < 256; x++) {
     // g_gf2_inverse[0] is 0
@@ -413,12 +413,12 @@ bool init_inverses(int size_min_poly, byte* min_poly) {
   return true;
 }
 
-bool multiply_linear(int n, int size_min_poly, byte* min_poly, gf2_8* a, gf2_8* x, gf2_8& y) {
+bool multiply_linear(int n, int size_min_poly, byte_t* min_poly, gf2_8* a, gf2_8* x, gf2_8& y) {
   gf2_8_zero(y);
   int size_t1 = 16;
-  byte t1[16];
+  byte_t t1[16];
   int size_t2 = 16;
-  byte t2[16];
+  byte_t t2[16];
 
   for (int i = 0; i < n; i++) {
     size_t1 = 16;
@@ -535,10 +535,10 @@ int find_non_zero(int n, int col, int* perm, gf2_instance* row) {
   return -1;
 }
 
-bool divide_equation_by(int n, int size_min_poly, byte* min_poly, int pivot_col,
+bool divide_equation_by(int n, int size_min_poly, byte_t* min_poly, int pivot_col,
                         gf2_instance& row) {
   int size_out;
-  byte out[32];
+  byte_t out[32];
 
   gf2_8* inv = get_inverse(row.a_[pivot_col]);
   if (inv == nullptr)
@@ -556,13 +556,13 @@ bool divide_equation_by(int n, int size_min_poly, byte* min_poly, int pivot_col,
   return true;
 }
 
-bool subtract_equation_by(int n, int size_min_poly, byte* min_poly, int pivot_col,
+bool subtract_equation_by(int n, int size_min_poly, byte_t* min_poly, int pivot_col,
                           gf2_instance& row_subtracted, gf2_instance& row) {
   int size_out1;
-  byte out1[16];
+  byte_t out1[16];
   int size_out2;
-  byte out2[16];
-  byte pivot[8];
+  byte_t out2[16];
+  byte_t pivot[8];
   byte_8_copy(row.a_[pivot_col].v_, pivot);
   for (int j = pivot_col; j < n; j++) {
     size_out1 = 16;
@@ -587,7 +587,7 @@ bool subtract_equation_by(int n, int size_min_poly, byte* min_poly, int pivot_co
 // Solve Sum from i = 0 to n-1 a[i] * x[i] = c[i].
 // by Gaussian elimination over GF(2^8).
 // Output x[i].
-bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_instance* a, gf2_8* x) {
+bool gaussian_solve(int n, int size_min_poly, byte_t* min_poly, gf2_instance* a, gf2_8* x) {
   if (!g_inverse_initialized) {
     if (!init_inverses(size_min_poly, min_poly)) {
       printf("Can't compute inverses\n");
@@ -637,7 +637,7 @@ bool gaussian_solve(int n, int size_min_poly, byte* min_poly, gf2_instance* a, g
   }
 
   int size_out1;
-  byte out1[16];
+  byte_t out1[16];
 
   // Reverse solve.
   for (int j = (n - 1); j >= 0; j--) {

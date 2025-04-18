@@ -1121,7 +1121,8 @@ bool basic_number_theory_test1() {
   big_num** random_a = new big_num*[20];
   for (int j = 0; j < 20; j++) {
     random_a[j] = new big_num(5);
-    if (crypto_get_random_bytes((num_bits + NBITSINBYTE - 1)/ NBITSINBYTE, (byte*)random_a[j]->value_ptr()) < 0)
+    if (crypto_get_random_bytes((num_bits + NBITSINBYTE - 1)/ NBITSINBYTE,
+                            (byte_t*)random_a[j]->value_ptr()) < 0)
       return false;
     random_a[j]->normalize();
   }

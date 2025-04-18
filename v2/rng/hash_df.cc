@@ -15,7 +15,7 @@
 #include "sha256.h"
 #include "hash_df.h"
 
-void hash_all(int byte_size_in, byte* in, byte* out) {
+void hash_all(int byte_size_in, byte_t* in, byte_t* out) {
   sha256 hash_obj;
 
   hash_obj.init();
@@ -24,20 +24,20 @@ void hash_all(int byte_size_in, byte* in, byte* out) {
   hash_obj.get_digest(sha256::DIGESTBYTESIZE, out);
 }
 
-void hash_df(int byte_size_in, byte* in, int bit_size_out, byte* out) {
+void hash_df(int byte_size_in, byte_t* in, int bit_size_out, byte_t* out) {
   sha256 hash_obj;
 
   memset(out, 0, sha256::DIGESTBYTESIZE);
   int byte_size_out = (bit_size_out + NBITSINBYTE - 1) / NBITSINBYTE;
   int l = byte_size_out / sha256::DIGESTBYTESIZE;
   int bytes_so_far = 0;
-  byte extra_out[sha256::DIGESTBYTESIZE];
-  byte ctr = 1;
+  byte_t extra_out[sha256::DIGESTBYTESIZE];
+  byte_t ctr = 1;
 
   for (int i = 0; i < l; i++) {
     hash_obj.init();
     hash_obj.add_to_hash(1, &ctr);
-    hash_obj.add_to_hash(sizeof(int), (byte*)&bit_size_out);
+    hash_obj.add_to_hash(sizeof(int), (byte_t*)&bit_size_out);
     hash_obj.add_to_hash(byte_size_in, in);
     hash_obj.finalize();
     hash_obj.get_digest(sha256::DIGESTBYTESIZE, &out[bytes_so_far]);
@@ -48,7 +48,7 @@ void hash_df(int byte_size_in, byte* in, int bit_size_out, byte* out) {
   if (bytes_so_far < byte_size_out) {
     hash_obj.init();
     hash_obj.add_to_hash(1, &ctr);
-    hash_obj.add_to_hash(sizeof(int), (byte*)&bit_size_out);
+    hash_obj.add_to_hash(sizeof(int), (byte_t*)&bit_size_out);
     hash_obj.add_to_hash(byte_size_in, in);
     hash_obj.finalize();
     hash_obj.get_digest(sha256::DIGESTBYTESIZE, extra_out);

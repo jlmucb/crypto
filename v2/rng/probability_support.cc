@@ -41,7 +41,7 @@ void zero_double_array(int l, double* n) {
   }
 }
 
-void zero_byte_array(int l, byte* n) {
+void zero_byte_array(int l, byte_t* n) {
   for (int i = 0; i < l; i++) {
     n[i] = 0;
   }
@@ -105,7 +105,7 @@ void print_uint32_array(int n, uint32_t* data) {
      printf("\n");
 }
 
-void print_bits(int n, byte* x) {
+void print_bits(int n, byte_t* x) {
   int i;
 
   for (i = 0; i < n; i++) {
@@ -119,9 +119,9 @@ void print_bits(int n, byte* x) {
      printf("\n");
 }
 
-bool uint32_to_bytes(int n, uint32_t* in, byte* out) {
+bool uint32_to_bytes(int n, uint32_t* in, byte_t* out) {
   for (int i = 0; i < n; i++) {
-    out[i] = (byte) (in[i] & 0xff);
+    out[i] = (byte_t) (in[i] & 0xff);
   }
   return true;
 }
@@ -136,7 +136,7 @@ int non_binary_random(uint32_t n) {
 
   uint32_t bin_rand = 0;
   for (;;) {
-    if (crypto_get_random_bytes(num_bytes, (byte*) &bin_rand) < 0)
+    if (crypto_get_random_bytes(num_bytes, (byte_t*) &bin_rand) < 0)
       return -1;
     if (bin_rand < throw_away)
       return bin_rand % n;
@@ -144,7 +144,7 @@ int non_binary_random(uint32_t n) {
   return -1;
 }
 
-bool write_raw_byte_data(string file_name, int num_samples, byte* data) {
+bool write_raw_byte_data(string file_name, int num_samples, byte_t* data) {
   int fd = open(file_name.c_str(), O_WRONLY | O_CREAT | O_TRUNC,
                 S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   if (fd < 0) {
@@ -259,7 +259,7 @@ bool bin_raw_data(int num_samples, uint32_t* data, int nbins, uint32_t* bins) {
   return true;
 }
 
-bool bin_raw_byte_data(int num_samples, byte* data, int nbins, byte* bins) {
+bool bin_raw_byte_data(int num_samples, byte_t* data, int nbins, byte_t* bins) {
   for(int i = 0; i < nbins; i++) {
     bins[i]= 0;
   }
@@ -391,12 +391,12 @@ double min_entropy(int n, double* p) {
   return -lg(max);
 }
 
-bool bits_to_byte(int num_bits, byte* in, int bits_per_byte,
-                  int num_bytes, byte* out) {
+bool bits_to_byte(int num_bits, byte_t* in, int bits_per_byte,
+                  int num_bytes, byte_t* out) {
   if (num_bytes < ((num_bits + bits_per_byte - 1) / bits_per_byte))
     return false;
 
-  byte b;
+  byte_t b;
   for (int i = 0; i < num_bits; i += bits_per_byte) {
     b = 0;
     for (int j = (bits_per_byte - 1); j >= 0; j--) {
@@ -408,12 +408,12 @@ bool bits_to_byte(int num_bits, byte* in, int bits_per_byte,
 }
 
 // take array of bytes and turn it into an array of one bit/byte
-bool byte_to_bits(int num_bytes, byte* in, int bits_per_byte,
-                  int num_bits, byte* out) {
+bool byte_to_bits(int num_bytes, byte_t* in, int bits_per_byte,
+                  int num_bits, byte_t* out) {
   if (num_bits < ((num_bytes + bits_per_byte - 1) / bits_per_byte) * bits_per_byte)
     return false;
 
-  byte b;
+  byte_t b;
   for (int i = 0; i < num_bytes; i++) {
     b = in[i];
     for (int j = 0; j < bits_per_byte; j++) {
@@ -546,12 +546,12 @@ int critical_value_binomial(int n, double p, double alpha) {
 }
 
 // n should be 1024 for binary data and 512 for non-binary data
-bool adaptive_proportion_test(int n, byte* samples, double entropy_estimate, double alpha) {
+bool adaptive_proportion_test(int n, byte_t* samples, double entropy_estimate, double alpha) {
   double p = pow(2, -entropy_estimate);
   int cutoff = critical_value_binomial(n, p, alpha);
   int count = 0;
 
-  byte s = samples[0];
+  byte_t s = samples[0];
   for (int i = 0; i < n; i++) {
     if (s == samples[i])
       count++;
@@ -563,9 +563,9 @@ bool adaptive_proportion_test(int n, byte* samples, double entropy_estimate, dou
 }
 
 // Pr(count >= cutoff) < alpha
-bool repetition_test(int n, byte* samples, double entropy_estimate, double alpha) {
+bool repetition_test(int n, byte_t* samples, double entropy_estimate, double alpha) {
   int cutoff = 1 + (int)(((-lg(alpha) / entropy_estimate)) + 0.9);
-  byte s = samples[0];
+  byte_t s = samples[0];
   int count = 0;
 
   for (int i = 0; i < n; i++) {
@@ -590,7 +590,7 @@ int largest_value_index(int n, double* v) {
 }
 
 // samples are  integers 0, 1, ..., largest_possible_sample
-double most_common_value_entropy(int largest_possible_sample, int num_samples, byte* samples) {
+double most_common_value_entropy(int largest_possible_sample, int num_samples, byte_t* samples) {
   int sample_index = largest_possible_sample + 1;
   double v[sample_index];
   for (int i = 0; i < sample_index; i++)
@@ -612,7 +612,7 @@ double most_common_value_entropy(int largest_possible_sample, int num_samples, b
   return -lg(p_u);
 }
 
-double byte_markov_sequence_probability(int seq_len, byte* seq,
+double byte_markov_sequence_probability(int seq_len, byte_t* seq,
   double p_0, double p_1,
   double p_00, double p_01, double p_10, double p_11) {
   double p = 0.0;
@@ -637,7 +637,7 @@ double byte_markov_sequence_probability(int seq_len, byte* seq,
 }
 
 // samples are bytes containing 1 bit
-double byte_markov_entropy(int num_samples, byte* samples) {
+double byte_markov_entropy(int num_samples, byte_t* samples) {
   int n_zero = 0;
   int n_one= 0;
   int n_00 = 0;
@@ -691,12 +691,12 @@ double byte_markov_entropy(int num_samples, byte* samples) {
 #endif
 
   const int seq_len = 16;
-  byte seq[seq_len + 8];
+  byte_t seq[seq_len + 8];
   int num_seq = 1 << seq_len;
   double probs[num_seq];
 
   for (uint32_t b = 0; b < (uint32_t)num_seq; b++) {
-    if (!byte_to_bits(seq_len / NBITSINBYTE, (byte*)&b, NBITSINBYTE, seq_len, seq)) {
+    if (!byte_to_bits(seq_len / NBITSINBYTE, (byte_t*)&b, NBITSINBYTE, seq_len, seq)) {
       printf("bad conversion\n");
       return -1;
     }
@@ -716,7 +716,7 @@ double byte_markov_entropy(int num_samples, byte* samples) {
 }
 
 // samples are  integers 0, 1, ..., largest_possible_sample
-double byte_shannon_entropy(int largest_possible_sample, int num_samples, byte* samples) {
+double byte_shannon_entropy(int largest_possible_sample, int num_samples, byte_t* samples) {
   int sample_index = largest_possible_sample + 1;
   double v[sample_index];
   for (int i = 0; i < sample_index; i++)
@@ -737,8 +737,8 @@ double byte_shannon_entropy(int largest_possible_sample, int num_samples, byte* 
   return entropy;
 }
 
-bool runs_test(int n, byte* s, int* number_of_runs, double* mu, double* sigma) {
-  byte current_value = s[0];
+bool runs_test(int n, byte_t* s, int* number_of_runs, double* mu, double* sigma) {
+  byte_t current_value = s[0];
   int current_run_length = 1;
   int num_runs = 1;
   int n0 = 0;
@@ -770,17 +770,17 @@ bool runs_test(int n, byte* s, int* number_of_runs, double* mu, double* sigma) {
 }
 
 // copy a to b
-void copy_byte_array(int n, byte* a, byte* b) {
+void copy_byte_array(int n, byte_t* a, byte_t* b) {
   for (int i = 0; i < n; i++)
     b[i] = a[i];
 }
 
 // Determine c[0],...,c[n-1] that gives syndrones of s[n-1] + c[0]s[n-2] + ... + c[*L-1] s[n-*L]
 // *L is the length of the shortest LFSR for s
-bool berlekamp_massy(int n, byte* s, int* L) {
-  byte b[n];
-  byte c[n];
-  byte t[n];
+bool berlekamp_massy(int n, byte_t* s, int* L) {
+  byte_t b[n];
+  byte_t c[n];
+  byte_t t[n];
 
   b[0] = 1;
   c[0] = 1;
@@ -791,7 +791,7 @@ bool berlekamp_massy(int n, byte* s, int* L) {
 
   *L = 0;
   int m = -1;
-  byte d = 0;
+  byte_t d = 0;
   for (int k = 0; k < n; k++) {
     for (int j = 1; j <= *L; j++) {
       d ^= c[j] * s[k-j];
@@ -814,20 +814,20 @@ bool berlekamp_massy(int n, byte* s, int* L) {
   return true;
 }
 
-double sum(int n, byte* x) {
+double sum(int n, byte_t* x) {
   double total = 0.0;
   for (int i = 0; i < n; i++)
     total += (double)x[i];
   return total;
 }
 
-double average(int n, byte* x) {
+double average(int n, byte_t* x) {
   double total = sum(n, x);;
   return total / ((double) n);
 }
 
 // largest deviation from the average
-double excursion_test(int n, byte* x) {
+double excursion_test(int n, byte_t* x) {
   double av = average(n, x);
   double largest_excursion = 0.0;
   double d;
@@ -860,7 +860,7 @@ bool binned_chi_squared_test(int num_samples, int nbins, uint32_t* bins, double*
   return true;
 }
 
-bool chi_squared_test(int n, byte* x, int num_values, double* p, double* chi_value) {
+bool chi_squared_test(int n, byte_t* x, int num_values, double* p, double* chi_value) {
   int count[num_values];
 
   for (int i = 0; i < num_values; i++)
@@ -918,7 +918,7 @@ bool real_dft(int n, double* data, double* transform) {
 //    1. Initialize T to zero.
 //    2. For i = 1 to L − p
 //    If (s i = s i+p ), increment T by one.
-bool periodicity_test(int n, byte* s, int lag, int* result) {
+bool periodicity_test(int n, byte_t* s, int lag, int* result) {
   int coincident = 0;
   for (int i = 0; i < (n-lag); i++) {
     if (s[i] == s[i + lag])
@@ -949,8 +949,8 @@ bool periodicity_test(int n, byte* s, int lag, int* result) {
  */
 extern uint32_t lz77_compress (uint8_t *uncompressed_text, uint32_t uncompressed_size,
          uint8_t *compressed_text);
-bool compression_test(int n, byte* s, int* compressed) {
-  byte compressed_bytes[2 * n];
+bool compression_test(int n, byte_t* s, int* compressed) {
+  byte_t compressed_bytes[2 * n];
   *compressed = lz77_compress (s, n, compressed_bytes);
   return true;
 }
@@ -1245,7 +1245,7 @@ double choose(int n, int k) {
   return x / y ;
 }
 
-byte most_common_byte(int num_samples, byte* values) {
+byte_t most_common_byte(int num_samples, byte_t* values) {
   int count[256];
 
   zero_int_array(256, count);
@@ -1300,7 +1300,7 @@ double binomial_term(int n, int k, double p) {
 }
 
 // return true if test passes
-bool binomial_test(int n, byte* values, byte success_value,
+bool binomial_test(int n, byte_t* values, byte_t success_value,
         double p, double alpha, double* residual) {
   int count = 0;
 

@@ -198,13 +198,13 @@ int uint64_to_bits(int n) {
   return (n + NBITSINUINT64 - 1) / NBITSINUINT64;
 }
 
-static byte s_hex_values1[10] = {
+static byte_t s_hex_values1[10] = {
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9
 };
-static byte s_hex_values2[6] = {
+static byte_t s_hex_values2[6] = {
   10, 11, 12, 13, 14, 15
 };
-byte hex_value(char a) {
+byte_t hex_value(char a) {
   if (a >= '0' && a <= '9')
     return s_hex_values1[a - '0'];
   if (a >= 'A' && a <= 'F')
@@ -236,7 +236,7 @@ bool hex_to_bytes(string& h, string* b) {
   int h_size = strlen(h.c_str());
 
   // if odd first 4 bits is 0
-  byte b1, b2;
+  byte_t b1, b2;
   int k;
   if ((h_size % 2) != 0) {
     b1 = 0;
@@ -259,7 +259,7 @@ static char s_hex_chars[16] = {
   '0', '1', '2', '3', '4', '5', '6', '7',
   '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
 };
-char hex_char(byte b) {
+char hex_char(byte_t b) {
   if (b > 16)
     return '0';
   return s_hex_chars[b];
@@ -270,7 +270,7 @@ bool bytes_to_hex(string& b, string* h) {
   h->clear();
   int b_size = b.size();
   char c1, c2;
-  byte b1, b2;
+  byte_t b1, b2;
   for (int i = 0; i < b_size; i++) {
     b1 = (b[i] >> 4) & 0x0f;
     b2 = b[i] & 0x0f;
@@ -301,14 +301,14 @@ bool valid_base64(char* s) {
   }
   return true;
 }
-byte base64_value(char a) {
+byte_t base64_value(char a) {
   for (int i = 0; i < (int)strlen(web_safe_base64_characters); i++) {
     if (a == web_safe_base64_characters[i])
       return i;
   }
   return -1;
 }
-char base64_char(byte a) {
+char base64_char(byte_t a) {
   if (a >= 0x3f)
    return ' ';
   return web_safe_base64_characters[(int)a];
@@ -321,7 +321,7 @@ bool base64_to_bytes(string& b64, string* b) {
   if (((int)b->capacity()) < ((b64_size / 4) * 3 + 1))
     return false;
   int i;
-  byte x1, x2, x3, x4, z;
+  byte_t x1, x2, x3, x4, z;
   for (i = 0; i < (b64_size - 4); i += 4) {
     x1 = base64_value(b64[i]);
     x2 = base64_value(b64[i + 1]);
@@ -375,7 +375,7 @@ bool base64_to_bytes(string& b64, string* b) {
 bool bytes_to_base64(string& b, string* b64) {
   b64->clear();
   int b_size = b.size();
-  byte x1, x2, x3, z;
+  byte_t x1, x2, x3, z;
   char c;
   int i;
   for (i = 0; i < (b_size - 3); i += 3) {
@@ -457,7 +457,7 @@ bool random_source::start_random_source() {
 #if defined(X64)
 #define HAVE_RD_RAND
 #endif
-int random_source::get_random_bytes(int n, byte* b) {
+int random_source::get_random_bytes(int n, byte_t* b) {
   if (!initialized_)
     return -1;
 #ifdef HAVE_RD_RAND
@@ -470,7 +470,7 @@ int random_source::get_random_bytes(int n, byte* b) {
           "\trdrand %%edx\n"
           "\tmovl   %%edx, %[out]\n"
           : [out] "=m"(out)::"%edx");
-      memcpy(b, (byte*)&out, sizeof(uint32_t));
+      memcpy(b, (byte_t*)&out, sizeof(uint32_t));
       m -= sizeof(uint32_t);
       b += sizeof(uint32_t);
     }
@@ -488,7 +488,7 @@ bool random_source::close_random_source() {
   return true;
 }
 
-void print_bytes(int n, byte* in) {
+void print_bytes(int n, byte_t* in) {
   int i;
 
   for(i = 0; i < n; i++) {
@@ -500,13 +500,13 @@ void print_bytes(int n, byte* in) {
     printf("\n");
 }
 
-void reverse_bytes(int size, byte* in, byte* out) {
+void reverse_bytes(int size, byte_t* in, byte_t* out) {
   for (int i = 0; i < size; i++)
     out[size - 1 - i] = in[i];
 }
 
-void reverse_bytes_in_place(int size, byte* b) {
-  byte t;
+void reverse_bytes_in_place(int size, byte_t* b) {
+  byte_t t;
 
   for (int i = 0; i < (size / 2); i++) {
     t = b[size - 1 - i];
@@ -516,27 +516,27 @@ void reverse_bytes_in_place(int size, byte* b) {
 }
 
 void little_to_big_endian_32(uint32_t* in, uint32_t* out) {
-  reverse_bytes(sizeof(uint32_t), (byte*) in, (byte*) out);
+  reverse_bytes(sizeof(uint32_t), (byte_t*) in, (byte_t*) out);
 }
 
 void big_to_little_endian_32(uint32_t* in, uint32_t* out) {
-  reverse_bytes(sizeof(uint32_t), (byte*) in, (byte*) out);
+  reverse_bytes(sizeof(uint32_t), (byte_t*) in, (byte_t*) out);
 }
 
 void little_to_big_endian_64(uint64_t* in, uint64_t* out) {
-  reverse_bytes(sizeof(uint64_t), (byte*) in, (byte*) out);
+  reverse_bytes(sizeof(uint64_t), (byte_t*) in, (byte_t*) out);
 }
 
 void big_to_little_endian_64(uint64_t* in, uint64_t* out) {
-  reverse_bytes(sizeof(uint64_t), (byte*) in, (byte*) out);
+  reverse_bytes(sizeof(uint64_t), (byte_t*) in, (byte_t*) out);
 }
 
 void little_to_big_endian_16(uint16_t* in, uint16_t* out) {
-  reverse_bytes(sizeof(uint16_t), (byte*) in, (byte*) out);
+  reverse_bytes(sizeof(uint16_t), (byte_t*) in, (byte_t*) out);
 }
 
 void big_to_little_endian_16(uint16_t* in, uint16_t* out) {
-  reverse_bytes(sizeof(uint16_t), (byte*) in, (byte*) out);
+  reverse_bytes(sizeof(uint16_t), (byte_t*) in, (byte_t*) out);
 }
 
 bool have_intel_rd_rand() {
@@ -684,7 +684,7 @@ void file_util::close() {
   initialized_ = false;
 }
 
-int file_util::read_a_block(int size, byte* buf) {
+int file_util::read_a_block(int size, byte_t* buf) {
   if (!initialized_)
     return -1;
   if (write_)
@@ -693,7 +693,7 @@ int file_util::read_a_block(int size, byte* buf) {
   return read(fd_, buf, size);
 }
 
-bool file_util::write_a_block(int size, byte* buf) {
+bool file_util::write_a_block(int size, byte_t* buf) {
   if (!initialized_)
     return false;
   if (!write_)
@@ -702,7 +702,7 @@ bool file_util::write_a_block(int size, byte* buf) {
   return write(fd_, buf, size) > 0;
 }
 
-int file_util::read_file(const char* filename, int size, byte* buf) {
+int file_util::read_file(const char* filename, int size, byte_t* buf) {
   if (!open(filename))
     return -1;
   if (bytes_in_file_ < size) {
@@ -714,7 +714,7 @@ int file_util::read_file(const char* filename, int size, byte* buf) {
   return n;
 }
 
-bool file_util::write_file(const char* filename, int size, byte* buf) {
+bool file_util::write_file(const char* filename, int size, byte_t* buf) {
   if (!create(filename))
     return -1;
   int n = write_a_block(size, buf);
@@ -744,7 +744,7 @@ int u64_array_to_bytes(int size_n, uint64_t* n, string* b) {
 #else
     big_to_little_endian_64(&n[i], &little_endian);
 #endif
-    byte* p = (byte*) &little_endian;
+    byte_t* p = (byte_t*) &little_endian;
     for (int j = 0; j < (int)sizeof(uint64_t); j++)
       b->append(1, (char)p[j]);
   }
@@ -767,23 +767,23 @@ int bytes_to_u64_array(string& b, int size_n, uint64_t* n) {
   int real_size_n = (real_size_b + (int)sizeof(uint64_t) - 1) / (int)sizeof(uint64_t);
   int start_b = (int)b.size() - real_size_b;
   int partial_64_size = real_size_b - (real_size_n - 1) * (int)sizeof(uint64_t);
-  byte* p = (byte*)b.data() + start_b;
+  byte_t* p = (byte_t*)b.data() + start_b;
   uint64_t x = 0ULL;
 #ifndef BIG_ENDIAN
-  memcpy((byte*)&x, p, partial_64_size);
+  memcpy((byte_t*)&x, p, partial_64_size);
   n[real_size_n - 1] = x;
 #else
   uint64_t big_endian = 0ULL;
-  reverse_bytes(partial_64_size, p, (byte*)&big_endian);
+  reverse_bytes(partial_64_size, p, (byte_t*)&big_endian);
   n[real_size_n - 1] = big_endian;
 #endif
   p+= partial_64_size;
   for (int i = real_size_n - 2; i >= 0; i--) {
 #ifndef BIG_ENDIAN
-    memcpy((byte*)&x, p, sizeof(uint64_t));
+    memcpy((byte_t*)&x, p, sizeof(uint64_t));
     n[i] = x;
 #else
-    reverse_bytes((int)sizeof(uint64_t), p, (byte*)&big_endian);
+    reverse_bytes((int)sizeof(uint64_t), p, (byte_t*)&big_endian);
     n[i] = big_endian;
 #endif
     p += (int)sizeof(uint64_t);
@@ -794,7 +794,7 @@ int bytes_to_u64_array(string& b, int size_n, uint64_t* n) {
 bool global_crypto_initialized = false;
 random_source global_crypto_random_source;
 
-int crypto_get_random_bytes(int num_bytes, byte* buf) {
+int crypto_get_random_bytes(int num_bytes, byte_t* buf) {
   if (!global_crypto_initialized)
     return -1;
   return global_crypto_random_source.get_random_bytes(num_bytes, buf);
@@ -983,7 +983,7 @@ certificate_message* make_certificate(certificate_body_message& cbm,
 
 void print_binary_blob(binary_blob_message& m) {
   printf("Binary blob: ");
-  print_bytes((int)m.blob().size(), (byte*)m.blob().data());
+  print_bytes((int)m.blob().size(), (byte_t*)m.blob().data());
 }
 
 void print_encrypted_message(encrypted_message& m) {
@@ -998,7 +998,7 @@ void print_encrypted_message(encrypted_message& m) {
     printf("  Date        : %s\n", m.date().c_str());
   if (m.has_buffer()) {
     printf("  Buffer      : ");
-    print_bytes((int)m.buffer().size(), (byte*)m.buffer().data());
+    print_bytes((int)m.buffer().size(), (byte_t*)m.buffer().data());
   }
 }
 
@@ -1007,13 +1007,13 @@ void print_signature_message(signature_message& m) {
   printf("    algorithm : %s\n", m.encryption_algorithm_name().c_str());
   printf("    key name  : %s\n", m.key_name().c_str());
   printf("    signature : ");
-  print_bytes((int)m.signature().size(), (byte*)m.signature().data());
+  print_bytes((int)m.signature().size(), (byte_t*)m.signature().data());
   printf("    signer    : %s\n", m.signer_name().c_str());
 }
 
 void print_rsa_public_parameters_message(rsa_public_parameters_message& m) {
-  printf("    modulus   : "); print_bytes((int)m.modulus().size(), (byte*)m.modulus().data());
-  printf("    e         : "); print_bytes((int)m.e().size(), (byte*)m.e().data());
+  printf("    modulus   : "); print_bytes((int)m.modulus().size(), (byte_t*)m.modulus().data());
+  printf("    e         : "); print_bytes((int)m.e().size(), (byte_t*)m.e().data());
 }
 
 void print_ecc_public_parameters_message(ecc_public_parameters_message& m) {
@@ -1032,7 +1032,7 @@ void print_hmac_parameters_message(hmac_parameters_message& m) {
     printf("hmac key size : %d\n", m.size());
   if (m.has_secret()) {
     printf("hmac secret   : ");
-    print_bytes((int)m.secret().size(), (byte*)m.secret().data());
+    print_bytes((int)m.secret().size(), (byte_t*)m.secret().data());
   }
 }
 
@@ -1054,50 +1054,50 @@ void print_key_message(key_message& m) {
     printf("  Not after   : %s\n", m.notafter().c_str());
   if (m.has_secret()) {
     printf("  Secret      : "); print_bytes((int)m.secret().size(),
-                                (byte*)m.secret().data());
+                                (byte_t*)m.secret().data());
   }
   if (m.has_rsa_pub()) {
     if (m.rsa_pub().has_modulus() && (int)m.rsa_pub().modulus().size() > 0) {
       printf("  modulus     : ");
       print_bytes((int)(m.rsa_pub().modulus().size()),
-          (byte*)m.rsa_pub().modulus().data());
+          (byte_t*)m.rsa_pub().modulus().data());
     }
     if (m.rsa_pub().has_e() && (int)m.rsa_pub().e().size() > 0) {
       printf("  e           : ");
       print_bytes((int)(m.rsa_pub().e().size()),
-        (byte*)m.rsa_pub().e().data());
+        (byte_t*)m.rsa_pub().e().data());
     }
   }
   if (m.has_rsa_priv() && (int)m.rsa_priv().d().size() > 0) {
     if (m.rsa_priv().has_d()) {
       printf("  d           : ");
       print_bytes((int)(m.rsa_priv().d().size()),
-         (byte*)m.rsa_priv().d().data());
+         (byte_t*)m.rsa_priv().d().data());
     }
     if (m.rsa_priv().has_p() && (int)m.rsa_priv().p().size() > 0) {
       printf("  p           : ");
       print_bytes((int)(m.rsa_priv().p().size()),
-         (byte*)m.rsa_priv().p().data());
+         (byte_t*)m.rsa_priv().p().data());
     }
     if (m.rsa_priv().has_q() && (int)m.rsa_priv().q().size() > 0) {
       printf("  q           : ");
       print_bytes((int)(m.rsa_priv().q().size()),
-        (byte*)m.rsa_priv().q().data());
+        (byte_t*)m.rsa_priv().q().data());
     }
     if (m.rsa_priv().has_m_prime() && (int)m.rsa_priv().m_prime().size() > 0) {
       printf("  m_prime     : ");
       print_bytes((int)(m.rsa_priv().m_prime().size()),
-        (byte*)m.rsa_priv().m_prime().data());
+        (byte_t*)m.rsa_priv().m_prime().data());
     }
     if (m.rsa_priv().has_p_prime() && (int)m.rsa_priv().p_prime().size() > 0) {
       printf("  p_prime     : ");
       print_bytes((int)(m.rsa_priv().p_prime().size()),
-        (byte*)m.rsa_priv().p_prime().data());
+        (byte_t*)m.rsa_priv().p_prime().data());
     }
     if (m.rsa_priv().has_q_prime() && (int)m.rsa_priv().q_prime().size() > 0) {
       printf("  q_prime     : ");
       print_bytes((int)(m.rsa_priv().q_prime().size() / NBITSINBYTE),
-        (byte*)m.rsa_priv().q_prime().data());
+        (byte_t*)m.rsa_priv().q_prime().data());
     }
   }
   if (m.has_ecc_pub()) {
@@ -1108,48 +1108,48 @@ void print_key_message(key_message& m) {
         printf("  curve name  : %s\n", cmsg->curve_name().c_str());
       if (cmsg->has_curve_p())   {
         printf("  curve p     : ");
-        print_bytes((int)cmsg->curve_p().size(), (byte*)cmsg->curve_p().data());
+        print_bytes((int)cmsg->curve_p().size(), (byte_t*)cmsg->curve_p().data());
       }
       if (cmsg->has_curve_a())   {
         printf("  curve a     : ");
-        print_bytes((int)cmsg->curve_a().size(), (byte*)cmsg->curve_a().data());
+        print_bytes((int)cmsg->curve_a().size(), (byte_t*)cmsg->curve_a().data());
       }
       if (cmsg->has_curve_b())   {
         printf("  curve b     : ");
-        print_bytes((int)cmsg->curve_b().size(), (byte*)cmsg->curve_b().data());
+        print_bytes((int)cmsg->curve_b().size(), (byte_t*)cmsg->curve_b().data());
       }
     }
     if (pub->has_base_point()) {
       point_message* pt= pub->mutable_base_point();
       if (pt->has_x()) {
         printf("  base x      : ");
-        print_bytes((int)pt->x().size(), (byte*)pt->x().data());
+        print_bytes((int)pt->x().size(), (byte_t*)pt->x().data());
       }
       if (pt->has_y()) {
         printf("  base y      : ");
-        print_bytes((int)pt->y().size(), (byte*)pt->y().data());
+        print_bytes((int)pt->y().size(), (byte_t*)pt->y().data());
       }
     }
     if (pub->has_public_point()) {
       point_message* pt= pub->mutable_public_point();
       if (pt->has_x()) {
         printf("  public x    : ");
-        print_bytes((int)pt->x().size(), (byte*)pt->x().data());
+        print_bytes((int)pt->x().size(), (byte_t*)pt->x().data());
       }
       if (pt->has_y()) {
         printf("  public y    : ");
-        print_bytes((int)pt->y().size(), (byte*)pt->y().data());
+        print_bytes((int)pt->y().size(), (byte_t*)pt->y().data());
       }
     }
     if (pub->has_order_of_base_point()) {
       printf("  order base    : ");
-      print_bytes((int)pub->order_of_base_point().size(), (byte*)pub->order_of_base_point().data());
+      print_bytes((int)pub->order_of_base_point().size(), (byte_t*)pub->order_of_base_point().data());
     }
   }
 
   if (m.has_ecc_priv() && (int)m.ecc_priv().private_multiplier().size() > 0) {
     printf("  private key     : ");
-    print_bytes((int)m.ecc_priv().private_multiplier().size(), (byte*)m.ecc_priv().private_multiplier().data());
+    print_bytes((int)m.ecc_priv().private_multiplier().size(), (byte_t*)m.ecc_priv().private_multiplier().data());
   }
 }
 
@@ -1253,5 +1253,5 @@ void print_certificate_message(certificate_message& m) {
     print_algorithm_message(*ik);
   }
   printf("  Signature   : ");
-  print_bytes((int)m.signature().size(), (byte*)m.signature().data());
+  print_bytes((int)m.signature().size(), (byte_t*)m.signature().data());
 }

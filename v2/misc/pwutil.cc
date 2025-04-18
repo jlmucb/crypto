@@ -52,7 +52,7 @@ DEFINE_string(log_file, "pwutil_log_file", "log file");
 DEFINE_string(algorithm, "aes128-cbc-hmacsha256-sympad", "algorithm");
 
 
-AesCbcHmac256Sympad* GetAesCbcHmac256SymPad(int size, byte* in) {
+AesCbcHmac256Sympad* GetAesCbcHmac256SymPad(int size, byte_t* in) {
 printf("GetAesCbcHmac256SymPad\n");
   crypto_encryption_algorithm_message* message =
       new crypto_encryption_algorithm_message;
@@ -89,8 +89,8 @@ bool CbcEncrypt(AesCbcHmac256Sympad* scheme, const char* inFile,
   int m;
   int n;
   int k;
-  byte in_buf[BUFSIZE];
-  byte out_buf[BUFSIZE];
+  byte_t in_buf[BUFSIZE];
+  byte_t out_buf[BUFSIZE];
   bool final = false;
   int size = 0;
 
@@ -297,7 +297,7 @@ int main(int an, char** av) {
   }
   if (FLAGS_operation == "to-text") {
     int proto_size = 0;
-    byte* proto_buf = nullptr;
+    byte_t* proto_buf = nullptr;
 
     if (!ReadaFile(FLAGS_input.c_str(), &proto_size, &proto_buf)) {
       printf("Can't read %s\n", FLAGS_input.c_str());
@@ -318,10 +318,10 @@ int main(int an, char** av) {
     }
     string out;
     pw_proto.SerializeToString(&out);
-    WriteaFile(FLAGS_output.c_str(), out.length(), (byte*)out.data());
+    WriteaFile(FLAGS_output.c_str(), out.length(), (byte_t*)out.data());
   } else if (FLAGS_operation == "wrap") {
     int proto_size = 0;
-    byte* proto_buf = nullptr;
+    byte_t* proto_buf = nullptr;
 
     if (!ReadaFile(FLAGS_input.c_str(), &proto_size, &proto_buf)) {
       printf("Can't read %s\n", FLAGS_input.c_str());
@@ -335,7 +335,7 @@ int main(int an, char** av) {
     }
     if (FLAGS_algorithm == "aes128-cbc-hmacsha256-sympad") {
       int scheme_size = 0;
-      byte* scheme_out = nullptr;
+      byte_t* scheme_out = nullptr;
 
       if (!ReadaFile(FLAGS_key.c_str(), &scheme_size, &scheme_out)) {
         printf("Can't read %s\n", FLAGS_key.c_str());
@@ -365,7 +365,7 @@ int main(int an, char** av) {
     }
   } else if (FLAGS_operation == "unwrap") {
     int encrypted_proto_size = 0;
-    byte* encrypted_proto_buf = nullptr;
+    byte_t* encrypted_proto_buf = nullptr;
 
     if (!ReadaFile(FLAGS_input.c_str(), &encrypted_proto_size,
                    &encrypted_proto_buf)) {
@@ -380,7 +380,7 @@ int main(int an, char** av) {
     }
     if (FLAGS_algorithm == "aes128-cbc-hmacsha256-sympad") {
       int scheme_size = 0;
-      byte* scheme_out = nullptr;
+      byte_t* scheme_out = nullptr;
 
       if (!ReadaFile(FLAGS_key.c_str(), &scheme_size, &scheme_out)) {
         printf("Can't read %s\n", FLAGS_key.c_str());

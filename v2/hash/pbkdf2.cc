@@ -37,17 +37,17 @@
 //      }
 //    }
 //  return MK = T[1] || T[2] || ...
-bool pbkdf2(const char* pass, int saltLen, byte* salt, int iter, int out_size,
-            byte* out) {
+bool pbkdf2(const char* pass, int saltLen, byte_t* salt, int iter, int out_size,
+            byte_t* out) {
   hmac_sha256 hmac;
   int k = strlen(pass);
   int i, j, m;
   int n = (out_size + hmac_sha256::MACBYTESIZE - 1) / hmac_sha256::MACBYTESIZE;
-  byte t[hmac_sha256::BLOCKBYTESIZE];
-  byte u[hmac_sha256::MACBYTESIZE];
+  byte_t t[hmac_sha256::BLOCKBYTESIZE];
+  byte_t u[hmac_sha256::MACBYTESIZE];
   int left = out_size;
-  byte t_out[hmac_sha256::MACBYTESIZE];
-  byte* next_out = out;
+  byte_t t_out[hmac_sha256::MACBYTESIZE];
+  byte_t* next_out = out;
 
   memset(t, 0, hmac_sha256::BLOCKBYTESIZE);
   memset(u, 0, hmac_sha256::MACBYTESIZE);
@@ -55,10 +55,10 @@ bool pbkdf2(const char* pass, int saltLen, byte* salt, int iter, int out_size,
     saltLen = hmac_sha256::MACBYTESIZE - sizeof(int);
   memcpy(u, salt, saltLen);
   for (i = 0; i < n; i++) {
-    memcpy(&u[saltLen], (byte*)&i, sizeof(int));
+    memcpy(&u[saltLen], (byte_t*)&i, sizeof(int));
     memset(t, 0, hmac_sha256::BLOCKBYTESIZE);
     for (j = 0; j < iter; j++) {
-      hmac.init(k, (byte*)pass);
+      hmac.init(k, (byte_t*)pass);
       hmac.add_to_inner_hash(hmac_sha256::MACBYTESIZE, u);
       hmac.finalize();
       hmac.get_hmac(hmac_sha256::MACBYTESIZE, t_out);

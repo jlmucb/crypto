@@ -27,20 +27,20 @@ public:
   int hash_byte_output_size_;
   int seed_len_bits_;
   int seed_len_bytes_;
-  byte K_[64];
-  byte V_[64];
+  byte_t K_[64];
+  byte_t V_[64];
 
   hmac_drng();
   ~hmac_drng();
 
   int get_reseed_counter() {return reseed_ctr_;};
   double current_entropy();
-  bool update(int size_data, byte* data);
-  bool init(int size_nonce, byte* nonce, int size_personalization,
-            byte* personalization, int entropy_width, byte* entropy,
+  bool update(int size_data, byte_t* data);
+  bool init(int size_nonce, byte_t* nonce, int size_personalization,
+            byte_t* personalization, int entropy_width, byte_t* entropy,
             double ent);
-  bool generate(int num_bits_needed, byte* out,
-          int n_add_in_bytes, byte* add_in_bytes);
+  bool generate(int num_bits_needed, byte_t* out,
+          int n_add_in_bytes, byte_t* add_in_bytes);
 };
 #endif
 

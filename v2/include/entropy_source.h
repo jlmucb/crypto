@@ -16,7 +16,7 @@
 #include "crypto_support.h"
 #include "sha256.h"
 
-typedef int source_function(int, byte*);
+typedef int source_function(int, byte_t*);
 
 class entropy_source {
 public:

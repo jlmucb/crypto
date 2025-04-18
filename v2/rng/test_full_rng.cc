@@ -58,16 +58,16 @@ volatile void inline memory_jitter_block(int num_loops, int size, byte* buf) {
 
 // hash timing
 volatile void inline hash_jitter_block(int num_loops, int size, byte* to_hash) {
-  sha3 hash_obj(1024);
+  sha3 hash_obj;
 
   for (int i = 0; i < num_loops; i++) {
-    hash_obj.init();
+    hash_obj.init(1024);
     hash_obj.add_to_hash(size, to_hash);
     hash_obj.finalize();
   }
 }
 
-int sw_entropy(int num_samples, byte* sample) {
+int sw_entropy(int num_samples, byte_t* sample) {
   uint64_t t1, t2;
   uint32_t delta;
 
@@ -76,14 +76,14 @@ int sw_entropy(int num_samples, byte* sample) {
     simple_jitter_block(11);
     t2 = read_rdtsc();
     delta = (t2 - t1) / 2;    // bottom bit is always 0 on some machines
-    sample[i] = (byte)delta;
+    sample[i] = (byte_t)delta;
   }
   return num_samples;
 }
 
 #pragma GCC pop_options
 
-int hw_entropy(int num_samples, byte* sample) {
+int hw_entropy(int num_samples, byte_t* sample) {
   uint32_t out = 0;
   int n = 0;
   int k = 0;
@@ -96,14 +96,14 @@ int hw_entropy(int num_samples, byte* sample) {
       "\trdrand %%edx\n"
       "\tmovl   %%edx, %[out]\n"
     : [out] "=m"(out)::"%edx");
-  memcpy(&sample[n], (byte*)&out, k);
+  memcpy(&sample[n], (byte_t*)&out, k);
   n += k;
   }
 
   return n;
 }
 
-int get_intel_rand(int n, byte* sample) {
+int get_intel_rand(int n, byte_t* sample) {
   return n;
 }
 
@@ -141,19 +141,21 @@ int main(int an, char** av) {
   hash_drng the_drng;                                       // DRBG
   hash_drng hw_drng;                                        // DRBG
   hash_drng sw_drng;                                        // DRBG
-  int size_random_numbers = 32;
-  byte random_numbers[64];
+  int size_random_numbers = 64;
+  byte_t random_numbers[4*size_random_numbers];
   int seed_size= 64;
-  byte seed[64];
+  byte_t seed[4 * seed_size];
   double entropy_of_seed = 0.0;
   int size_sample_buf = 128;
-  byte sample_buf[size_sample_buf];
-  int sample_size = 40;
+  byte_t sample_buf[size_sample_buf];
+  int sample_size =  32;
   double required_entropy = 256.0;
   apt apt_health;
   rct rct_health;
 
-  init_crypto();
+  if (!init_crypto()) {
+    return true;
+  }
 
   // hw source
   if (FLAGS_print_all) {
@@ -170,6 +172,7 @@ int main(int an, char** av) {
       printf("HW noise : ");
       print_bytes(sample_size, sample_buf);
     }
+
     for (int i = 0; i < sample_size; i++) {
       apt_health.insert((uint32_t)sample_buf[i]);
       rct_health.insert((uint32_t)sample_buf[i]);
@@ -195,11 +198,13 @@ int main(int an, char** av) {
     printf("seed entropy too small\n");
     return 0;
   }
+
   if (FLAGS_print_all) {
     printf("seed: ");
     print_bytes(seed_size, seed);
     printf("\n");
   }
+
   if (!hw_drng.init(0, nullptr, 0, nullptr, seed_size, seed, entropy_of_seed)) {
     printf("can't initialize drng\n");
     return 0;
@@ -219,10 +224,11 @@ int main(int an, char** av) {
   if (FLAGS_print_all) {
     printf("\n\nSoftware test\n");
   }
+
   memset(sample_buf, 0, size_sample_buf);
   apt_health.init();
   rct_health.init();
-  sample_size = 20;
+  sample_size = 32;
   entropy_of_seed = 0.0;
   while (sw_accumulator.entropy_estimate() < required_entropy) {
     if (sw_source.getentropy_(sample_size, sample_buf) < sample_size) {
@@ -262,6 +268,7 @@ int main(int an, char** av) {
     print_bytes(seed_size, seed);
     printf("\n");
   }
+
   if (!sw_drng.init(0, nullptr, 0, nullptr, seed_size, seed, entropy_of_seed)) {
     printf("can't initialize drng\n");
     return 0;

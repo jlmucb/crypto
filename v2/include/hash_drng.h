@@ -27,20 +27,20 @@ public:
   int hash_byte_output_size_;
   int seed_len_bits_;
   int seed_len_bytes_;
-  byte C_[64];
-  byte V_[64];
+  byte_t C_[64];
+  byte_t V_[64];
 
   hash_drng();
   ~hash_drng();
 
   int get_reseed_counter() {return reseed_ctr_;};
   double current_entropy();
-  bool init(int size_nonce, byte* nonce, int size_personalization,
-            byte* personalization, int entropy_width, byte* entropy,
+  bool init(int size_nonce, byte_t* nonce, int size_personalization,
+            byte_t* personalization, int entropy_width, byte_t* entropy,
             double ent);
-  void hash_gen(int num_requested_bits, byte* out);
-  bool generate_random_bits(int num_bits_needed, byte* out,
-          int n_add_in_bits, byte* add_in_bits);
+  void hash_gen(int num_requested_bits, byte_t* out);
+  bool generate_random_bits(int num_bits_needed, byte_t* out,
+          int n_add_in_bits, byte_t* add_in_bits);
 };
 #endif
 

@@ -17,7 +17,9 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef uint8_t byte;
+#ifndef byte_t
+typedef uint8_t byte_t;
+#endif
 const int lane_exp = 6;
 
 inline int lane_size(int exp) {
@@ -40,28 +42,28 @@ int index(int size_lane, int x, int y, int z) {     // row, col, lane
   return size_lane * (5 * y + x) + z;
 }
 
-void print_row(int size_lane, int y, int z, byte* s) {
+void print_row(int size_lane, int y, int z, byte_t* s) {
   printf("row %d %d: ", y, z);
   for (int x= 0; x < 5; x++)
     printf("%1x", s[index(size_lane, x, y, z)]);
   printf("\n");
 }
 
-void print_col(int size_lane, int x, int z, byte* s) {
+void print_col(int size_lane, int x, int z, byte_t* s) {
   printf("column %d %d: ", x, z);
   for (int y= 0; y < 5; y++)
     printf("%1x", s[index(size_lane, x, y, z)]);
   printf("\n");
 }
 
-void print_lane (int size_lane, int x, int y, byte* s) {
+void print_lane (int size_lane, int x, int y, byte_t* s) {
   printf("lane %d %d: ", x, y);
   for (int z= 0; z < size_lane; z++)
     printf("%1x", s[index(size_lane, x, y, z)]);
   printf("\n");
 }
 
-bool bytes_to_bits(int num_bytes, byte* in, byte* out) {
+bool bytes_to_bits(int num_bytes, byte_t* in, byte_t* out) {
   for (int i = 0; i < num_bytes; i++) {
     for (int j = 0; j < 8; j++) {
       out[8 * i + j] = (in[i] >> (7 - j)) & 0x1;
@@ -78,7 +80,7 @@ void index_pair_transform(int x_in, int y_in, int* x_out, int* y_out) {
 }
 
 //#define INTERMEDIATETHETA
-byte column_parities(int size_lane, byte* in_state, int x, int z) {
+byte_t column_parities(int size_lane, byte_t* in_state, int x, int z) {
   byte parity = 0;
 
   int x1 = (x + 4) % 5;
@@ -98,14 +100,14 @@ byte column_parities(int size_lane, byte* in_state, int x, int z) {
 
 
 // add parity of two columns to a column
-void theta_f(int size_lane, byte* in_state, byte* out_state) {
+void theta_f(int size_lane, byte_t* in_state, byte_t* out_state) {
   for (int x = 0; x < 5; x++) {
     for (int z = 0; z < size_lane; z++) {
 #ifdef INTERMEDIATETHETA
       printf("before, ");
       print_col(size_lane, x, z, in_state);
 #endif
-      byte parity = column_parities(size_lane, in_state, x, z);
+      byte_t parity = column_parities(size_lane, in_state, x, z);
       for (int y = 0; y < 5; y++) {
         out_state[index(size_lane, x, y, z)] =  in_state[index(size_lane, x, y, z)] ^ parity;
       }
@@ -128,7 +130,7 @@ void mat_mult(int a11, int a12, int a21, int a22,
 
 //#define INTERMEDIATERHO
 // rotate bits in lane by T(x,y)
-void rho_f(int size_lane, byte* in_state, byte* out_state) {
+void rho_f(int size_lane, byte_t* in_state, byte_t* out_state) {
   int x1, y1;
   int a11 = 1; int a12 = 0;
   int a21 = 0; int a22 = 1;
@@ -166,7 +168,7 @@ void rho_f(int size_lane, byte* in_state, byte* out_state) {
 
 // #define INTERMEDIATEPI
 // reorder lanes
-void pi_f(int size_lane, byte* in_state, byte* out_state) {
+void pi_f(int size_lane, byte_t* in_state, byte_t* out_state) {
   int x1, y1;
   for (int x = 0; x < 5; x++) {
     for (int y = 0; y < 5; y++) {
@@ -183,8 +185,8 @@ void pi_f(int size_lane, byte* in_state, byte* out_state) {
 
 // #define INTERMEDIATECHI
 // non-linear transform of rows
-void chi_f(int size_lane, byte* in_state, byte* out_state) {
-  byte r;
+void chi_f(int size_lane, byte_t* in_state, byte_t* out_state) {
+  byte_t r;
 
   for (int x = 0; x < 5; x++) {
     for (int y = 0; y < 5; y++) {
@@ -202,7 +204,7 @@ void chi_f(int size_lane, byte* in_state, byte* out_state) {
   }
 }
 
-byte local_round_constants[24] = {
+byte_t local_round_constants[24] = {
   0x01, 0x1a, 0x5e, 0x70, 0x1f, 0x21, 0x79, 0x55,
   0x0e, 0x0c, 0x35, 0x26, 0x3f, 0x4f, 0x5d, 0x53,
   0x52, 0x48, 0x16, 0x66, 0x79, 0x58, 0x21, 0x74
@@ -211,9 +213,9 @@ int positions[7] = {0, 1, 5, 7, 15, 31, 63};
 
 // #define INTERMEDIATEIOTA
 // add round constants
-void iota_f(int rnd, int size_lane, byte* in_state) {
+void iota_f(int rnd, int size_lane, byte_t* in_state) {
   for (int j = 0; j < 7; j++) {
-    if (((((byte)1)<<j) & local_round_constants[rnd]) != 0) {
+    if (((((byte_t)1)<<j) & local_round_constants[rnd]) != 0) {
 #ifdef INTERMEDIATEIOTA
     printf("rnd: %d, (0, 0, %d) ^= 1\n",  rnd, positions[j]);
 #endif
@@ -222,12 +224,12 @@ void iota_f(int rnd, int size_lane, byte* in_state) {
   }
 }
 
-void init_state(int size_lane, byte* state) {
+void init_state(int size_lane, byte_t* state) {
   for (int i = 0; i < (state_size() - 1); i++)
     state[i] = 0;
 }
 
-void print_bytes(int n, byte* in) {
+void print_bytes(int n, byte_t* in) {
   int i;
 
   for(i = 0; i < n; i++) {
@@ -239,7 +241,7 @@ void print_bytes(int n, byte* in) {
     printf("\n");
 }
 
-void print_state(int size_lane, byte* state_in) {
+void print_state(int size_lane, byte_t* state_in) {
   for (int x = 0; x < 5; x++) {
     for (int y = 0; y < 5; y++) {
       printf("(%d, %d): ", x, y);
@@ -252,9 +254,9 @@ void print_state(int size_lane, byte* state_in) {
 }
 
 //#define INTERMEDIATEF
-void keccak_f(int size_lane, byte* state_in, byte* state_out) {
-  byte state1[1600];
-  byte state2[1600];
+void keccak_f(int size_lane, byte_t* state_in, byte_t* state_out) {
+  byte_t state1[1600];
+  byte_t state2[1600];
 
   memcpy(state2, state_in, 1600);
 #ifdef INTERMEDIATEF
@@ -302,7 +304,7 @@ void keccak_f(int size_lane, byte* state_in, byte* state_out) {
 #endif
 }
 
-bool pad(int r, int size_in, int* pad_size, byte* pad_buf) {
+bool pad(int r, int size_in, int* pad_size, byte_t* pad_buf) {
   int num_in_last_block = size_in % r;
   int num_left;
   if (num_in_last_block == 0)
@@ -321,9 +323,10 @@ bool pad(int r, int size_in, int* pad_size, byte* pad_buf) {
 }
 
 #define INTERMEDIATEBLOCK
-bool sponge(int b, int r, int size_lane, int num_blocks_with_pad, byte* bit_blocks, int num_bits_out, byte* bits_out) {
-  byte state_in[1600];
-  byte state_out[1600];
+bool sponge(int b, int r, int size_lane, int num_blocks_with_pad, byte_t* bit_blocks,
+            int num_bits_out, byte_t* bits_out) {
+  byte_t state_in[1600];
+  byte_t state_out[1600];
   memset(state_in, 0, 1600);
   memset(state_out, 0, 1600);
 
@@ -361,7 +364,7 @@ bool sponge(int b, int r, int size_lane, int num_blocks_with_pad, byte* bit_bloc
 }
 
 const int num_bytes_to_hash = 16;
-byte to_hash[num_bytes_to_hash] = {
+byte_t to_hash[num_bytes_to_hash] = {
   0x01, 0x03, 0x02, 0x04, 0x05, 0x06, 0x07, 0x08,
   0xa1, 0xb3, 0xc2, 0xd4, 0xe5, 0xf6, 0x97, 0xa8,
 };
@@ -373,9 +376,9 @@ int main(int an, char** av) {
 
   printf("Keccak b= %d, c= %d, r= %d\n", b, c, r);
 
-  byte bit_blocks[r];
+  byte_t bit_blocks[r];
   int num_bits_out = 256;
-  byte bits_out[num_bits_out];
+  byte_t bits_out[num_bits_out];
   memset(bit_blocks, 0, r);
   memset(bits_out, 0, 256);
 

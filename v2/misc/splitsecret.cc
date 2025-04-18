@@ -23,7 +23,7 @@
 
 using namespace std;
 
-bool Gf2EquationSetup(int size_min_poly, byte* min_poly, gf2_instance* instance,
+bool Gf2EquationSetup(int size_min_poly, byte_t* min_poly, gf2_instance* instance,
       gf2_8* x) {
   gf2_8 a[48 * 48];
 
@@ -52,7 +52,7 @@ bool Gf2EquationSetup(int size_min_poly, byte* min_poly, gf2_instance* instance,
 }
 
 bool Generate(string& secretname, string& shardname, string& secretfile, bool generate_secret,
-              int size_min_poly, byte* min_poly) {
+              int size_min_poly, byte_t* min_poly) {
 
   gf2_instance instance[48];
   gf2_8 solved_x[48];
@@ -60,16 +60,16 @@ bool Generate(string& secretname, string& shardname, string& secretfile, bool ge
 
   uint16_t u, w;
   int size;
-  byte c[16];
+  byte_t c[16];
 
-  byte secret_to_split[16];
+  byte_t secret_to_split[16];
   if (generate_secret) {
     for (int i = 0; i < 16; i++) {
-      if (!get_random_byte(false, (byte*)&w)) {
+      if (!get_random_byte(false, (byte_t*)&w)) {
         printf("Can't generate secret\n");
         return false;
       }
-      secret_to_split[i] = (byte)w;
+      secret_to_split[i] = (byte_t)w;
     }
     int fd = open(secretfile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
     if (fd < 0) {
@@ -96,7 +96,7 @@ bool Generate(string& secretname, string& shardname, string& secretfile, bool ge
     byte_8_copy(c, x[i].v_);
   }
   for (int i = 16; i < 48; i++) {
-      if (!get_random_byte(false, (byte*)&w)) {
+      if (!get_random_byte(false, (byte_t*)&w)) {
         printf("Can't generate secret 2\n");
         return 1;
       }
@@ -158,15 +158,15 @@ bool Generate(string& secretname, string& shardname, string& secretfile, bool ge
   return true;
 }
 
-bool Recover(string& shardname, string& secretfile, int size_min_poly, byte* min_poly) {
+bool Recover(string& shardname, string& secretfile, int size_min_poly, byte_t* min_poly) {
   gf2_instance instance[48];
   gf2_8 solved_x[48];
   string serialized_shard[5];
   split_secret_message shards[5];
   char shard_file_name[256];
-  byte serialized_shard_buf[4096];
+  byte_t serialized_shard_buf[4096];
   int size;
-  byte c[16];
+  byte_t c[16];
   uint16_t w;
 
   for (int i = 0; i < 3; i++) {
@@ -210,14 +210,14 @@ bool Recover(string& shardname, string& secretfile, int size_min_poly, byte* min
   }
 
   // Write out secret
-  byte split_secret[16];
+  byte_t split_secret[16];
   for (int i = 0; i < 16; i++) {
     size = 16;
     w = 0;
     if(!from_internal_representation(8, solved_x[i].v_, &w)) {
       return false;
     }
-    split_secret[i] = (byte)w;
+    split_secret[i] = (byte_t)w;
   }
 
   int fd = open(secretfile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0644);
@@ -265,7 +265,7 @@ int main(int an, char** av) {
 
   uint16_t minpoly = 0x11b;
   int size_min_poly = 16;
-  byte min_poly[16];
+  byte_t min_poly[16];
 
   if (!to_internal_representation(minpoly, &size_min_poly, min_poly)) {
     return false;

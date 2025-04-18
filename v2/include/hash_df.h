@@ -17,8 +17,8 @@
 #include "crypto_support.h"
 #include "sha256.h"
 
-void hash_all(int byte_size_in, byte* in, byte* out);
-void hash_df(int byte_size_in, byte* in, int bit_size_out, byte* out);
+void hash_all(int byte_size_in, byte_t* in, byte_t* out);
+void hash_df(int byte_size_in, byte_t* in, int bit_size_out, byte_t* out);
 #endif
 
 

@@ -595,10 +595,10 @@ static const uint32_t rcon[] = {
    ((uint32_t)(pt)[2] << 8) ^ ((uint32_t)(pt)[3]))
 #define PUTU32(ct, st)            \
   {                               \
-    (ct)[0] = (byte)((st) >> 24); \
-    (ct)[1] = (byte)((st) >> 16); \
-    (ct)[2] = (byte)((st) >> 8);  \
-    (ct)[3] = (byte)(st);         \
+    (ct)[0] = (byte_t)((st) >> 24); \
+    (ct)[1] = (byte_t)((st) >> 16); \
+    (ct)[2] = (byte_t)((st) >> 8);  \
+    (ct)[3] = (byte_t)(st);         \
   }
 
 // compute key schedule in encrypt direction
@@ -693,7 +693,7 @@ bool aes::init_decrypt() {
     if (!init_encrypt()) {
       return false;
     }
-  memcpy((byte*)decrypt_round_key_, (byte*)encrypt_round_key_,
+  memcpy((byte_t*)decrypt_round_key_, (byte_t*)encrypt_round_key_,
          (4 * (aes::MAXNR + 1) + 1) * sizeof(uint32_t));
   for (i = 0, j = 4 * num_rounds_; i < j; i += 4, j -= 4) {
     temp = rk[i];
@@ -727,7 +727,7 @@ bool aes::init_decrypt() {
   return true;
 }
 
-void aes::encrypt_block(const byte* pt, byte* ct) {
+void aes::encrypt_block(const byte_t* pt, byte_t* ct) {
   uint32_t s0, s1, s2, s3, t0, t1, t2, t3;
   uint32_t* rk = encrypt_round_key_;
 
@@ -876,7 +876,7 @@ void aes::encrypt_block(const byte* pt, byte* ct) {
   PUTU32(ct + 12, s3);
 }
 
-void aes::decrypt_block(const byte* ct, byte* pt) {
+void aes::decrypt_block(const byte_t* ct, byte_t* pt) {
   uint32_t s0, s1, s2, s3, t0, t1, t2, t3;
   uint32_t* rk = decrypt_round_key_;
 
@@ -1026,7 +1026,7 @@ void aes::decrypt_block(const byte* ct, byte* pt) {
   PUTU32(pt + 12, s3);
 }
 
-bool aes::init(int key_bit_size, byte* key_buf, int directionflag) {
+bool aes::init(int key_bit_size, byte_t* key_buf, int directionflag) {
   if (key_bit_size == 128) {
     key_size_in_bits_ = key_bit_size;
     num_rounds_ = 10;
@@ -1040,7 +1040,7 @@ bool aes::init(int key_bit_size, byte* key_buf, int directionflag) {
     return false;
   }
   secret_.append((const char*) key_buf, key_size_in_bits_ / NBITSINBYTE);
-  key_ = (byte*)secret_.data();
+  key_ = (byte_t*)secret_.data();
   if (directionflag == DECRYPT || directionflag == BOTH) {
     if (!init_decrypt()) {
       return false;
@@ -1056,7 +1056,7 @@ bool aes::init(int key_bit_size, byte* key_buf, int directionflag) {
   return true;
 }
 
-void aes::encrypt(int in_size, byte* in, byte* out) {
+void aes::encrypt(int in_size, byte_t* in, byte_t* out) {
   // in_size should be a multiple of block size
   while (in_size > 0) {
     encrypt_block(in, out);
@@ -1066,7 +1066,7 @@ void aes::encrypt(int in_size, byte* in, byte* out) {
   }
 }
 
-void aes::decrypt(int in_size, byte* in, byte* out) {
+void aes::decrypt(int in_size, byte_t* in, byte_t* out) {
   // in_size should be a multiple of block size
   while (in_size > 0) {
     decrypt_block(in, out);

@@ -35,8 +35,8 @@
 #include <cstddef>
 #include <support.pb.h>
 
-#ifndef byte
-typedef unsigned char byte;
+#ifndef byte_t
+typedef unsigned char byte_t;
 #endif
 
 #if defined(X64)
@@ -116,13 +116,13 @@ public:
   random_source();
   bool have_intel_rd_rand();
   bool start_random_source();
-  int get_random_bytes(int n, byte* b);
+  int get_random_bytes(int n, byte_t* b);
   bool close_random_source();
 };
 
-void print_bytes(int n, byte* in);
-void reverse_bytes(int size, byte* in, byte* out);
-void reverse_bytes_in_place(int size, byte* b);
+void print_bytes(int n, byte_t* in);
+void reverse_bytes(int size, byte_t* in, byte_t* out);
+void reverse_bytes_in_place(int size, byte_t* b);
 int bits_to_bytes(int n);
 int bytes_to_bits(int n);
 int bits_to_uint64(int n);
@@ -169,10 +169,10 @@ class file_util {
   int bytes_left_in_file();
   int bytes_written_to_file();
   void close();
-  int read_a_block(int size, byte* buf);
-  bool write_a_block(int size, byte* buf);
-  int read_file(const char* filename, int size, byte* buf);
-  bool write_file(const char* filename, int size, byte* buf);
+  int read_a_block(int size, byte_t* buf);
+  bool write_a_block(int size, byte_t* buf);
+  int read_file(const char* filename, int size, byte_t* buf);
+  bool write_file(const char* filename, int size, byte_t* buf);
 };
 
 key_message* make_symmetrickey(const char* alg, const char* name, int bit_size,
@@ -224,7 +224,7 @@ void print_certificate_message(certificate_message& m);
 void print_certificate_body(certificate_body_message& cbm);
 void print_certificate(certificate_message& cm);
 
-int crypto_get_random_bytes(int num_bytes, byte* buf);
+int crypto_get_random_bytes(int num_bytes, byte_t* buf);
 bool init_crypto();
 void close_crypto();
 

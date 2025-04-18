@@ -37,11 +37,11 @@ class aes : public symmetric_cipher {
 
   bool init_encrypt();
   bool init_decrypt();
-  bool init(int key_bit_size, byte* key_buf, int directionflag);
-  void encrypt_block(const byte* in, byte* out);
-  void decrypt_block(const byte* in, byte* out);
-  void encrypt(int byte_size, byte* in, byte* out);
-  void decrypt(int byte_size, byte* in, byte* out);
+  bool init(int key_bit_size, byte_t* key_buf, int directionflag);
+  void encrypt_block(const byte_t* in, byte_t* out);
+  void decrypt_block(const byte_t* in, byte_t* out);
+  void encrypt(int byte_size, byte_t* in, byte_t* out);
+  void decrypt(int byte_size, byte_t* in, byte_t* out);
 };
 
 class aesni : public symmetric_cipher {
@@ -62,11 +62,11 @@ class aesni : public symmetric_cipher {
 
   bool init_encrypt();
   bool init_decrypt();
-  bool init(int key_bit_size, byte* key_buf, int directionflag);
-  void encrypt_block(const byte* in, byte* out);
-  void decrypt_block(const byte* in, byte* out);
-  void encrypt(int byte_size, byte* in, byte* out);
-  void decrypt(int byte_size, byte* in, byte* out);
+  bool init(int key_bit_size, byte_t* key_buf, int directionflag);
+  void encrypt_block(const byte_t* in, byte_t* out);
+  void decrypt_block(const byte_t* in, byte_t* out);
+  void encrypt(int byte_size, byte_t* in, byte_t* out);
+  void decrypt(int byte_size, byte_t* in, byte_t* out);
 };
 
 #endif

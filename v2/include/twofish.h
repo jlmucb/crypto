@@ -39,23 +39,23 @@ class two_fish : public symmetric_cipher {
   enum {
     BLOCKBYTESIZE = 16,
   };
-  byte q_table[2][256];
+  byte_t q_table[2][256];
   uint32_t MDS_table[4][256];
   two_fishKey round_data;
 
   two_fish();
   ~two_fish();
-  bool init(int, byte*, int);
+  bool init(int, byte_t*, int);
 
   void initialise_q_boxes();
   void initialise_mds_tables();
-  uint32_t h(int k, byte L[], int kCycles);
-  void fill_keyed_sboxes(byte S[], int kCycles, two_fishKey* xkey);
+  uint32_t h(int k, byte_t L[], int kCycles);
+  void fill_keyed_sboxes(byte_t S[], int kCycles, two_fishKey* xkey);
 
-  void init_key(int, const byte aKeyBytes[], two_fishKey* aKey);
-  void encrypt(int size, byte* aPlainText, byte* aCipherText);
-  void decrypt(int size, byte* aCipherText, byte* aPlainText);
-  void encrypt_block(byte* in, byte* out);
-  void decrypt_block(byte* in, byte* out);
+  void init_key(int, const byte_t aKeyBytes[], two_fishKey* aKey);
+  void encrypt(int size, byte_t* aPlainText, byte_t* aCipherText);
+  void decrypt(int size, byte_t* aCipherText, byte_t* aPlainText);
+  void encrypt_block(byte_t* in, byte_t* out);
+  void decrypt_block(byte_t* in, byte_t* out);
 };
 #endif

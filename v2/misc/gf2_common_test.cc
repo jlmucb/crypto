@@ -41,7 +41,7 @@ bool InternalRepTest() {
   uint16_t tpoly = 0x77;
   uint16_t cpoly;
   int size_a = 16;
-  byte a[16];
+  byte_t_t a[16];
   EXPECT_TRUE(to_internal_representation(tpoly, &size_a, a));
   EXPECT_TRUE(from_internal_representation(size_a, a, &cpoly));
   printf("Cpoly: %02x\n", cpoly);
@@ -52,7 +52,7 @@ bool InternalRepTest() {
 bool PrintPolyTest() {
   uint16_t tpoly = 0x77;
   int size_a = 16;
-  byte a[16];
+  byte_t a[16];
   EXPECT_TRUE(to_internal_representation(tpoly, &size_a, a));
   print_poly(size_a, a);
   printf("\n");
@@ -64,14 +64,14 @@ bool Gf2AddTest() {
   uint16_t poly2 = 0x07;
 
   int size_min_poly = 16;
-  byte min_poly[16];
+  byte_t min_poly[16];
 
   int size_a = 16;
-  byte a[16];
+  byte_t a[16];
   int size_b = 16;
-  byte b[16];
+  byte_t b[16];
   int size_c = 16;
-  byte c[16];
+  byte_t c[16];
 
   EXPECT_TRUE(to_internal_representation(poly1, &size_a, a));
   EXPECT_TRUE(to_internal_representation(poly2, &size_b, b));
@@ -89,13 +89,13 @@ bool Gf2ReduceTest() {
   uint16_t poly1 = 0x200;
 
   int size_min_poly = 16;
-  byte min_poly[16];
+  byte_t min_poly[16];
 
   EXPECT_TRUE(to_internal_representation(minpoly, &size_min_poly, min_poly));
   printf("Min poly: "); print_poly(size_min_poly, min_poly); printf("\n");
 
   int size_a = 16;
-  byte a[16];
+  byte_t a[16];
 
   EXPECT_TRUE(to_internal_representation(poly1, &size_a, a));
   printf("Input poly: "); print_poly(size_a, a); printf("\n");
@@ -113,18 +113,18 @@ bool Gf2MultiplyTest() {
   uint16_t poly2 = 0x07;
 
   int size_min_poly = 16;
-  byte min_poly[16];
+  byte_t min_poly[16];
   uint16_t minpoly = 0x11b;
 
   EXPECT_TRUE(to_internal_representation(minpoly, &size_min_poly, min_poly));
   printf("Min poly: "); print_poly(size_min_poly, min_poly); printf("\n");
 
   int size_a = 16;
-  byte a[16];
+  byte_t a[16];
   int size_b = 16;
-  byte b[16];
+  byte_t b[16];
   int size_c = 32;
-  byte c[32];
+  byte_t c[32];
 
   EXPECT_TRUE(to_internal_representation(poly1, &size_a, a));
   EXPECT_TRUE(to_internal_representation(poly2, &size_b, b));
@@ -147,7 +147,7 @@ bool Gf2MultiplyTest() {
 
 bool Gf2InverseTest() {
   int size_min_poly = 16;
-  byte min_poly[16];
+  byte_t min_poly[16];
   uint16_t minpoly = 0x11b;
 
   EXPECT_TRUE(to_internal_representation(minpoly, &size_min_poly, min_poly));
@@ -168,7 +168,7 @@ bool Gf2InverseTest() {
 
 bool Gf2LinearTest() {
   int size_min_poly = 16;
-  byte min_poly[16];
+  byte_t min_poly[16];
   uint16_t minpoly = 0x11b;
 
   EXPECT_TRUE(to_internal_representation(minpoly, &size_min_poly, min_poly));
@@ -178,7 +178,7 @@ bool Gf2LinearTest() {
   gf2_8 a[48];
   gf2_8 x[48];
   gf2_8 y;
-  byte t3[16];
+  byte_t t3[16];
   uint16_t u, w;
   int size;
   for (int i = 0; i < 48; i++) {
@@ -217,13 +217,13 @@ void PrintSplitSecretMessage(split_secret_message& msg) {
   printf("shard_number: %d\n", msg.shard_number());
   printf("number_of_coefficients: %d\n", msg.number_of_coefficients());
   printf("number_of_equations_in_shard: %d\n", msg.number_of_equations_in_shard());
-  byte a, b;
+  byte_t a, b;
   for (int j = 0; j < msg.equations_size(); j++) {
     for (int k = 0; k < msg.equations(j).coefficients().size(); k++) {
-      a = (byte)msg.equations(j).coefficients(k);
+      a = (byte_t)msg.equations(j).coefficients(k);
       printf("%02x ", a);
     }
-    b = (byte) msg.equations(j).value();
+    b = (byte_t) msg.equations(j).value();
     printf("   =  %02x\n", b);
   }
   printf("\n");
@@ -240,7 +240,7 @@ bool RecoverAndSolve(int n, string* serialized_msg) {
   gf2_instance instance[48];
   uint16_t w;
   int size_min_poly = 16;
-  byte min_poly[16];
+  byte_t min_poly[16];
   uint16_t minpoly = 0x11b;
 
   printf("\n\n*****RecoverAndSolve\n\n");
@@ -256,7 +256,7 @@ bool RecoverAndSolve(int n, string* serialized_msg) {
   }
 
   int size;
-  byte c[16];
+  byte_t c[16];
   for (int j = 0; j < 48; j++) {
     printf("-----Equation %d\n", j + 1);
     const equation_message& e_msg = msgs[j/16].equations(j%16);
@@ -293,7 +293,7 @@ bool RecoverAndSolve(int n, string* serialized_msg) {
 
 bool Gf2SolveSimultaneousTest() {
   int size_min_poly = 16;
-  byte min_poly[16];
+  byte_t min_poly[16];
   uint16_t minpoly = 0x11b;
 
   EXPECT_TRUE(to_internal_representation(minpoly, &size_min_poly, min_poly));
@@ -301,7 +301,7 @@ bool Gf2SolveSimultaneousTest() {
   EXPECT_TRUE(init_inverses(size_min_poly, min_poly));
 
   gf2_8 x[48];
-  byte t3[16];
+  byte_t t3[16];
   uint16_t w;
   int size;
 
@@ -373,14 +373,14 @@ bool Gf2SolveSimultaneousTest() {
 
 bool Gf2SolvePrimitivesTest() {
   int size_min_poly = 16;
-  byte min_poly[16];
+  byte_t min_poly[16];
   uint16_t minpoly = 0x11b;
 
   EXPECT_TRUE(to_internal_representation(minpoly, &size_min_poly, min_poly));
   printf("Min poly: "); print_poly(size_min_poly, min_poly); printf("\n");
   EXPECT_TRUE(init_inverses(size_min_poly, min_poly));
 
-  byte t3[16];
+  byte_t t3[16];
   uint16_t w;
   int size;
 
@@ -415,7 +415,7 @@ bool Gf2SolvePrimitivesTest() {
 bool Gf2GenMatrixTest() {
   uint16_t minpoly = 0x11b;
   int size_min_poly = 16;
-  byte min_poly[16];
+  byte_t min_poly[16];
 
   EXPECT_TRUE(to_internal_representation(minpoly, &size_min_poly, min_poly));
 
@@ -429,7 +429,7 @@ bool Gf2GenMatrixTest() {
   return true;
 }
 
-bool Gf2EquationSetup(int size_min_poly, byte* min_poly, gf2_instance* instance,
+bool Gf2EquationSetup(int size_min_poly, byte_t* min_poly, gf2_instance* instance,
       gf2_8* x) {
   gf2_8 a[48 * 48];
 
@@ -459,7 +459,7 @@ bool Gf2EquationSetup(int size_min_poly, byte* min_poly, gf2_instance* instance,
 bool Gf2GenMatrixAndSolveTest() {
   uint16_t minpoly = 0x11b;
   int size_min_poly = 16;
-  byte min_poly[16];
+  byte_t min_poly[16];
 
   gf2_instance instance[48];
   gf2_8 x[48];
@@ -473,7 +473,7 @@ bool Gf2GenMatrixAndSolveTest() {
   printf("Min poly: "); print_poly(size_min_poly, min_poly); printf("\n");
 
   int size;
-  byte c[16];
+  byte_t c[16];
   for (int i = 0; i < 48; i++) {
     w = (uint16_t)(i + 1);
     size = 16;

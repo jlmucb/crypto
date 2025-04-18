@@ -342,7 +342,7 @@ int main(int an, char** av) {
   int sz = f.bytes_in_file();
   f.close();
   char txt_data[sz + 1];
-  if (!f.read_file(FLAGS_data_file_name.c_str(), sz, (byte*)txt_data)) {
+  if (!f.read_file(FLAGS_data_file_name.c_str(), sz, (byte_t*)txt_data)) {
     printf("Can't read %s\n", FLAGS_data_file_name.c_str());
     return 1;
   }

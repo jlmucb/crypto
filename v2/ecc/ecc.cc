@@ -1091,7 +1091,7 @@ bool ecc::generate_ecc_from_standard_template(const char* template_name, const c
   if (!t2.encode_time(&notafter))
     return false;
 
-  byte byte_secret[nb];
+  byte_t byte_secret[nb];
   if (crypto_get_random_bytes(nb, byte_secret) < 0) {
     printf("Cant generate random bits for ecc key\n");
     return false;
@@ -1099,7 +1099,7 @@ bool ecc::generate_ecc_from_standard_template(const char* template_name, const c
 
   int n_u64 = (nb / sizeof(uint64_t));
   big_num big_num_secret(n_u64);
-  memcpy((byte*)big_num_secret.value_ptr(), byte_secret, nb);
+  memcpy((byte_t*)big_num_secret.value_ptr(), byte_secret, nb);
   big_num_secret.normalize();
   
   return generate_ecc_from_parameters(key_name, usage, (char*)notbefore.c_str(),
@@ -1416,7 +1416,7 @@ void ecc::print() {
 //  embed message into point M
 //  pick k at random
 //  send (kG, kBase+M)
-bool ecc::encrypt(int size, byte* plain, big_num& k, curve_point& pt1,
+bool ecc::encrypt(int size, byte_t* plain, big_num& k, curve_point& pt1,
                      curve_point& pt2) {
   if (c_ == nullptr)
     return false;
@@ -1424,7 +1424,7 @@ bool ecc::encrypt(int size, byte* plain, big_num& k, curve_point& pt1,
   curve_point p_pt(c_->curve_p_->capacity_);
   curve_point r_pt(c_->curve_p_->capacity_);
 
-  memcpy((byte*)m.value_, plain, size);
+  memcpy((byte_t*)m.value_, plain, size);
   m.normalize();
   if (!ecc_embed(*c_, m, p_pt, 8, 20)) {
     return false;
@@ -1462,7 +1462,7 @@ bool ecc::encrypt(int size, byte* plain, big_num& k, curve_point& pt1,
   return true;
 }
 
-bool ecc::decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain) {
+bool ecc::decrypt(curve_point& pt1, curve_point& pt2, int* size, byte_t* plain) {
   if (c_ == nullptr)
     return false;
 
@@ -1498,6 +1498,6 @@ bool ecc::decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain) {
   }
   m.normalize();
   *size = m.size() * sizeof(uint64_t);
-  memcpy(plain, (byte*)m.value_, *size);
+  memcpy(plain, (byte_t*)m.value_, *size);
   return true;
 }

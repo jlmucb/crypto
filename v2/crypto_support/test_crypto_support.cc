@@ -69,7 +69,7 @@ bool random_test() {
   if (!rs.start_random_source()) {
     return false;
   }
-  byte b[64];
+  byte_t b[64];
   int m = rs.get_random_bytes(64, b);
   if (m < 0)
     return false;
@@ -80,8 +80,8 @@ bool random_test() {
 }
 
 bool global_random_test() {
+  byte_t b[64];
 
-  byte b[64];
   int m = crypto_get_random_bytes(64, b);
   if (m < 0)
     return false;
@@ -114,9 +114,9 @@ bool hex_convert_test() {
 
   if (FLAGS_print_all) {
     printf("b1: ");
-    print_bytes((int)b1.size(), (byte*)b1.data());
+    print_bytes((int)b1.size(), (byte_t*)b1.data());
     printf("b2: ");
-    print_bytes((int)b2.size(), (byte*)b2.data());
+    print_bytes((int)b2.size(), (byte_t*)b2.data());
   }
   
   string c1(50, 0);
@@ -140,9 +140,9 @@ bool hex_convert_test() {
 
   if (FLAGS_print_all) {
     printf("d1: ");
-    print_bytes((int)d1.size(), (byte*)d1.data());
+    print_bytes((int)d1.size(), (byte_t*)d1.data());
     printf("d2: ");
-    print_bytes((int)d2.size(), (byte*)d2.data());
+    print_bytes((int)d2.size(), (byte_t*)d2.data());
   }
 
   if (d1.compare(b1) != 0)
@@ -181,13 +181,13 @@ bool base64_convert_test() {
 
   if (FLAGS_print_all) {
     printf("b1: ");
-    print_bytes((int)b1.size(), (byte*)b1.data());
+    print_bytes((int)b1.size(), (byte_t*)b1.data());
     printf("b2: ");
-    print_bytes((int)b2.size(), (byte*)b2.data());
+    print_bytes((int)b2.size(), (byte_t*)b2.data());
     printf("b3: ");
-    print_bytes((int)b3.size(), (byte*)b3.data());
+    print_bytes((int)b3.size(), (byte_t*)b3.data());
     printf("b4: ");
-    print_bytes((int)b4.size(), (byte*)b4.data());
+    print_bytes((int)b4.size(), (byte_t*)b4.data());
   }
 
   string h1, h2, h3, h4;
@@ -220,13 +220,13 @@ bool base64_convert_test() {
 
   if (FLAGS_print_all) {
     printf("d1: ");
-    print_bytes((int)d1.size(), (byte*)d1.data());
+    print_bytes((int)d1.size(), (byte_t*)d1.data());
     printf("d2: ");
-    print_bytes((int)d2.size(), (byte*)d2.data());
+    print_bytes((int)d2.size(), (byte_t*)d2.data());
     printf("d3: ");
-    print_bytes((int)d3.size(), (byte*)d3.data());
+    print_bytes((int)d3.size(), (byte_t*)d3.data());
     printf("d4: ");
-    print_bytes((int)d4.size(), (byte*)d4.data());
+    print_bytes((int)d4.size(), (byte_t*)d4.data());
   }
 
   if (d1.compare(b1) != 0)
@@ -297,7 +297,7 @@ bool endian_test() {
 }
 
 const int test_file_data_size = 32;
-byte test_file_data[test_file_data_size] = {
+byte_t test_file_data[test_file_data_size] = {
   0, 1, 2, 3, 4, 5, 6, 7,
   8, 9, 10, 11,12,13,14,15,
   0, 1, 2, 3, 4, 5, 6, 7,
@@ -305,7 +305,7 @@ byte test_file_data[test_file_data_size] = {
 };
 bool file_test() {
   file_util file;
-  byte buf_read[64];
+  byte_t buf_read[64];
 
   unlink("file_test_file");
   if (!file.create("file_test_file"))
@@ -369,19 +369,19 @@ bool rsa_key_test() {
   p.clear();
   q.clear();
 
-  byte mod_set[5] = { 1, 2, 3, 4, 5};
+  byte_t mod_set[5] = { 1, 2, 3, 4, 5};
   mod.assign((char*)mod_set, 5);
 
-  byte e_set[5] = {6, 7, 8, 9, 10};
+  byte_t e_set[5] = {6, 7, 8, 9, 10};
   e.assign((char*)e_set, 5);
 
-  byte d_set[5] = {0xa, 0xb, 0xc, 0xd, 0xe};
+  byte_t d_set[5] = {0xa, 0xb, 0xc, 0xd, 0xe};
   d.assign((char*)d_set, 5);
 
-  byte p_set[5] = {0x1a, 0x1b, 0x1c, 0x1d, 0x1e};
+  byte_t p_set[5] = {0x1a, 0x1b, 0x1c, 0x1d, 0x1e};
   p.assign((char*)p_set, 5);
 
-  byte q_set[5] = {0x2a, 0x2b, 0x2c, 0x2d, 0x2e};
+  byte_t q_set[5] = {0x2a, 0x2b, 0x2c, 0x2d, 0x2e};
   q.assign((char*)q_set, 5);
 
   key_message* km = make_rsakey("rsa", "test_key", 256, nullptr,
@@ -421,27 +421,27 @@ bool ecc_key_test() {
   curve_public_y.empty();
   empty.empty();
 
-  byte p_set[5] = { 0x01, 0x02, 0x03, 0x04, 0x05};
+  byte_t p_set[5] = { 0x01, 0x02, 0x03, 0x04, 0x05};
   curve_p.assign((char*)p_set, 5);
-  byte a_set[5] = { 0x11, 0x12, 0x13, 0x14, 0x15};
+  byte_t a_set[5] = { 0x11, 0x12, 0x13, 0x14, 0x15};
   curve_a.assign((char*)a_set, 5);
-  byte b_set[5] = { 0x21, 0x22, 0x23, 0x24, 0x25};
+  byte_t b_set[5] = { 0x21, 0x22, 0x23, 0x24, 0x25};
   curve_b.assign((char*)b_set, 5);
 
-  byte base_x_set[5] = { 0x31, 0x32, 0x33, 0x34, 0x35};
+  byte_t base_x_set[5] = { 0x31, 0x32, 0x33, 0x34, 0x35};
   curve_base_x.assign((char*)base_x_set, 5);
-  byte base_y_set[5] = { 0x41, 0x42, 0x43, 0x44, 0x45};
+  byte_t base_y_set[5] = { 0x41, 0x42, 0x43, 0x44, 0x45};
   curve_base_y.assign((char*)base_y_set, 5);
-  byte set_order_base_point_set[5] = { 0x51, 0x52, 0x53, 0x54, 0x55};
+  byte_t set_order_base_point_set[5] = { 0x51, 0x52, 0x53, 0x54, 0x55};
 
   order_base_point.assign((char*)set_order_base_point_set, 5);
 
-  byte public_x_set[5] = { 0x61, 0x62, 0x63, 0x64, 0x65};
+  byte_t public_x_set[5] = { 0x61, 0x62, 0x63, 0x64, 0x65};
   curve_public_x.assign((char*)public_x_set, 5);
-  byte public_y_set[5] = { 0x71, 0x72, 0x73, 0x74, 0x75};
+  byte_t public_y_set[5] = { 0x71, 0x72, 0x73, 0x74, 0x75};
   curve_public_y.assign((char*)public_y_set, 5);
 
-  byte secret_set[5] = { 0x81, 0x82, 0x83, 0x84, 0x85};
+  byte_t secret_set[5] = { 0x81, 0x82, 0x83, 0x84, 0x85};
   secret.assign((char*)secret_set, 5);
 
   key_message* km = make_ecckey("test_key_2", 256, nullptr,
@@ -476,7 +476,7 @@ bool u64_array_bytes_test() {
   if (FLAGS_print_all) {
     printf("\n");
     printf("n in   : "); print_u64_array(3, n_in); printf("\n");
-    printf("b out  : "); print_bytes(k, (byte*)b_out.data()); 
+    printf("b out  : "); print_bytes(k, (byte_t*)b_out.data()); 
     printf("n out  : "); print_u64_array(m, n_out); printf("\n");
   }
   if (m != 3)
@@ -498,7 +498,7 @@ bool u64_array_bytes_test() {
   if (FLAGS_print_all) {
     printf("\n");
     printf("n in   : "); print_u64_array(4, n_in); printf("\n");
-    printf("b out  : "); print_bytes(k, (byte*)b_out.data()); 
+    printf("b out  : "); print_bytes(k, (byte_t*)b_out.data()); 
     printf("n out  : "); print_u64_array(m, n_out); printf("\n");
   }
   if (m != 4)
@@ -514,7 +514,7 @@ bool scheme_message_test() {
   string enc_key;
   string hmac_key;
   string nonce;
-  byte x[32];
+  byte_t x[32];
 
   for (int i = 0; i < 32; i++)
     x[i] = i;

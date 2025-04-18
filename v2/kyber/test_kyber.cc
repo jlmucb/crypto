@@ -32,10 +32,10 @@ bool test_kyber1() {
   int g = 17;
 
   int ek_len = 384 * p.k_ + 32;
-  byte ek[ek_len];
+  byte_t ek[ek_len];
   memset(ek, 0, ek_len);
   int dk_len = 384 * p.k_ + 96;
-  byte dk[dk_len];
+  byte_t dk[dk_len];
   memset(dk, 0, dk_len);
 
   module_array A(p.q_, p.n_, p.k_, p.k_);
@@ -57,16 +57,16 @@ bool test_kyber1() {
   }
 
   int m_len = 32;
-  byte m[m_len];
+  byte_t m[m_len];
   int r_len = 32;
-  byte r[r_len];
+  byte_t r[r_len];
   int c_len = 32 * (p.du_ * p.k_ + p.dv_);
-  byte c[c_len];
+  byte_t c[c_len];
   memset(m, 0, m_len);
   memset(c, 0, c_len);
   memset(r, 0, r_len);
   int b_r_len = 32;
-  byte b_r[b_r_len];
+  byte_t b_r[b_r_len];
   memset(b_r, 0, b_r_len);
   int n_b = crypto_get_random_bytes(b_r_len, b_r);
   if (n_b != b_r_len) {
@@ -84,7 +84,7 @@ bool test_kyber1() {
     return false;
   }
   int recovered_m_len = 32;
-  byte recovered_m[m_len];
+  byte_t recovered_m[m_len];
   memset(recovered_m, 0, recovered_m_len);
   if (!kyber_decrypt(g, p, dk_len, dk, c_len, c, &recovered_m_len, recovered_m)) {
     printf("Could not init kyber_decrypt\n");
@@ -105,11 +105,11 @@ bool test_kyber1() {
   }
 
   int kem_ek_len = 384 * p.k_ + 32;
-  byte kem_ek[kem_ek_len];
+  byte_t kem_ek[kem_ek_len];
   memset(kem_ek, 0, kem_ek_len);
   int kem_dk_len = 768 * p.k_ + 96;
 
-  byte kem_dk[kem_dk_len];
+  byte_t kem_dk[kem_dk_len];
   memset(kem_dk, 0, kem_dk_len);
   if (!kyber_kem_keygen(g, p, &kem_ek_len, kem_ek, &kem_dk_len, kem_dk)) {
     printf("Could not init kem_keygen\n");
@@ -117,11 +117,11 @@ bool test_kyber1() {
   }
 
   int kem_c_len = 32 * (p.du_ * p.k_ + p.dv_);
-  byte kem_c[kem_dk_len];
+  byte_t kem_c[kem_dk_len];
   memset(kem_c, 0, kem_c_len);
 
   int kem_k_len = 32;
-  byte kem_k[kem_k_len];
+  byte_t kem_k[kem_k_len];
   memset(kem_k, 0, kem_k_len);
 
   if (FLAGS_print_all) {
@@ -151,7 +151,7 @@ bool test_kyber1() {
   }
 
   int recovered_k_len = 32;
-  byte recovered_k[recovered_k_len];
+  byte_t recovered_k[recovered_k_len];
   memset(recovered_k, 0, recovered_k_len);
 
   if (!kyber_kem_decaps(g, p, kem_dk_len, kem_dk, kem_c_len, kem_c,
@@ -235,7 +235,7 @@ bool test_kyber_support() {
     return false;
   }
 
-  byte b1, b2;
+  byte_t b1, b2;
   b1 = 0xc;
   b2 = bit_reverse(b1);
   if (FLAGS_print_all) {
@@ -247,9 +247,9 @@ bool test_kyber_support() {
   }
   const char* str = "abc";
   int g_out_len = 32; 
-  byte g_out[g_out_len];
+  byte_t g_out[g_out_len];
   memset(g_out, 0, g_out_len);
-  if (!G(strlen(str), (byte*) str, NBITSINBYTE * g_out_len, g_out)) {
+  if (!G(strlen(str), (byte_t*) str, NBITSINBYTE * g_out_len, g_out)) {
     printf("G failed\n");
     return false;
   }
@@ -259,7 +259,7 @@ bool test_kyber_support() {
   }
 
   memset(g_out, 0, g_out_len);
-  if (!prf(5, strlen(str), (byte*)str, strlen(str), (byte*)str, g_out_len * NBITSINBYTE, g_out)) {
+  if (!prf(5, strlen(str), (byte_t*)str, strlen(str), (byte_t*)str, g_out_len * NBITSINBYTE, g_out)) {
     printf("prf failed\n");
     return false;
   }
@@ -271,7 +271,7 @@ bool test_kyber_support() {
   memset(g_out, 0, g_out_len);
   int i1 = 1;
   int i2 = 2;
-  if (!xof(strlen(str), (byte*) str, i1, i2, NBITSINBYTE * g_out_len, g_out)) {
+  if (!xof(strlen(str), (byte_t*) str, i1, i2, NBITSINBYTE * g_out_len, g_out)) {
     printf("xof failed\n");
     return false;
   }
@@ -286,7 +286,7 @@ bool test_kyber_support() {
   };
   int dd = 12;
   int b_out_len = 6;
-  byte b_out[b_out_len];
+  byte_t b_out[b_out_len];
   memset(b_out, 0, 6);
 
   if (FLAGS_print_all) {
@@ -294,7 +294,7 @@ bool test_kyber_support() {
       dd, int_in[0], int_in[1], int_in[2], int_in[3]);
   }
   for (int i = 0; i < 48; i++) {
-    byte b = bit_from_ints(dd, i, int_in);
+    byte_t b = bit_from_ints(dd, i, int_in);
     if (FLAGS_print_all) {
       printf("(%d, %d) ", i, (int)b);
     }
@@ -396,13 +396,13 @@ bool test_kyber_support() {
   }
 
   int bb_len = 16;
-  byte bb[16] = {
+  byte_t bb[16] = {
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
   };
   printf("\nbit_in_byte_stream: \n");
   for (int i = 0; i < bb_len * NBITSINBYTE; i++) {
-    byte h = bit_in_byte_stream(i, bb_len, bb);
+    byte_t h = bit_in_byte_stream(i, bb_len, bb);
     printf("%d", h);
     if ((i%32) == 31)
       printf("\n");
@@ -448,7 +448,7 @@ bool test_kyber_support() {
   }
 
   int sample_ntt_b_len = 384;
-  byte sample_ntt_b[sample_ntt_b_len];
+  byte_t sample_ntt_b[sample_ntt_b_len];
   memset(sample_ntt_b, 0, sample_ntt_b_len);
 
   coefficient_vector sample_ntt_out(p.q_, p.n_);
@@ -474,7 +474,7 @@ bool test_kyber_support() {
   }
 
   int sample_cbd_b_len = 64 * p.eta1_;
-  byte sample_cbd_b[sample_cbd_b_len];
+  byte_t sample_cbd_b[sample_cbd_b_len];
   memset(sample_cbd_b, 0, sample_cbd_b_len);
   coefficient_vector sample_cbd_out(p.q_, p.n_);
   for (int i = 0; i < p.n_; i++) {

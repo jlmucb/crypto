@@ -43,12 +43,12 @@ ifndef NEWPROTOBUF
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable -D X64
 CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable -D X64
 export LD_LIBRARY_PATH=/usr/local/lib
-LDFLAGS= -L/usr/local/lib `pkg-config --cflags --libs protobuf` -lgtest -lgflags -lpthread
+LDFLAGS= -L/usr/local/lib -lprotobuf -lgtest -lgflags -lpthread
 else
 CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++17 -Wno-unused-variable -D X64
 CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++17 -Wno-unused-variable -D X64
 export LD_LIBRARY_PATH=/usr/local/lib
-LDFLAGS= -L/usr/local/lib -lprotobuf -lgtest -lgflags -lpthread
+LDFLAGS= -L/usr/local/lib `pkg-config --cflags --libs protobuf` -lgtest -lgflags -lpthread
 endif
 
 CC=g++

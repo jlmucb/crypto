@@ -127,8 +127,8 @@ class ecc {
           const char* usage, double seconds_to_live);
   void print();
 
-  bool encrypt(int size, byte* plain, big_num& k, curve_point& pt1, curve_point& pt2);
-  bool decrypt(curve_point& pt1, curve_point& pt2, int* size, byte* plain);
+  bool encrypt(int size, byte_t* plain, big_num& k, curve_point& pt1, curve_point& pt2);
+  bool decrypt(curve_point& pt1, curve_point& pt2, int* size, byte_t* plain);
 };
 
 bool ecc_is_on_curve(ecc_curve& c, curve_point& pt);

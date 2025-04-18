@@ -60,7 +60,7 @@ volatile void inline simple_jitter_block_1(int num_loops) {
 }
 
 const int d_buf_size = 64<<10;
-volatile void inline simple_jitter_block_2(int num_loops, int size_buf, byte* buf) {
+volatile void inline simple_jitter_block_2(int num_loops, int size_buf, byte_t* buf) {
   int index = size_buf / num_loops;
 
   for (int j = 0; j < 4; j++) {
@@ -74,7 +74,7 @@ volatile void inline simple_jitter_block_2(int num_loops, int size_buf, byte* bu
 const int SIZE_L1 = 32<<10;  // changes on different cpus
 int mem_shift = 0;
 // size should be bigger than SIZE_L1
-volatile void inline memory_jitter_block(int num_loops, int size, byte* buf) {
+volatile void inline memory_jitter_block(int num_loops, int size, byte_t* buf) {
   mem_shift++;
   int inc = size / 100;
   if (inc == 0)
@@ -88,11 +88,11 @@ volatile void inline memory_jitter_block(int num_loops, int size, byte* buf) {
 
 // hash timing
 const int SIZE_HASH_BUF = 128;
-volatile void inline hash_jitter_block(int num_loops, int size, byte* to_hash) {
-  sha3 hash_obj(1024);
+volatile void inline hash_jitter_block(int num_loops, int size, byte_t* to_hash) {
+  sha3 hash_obj;
 
   for (int i = 0; i < num_loops; i++) {
-    hash_obj.init();
+    hash_obj.init(1024);
     hash_obj.add_to_hash(size, to_hash);
     hash_obj.finalize();
   }
@@ -157,7 +157,7 @@ bool test_jitter(int num_samples, int num_loops) {
     "Hash jitter test",
   };
   
-  byte buf[d_buf_size];
+  byte_t buf[d_buf_size];
   if (FLAGS_test_set == 0) {
     for (int i = 0; i < num_samples; i++) {
       t1 = read_rdtsc();
@@ -183,7 +183,7 @@ bool test_jitter(int num_samples, int num_loops) {
       delta_array[i] = (delta / 2) & 0xff;
     }
   } else if (FLAGS_test_set == 3) {
-    byte buf_mem[SIZE_L1];
+    byte_t buf_mem[SIZE_L1];
     memset(buf_mem, 0, SIZE_L1);
     for (int i = 0; i < num_samples; i++) {
       t1 = read_rdtsc();
@@ -193,7 +193,7 @@ bool test_jitter(int num_samples, int num_loops) {
       delta_array[i] = (delta / 2) & 0xff;
     }
   } else if (FLAGS_test_set == 4) {
-    byte buf_hash[SIZE_HASH_BUF];
+    byte_t buf_hash[SIZE_HASH_BUF];
     for (int i = 0; i < SIZE_HASH_BUF; i++)
       buf_hash[i] = i;
     for (int i = 0; i < num_samples; i++) {
@@ -227,9 +227,9 @@ bool test_jitter(int num_samples, int num_loops) {
   }
 
   if (FLAGS_sample_file_name != "") {
-    byte sample_buf[num_samples];
+    byte_t sample_buf[num_samples];
     for (int i = 0; i < num_samples; i++)
-      sample_buf[i] = (byte)delta_array[i];
+      sample_buf[i] = (byte_t)delta_array[i];
     if (!write_raw_byte_data(FLAGS_sample_file_name, num_samples, sample_buf)) {
       printf("Can't write byte file\n");
     }

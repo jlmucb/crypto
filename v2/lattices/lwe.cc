@@ -169,7 +169,7 @@ bool random_from_q(const int64_t q, int64_t* out) {
     u <<= 8;
     num_bytes++;
   }
-  if (crypto_get_random_bytes(num_bytes, (byte*) &t) < 0) {
+  if (crypto_get_random_bytes(num_bytes, (byte_t*) &t) < 0) {
     return false;
   }
   *out = t % q;
@@ -210,7 +210,7 @@ bool chi_dist::random_from_chi(int64_t* out) {
 
   if (!initialized_)
     return false;
-  if (crypto_get_random_bytes(4, (byte*)&u) < 0)
+  if (crypto_get_random_bytes(4, (byte_t*)&u) < 0)
     return false;
   double t = ((double)u) / ((double)prec_);
   for (int i = 0; i < 2 * s_ + 1; i++) {

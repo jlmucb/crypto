@@ -28,15 +28,15 @@ class symmetric_cipher {
   string algorithm_;
   int key_size_in_bits_;
   string secret_;
-  byte* key_;
+  byte_t* key_;
 
   symmetric_cipher();
   virtual ~symmetric_cipher();
 
   // direction: encrypt= 0, decrypt=
-  virtual bool init(int key_bit_size, byte* key_buf, int directionflag) = 0;
-  virtual void encrypt(int byte_size, byte* in, byte* out) = 0;
-  virtual void decrypt(int byte_size, byte* in, byte* out) = 0;
+  virtual bool init(int key_bit_size, byte_t* key_buf, int directionflag) = 0;
+  virtual void encrypt(int byte_size, byte_t* in, byte_t* out) = 0;
+  virtual void decrypt(int byte_size, byte_t* in, byte_t* out) = 0;
 };
 
 #endif

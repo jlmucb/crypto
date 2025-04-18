@@ -23,7 +23,7 @@ tea::tea() {
 
 tea::~tea() {}
 
-bool tea::init(int key_bit_size, byte* key, int direction) {
+bool tea::init(int key_bit_size, byte_t* key, int direction) {
   if (key_bit_size != 128)
     return false;
   secret_.assign((char*)key, key_bit_size / NBITSINBYTE);
@@ -34,7 +34,7 @@ bool tea::init(int key_bit_size, byte* key, int direction) {
   return true;
 }
 
-void tea::encrypt_block(const byte* in, byte* out) {
+void tea::encrypt_block(const byte_t* in, byte_t* out) {
   uint32_t* ip = (uint32_t*)in;
   uint32_t* op = (uint32_t*)out;
   uint32_t v0 = ip[0];
@@ -56,7 +56,7 @@ void tea::encrypt_block(const byte* in, byte* out) {
   op[1] = v1;
 }
 
-void tea::decrypt_block(const byte* in, byte* out) {
+void tea::decrypt_block(const byte_t* in, byte_t* out) {
   uint32_t* ip = (uint32_t*)in;
   uint32_t* op = (uint32_t*)out;
   uint32_t v0 = ip[0];
@@ -78,7 +78,7 @@ void tea::decrypt_block(const byte* in, byte* out) {
   op[1] = v1;
 }
 
-void tea::encrypt(int size, byte* in, byte* out) {
+void tea::encrypt(int size, byte_t* in, byte_t* out) {
   while (size > 0) {
     encrypt_block(in, out);
     size -= 8;
@@ -87,7 +87,7 @@ void tea::encrypt(int size, byte* in, byte* out) {
   }
 }
 
-void tea::decrypt(int size, byte* in, byte* out) {
+void tea::decrypt(int size, byte_t* in, byte_t* out) {
   while (size > 0) {
     decrypt_block(in, out);
     size -= 8;

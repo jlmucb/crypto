@@ -29,40 +29,40 @@
 
 DEFINE_bool(print_all, false, "Print intermediate test computations");
 
-byte aes128_test1_plain[] = {
+byte_t aes128_test1_plain[] = {
   0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
   0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff
 };
-byte aes128_test1_key[] = {
+byte_t aes128_test1_key[] = {
   0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
   0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
 };
-byte aes128_test1_cipher[] = {
+byte_t aes128_test1_cipher[] = {
   0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30,
   0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a
 };
 
-byte aes256_test1_plain[] = {
+byte_t aes256_test1_plain[] = {
   0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
   0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff
 };
-byte aes256_test1_key[] = {
+byte_t aes256_test1_key[] = {
   0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
   0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
   0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
   0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f 
 };
-byte aes256_test1_cipher[] = {
+byte_t aes256_test1_cipher[] = {
   0x8e, 0xa2, 0xb7, 0xca, 0x51, 0x67, 0x45, 0xbf,
   0xea, 0xfc, 0x49, 0x90, 0x4b, 0x49, 0x60, 0x89
 };
 
 const int twofish_test1_key_size = 16;
-byte twofish_test1_key[] = {
+byte_t twofish_test1_key[] = {
   0x9F, 0x58, 0x9F, 0x5C, 0xF6, 0x12, 0x2C, 0x32,
   0xB6, 0xBF, 0xEC, 0x2F, 0x2A, 0xE8, 0xC3, 0x5A,
 };
-byte twofish_test1_plain[] = {
+byte_t twofish_test1_plain[] = {
   0xD4, 0x91, 0xDB, 0x16, 0xE7, 0xB1, 0xC3, 0x9E,
   0x86, 0xCB, 0x08, 0x6B, 0x78, 0x9F, 0x54, 0x19
 };
@@ -78,7 +78,7 @@ bool test_aes_sha256_ctr_test1() {
   string enc_key;
   string hmac_key;
   string nonce;
-  byte x[32];
+  byte_t x[32];
 
   for (int i = 0; i < 32; i++)
     x[i] = i;
@@ -110,26 +110,26 @@ printf("ctr init failed\n");  // REMOVE
   int allocated = msg_encrypt_size + 3 * enc_scheme.get_block_size() + enc_scheme.get_mac_size();
   int msg_decrypt_size;
   int decrypted_size;
-  byte* plain = nullptr;
-  byte* cipher = nullptr;
-  byte* recovered = nullptr;
+  byte_t* plain = nullptr;
+  byte_t* cipher = nullptr;
+  byte_t* recovered = nullptr;
 
-  plain = new byte[allocated];
+  plain = new byte_t[allocated];
   if (plain == nullptr) {
     ret_value = false;
     goto done;
   }
-  cipher = new byte[allocated];
+  cipher = new byte_t[allocated];
   if (cipher == nullptr) {
     ret_value = false;
     goto done;
   }
-  recovered = new byte[allocated];
+  recovered = new byte_t[allocated];
   if (recovered == nullptr) {
     ret_value = false;
     goto done;
   }
-  memcpy(plain, (byte*)message, msg_encrypt_size);
+  memcpy(plain, (byte_t*)message, msg_encrypt_size);
   memset(cipher, 0, allocated);
   memset(recovered, 0, allocated);
   // encrypt
@@ -143,10 +143,10 @@ printf("ctr encrypt_message failed\n");  // REMOVE
   if (FLAGS_print_all) {
     printf("aes-sh256-ctr\n");
     printf("encryption alg: %s\n", "aes");
-    printf("encryption key: "); print_bytes((int)enc_key.size(), (byte*)enc_key.data());
+    printf("encryption key: "); print_bytes((int)enc_key.size(), (byte_t*)enc_key.data());
     printf("hmac alg      : %s\n", "hmac-sha256");
-    printf("hmac key      : "); print_bytes((int)hmac_key.size(), (byte*)hmac_key.data());
-    printf("nonce         : "); print_bytes((int)nonce.size(), (byte*)nonce.data());
+    printf("hmac key      : "); print_bytes((int)hmac_key.size(), (byte_t*)hmac_key.data());
+    printf("nonce         : "); print_bytes((int)nonce.size(), (byte_t*)nonce.data());
     printf("%d bytes encrypted\n", enc_scheme.get_bytes_encrypted());
     printf("%d bytes output\n", enc_scheme.get_total_bytes_output());
     printf("plain         : "); print_bytes(msg_encrypt_size, plain);
@@ -206,7 +206,7 @@ bool test_aes_sha256_cbc_test1() {
   string enc_key;
   string hmac_key;
   string nonce;
-  byte x[32];
+  byte_t x[32];
 
   for (int i = 0; i < 32; i++)
     x[i] = i;
@@ -240,26 +240,26 @@ bool test_aes_sha256_cbc_test1() {
   int allocated = msg_encrypt_size + 3 * enc_scheme.get_block_size() + enc_scheme.get_mac_size();
   int msg_decrypt_size;
   int decrypted_size;
-  byte* plain = nullptr;
-  byte* cipher = nullptr;
-  byte* recovered = nullptr;
+  byte_t* plain = nullptr;
+  byte_t* cipher = nullptr;
+  byte_t* recovered = nullptr;
 
-  plain = new byte[allocated];
+  plain = new byte_t[allocated];
   if (plain == nullptr) {
     ret_value = false;
     goto done;
   }
-  cipher = new byte[allocated];
+  cipher = new byte_t[allocated];
   if (cipher == nullptr) {
     ret_value = false;
     goto done;
   }
-  recovered = new byte[allocated];
+  recovered = new byte_t[allocated];
   if (recovered == nullptr) {
     ret_value = false;
     goto done;
   }
-  memcpy(plain, (byte*)message, msg_encrypt_size);
+  memcpy(plain, (byte_t*)message, msg_encrypt_size);
   memset(cipher, 0, allocated);
   memset(recovered, 0, allocated);
 
@@ -273,10 +273,10 @@ bool test_aes_sha256_cbc_test1() {
   if (FLAGS_print_all) {
     printf("aes-sh256-cbc\n");
     printf("encryption alg: %s\n", "aes");
-    printf("encryption key: "); print_bytes((int)enc_key.size(), (byte*)enc_key.data());
+    printf("encryption key: "); print_bytes((int)enc_key.size(), (byte_t*)enc_key.data());
     printf("hmac alg      : %s\n", "hmac-sha256");
-    printf("hmac key      : "); print_bytes((int)hmac_key.size(), (byte*)hmac_key.data());
-    printf("nonce         : "); print_bytes((int)nonce.size(), (byte*)nonce.data());
+    printf("hmac key      : "); print_bytes((int)hmac_key.size(), (byte_t*)hmac_key.data());
+    printf("nonce         : "); print_bytes((int)nonce.size(), (byte_t*)nonce.data());
     printf("%d bytes encrypted\n", enc_scheme.get_bytes_encrypted());
     printf("%d bytes output\n", enc_scheme.get_total_bytes_output());
     printf("plain         : "); print_bytes(msg_encrypt_size, plain);
@@ -326,11 +326,11 @@ done:
 }
 
 // CTR
-byte aes128ctr_test2_key[16] = {
+byte_t aes128ctr_test2_key[16] = {
   0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
   0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
 };
-byte test2_hmac_key[] = {
+byte_t test2_hmac_key[] = {
   0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
   0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
   0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -341,19 +341,19 @@ byte test2_hmac_key[] = {
   0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
 };
 
-byte aes128ctr_test2_counter[32] = {
+byte_t aes128ctr_test2_counter[32] = {
   0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7,
   0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff,
   0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7,
   0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xff, 0x00
 };
-byte aes128ctr_test2_plain[32] = {
+byte_t aes128ctr_test2_plain[32] = {
   0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
   0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a,
   0xae, 0x2d, 0x8a, 0x57, 0x1e, 0x03, 0xac, 0x9c,
   0x9e, 0xb7, 0x6f, 0xac, 0x45, 0xaf, 0x8e, 0x51
 };
-byte aes128ctr_test2_cipher[32] = {
+byte_t aes128ctr_test2_cipher[32] = {
   0x87, 0x4d, 0x61, 0x91, 0xb6, 0x20, 0xe3, 0x26,
   0x1b, 0xef, 0x68, 0x64, 0x99, 0x0d, 0xb6, 0xce,
   0x98, 0x06, 0xf6, 0x6b, 0x79, 0x70, 0xfd, 0xff,
@@ -361,19 +361,19 @@ byte aes128ctr_test2_cipher[32] = {
 };
 
 // CBC
-byte aes128cbc_test2_key[16] = {
+byte_t aes128cbc_test2_key[16] = {
   0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
   0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
 };
-byte aes128cbc_test2_iv[16] = {
+byte_t aes128cbc_test2_iv[16] = {
   0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
   0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
 };
-byte aes128cbc_test2_plain[16] = {
+byte_t aes128cbc_test2_plain[16] = {
   0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
   0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a
 };
-byte aes128cbc_test2_cipher[16] = {
+byte_t aes128cbc_test2_cipher[16] = {
   0x76, 0x49, 0xab, 0xac, 0x81, 0x19, 0xb2, 0x46,
   0xce, 0xe9, 0x8e, 0x9b, 0x12, 0xe9, 0x19, 0x7d
 };
@@ -432,26 +432,26 @@ bool test_aes_sha256_cbc_test2() {
   int allocated = msg_encrypt_size + 3 * enc_scheme.get_block_size() + enc_scheme.get_mac_size();
   int msg_decrypt_size;
   int decrypted_size;
-  byte* plain = nullptr;
-  byte* cipher = nullptr;
-  byte* recovered = nullptr;
+  byte_t* plain = nullptr;
+  byte_t* cipher = nullptr;
+  byte_t* recovered = nullptr;
 
-  plain = new byte[allocated];
+  plain = new byte_t[allocated];
   if (plain == nullptr) {
     ret_value = false;
     goto done;
   }
-  cipher = new byte[allocated];
+  cipher = new byte_t[allocated];
   if (cipher == nullptr) {
     ret_value = false;
     goto done;
   }
-  recovered = new byte[allocated];
+  recovered = new byte_t[allocated];
   if (recovered == nullptr) {
     ret_value = false;
     goto done;
   }
-  memcpy(plain, (byte*)aes_cbc_test4_plain, msg_encrypt_size);
+  memcpy(plain, (byte_t*)aes_cbc_test4_plain, msg_encrypt_size);
   memset(cipher, 0, allocated);
   memset(recovered, 0, allocated);
 
@@ -465,10 +465,10 @@ bool test_aes_sha256_cbc_test2() {
   if (FLAGS_print_all) {
     printf("aes-sh256-cbc\n");
     printf("encryption alg: %s\n", "aes");
-    printf("encryption key: "); print_bytes((int)enc_key.size(), (byte*)enc_key.data());
+    printf("encryption key: "); print_bytes((int)enc_key.size(), (byte_t*)enc_key.data());
     printf("hmac alg      : %s\n", "hmac-sha256");
-    printf("hmac key      : "); print_bytes((int)hmac_key.size(), (byte*)hmac_key.data());
-    printf("nonce         : "); print_bytes((int)nonce.size(), (byte*)nonce.data());
+    printf("hmac key      : "); print_bytes((int)hmac_key.size(), (byte_t*)hmac_key.data());
+    printf("nonce         : "); print_bytes((int)nonce.size(), (byte_t*)nonce.data());
     printf("%d bytes encrypted\n", enc_scheme.get_bytes_encrypted());
     printf("%d bytes output\n", enc_scheme.get_total_bytes_output());
     printf("plain         : "); print_bytes(msg_encrypt_size, plain);
@@ -506,7 +506,7 @@ bool test_aes_sha256_cbc_test2() {
     ret_value = false;
     goto done;
   }
-  if (memcmp(&cipher[aes::BLOCKBYTESIZE], (byte*)known_cipher_text.data(),
+  if (memcmp(&cipher[aes::BLOCKBYTESIZE], (byte_t*)known_cipher_text.data(),
          aes::BLOCKBYTESIZE) != 0) {
     ret_value = false;
     goto done;

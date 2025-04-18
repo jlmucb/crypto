@@ -46,8 +46,8 @@ bool aesni::init_encrypt() {
   if (encrypt_round_key_ == nullptr) {
     return false;
   }
-  byte* enc_key_sched = (byte*)encrypt_round_key_;
-  byte* key = (byte*)key_;
+  byte_t* enc_key_sched = (byte_t*)encrypt_round_key_;
+  byte_t* key = (byte_t*)key_;
 
   //  rdi --- key
   //  rsi --- enc_key_sched
@@ -194,7 +194,7 @@ bool aesni::init_encrypt() {
   return true;
 }
 
-void fix_aes128_dec_round_keys(byte* ks) {
+void fix_aes128_dec_round_keys(byte_t* ks) {
   asm volatile(
       "\tmovq          %[ks], %%rdi\n"
       "\tmovdqu        (%%rdi), %%xmm1\n"
@@ -215,23 +215,23 @@ bool aesni::init_decrypt() {
       return false;
     }
   }
-  memcpy((byte*)decrypt_round_key_, (byte*)encrypt_round_key_,
+  memcpy((byte_t*)decrypt_round_key_, (byte_t*)encrypt_round_key_,
          (4 * (aesni::MAXNR + 1) + 1) * sizeof(uint32_t));
   if (num_rounds_ == 10) {
     for (int i = 1; i < 10; i++)
-      fix_aes128_dec_round_keys((byte*)&decrypt_round_key_[4 * i]);
+      fix_aes128_dec_round_keys((byte_t*)&decrypt_round_key_[4 * i]);
     return true;
   } else if (num_rounds_ == 14) {
     for (int i = 1; i < 14; i++)
-      fix_aes128_dec_round_keys((byte*)&decrypt_round_key_[4 * i]);
+      fix_aes128_dec_round_keys((byte_t*)&decrypt_round_key_[4 * i]);
     return true;
   } else {
     return false;
   }
 }
 
-void aesni::encrypt_block(const byte* pt, byte* ct) {
-  byte* ks = (byte*)encrypt_round_key_;
+void aesni::encrypt_block(const byte_t* pt, byte_t* ct) {
+  byte_t* ks = (byte_t*)encrypt_round_key_;
 
   if (num_rounds_ == 10) {
     asm volatile(
@@ -308,8 +308,8 @@ void aesni::encrypt_block(const byte* pt, byte* ct) {
   }
 }
 
-void aesni::decrypt_block(const byte* ct, byte* pt) {
-  byte* ks = (byte*)decrypt_round_key_;
+void aesni::decrypt_block(const byte_t* ct, byte_t* pt) {
+  byte_t* ks = (byte_t*)decrypt_round_key_;
 
   if (num_rounds_ == 10) {
     asm volatile(
@@ -386,7 +386,7 @@ void aesni::decrypt_block(const byte* ct, byte* pt) {
   }
 }
 
-bool aesni::init(int key_bit_size, byte* key_buf, int directionflag) {
+bool aesni::init(int key_bit_size, byte_t* key_buf, int directionflag) {
   direction_= directionflag;
   key_size_in_bits_ = key_bit_size;
   secret_.assign((char*)key_buf, key_bit_size / NBITSINBYTE);
@@ -400,7 +400,7 @@ bool aesni::init(int key_bit_size, byte* key_buf, int directionflag) {
   if (key_buf == nullptr) {
     return false;
   }
-  key_ = (byte*)secret_.data();
+  key_ = (byte_t*)secret_.data();
   if (directionflag == DECRYPT || directionflag == BOTH) {
     if (!init_decrypt()) {
       return false;
@@ -416,7 +416,7 @@ bool aesni::init(int key_bit_size, byte* key_buf, int directionflag) {
   return initialized_;
 }
 
-void aesni::encrypt(int in_size, byte* in, byte* out) {
+void aesni::encrypt(int in_size, byte_t* in, byte_t* out) {
   // in_size should be a multiple of block size
   while (in_size > 0) {
     encrypt_block(in, out);
@@ -426,7 +426,7 @@ void aesni::encrypt(int in_size, byte* in, byte* out) {
   }
 }
 
-void aesni::decrypt(int in_size, byte* in, byte* out) {
+void aesni::decrypt(int in_size, byte_t* in, byte_t* out) {
   // in_size should be a multiple of block size
   while (in_size > 0) {
     decrypt_block(in, out);

@@ -27,10 +27,10 @@ DEFINE_bool(print_all, false, "Print intermediate test computations");
 
 bool test_markov() {
   const int seq_len = 4;
-  byte seq[seq_len + 8];
+  byte_t seq[seq_len + 8];
   int num_seq = 1 << seq_len;
 
-  byte b;
+  byte_t b;
   double p_0 = .5;
   double p_1 = .5;
   double p_00 = .5;
@@ -40,7 +40,7 @@ bool test_markov() {
   double probs[num_seq];
   double total_prob = 0.0;
 
-  for (byte b = 0; b <= 15; b++) {
+  for (byte_t b = 0; b <= 15; b++) {
     if (!byte_to_bits(1, &b, NBITSINBYTE, 8, seq)) {
       printf("bad conversion\n");
       return false;
@@ -67,7 +67,7 @@ bool test_markov() {
   p_01 = .25;
   p_10 = .25;
   p_11 = .75;
-  for (byte b = 0; b <= 15; b++) {
+  for (byte_t b = 0; b <= 15; b++) {
     if (!byte_to_bits(1, &b, NBITSINBYTE, 8, seq)) {
       printf("bad conversion\n");
       return false;
@@ -94,8 +94,8 @@ bool test_markov() {
 
 bool test_entropy() {
   const int num_bits_to_test = 4096;
-  byte one_bit_per_byte[num_bits_to_test];
-  byte all_bits_in_byte[num_bits_to_test / NBITSINBYTE];
+  byte_t one_bit_per_byte[num_bits_to_test];
+  byte_t all_bits_in_byte[num_bits_to_test / NBITSINBYTE];
 
   memset(one_bit_per_byte, 0, num_bits_to_test);
   memset(all_bits_in_byte, 0, num_bits_to_test / NBITSINBYTE);
@@ -137,8 +137,8 @@ bool test_entropy() {
 
 bool test_runs() {
   const int num_bits_to_test = 4096;
-  byte one_bit_per_byte[num_bits_to_test];
-  byte all_bits_in_byte[num_bits_to_test / NBITSINBYTE];
+  byte_t one_bit_per_byte[num_bits_to_test];
+  byte_t all_bits_in_byte[num_bits_to_test / NBITSINBYTE];
 
   memset(one_bit_per_byte, 0, num_bits_to_test);
   memset(all_bits_in_byte, 0, num_bits_to_test / NBITSINBYTE);
@@ -173,7 +173,7 @@ bool test_runs() {
 
 bool test_berlekamp_massey() {
   const int n = 128;
-  byte bits[n];
+  byte_t bits[n];
 
   for (int i = 0; i < n; i++) {
     bits[i] = i % 4;
@@ -189,7 +189,7 @@ bool test_berlekamp_massey() {
 
 bool test_excursion_test() {
   const int num_bytes_to_test = 1024;
-  byte all_bits_in_byte[num_bytes_to_test];
+  byte_t all_bits_in_byte[num_bytes_to_test];
 
   memset(all_bits_in_byte, 0, num_bytes_to_test);
   crypto_get_random_bytes(num_bytes_to_test, all_bits_in_byte);
@@ -234,7 +234,7 @@ bool test_periodicity_test() {
     printf("\n");
   }
 
-  byte x[n] = {
+  byte_t x[n] = {
     0, 1, 2, 3, 4,
     0, 1, 2, 3, 4,
     0, 1, 2, 3, 4,
@@ -262,8 +262,8 @@ bool test_periodicity_test() {
 
 bool test_chi_squared_test() {
   const int num_bits_to_test = 4096;
-  byte one_bit_per_byte[num_bits_to_test];
-  byte all_bits_in_byte[num_bits_to_test / NBITSINBYTE];
+  byte_t one_bit_per_byte[num_bits_to_test];
+  byte_t all_bits_in_byte[num_bits_to_test / NBITSINBYTE];
 
   memset(one_bit_per_byte, 0, num_bits_to_test);
   memset(all_bits_in_byte, 0, num_bits_to_test / NBITSINBYTE);
@@ -296,7 +296,7 @@ bool test_chi_squared_test() {
 
 bool test_compression_test() {
   const int n = 100;
-  byte x[n];
+  byte_t x[n];
   int compressed = 0;
 
   for (int j = 0; j < n; j++)
