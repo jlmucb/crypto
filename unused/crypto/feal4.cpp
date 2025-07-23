@@ -40,6 +40,7 @@ void FourBytes::AntiZero()
 }
 
 
+
 bool FourBytes::Bump()
 {
     for(int i=0; i<4; i++) {
