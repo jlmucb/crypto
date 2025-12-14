@@ -13,36 +13,44 @@
 #    File: common.mak
 
 
-SRC_DIR=$(HOME)/src/github.com/jlmucb/crypto/v1
+SRC_DIR=$(HOME)/src/github.com/jlmucb/crypto/v2
 ifndef SRC_DIR
-SRC_DIR=$(HOME)/crypto/v1
+SRC_DIR=$(HOME)/crypto/v2
 endif
 ifndef OBJ_DIR
-OBJ_DIR=$(HOME)/cryptoobj/v1
+OBJ_DIR=$(HOME)/cryptoobj/v2
 endif
 ifndef EXE_DIR
 EXE_DIR=$(HOME)/cryptobin
 endif
-ifndef GOOGLE_INCLUDE
-GOOGLE_INCLUDE=/usr/local/include/google
-endif
-ifndef LOCAL_LIB
-LOCAL_LIB=/usr/local/lib
-endif
-ifndef TARGET_MACHINE_TYPE
-TARGET_MACHINE_TYPE= x64
+
+ifdef MACSI
+
+	TARGET_MACHINE_TYPE=arm64
+        INCLUDE= -I$(SRC_DIR)/include -I/opt/homebrew/include
+        CC=clang++
+        LDFLAGS=-v -L/opt/homebrew/lib -lgtest -lprotobuf -lgflags
+        LINK=clang++
+
+else
+	TARGET_MACHINE_TYPE=x64
+	ifndef GOOGLE_INCLUDE
+	GOOGLE_INCLUDE=/usr/local/include/google
+	endif
+	ifndef LOCAL_LIB
+	LOCAL_LIB=/usr/local/lib
+	endif
+	INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE)
+	CC=g++
+	LINK=g++
+	AR=ar
+	LDFLAGS= -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
 endif
 
 S= $(SRC_DIR)/common
 O= $(OBJ_DIR)/common
-INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include -I$(GOOGLE_INCLUDE)
 
-CFLAGS=$(INCLUDE) -std=c++11 -O3 -g -Wall
-
-CC=g++
-LINK=g++
-AR=ar
-LDFLAGS= -L$(LOCAL_LIB) -lgtest -lgflags -lprotobuf -lpthread
+CFLAGS=$(INCLUDE) -std=c++17 -O3 -g -Wall
 
 dobj=	$(O)/commontest.o $(O)/conversions.o $(O)/util.o
 
