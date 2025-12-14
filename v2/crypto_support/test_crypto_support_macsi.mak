@@ -28,7 +28,6 @@ endif
 
 S= $(SRC_DIR)/crypto_support
 O= $(OBJ_DIR)/crypto_support
-INCLUDE= -I$(SRC_DIR)/include -I$(S) -I/usr/local/include
 
 INCLUDE= -I $(SRC_DIR)/include -I $(S) -I/opt/homebrew/include
 CC=clang++
