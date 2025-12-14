@@ -31,7 +31,6 @@ O= $(OBJ_DIR)/crypto_support
 
 INCLUDE= -I $(SRC_DIR)/include -I $(S) -I/opt/homebrew/include
 CC=clang++
-#LDFLAGS=-v -L/opt/homebrew/lib -lgtest -lprotobuf -lgflags
 LDFLAGS=-v -L/opt/homebrew/lib `pkg-config --cflags --libs protobuf` -lgtest -lgflags -lpthread
 
 LINK=clang++
