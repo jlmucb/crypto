@@ -94,7 +94,7 @@ int main(int an, char** av) {
 
   // generate some numbers
   int num_bits_needed = 256;
-  byte out[32];
+  byte_t out[32];
   if (the_rng.reseed_ctr() >= the_rng.reseed_interval()) {
     // shouldn't happen
     printf("Reseed so fast?\n");

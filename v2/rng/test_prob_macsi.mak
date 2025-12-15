@@ -9,11 +9,11 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License
-#    File: test_prob.mak
+#    File: test_prob_macsi.mak
 
 
 ifndef SRC_DIR
-SRC_DIR=$(HOME)/crypto/v2
+SRC_DIR=$(HOME)/src/github.com/jlmucb/crypto/v2
 endif
 ifndef OBJ_DIR
 OBJ_DIR=$(HOME)/cryptoobj/v2
@@ -21,43 +21,25 @@ endif
 ifndef EXE_DIR
 EXE_DIR=$(HOME)/cryptobin
 endif
-ifndef GOOGLE_INCLUDE
-GOOGLE_INCLUDE=/usr/local/include/google
-endif
-ifndef LOCAL_LIB
-LOCAL_LIB=/usr/local/lib
-endif
-ifndef TARGET_MACHINE_TYPE
-TARGET_MACHINE_TYPE= x64
-endif
 
-#ifndef SRC_DIR
-SRC_DIR=$(HOME)/src/github.com/jlmucb/crypto/v2
-#endif
-#ifndef OBJ_DIR
-OBJ_DIR=$(HOME)/cryptoobj/v2
-#endif
 
 S= $(SRC_DIR)/rng
 O= $(OBJ_DIR)/rng
-INCLUDE= -I$(SRC_DIR)/include -I$(S) -I$(S_SUPPORT) -I/usr/local/include
 S_SUPPORT=$(SRC_DIR)/crypto_support
+S_HASH=$(SRC_DIR)/hash
+S_SYMMETRIC=$(SRC_DIR)/symmetric
+S_BIGNUM=$(SRC_DIR)/big_num
 
-NEWPROTOBUF= 1
-ifndef NEWPROTOBUF
-CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++11 -Wno-unused-variable -D X64
-CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++11 -Wno-unused-variable -D X64
-export LD_LIBRARY_PATH=/usr/local/lib
-LDFLAGS= -L/usr/local/lib -lprotobuf -lgtest -lgflags -lpthread
-else
-CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++17 -Wno-unused-variable -D X64
-CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++17 -Wno-unused-variable -D X64
-export LD_LIBRARY_PATH=/usr/local/lib
-LDFLAGS= -L/usr/local/lib `pkg-config --cflags --libs protobuf` -lgtest -lgflags -lpthread
+ifndef TARGET_MACHINE_TYPE
+TARGET_MACHINE_TYPE=arm64
 endif
 
-CC=g++
-LINK=g++
+INCLUDE= -I $(SRC_DIR)/include -I $(S_SUPPORT) -I $(S) -I/opt/homebrew/include
+CC=clang++
+LDFLAGS=-v -L/opt/homebrew/lib `pkg-config --cflags --libs protobuf` -lgtest -lgflags -lpthread
+LINK=clang++
+CFLAGS=$(INCLUDE) -O3 -g -Wall -std=c++17 -Wno-unused-variable -D ARM64
+CFLAGS1=$(INCLUDE) -O1 -g -Wall -std=c++17 -Wno-unused-variable -D ARM64
 PROTO=protoc
 AR=ar
 
