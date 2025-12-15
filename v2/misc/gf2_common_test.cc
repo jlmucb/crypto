@@ -41,7 +41,7 @@ bool InternalRepTest() {
   uint16_t tpoly = 0x77;
   uint16_t cpoly;
   int size_a = 16;
-  byte_t_t a[16];
+  byte_t a[16];
   EXPECT_TRUE(to_internal_representation(tpoly, &size_a, a));
   EXPECT_TRUE(from_internal_representation(size_a, a, &cpoly));
   printf("Cpoly: %02x\n", cpoly);
