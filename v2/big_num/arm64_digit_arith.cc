@@ -155,10 +155,10 @@ void instruction_test(uint64_t a, uint64_t b, uint64_t* c, uint64_t* d) {
     "mov    x9, %[d]\n\t"    // address of output
     "mov    x10, %[a]\n\t"   // a
     "mov    x11, 0\n\t"       // holds result
-    ".1:\n\t"
+    "t.1:\n\t"
     "add    x11, x11, x10\n\t"
     "subs   x10, x10, 1\n\t"
-    "bne    .1\n\t"
+    "bne    t.1\n\t"
     "str    x11, [x9]\n\t"
     :: [a] "r" (a), [b] "r" (b), [c] "r" (c), [d] "r" (d) :
       "memory", "x9", "x10", "x11");
