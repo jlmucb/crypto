@@ -115,9 +115,9 @@ bool dilithium_keygen(dilithium_parameters& params, module_array* A,
         module_vector* t, module_vector* s1, module_vector* s2);
 bool dilithium_sign(dilithium_parameters& params,  module_array& A,
         module_vector& t, module_vector& s1, module_vector& s2,
-        int m_len, ::byte* M, module_vector* z,
+        int m_len, byte_t* M, module_vector* z,
         int len_cc, int* cc);
 bool dilithium_verify(dilithium_parameters& params,  module_array& A,
-        module_vector& t, int m_len, ::byte* M,
+        module_vector& t, int m_len, byte_t* M,
         module_vector& z, int len_cc, int* cc);
 #endif
