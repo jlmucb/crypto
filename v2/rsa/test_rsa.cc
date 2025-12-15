@@ -29,15 +29,25 @@ bool test_rsa1(int num_bits) {
   int byte_size = num_bits / NBITSINBYTE;
   rsa r;
 
+  if (FLAGS_print_all) {
+    printf("About to generate %d bit key\n", num_bits);
+  }
   if (!r.generate_rsa(num_bits)) {
     printf("generate fails\n");
     return false;
+  }
+
+  if (FLAGS_print_all) {
+    printf("About to make_rsa_key\n");
   }
   if (!r.make_rsa_key("rsa-tst-key1", "testing", 86400.0 * 365.0)) {
     printf("make_rsa_key fails\n");
     return false;
   }
 
+  if (FLAGS_print_all) {
+    printf("About to r.get_serialized_key_message\n");
+  }
   string ser;
   if (!r.get_serialized_key_message(&ser)) {
     printf("serialize fails\n");
